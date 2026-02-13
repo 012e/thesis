@@ -1,0 +1,156 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.5.0",
+  "pathMappings": {
+    "@repo/*": [
+      "packages/*"
+    ]
+  },
+  "nxJsonPlugins": [
+    {
+      "name": "@nx-dotnet/core",
+      "version": "^3.0.2",
+      "options": {
+        "solutionFile": "thesis.sln"
+      }
+    }
+  ],
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": false
+    }
+  },
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": "pnpm-lock.yaml",
+        "hash": "424955570605099804"
+      },
+      {
+        "file": "Justfile",
+        "hash": "2256446109274764803"
+      },
+      {
+        "file": "dotnet-tools.json",
+        "hash": "14508248946014421858"
+      },
+      {
+        "file": "Directory.Build.props",
+        "hash": "6347059698322871248"
+      },
+      {
+        "file": "package.json",
+        "hash": "2877269297093192137"
+      },
+      {
+        "file": "Directory.Packages.props",
+        "hash": "17958020998298909208"
+      },
+      {
+        "file": "AGENTS.md",
+        "hash": "899189580362467598"
+      },
+      {
+        "file": "thesis.sln",
+        "hash": "15810294628795016179"
+      },
+      {
+        "file": "pnpm-workspace.yaml",
+        "hash": "2373171212127886927"
+      },
+      {
+        "file": ".gitignore",
+        "hash": "13024649396801458733"
+      },
+      {
+        "file": "nx.json",
+        "hash": "2961784646727335642"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "10293220184584703015"
+      }
+    ],
+    "projectFileMap": {
+      "@repo/shared-dto": [
+        {
+          "file": "packages/shared-dto/index.ts",
+          "hash": "11181553607516384907"
+        },
+        {
+          "file": "packages/shared-dto/package.json",
+          "hash": "8880045353050141496",
+          "deps": [
+            "npm:typescript"
+          ]
+        },
+        {
+          "file": "packages/shared-dto/tsconfig.json",
+          "hash": "6505435727071418445"
+        }
+      ],
+      "Database.Models": [
+        {
+          "file": "packages/database/Database.Models/Class1.cs",
+          "hash": "18419218743236602784"
+        },
+        {
+          "file": "packages/database/Database.Models/Database.Models.csproj",
+          "hash": "10377017887584102561"
+        }
+      ],
+      "Backend.Api": [
+        {
+          "file": "apps/backend/Backend.Api/Backend.Api.csproj",
+          "hash": "7613089466180563835",
+          "deps": [
+            "Database.Models"
+          ]
+        },
+        {
+          "file": "apps/backend/Backend.Api/Backend.Api.http",
+          "hash": "16663360207569975795"
+        },
+        {
+          "file": "apps/backend/Backend.Api/Program.cs",
+          "hash": "11008489265267414057"
+        },
+        {
+          "file": "apps/backend/Backend.Api/Properties/launchSettings.json",
+          "hash": "13135192565241036267"
+        },
+        {
+          "file": "apps/backend/Backend.Api/appsettings.Development.json",
+          "hash": "7886013864804760141"
+        },
+        {
+          "file": "apps/backend/Backend.Api/appsettings.json",
+          "hash": "16219606408788645753"
+        }
+      ],
+      "web": [
+        {
+          "file": "apps/web/package.json",
+          "hash": "4254648609293757088",
+          "deps": [
+            "npm:typescript",
+            "@repo/shared-dto"
+          ]
+        },
+        {
+          "file": "apps/web/src/index.js",
+          "hash": "2814349396249926553"
+        },
+        {
+          "file": "apps/web/src/index.ts",
+          "hash": "13954355216384825779"
+        },
+        {
+          "file": "apps/web/tsconfig.json",
+          "hash": "17273216863961985896"
+        }
+      ]
+    }
+  },
+  "externalNodesHash": "8155754117630666884"
+}

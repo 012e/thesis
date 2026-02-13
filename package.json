@@ -11,6 +11,8 @@
   "license": "ISC",
   "packageManager": "pnpm@10.28.2",
   "devDependencies": {
+    "@nx-dotnet/core": "^3.0.2",
+    "nx": "^22.5.0",
     "typescript": "^5.9.3"
   }
 }
