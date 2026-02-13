@@ -12,7 +12,7 @@ setup:
 
 # Start backend and frontend in parallel
 dev:
-    pnpm -r --filter "./apps/*" run dev & dotnet run --project apps/backend/Backend.Api/Backend.Api.csproj
+    pnpm nx run-many --target=serve --projects=web,Backend.Api
 
 # Start only the API in watch mode
 dev-api:
