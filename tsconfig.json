@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@repo/*": ["packages/*"]
+    },
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true
+  }
+}
