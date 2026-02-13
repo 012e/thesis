@@ -321,3 +321,6 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/node,dotnetcore,python
 
+.nx-cache
+.nx/cache
+.nx/workspace-data
