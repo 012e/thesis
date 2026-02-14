@@ -1,3 +1,11 @@
 packages:
-  - 'apps/*'
-  - 'packages/*'
+  - apps/*
+  - packages/*
+
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@nx-dotnet/core'
+  - '@swc/core'
+  - esbuild
+  - nx
+  - unrs-resolver
