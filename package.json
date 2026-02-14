@@ -13,6 +13,7 @@
   "devDependencies": {
     "@nx-dotnet/core": "^3.0.2",
     "nx": "^22.5.0",
+    "prettier": "^3.8.1",
     "typescript": "^5.9.3"
   }
 }
