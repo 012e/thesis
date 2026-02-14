@@ -10,13 +10,17 @@ setup:
 
 # --- Development ---
 
-# Start backend and frontend in parallel
+# Start backend, frontend, and auth in parallel
 dev:
-    pnpm nx run-many --target=serve --projects=web,Backend.Api
+    pnpm nx run-many --target=serve --projects=web,Backend.Api,auth
 
 # Start only the API in watch mode
 dev-api:
     dotnet watch --project apps/backend/Backend.Api/Backend.Api.csproj run
+
+# Start only the Auth service
+dev-auth:
+    pnpm --filter auth serve
 
 # Start only the Web App
 dev-web:
