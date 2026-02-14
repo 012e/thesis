@@ -1,10 +1,12 @@
 import swc from 'unplugin-swc';
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
   test: {
     globals: true,
     root: './',
+    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
   plugins: [
     // This is required to build the test files with SWC
