@@ -1,91 +1,110 @@
 # Agent Guide for Thesis Repository
 
-This repository is a **Hybrid Monorepo** containing both **TypeScript (React)** and **.NET (C#)** projects, managed with **pnpm** and **Nx**.
-All coding agents operating in this repository must adhere to the guidelines below.
+This repository is a **Hybrid Monorepo** containing **TypeScript (React, NestJS)** and **.NET (C#)** projects, managed with **pnpm**, **Nx**, and **Just**.
 
 ## 1. Environment & Commands
 
 ### Package Management
+
 - **TypeScript:** Use **pnpm** exclusively.
   - Install dependency (root): `pnpm add -w <package>`
   - Install dependency (specific app): `pnpm --filter <app-name> add <package>`
-- **.NET:** Use standard `dotnet` CLI or NuGet.
+- **.NET:** Use standard `dotnet` CLI.
   - Add package: `dotnet add <project-path> package <package-name>`
-  - Restore: `dotnet restore`
+  - Restore: `dotnet restore` (or `just setup` to install everything)
 
 ### Build, Lint, & Test
 
-#### TypeScript (Apps & Packages)
-Commands are run via `pnpm` filters or `nx`.
-- **Build:** `pnpm --filter <package-name> build`
-- **Dev Server:** `pnpm --filter web dev`
-- **Lint:** `pnpm --filter <package-name> lint`
-- **Test:**
-  - *Note: If a `test` script is missing, add it using Vitest.*
-  - Run: `pnpm --filter <package-name> test`
-  - Single File: `pnpm --filter <package-name> test -- <path/to/test.ts>`
+#### TypeScript (Apps: `web`, `auth`)
 
-#### .NET (Backend & Libraries)
+- **Build:** `pnpm --filter <app-name> build`
+- **Lint:** `pnpm --filter <app-name> lint`
+- **Test:**
+  - **Auth (NestJS):**
+    - Run all: `pnpm --filter auth test`
+    - Single File: `pnpm --filter auth test -- <path/to/test.spec.ts>`
+  - **Web (React):**
+    - _Note:_ If `test` script is missing in `package.json`, install `vitest` and add it.
+    - Run: `pnpm --filter web test` (once configured)
+
+#### .NET (Backend: `Backend.Api`, Libs: `Database.Models`)
+
 - **Build:** `dotnet build <project-path>` or `dotnet build thesis.sln`
+- **Format:** `dotnet format`
 - **Test:**
   - Run all: `dotnet test`
   - Single Project: `dotnet test <project-path>`
   - Single Test: `dotnet test --filter "FullyQualifiedName~Namespace.Class.Method"`
-- **Format:** `dotnet format`
+
+### Task Automation (Justfile)
+
+Use `just` for common workflows:
+
+- `just setup`: Install all dependencies (Node & .NET).
+- `just dev`: Start backend, frontend, and auth in parallel.
+- `just db-migrate`: Apply EF Core migrations.
 
 ## 2. Code Style & Standards
 
-### TypeScript (Frontend - `apps/web`)
+### TypeScript - Frontend (`apps/web`)
+
 - **Framework:** React 19 + Vite + TanStack Router.
-- **Strict Mode:** Strict type checking enabled. No `any`.
+- **Language:** TypeScript (Strict Mode, no `any`).
 - **Formatting:** Prettier (2 spaces, double quotes, semi-colons).
 - **Naming:**
-  - Files: `kebab-case.ts` (e.g., `user-profile.tsx`)
-  - Components: `PascalCase` (e.g., `UserProfile`)
-  - Functions/Vars: `camelCase`
-- **State:** Prefer React Context or TanStack Query over global state libraries unless necessary.
-- **Styling:** Use Tailwind CSS (if configured) or CSS Modules.
+  - Files: `kebab-case.ts` (e.g., `user-profile.tsx`).
+  - Components: `PascalCase` (e.g., `UserProfile`).
+  - Hooks: `camelCase` (prefix with `use`).
+- **State:** Prefer **TanStack Query** for server state. Use React Context for minimal global UI state.
+- **Routing:** Follow **TanStack Router** file-based routing conventions.
 
-### C# / .NET (Backend - `apps/backend`)
-- **Version:** .NET 10 (Preview/RC). Use modern C# features.
-- **Style:**
-  - Use **file-scoped namespaces** (`namespace My.Namespace;`).
-  - Use **implicit usings** where possible.
-  - Use **records** for DTOs and immutable data structures.
+### TypeScript - Auth Service (`apps/auth`)
+
+- **Framework:** NestJS.
+- **Architecture:** Modular (Modules, Controllers, Services).
 - **Naming:**
-  - Classes/Methods/Properties: `PascalCase`.
-  - Local variables/Parameters: `camelCase`.
+  - Classes: `PascalCase` (e.g., `AuthService`).
+  - Files: `kebab-case.ts` (e.g., `auth.service.ts`).
+- **Testing:** Vitest. Write `.spec.ts` files co-located with source or in `test/`.
+
+### C# / .NET - Backend (`apps/backend`)
+
+- **Version:** .NET 10 (Preview). Use modern C# features.
+- **Style:**
+  - **File-scoped namespaces:** `namespace Backend.Api.Controllers;`
+  - **Implicit usings:** Rely on `GlobalUsings.cs` or project defaults.
+  - **Records:** Use `public record UserDto(string Name, string Email);` for DTOs.
+- **Naming:**
+  - Classes/Methods: `PascalCase`.
+  - Parameters/Locals: `camelCase`.
   - Interfaces: `IPascalCase`.
-- **Async:** Always use `async/await`. Avoid `.Result` or `.Wait()`.
-- **Error Handling:** Use global exception handling middleware. Throw custom exceptions for domain logic errors.
+- **Async:** Always use `async/await`. **Never** use `.Result` or `.Wait()`.
+- **Error Handling:** Use global exception middleware. Throw domain-specific exceptions.
 
-## 3. Monorepo Structure
+## 3. Monorepo Structure & Behavior
 
-### `apps/`
-- **`web/`**: TypeScript/React frontend application.
-- **`backend/`**: .NET Web API (`Backend.Api`).
+### Directory Layout
 
-### `packages/`
-- **`shared-dto/`**: Shared TypeScript types/interfaces (likely corresponding to backend DTOs).
-- **`database/`**: Shared C# database models/entities (`Database.Models`).
+- **`apps/web`**: React Frontend.
+- **`apps/auth`**: NestJS Auth Service.
+- **`apps/backend`**: .NET Web API (`Backend.Api`).
+- **`packages/database`**: Shared C# EF Core models (`Database.Models`).
+- **`packages/shared-dto`**: Shared TypeScript types (sync with backend DTOs).
 
-## 4. Agent Behavior Rules
+### Agent Rules
 
-1. **Explore First:** Always analyze the codebase (`ls -R`, `grep`, `glob`) to understand existing patterns before writing code.
-2. **Context Awareness:**
-   - If working on **Frontend**: Check `apps/web/package.json` for dependencies.
-   - If working on **Backend**: Check `.csproj` files for NuGet packages.
-3. **Atomic Changes:** Keep changes focused. Do not mix refactoring with feature work.
-4. **Verification:**
-   - **TS:** Run `pnpm build` and `pnpm lint` before finishing.
-   - **.NET:** Run `dotnet build` to ensure no compilation errors.
-5. **Testing:**
-   - If tests exist, run them.
-   - If adding a new feature, add a corresponding test (Vitest for TS, xUnit/NUnit for .NET).
-6. **No Broken Windows:** Do not introduce linting warnings or compilation errors. Fix them immediately.
+1.  **Explore First:** Run `ls -F`, `grep`, or `glob` to locate files and understand context before editing.
+2.  **Context Sync:**
+    - If you change a C# DTO in `Backend.Api` or `Database.Models`, **immediately** update the corresponding TypeScript interface in `packages/shared-dto` or the frontend types to maintain synchronization.
+3.  **Database Changes:**
+    - Modifying `Database.Models` requires a migration.
+    - Run: `just db-add-migration <MigrationName>` then `just db-migrate`.
+4.  **Verification:**
+    - **Always** run the build/test command for the specific project you modified before marking a task as done.
+    - **Do not** break the build. Fix lint errors immediately.
 
-## 5. Specific Tooling Instructions
+## 4. Specific Tooling Instructions
 
-- **TanStack Router:** Use file-based routing conventions in `apps/web`.
-- **Database:** Changes to `packages/database` (C# models) may require migrations. Check for EF Core usage.
-- **DTO Sync:** If you modify C# DTOs in `Backend.Api` or `packages/database`, ensure corresponding TypeScript types in `packages/shared-dto` are updated to match.
+- **TanStack Router:** Use the generated route tree. Run the dev server to auto-update route definitions.
+- **NestJS:** Adhere to dependency injection patterns. Do not bypass the module system.
+- **EF Core:** Use Code-First migrations. Do not modify the database schema manually.
