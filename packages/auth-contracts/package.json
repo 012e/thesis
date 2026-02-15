@@ -1,10 +1,22 @@
 {
   "name": "@repo/auth-contracts",
   "version": "1.0.0",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'No lint configured for auth-contracts' && exit 0",
+    "test": "echo 'No tests configured for auth-contracts' && exit 0"
   },
   "dependencies": {
     "@ts-rest/core": "3.53.0-rc.1",
