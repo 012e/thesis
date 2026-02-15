@@ -7,5 +7,6 @@ onlyBuiltDependencies:
   - '@nx-dotnet/core'
   - '@swc/core'
   - esbuild
+  - msw
   - nx
   - unrs-resolver

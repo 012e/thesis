@@ -13,5 +13,23 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [username(), jwt()],
+  plugins: [
+    username(),
+    jwt({
+      jwt: {
+        // Narrow the incoming user shape to avoid `any`-assignment lint errors
+        definePayload: ({
+          user,
+        }: {
+          user: { id: string; email?: string; role?: string };
+        }) => {
+          return {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+          };
+        },
+      },
+    }),
+  ],
 });
