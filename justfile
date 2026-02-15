@@ -10,14 +10,12 @@ setup:
 
 # --- Development ---
 
-# Start backend, frontend, and auth in parallel (builds auth-contracts first)
+# Start backend, frontend, and auth in parallel (Nx automatically builds auth-contracts first)
 dev:
-    pnpm --filter @repo/auth-contracts build
     pnpm nx run-many --target=serve --projects=web,Backend.Api,auth
 
 # Start all services including auth-contracts in watch mode
 dev-watch:
-    pnpm --filter @repo/auth-contracts build
     pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,Backend.Api,auth"
 
 # Start only the API in watch mode
