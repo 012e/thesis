@@ -44,7 +44,7 @@ db-migrate:
 
 # Add a new migration (usage: just db-add-migration MigrationName)
 db-add-migration name:
-    dotnet ef migrations add {{name}} --project packages/database/Database.Models/Database.Models.csproj --startup-project apps/backend/Backend.Api/Backend.Api.csproj
+    dotnet ef migrations add {{ name }} --project packages/database/Database.Models/Database.Models.csproj --startup-project apps/backend/Backend.Api/Backend.Api.csproj
 
 # --- Docker ---
 
@@ -62,3 +62,8 @@ down:
 graph:
     pnpm nx graph
 
+auth +COMMAND:
+    (cd apps/auth && {{ COMMAND }})
+
+web +COMMAND:
+    (cd apps/web && {{ COMMAND }})

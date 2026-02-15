@@ -1,0 +1,31 @@
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
+import type { VariantProps } from "class-variance-authority";
+
+import { cn } from "@/lib/utils";
+import { badgeVariants as badgeVariantsFromVariants } from "./variants";
+
+function Badge({
+  className,
+  variant = "default",
+  render,
+  ...props
+}: useRender.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariantsFromVariants>) {
+  return useRender({
+    defaultTagName: "span",
+    props: mergeProps<"span">(
+      {
+        className: cn(badgeVariantsFromVariants({ className, variant })),
+      },
+      props,
+    ),
+    render,
+    state: {
+      slot: "badge",
+      variant,
+    },
+  });
+}
+
+export { Badge };

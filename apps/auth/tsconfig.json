@@ -15,6 +15,7 @@
     "outDir": "./dist",
     "baseUrl": "./",
     "paths": {
+      "@/*": ["./src/*"],
       "@repo/*": ["../../packages/*"]
     },
     "incremental": true,

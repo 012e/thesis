@@ -167,7 +167,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -324,3 +323,5 @@ pyrightconfig.json
 .nx-cache
 .nx/cache
 .nx/workspace-data
+
+tmp/
