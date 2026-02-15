@@ -1,4 +1,5 @@
 import { initContract } from "@ts-rest/core";
+import type { AppRouter } from "@ts-rest/core";
 import { z } from "zod";
 
 const c = initContract();
@@ -25,7 +26,7 @@ export const authContract = c.router({
     },
     summary: "Get current user",
   },
-});
+}) satisfies AppRouter;
 
 export type AuthContract = typeof authContract;
 

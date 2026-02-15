@@ -10,9 +10,15 @@ setup:
 
 # --- Development ---
 
-# Start backend, frontend, and auth in parallel
+# Start backend, frontend, and auth in parallel (builds auth-contracts first)
 dev:
+    pnpm --filter @repo/auth-contracts build
     pnpm nx run-many --target=serve --projects=web,Backend.Api,auth
+
+# Start all services including auth-contracts in watch mode
+dev-watch:
+    pnpm --filter @repo/auth-contracts build
+    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,Backend.Api,auth"
 
 # Start only the API in watch mode
 dev-api:
@@ -62,8 +68,24 @@ down:
 graph:
     pnpm nx graph
 
+# --- Project-specific helpers ---
+
+# Run a command in the auth service directory
 auth +COMMAND:
     (cd apps/auth && {{ COMMAND }})
 
+# Run a command in the web app directory
 web +COMMAND:
     (cd apps/web && {{ COMMAND }})
+
+# Run a command in the auth-contracts package directory
+auth-contracts +COMMAND:
+    (cd packages/auth-contracts && {{ COMMAND }})
+
+# Build the auth-contracts package
+build-auth-contracts:
+    pnpm --filter @repo/auth-contracts build
+
+# Typecheck the auth-contracts package
+typecheck-auth-contracts:
+    pnpm --filter @repo/auth-contracts typecheck
