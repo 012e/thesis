@@ -10,8 +10,4 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\packages\database\Database.Models\Database.Models.csproj" />
-  </ItemGroup>
-
 </Project>
