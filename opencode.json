@@ -1,0 +1,13 @@
+{
+  "mcp": {
+    "nx-mcp": {
+      "type": "local",
+      "command": [
+        "pnpx",
+        "nx",
+        "mcp"
+      ],
+      "enabled": true
+    }
+  }
+}
