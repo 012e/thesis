@@ -11,6 +11,7 @@
     <Project Path="apps/backend/Backend.Domain/Backend.Domain.csproj" />
     <Project Path="apps/backend/Backend.Infrastructure/Backend.Infrastructure.csproj" />
     <Project Path="apps/backend/Backend.IntegrationTests/Backend.IntegrationTests.csproj" />
+    <Project Path="apps/backend/Backend.Shared/Backend.Shared.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
