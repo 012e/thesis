@@ -24,9 +24,8 @@ public class ApplicationDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(500);
 
-            entity.Property(e => e.Content)
-                .IsRequired()
-                .HasColumnType("jsonb");
+            entity.ComplexProperty(e => e.Content,
+                e => e.ToJson());
 
             entity.Property(e => e.AuthorId)
                 .IsRequired();

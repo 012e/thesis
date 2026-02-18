@@ -1,3 +1,4 @@
+using AutoMapper;
 using Backend.Application.DTOs;
 using Backend.Domain.Entities;
 using Backend.Infrastructure.Data;
@@ -8,10 +9,12 @@ namespace Backend.Application.Services;
 public class PostService : IPostService
 {
     private readonly ApplicationDbContext _context;
+    private readonly IMapper _mapper;
 
-    public PostService(ApplicationDbContext context)
+    public PostService(ApplicationDbContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     public async Task<PostResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -20,7 +23,7 @@ public class PostService : IPostService
             .AsNoTracking()
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-        return post == null ? null : MapToResponse(post);
+        return post == null ? null : _mapper.Map<PostResponse>(post);
     }
 
     public async Task<IEnumerable<PostResponse>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -30,25 +33,20 @@ public class PostService : IPostService
             .OrderByDescending(p => p.CreatedAt)
             .ToListAsync(cancellationToken);
 
-        return posts.Select(MapToResponse);
+        return _mapper.Map<IEnumerable<PostResponse>>(posts);
     }
 
     public async Task<PostResponse> CreateAsync(CreatePostRequest request, CancellationToken cancellationToken = default)
     {
-        var post = new Post
-        {
-            Id = Guid.NewGuid(),
-            Title = request.Title,
-            Content = request.Content,
-            AuthorId = request.AuthorId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+        var post = _mapper.Map<Post>(request);
+        post.Id = Guid.NewGuid();
+        post.CreatedAt = DateTime.UtcNow;
+        post.UpdatedAt = DateTime.UtcNow;
 
         _context.Posts.Add(post);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
+        return _mapper.Map<PostResponse>(post);
     }
 
     public async Task<PostResponse?> UpdateAsync(Guid id, UpdatePostRequest request, CancellationToken cancellationToken = default)
@@ -59,13 +57,12 @@ public class PostService : IPostService
             return null;
         }
 
-        post.Title = request.Title;
-        post.Content = request.Content;
+        _mapper.Map(request, post);
         post.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync(cancellationToken);
 
-        return MapToResponse(post);
+        return _mapper.Map<PostResponse>(post);
     }
 
     public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
@@ -80,18 +77,6 @@ public class PostService : IPostService
         await _context.SaveChangesAsync(cancellationToken);
 
         return true;
-    }
-
-    private static PostResponse MapToResponse(Post post)
-    {
-        return new PostResponse(
-            post.Id,
-            post.Title,
-            post.Content,
-            post.AuthorId,
-            post.CreatedAt,
-            post.UpdatedAt
-        );
     }
 }
 
