@@ -18,6 +18,8 @@ export const env = createEnv({
     ALLOWED_ORIGINS: z
       .union([z.url().nonempty(), z.array(z.url().nonempty())])
       .default('http://localhost:5173'),
+    KAFKA_BROKER: z.string().default('localhost:9092'),
+    KAFKA_CLIENT_ID: z.string().default('auth-service'),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
