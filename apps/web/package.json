@@ -13,6 +13,7 @@
   "dependencies": {
     "@base-ui/react": "^1.2.0",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@repo/auth-client": "workspace:*",
     "@repo/auth-contracts": "workspace:*",
     "@tabler/icons-react": "^3.36.1",
     "@tailwindcss/vite": "^4.1.17",

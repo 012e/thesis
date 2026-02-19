@@ -21,18 +21,20 @@ services:
       timeout: 5s
       retries: 5
 
-  kafka:
-    image: apache/kafka-native:4.1.1
-    container_name: kafka_broker
+  rabbitmq:
+    image: rabbitmq:4.1-management-alpine
+    container_name: rabbitmq_broker
     restart: always
     ports:
-      - "9092:9092"
-      - "29092:29092"
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: username
+      RABBITMQ_DEFAULT_PASS: password
     volumes:
-        - ./tmp/kafka_data:/kafka/data
+      - ./tmp/rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/localhost/9092 >/dev/null 2>&1 || exit 1'"]
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-

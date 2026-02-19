@@ -5,8 +5,8 @@ import { resolve } from 'path';
 export default defineConfig({
   test: {
     globals: true,
-    root: './',
-    include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
+    root: resolve(__dirname, './'),
+    include: ['test/**/*.e2e-spec.ts'],
   },
   plugins: [
     // This is required to build the test files with SWC
@@ -20,6 +20,7 @@ export default defineConfig({
       // Ensure Vitest correctly resolves TypeScript path aliases
       '@': resolve(__dirname, './src'),
       src: resolve(__dirname, './src'),
+      test: resolve(__dirname, './test'),
     },
   },
 });

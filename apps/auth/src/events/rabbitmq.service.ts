@@ -1,71 +1,83 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { Kafka, Producer, logLevel } from 'kafkajs';
+import * as amqp from 'amqplib';
 import { env } from '@/env';
 import type { UserEvent } from './schemas';
 import type { BetterAuthUser } from '@/types/user.types';
 
 @Injectable()
-export class KafkaService implements OnModuleInit, OnModuleDestroy {
-  private kafka: Kafka;
-  private producer: Producer;
-  private readonly topics = {
-    userEvents: 'user-events',
+export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
+  private chanelModel: amqp.ChannelModel | null = null;
+  private channel: amqp.Channel | null = null;
+  private readonly exchange = {
+    name: 'user-events',
+    type: 'topic' as const,
   };
-
-  constructor() {
-    this.kafka = new Kafka({
-      clientId: env.KAFKA_CLIENT_ID,
-      brokers: [env.KAFKA_BROKER],
-      logLevel: logLevel.ERROR,
-      retry: {
-        retries: 5,
-        initialRetryTime: 300,
-        factor: 2,
-      },
-    });
-
-    this.producer = this.kafka.producer({
-      allowAutoTopicCreation: true,
-      transactionTimeout: 30000,
-    });
-  }
+  private readonly routingKeys = {
+    userCreated: 'user.created',
+    userUpdated: 'user.updated',
+    userDeleted: 'user.deleted',
+  } as const;
 
   async onModuleInit() {
     try {
-      await this.producer.connect();
-      console.log('Kafka producer connected successfully');
+      this.chanelModel = await amqp.connect(env.RABBITMQ_URL);
+      this.channel = await this.chanelModel.createChannel();
+
+      // Declare the exchange
+      await this.channel.assertExchange(
+        this.exchange.name,
+        this.exchange.type,
+        {
+          durable: true,
+        },
+      );
+
+      console.log('RabbitMQ producer connected successfully');
     } catch (error) {
-      console.error('Failed to connect Kafka producer:', error);
-      // Don't throw to prevent app from crashing if Kafka is temporarily unavailable
+      console.error('Failed to connect RabbitMQ producer:', error);
+      // Don't throw to prevent app from crashing if RabbitMQ is temporarily unavailable
     }
   }
 
   async onModuleDestroy() {
     try {
-      await this.producer.disconnect();
-      console.log('Kafka producer disconnected');
+      if (this.channel) {
+        await this.channel.close();
+      }
+      if (this.chanelModel) {
+        await this.chanelModel.close();
+      }
+      console.log('RabbitMQ producer disconnected');
     } catch (error) {
-      console.error('Error disconnecting Kafka producer:', error);
+      console.error('Error disconnecting RabbitMQ producer:', error);
     }
   }
 
-  async publishUserEvent(event: UserEvent): Promise<void> {
+  async publishUserEvent(event: UserEvent, routingKey: string): Promise<void> {
+    if (!this.channel) {
+      throw new Error('RabbitMQ channel not initialized');
+    }
+
     try {
-      await this.producer.send({
-        topic: this.topics.userEvents,
-        messages: [
-          {
-            key: event.data.id,
-            value: JSON.stringify(event),
-            headers: {
-              'event-type': event.eventType,
-              'event-version': event.eventVersion,
-              'event-id': event.eventId,
-              'content-type': 'application/json',
-            },
+      const message = JSON.stringify(event);
+      const published = this.channel.publish(
+        this.exchange.name,
+        routingKey,
+        Buffer.from(message),
+        {
+          persistent: true,
+          contentType: 'application/json',
+          headers: {
+            'event-type': event.eventType,
+            'event-version': event.eventVersion,
+            'event-id': event.eventId,
           },
-        ],
-      });
+        },
+      );
+
+      if (!published) {
+        throw new Error('Failed to publish message to RabbitMQ');
+      }
 
       console.log(
         `Published ${event.eventType} event for user ${event.data.id}`,
@@ -103,7 +115,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       },
     };
 
-    await this.publishUserEvent(event);
+    await this.publishUserEvent(event, this.routingKeys.userCreated);
   }
 
   async publishUserUpdated(
@@ -148,7 +160,7 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       data: baseData,
     };
 
-    await this.publishUserEvent(event);
+    await this.publishUserEvent(event, this.routingKeys.userUpdated);
   }
 
   async publishUserDeleted(userId: string): Promise<void> {
@@ -164,6 +176,6 @@ export class KafkaService implements OnModuleInit, OnModuleDestroy {
       },
     };
 
-    await this.publishUserEvent(event);
+    await this.publishUserEvent(event, this.routingKeys.userDeleted);
   }
 }
