@@ -1,14 +1,14 @@
-import { betterAuth } from 'better-auth';
+import { betterAuth, BetterAuthOptions } from 'better-auth';
 import { Pool } from 'pg';
 import { env } from '@/env';
 import { username, jwt } from 'better-auth/plugins';
-import type { KafkaService } from '@/events';
+import type { RabbitMQService } from '@/events';
 
-// Note: KafkaService will be injected via factory pattern in auth module
-let kafkaServiceInstance: KafkaService | null = null;
+// Note: RabbitMQService will be injected via factory pattern in auth module
+let rabbitmqServiceInstance: RabbitMQService | null = null;
 
-export const setKafkaService = (service: KafkaService) => {
-  kafkaServiceInstance = service;
+export const setRabbitMQService = (service: RabbitMQService) => {
+  rabbitmqServiceInstance = service;
 };
 
 export const auth = betterAuth({
@@ -26,9 +26,9 @@ export const auth = betterAuth({
     user: {
       create: {
         after: async (user) => {
-          if (kafkaServiceInstance) {
+          if (rabbitmqServiceInstance) {
             try {
-              await kafkaServiceInstance.publishUserCreated(user.id, user);
+              await rabbitmqServiceInstance.publishUserCreated(user.id, user);
             } catch (error) {
               console.error('Failed to publish user.created event:', error);
             }
@@ -37,9 +37,9 @@ export const auth = betterAuth({
       },
       update: {
         after: async (user) => {
-          if (kafkaServiceInstance) {
+          if (rabbitmqServiceInstance) {
             try {
-              await kafkaServiceInstance.publishUserUpdated(user.id, user);
+              await rabbitmqServiceInstance.publishUserUpdated(user.id, user);
             } catch (error) {
               console.error('Failed to publish user.updated event:', error);
             }
@@ -48,9 +48,9 @@ export const auth = betterAuth({
       },
       delete: {
         after: async (user) => {
-          if (kafkaServiceInstance) {
+          if (rabbitmqServiceInstance) {
             try {
-              await kafkaServiceInstance.publishUserDeleted(user.id);
+              await rabbitmqServiceInstance.publishUserDeleted(user.id);
             } catch (error) {
               console.error('Failed to publish user.deleted event:', error);
             }
@@ -60,3 +60,16 @@ export const auth = betterAuth({
     },
   },
 });
+
+export const authConfigurtion = {
+  database: new Pool({
+    connectionString: env.DATABASE_URL,
+  }),
+  trustedOrigins: ['*'],
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
+  emailAndPassword: {
+    enabled: true,
+  },
+  plugins: [username(), jwt()],
+} satisfies BetterAuthOptions;

@@ -18,7 +18,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { login } from "@/lib/auth/login";
+import { login } from "@/lib/auth";
 
 const loginSchema = z.object({
   email: z.email("Invalid email address"),

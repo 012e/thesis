@@ -16,7 +16,7 @@ import {
   FieldDescription,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { updateProfile } from "@/lib/auth/update-profile";
+import { updateProfile } from "@/lib/auth";
 
 const editProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
