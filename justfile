@@ -10,21 +10,21 @@ setup:
 
 # --- Development ---
 
-# Start backend, frontend, and auth in parallel (Nx automatically builds auth-contracts first)
+# Start backend and frontend in parallel (Nx automatically builds auth-contracts first)
 dev:
-    pnpm nx run-many --target=serve --projects=web,Backend.Api,auth
+    pnpm nx run-many --target=serve --projects=web,backend
 
 # Start all services including auth-contracts in watch mode
 dev-watch:
-    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,Backend.Api,auth"
+    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend"
 
-# Start only the API in watch mode
+# Start only the backend service
 dev-api:
-    dotnet watch --project apps/backend/Backend.Api/Backend.Api.csproj run
+    pnpm --filter backend serve
 
-# Start only the Auth service
-dev-auth:
-    pnpm --filter auth serve
+# Start only the backend service
+dev-backend:
+    pnpm --filter backend serve
 
 # Start only the Web App
 dev-web:
@@ -39,16 +39,6 @@ build:
 # Test the entire monorepo using Nx
 test:
     pnpm nx run-many --target=test
-
-# --- Database ---
-
-# Apply pending migrations to the database
-db-migrate:
-    dotnet ef database update --project packages/database/Database.Models/Database.Models.csproj --startup-project apps/backend/Backend.Api/Backend.Api.csproj
-
-# Add a new migration (usage: just db-add-migration MigrationName)
-db-add-migration name:
-    dotnet ef migrations add {{ name }} --project packages/database/Database.Models/Database.Models.csproj --startup-project apps/backend/Backend.Api/Backend.Api.csproj
 
 # --- Docker ---
 
@@ -68,9 +58,9 @@ graph:
 
 # --- Project-specific helpers ---
 
-# Run a command in the auth service directory
-auth +COMMAND:
-    (cd apps/auth && {{ COMMAND }})
+# Run a command in the backend service directory
+backend +COMMAND:
+    (cd apps/backend && {{ COMMAND }})
 
 # Run a command in the web app directory
 web +COMMAND:

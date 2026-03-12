@@ -9,38 +9,28 @@ This repository is a Hybrid Monorepo containing TypeScript (React, NestJS) and .
 
 - TypeScript apps (pnpm workspaces / nx):
   - Build an app: `pnpm --filter <app-name> build` (example: `pnpm --filter web build`).
-  - Lint an app: `pnpm --filter <app-name> lint` (example: `pnpm --filter auth lint`).
+  - Lint an app: `pnpm --filter <app-name> lint` (example: `pnpm --filter backend lint`).
   - Run all tests for an app: `pnpm --filter <app-name> test` (when the script exists).
-  - Run a single Vitest file (example for `auth`):
-    `pnpm --filter auth test -- test/auth/some.spec.ts`.
-  - Run a single test by name: `pnpm --filter auth test -- -t "should do X"` (Vitest `-t`).
-  - Run Vitest directly: `pnpm --filter auth -- vitest run test/auth/some.spec.ts`.
+  - Run a single Vitest file (example for `backend`):
+    `pnpm --filter backend test -- test/auth/some.spec.ts`.
+  - Run a single test by name: `pnpm --filter backend test -- -t "should do X"` (Vitest `-t`).
+  - Run Vitest directly: `pnpm --filter backend -- vitest run test/auth/some.spec.ts`.
 
 - Web (React + Vite):
   - Dev server: `pnpm --filter web dev` or `pnpm --filter web serve`.
   - Build: `pnpm --filter web build` (runs `tsc -b && vite build`).
 
-- Auth (NestJS):
-  - Build: `pnpm --filter auth build` (runs `nest build`).
-  - Tests: `pnpm --filter auth test` / watch: `pnpm --filter auth test:watch`.
+- Backend (NestJS):
+  - Build: `pnpm --filter backend build` (runs `nest build`).
+  - Tests: `pnpm --filter backend test` / watch: `pnpm --filter backend test:watch`.
 
-- .NET projects (Backend.Api, Database.Models):
-  - Build solution: `dotnet build thesis.sln` or `dotnet build apps/backend/Backend.Api`.
-  - Restore: `dotnet restore`.
-  - Format: `dotnet format`.
-  - Run all tests: `dotnet test`.
-  - Run a specific project tests: `dotnet test apps/backend/Backend.Api`.
-  - Run a single test (by fully qualified name):
-    `dotnet test --filter "FullyQualifiedName~Namespace.Class.Method"`.
-
-Notes: prefer `just` wrappers when available (`just setup`, `just db-migrate`). Always run the minimal target that verifies your change (project-level build/test).
+Notes: prefer `just` wrappers when available (`just setup`, `just dev`). Always run the minimal target that verifies your change (project-level build/test).
 
 2. How to run a single test (common examples)
 
-- Vitest single file: `pnpm --filter auth test -- test/<path>/file.spec.ts`.
-- Vitest single test name: `pnpm --filter auth test -- -t "should do X"`.
-- Vitest single test in watch mode: `pnpm --filter auth test -- --watch -t "should do X"`.
-- dotnet single test method: `dotnet test --filter "FullyQualifiedName~Namespace.Class.Method"`.
+- Vitest single file: `pnpm --filter backend test -- test/<path>/file.spec.ts`.
+- Vitest single test name: `pnpm --filter backend test -- -t "should do X"`.
+- Vitest single test in watch mode: `pnpm --filter backend test -- --watch -t "should do X"`.
 
 3. TypeScript / Frontend code style and standards
 
@@ -106,13 +96,12 @@ Notes: prefer `just` wrappers when available (`just setup`, `just db-migrate`). 
 
 - Explore First: use `glob` and `grep` to find files and confirm where to change before editing.
 - Non-destructive edits: do not revert or overwrite unrelated changes in the working tree.
-- DTO sync: when changing C# DTOs in `packages/database/Database.Models` or `apps/backend`, update `packages/shared-dto` and rebuild both sides.
-- Migrations: changing EF models requires migrations. Use `just db-add-migration <Name>` then `just db-migrate`.
+- DTO sync: when changing backend-facing DTOs, update `packages/shared-dto` and rebuild both sides.
 - Verification: always run the project-level build + tests for the project you changed. Fix lint/type errors before finishing.
 
 7. CI / tooling notes
 
-- Ensure CI runs `pnpm install`, `pnpm --filter <app> lint`, `pnpm --filter <app> test` for TS apps and `dotnet test` for C# projects.
+- Ensure CI runs `pnpm install`, `pnpm --filter <app> lint`, and `pnpm --filter <app> test` for TS apps.
 - Keep test runs focused (project-level) to speed feedback. Add caching for node_modules / nuget where appropriate.
 
 8. Cursor / Copilot rules
@@ -124,14 +113,13 @@ Notes: prefer `just` wrappers when available (`just setup`, `just db-migrate`). 
 
 - `apps/web/package.json` - web scripts and deps
 - `apps/web/components.json` - shadcn component registry / alias
-- `apps/auth/package.json` - auth scripts and vitest config
-- `apps/auth/src` - NestJS controllers/services
-- `packages/database/Database.Models` - EF Core models (C#)
+- `apps/backend/package.json` - backend scripts and vitest config
+- `apps/backend/src` - NestJS controllers/services
 - `packages/shared-dto` - shared TypeScript DTOs
 
 10. Practical guidance for agents (short checklist)
 
-- Run minimal verifying commands after changes: `pnpm --filter <app> build && pnpm --filter <app> test` or `dotnet test apps/backend/Backend.Api`.
+- Run minimal verifying commands after changes: `pnpm --filter <app> build && pnpm --filter <app> test`.
 - When adding forms: wire TanStack Form + zod early, add unit tests for validation, and include type inference (`z.infer`).
 - For UI changes: prefer adding storybook stories or visual tests; update `apps/web/components.json` if adding shared primitives.
 - For cross-cutting changes: run workspace typecheck: `pnpm -w -s tsc --build`.
