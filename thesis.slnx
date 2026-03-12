@@ -5,14 +5,6 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/apps/" />
-  <Folder Name="/apps/backend/">
-    <Project Path="apps/backend/Backend.Api/Backend.Api.csproj" />
-    <Project Path="apps/backend/Backend.Application/Backend.Application.csproj" />
-    <Project Path="apps/backend/Backend.Domain/Backend.Domain.csproj" />
-    <Project Path="apps/backend/Backend.Infrastructure/Backend.Infrastructure.csproj" />
-    <Project Path="apps/backend/Backend.Shared/Backend.Shared.csproj" />
-    <Project Path="apps\backend\Backend.Tests\Backend.Tests.csproj" />
-  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
