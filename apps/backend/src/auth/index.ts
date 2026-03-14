@@ -1,8 +1,9 @@
 import { betterAuth, BetterAuthOptions } from 'better-auth';
-import { Pool } from 'pg';
+
+import { databasePool } from '@/db/pool';
 import { env } from '@/env';
-import { username, jwt } from 'better-auth/plugins';
 import type { RabbitMQService } from '@/events';
+import { username, jwt } from 'better-auth/plugins';
 
 // Note: RabbitMQService will be injected via factory pattern in auth module
 let rabbitmqServiceInstance: RabbitMQService | null = null;
@@ -12,9 +13,7 @@ export const setRabbitMQService = (service: RabbitMQService) => {
 };
 
 export const auth = betterAuth({
-  database: new Pool({
-    connectionString: env.DATABASE_URL,
-  }),
+  database: databasePool,
   trustedOrigins: ['*'],
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
@@ -62,9 +61,7 @@ export const auth = betterAuth({
 });
 
 export const authConfigurtion = {
-  database: new Pool({
-    connectionString: env.DATABASE_URL,
-  }),
+  database: databasePool,
   trustedOrigins: ['*'],
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
