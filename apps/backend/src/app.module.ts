@@ -1,15 +1,21 @@
 import { Module } from '@nestjs/common';
+
+import { auth, setRabbitMQService } from '@/auth';
+import { DatabaseModule } from '@/db/database.module';
+import { RabbitMQModule, RabbitMQService } from '@/events';
+import { PostsModule } from '@/posts/posts.module';
+import { AuthModule } from '@thallesp/nestjs-better-auth';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
-import { auth, setRabbitMQService } from '@/auth';
-import { AuthModule } from '@thallesp/nestjs-better-auth';
-import { RabbitMQModule, RabbitMQService } from '@/events';
 
 @Module({
   controllers: [AppController, AuthController],
   imports: [
     AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
+    DatabaseModule,
+    PostsModule,
     RabbitMQModule,
   ],
   providers: [AppService],

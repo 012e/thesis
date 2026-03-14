@@ -19,6 +19,7 @@
     "test": "echo 'No tests configured for auth-contracts' && exit 0"
   },
   "dependencies": {
+    "@repo/shared-dto": "workspace:*",
     "@ts-rest/core": "3.53.0-rc.1",
     "@ts-rest/nest": "3.53.0-rc.1",
     "zod": "^4.3.6"
