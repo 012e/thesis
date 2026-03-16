@@ -1,18 +1,18 @@
 import {
-  startTestContainers,
-  stopTestContainers,
-  type TestContainersContext,
+  startPostgresContainer,
+  stopPostgresContainer,
+  type PostgresContainerContext,
 } from './helpers/testcontainers.setup';
 import { runBetterAuthMigrations } from './helpers/database.setup';
 
-let globalContainers: TestContainersContext | null = null;
-let initPromise: Promise<TestContainersContext> | null = null;
+let globalContainers: PostgresContainerContext | null = null;
+let initPromise: Promise<PostgresContainerContext> | null = null;
 
 /**
- * Get or create shared test containers
- * This ensures containers are started only once across all test files
+ * Get or create shared test containers.
+ * Containers are started only once and reused across all test files.
  */
-export async function getTestContainers(): Promise<TestContainersContext> {
+export async function getTestContainers(): Promise<PostgresContainerContext> {
   if (globalContainers) {
     return globalContainers;
   }
@@ -20,7 +20,7 @@ export async function getTestContainers(): Promise<TestContainersContext> {
   if (!initPromise) {
     initPromise = (async () => {
       console.log('Initializing shared test containers...');
-      const containers = await startTestContainers();
+      const containers = await startPostgresContainer();
       await runBetterAuthMigrations(containers.databaseUrl);
       globalContainers = containers;
       return containers;
@@ -31,12 +31,12 @@ export async function getTestContainers(): Promise<TestContainersContext> {
 }
 
 /**
- * Cleanup shared containers
- * Should be called in global teardown
+ * Cleanup shared containers.
+ * Should be called in global teardown.
  */
 export async function cleanupTestContainers(): Promise<void> {
   if (globalContainers) {
-    await stopTestContainers(globalContainers);
+    await stopPostgresContainer(globalContainers);
     globalContainers = null;
     initPromise = null;
   }

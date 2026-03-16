@@ -4,17 +4,17 @@ import request from 'supertest';
 import { createTestApp, closeTestApp } from './helpers/app.setup';
 import { runBetterAuthMigrations } from './helpers/database.setup';
 import {
-  startTestContainers,
-  stopTestContainers,
-  type TestContainersContext,
+  startPostgresContainer,
+  stopPostgresContainer,
+  type PostgresContainerContext,
 } from './helpers/testcontainers.setup';
 
 describe('AppController (e2e)', () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
-  let containers: TestContainersContext;
+  let containers: PostgresContainerContext;
 
   beforeAll(async () => {
-    containers = await startTestContainers();
+    containers = await startPostgresContainer();
     await runBetterAuthMigrations(containers.databaseUrl);
 
     testApp = await createTestApp(containers);
@@ -22,7 +22,7 @@ describe('AppController (e2e)', () => {
 
   afterAll(async () => {
     await closeTestApp(testApp);
-    await stopTestContainers(containers);
+    await stopPostgresContainer(containers);
   });
 
   it('/ (GET)', () => {

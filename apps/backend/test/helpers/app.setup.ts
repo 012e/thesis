@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import getPort from 'get-port';
 
-import type { TestContainersContext } from './testcontainers.setup';
+import type { PostgresContainerContext } from './testcontainers.setup';
 
 export interface TestAppContext {
   app: NestExpressApplication;
@@ -11,17 +11,16 @@ export interface TestAppContext {
 }
 
 /**
- * Bootstrap the NestJS application for testing
- * Overrides environment variables to use test containers
+ * Bootstrap the NestJS application for testing.
+ * Overrides environment variables to use the test Postgres container.
  */
 export async function createTestApp(
-  containers: TestContainersContext,
+  containers: PostgresContainerContext,
 ): Promise<TestAppContext> {
   const appModulePath = '../../src/app.module';
   const port = await getPort();
 
   process.env.DATABASE_URL = containers.databaseUrl;
-  process.env.RABBITMQ_URL = containers.rabbitmqUrl;
   process.env.BETTER_AUTH_SECRET = 'test-secret-key-for-testing-only';
   process.env.BETTER_AUTH_URL = `http://localhost:${port}`;
   process.env.NODE_ENV = 'test';
