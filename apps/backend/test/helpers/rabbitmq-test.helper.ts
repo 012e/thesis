@@ -3,7 +3,9 @@ import * as amqp from 'amqplib';
 export interface RabbitMQTestHelper {
   messages: Array<{
     content: Buffer;
-    fields: amqp.ConsumeMessage['fields'];
+    fields: {
+      routingKey: string;
+    };
     properties: amqp.ConsumeMessage['properties'];
   }>;
   waitForMessages: (count: number, timeout: number) => Promise<void>;
@@ -40,24 +42,25 @@ export async function createRabbitMQTestHelper(
 
   const messages: RabbitMQTestHelper['messages'] = [];
 
-  // Start consuming
-  await channel.consume(
-    q.queue,
-    (msg) => {
-      if (msg) {
-        console.log(
-          `[RabbitMQ Test Helper] Received message on routing key: ${msg.fields.routingKey}`,
-        );
-        messages.push({
-          content: msg.content,
-          fields: msg.fields,
-          properties: msg.properties,
-        });
-        channel.ack(msg);
+  const collectAvailableMessages = async () => {
+    while (true) {
+      const msg = await channel.get(q.queue, { noAck: false });
+
+      if (!msg) {
+        break;
       }
-    },
-    { noAck: false },
-  );
+
+      console.log(
+        `[RabbitMQ Test Helper] Received message on routing key: ${msg.fields.routingKey}`,
+      );
+      messages.push({
+        content: msg.content,
+        fields: msg.fields,
+        properties: msg.properties,
+      });
+      channel.ack(msg);
+    }
+  };
 
   console.log(`[RabbitMQ Test Helper] Consumer ready`);
 
@@ -67,6 +70,8 @@ export async function createRabbitMQTestHelper(
   const waitForMessages = async (count: number, timeout: number) => {
     const start = Date.now();
     while (messages.length < count) {
+      await collectAvailableMessages();
+
       if (Date.now() - start > timeout) {
         throw new Error(
           `Timeout waiting for ${count} messages (received ${messages.length})`,
@@ -77,8 +82,11 @@ export async function createRabbitMQTestHelper(
   };
 
   const disconnect = async () => {
-    await channel.close();
-    await connection.close();
+    try {
+      await channel.close();
+    } finally {
+      await connection.close();
+    }
   };
 
   return {

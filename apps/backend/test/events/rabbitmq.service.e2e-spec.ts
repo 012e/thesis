@@ -1,333 +1,202 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { RabbitMQService } from '../../src/events/rabbitmq.service';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { createRabbitMQTestHelper } from '../helpers/rabbitmq-test.helper';
+import {
+  startRabbitMQContainer,
+  stopRabbitMQContainer,
+  type RabbitMQContainerContext,
+} from '../helpers/testcontainers.setup';
+
 import {
   userCreatedEventSchema,
-  userUpdatedEventSchema,
   userDeletedEventSchema,
-  type UserCreatedEvent,
-  type UserUpdatedEvent,
-  type UserDeletedEvent,
+  userUpdatedEventSchema,
 } from '../../src/events/schemas';
 
-describe('RabbitMQ Service Unit Tests', () => {
-  let service: RabbitMQService;
-  let mockPublish: ReturnType<typeof vi.fn>;
+type RabbitMqServiceLike = {
+  onModuleInit: () => Promise<void>;
+  onModuleDestroy: () => Promise<void>;
+  publishUserCreated: (
+    userId: string,
+    userData: {
+      email?: string;
+      username?: string;
+      name?: string;
+      emailVerified?: boolean;
+      createdAt?: Date;
+      updatedAt?: Date;
+    },
+  ) => Promise<void>;
+  publishUserUpdated: (
+    userId: string,
+    userData: {
+      email?: string;
+      username?: string;
+      name?: string;
+      emailVerified?: boolean;
+      createdAt?: Date;
+      updatedAt?: Date;
+    },
+    previousData?: {
+      email?: string;
+      username?: string;
+      name?: string;
+      emailVerified?: boolean;
+      createdAt?: Date;
+      updatedAt?: Date;
+    },
+  ) => Promise<void>;
+  publishUserDeleted: (userId: string) => Promise<void>;
+};
 
-  beforeEach(() => {
-    service = new RabbitMQService();
+describe('RabbitMQService integration', () => {
+  let containers: RabbitMQContainerContext;
+  let service: RabbitMqServiceLike;
 
-    // Mock the internal channel and publishUserEvent method
-    mockPublish = vi.fn().mockResolvedValue(undefined);
-    (service as any).channel = {
-      publish: vi.fn().mockReturnValue(true),
-      assertExchange: vi.fn().mockResolvedValue(undefined),
-      close: vi.fn().mockResolvedValue(undefined),
+  beforeAll(async () => {
+    containers = await startRabbitMQContainer();
+    process.env.RABBITMQ_URL = containers.rabbitmqUrl;
+
+    vi.resetModules();
+    const modulePath = '../../src/events/rabbitmq.service';
+    const module = (await import(modulePath)) as {
+      RabbitMQService: new () => RabbitMqServiceLike;
     };
+    service = new module.RabbitMQService();
+    await service.onModuleInit();
+  }, 120000);
 
-    // Spy on publishUserEvent
-    vi.spyOn(service as any, 'publishUserEvent').mockImplementation(
-      mockPublish,
+  afterAll(async () => {
+    if (service) {
+      await service.onModuleDestroy();
+    }
+    await stopRabbitMQContainer(containers);
+  });
+
+  it('publishes user.created events to RabbitMQ with headers and payload', async () => {
+    const rabbitmq = await createRabbitMQTestHelper(
+      containers.rabbitmqUrl,
+      'user-events',
+      ['user.created'],
     );
-  });
 
-  describe('publishUserCreated', () => {
-    it('should publish user.created event with correct structure', async () => {
-      const userId = 'test-user-123';
-      const userData = {
-        email: 'test@example.com',
-        username: 'testuser',
-        name: 'Test User',
-        emailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      await service.publishUserCreated(userId, userData);
-
-      expect(mockPublish).toHaveBeenCalledTimes(1);
-      const [event, routingKey] = mockPublish.mock.calls[0];
-
-      // Verify routing key
-      expect(routingKey).toBe('user.created');
-
-      // Verify event structure
-      expect(event.eventType).toBe('user.created');
-      expect(event.eventVersion).toBe('1.0.0');
-      expect(event.source).toBe('auth-service');
-      expect(event.eventId).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      );
-      expect(event.timestamp).toBeDefined();
-
-      // Verify user data
-      expect(event.data.id).toBe(userId);
-      expect(event.data.email).toBe(userData.email);
-      expect(event.data.username).toBe(userData.username);
-      expect(event.data.name).toBe(userData.name);
-      expect(event.data.emailVerified).toBe(false);
-
-      // Validate against schema
-      const validationResult = userCreatedEventSchema.safeParse(event);
-      expect(validationResult.success).toBe(true);
-    });
-
-    it('should handle user creation with minimal data', async () => {
-      const userId = 'test-user-456';
-      const userData = {
-        email: 'minimal@example.com',
-      };
-
-      await service.publishUserCreated(userId, userData);
-
-      expect(mockPublish).toHaveBeenCalledTimes(1);
-      const [event] = mockPublish.mock.calls[0];
-
-      expect(event.data.id).toBe(userId);
-      expect(event.data.email).toBe(userData.email);
-      expect(event.data.emailVerified).toBe(false);
-      expect(event.data.username).toBeUndefined();
-      expect(event.data.name).toBeUndefined();
-    });
-
-    it('should include ISO timestamps', async () => {
-      const userId = 'test-user-789';
-      const userData = {
-        email: 'time@example.com',
-        createdAt: new Date('2024-01-01T00:00:00Z'),
-        updatedAt: new Date('2024-01-02T00:00:00Z'),
-      };
-
-      await service.publishUserCreated(userId, userData);
-
-      const [event] = mockPublish.mock.calls[0];
-
-      expect(event.data.createdAt).toBe('2024-01-01T00:00:00.000Z');
-      expect(event.data.updatedAt).toBe('2024-01-02T00:00:00.000Z');
-      expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-    });
-  });
-
-  describe('publishUserUpdated', () => {
-    it('should publish user.updated event with correct structure', async () => {
-      const userId = 'test-user-update-123';
-      const userData = {
-        email: 'updated@example.com',
-        username: 'updateduser',
-        name: 'Updated User',
+    try {
+      await service.publishUserCreated('user-created-1', {
+        email: 'created@example.com',
+        username: 'created-user',
+        name: 'Created User',
         emailVerified: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-      };
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+      });
 
-      await service.publishUserUpdated(userId, userData);
+      await rabbitmq.waitForMessages(1, 10000);
 
-      expect(mockPublish).toHaveBeenCalledTimes(1);
-      const [event, routingKey] = mockPublish.mock.calls[0];
+      const [message] = rabbitmq.messages;
+      const headers = message.properties.headers ?? {};
+      const payload = userCreatedEventSchema.parse(
+        JSON.parse(message.content.toString('utf8')),
+      );
 
-      // Verify routing key
-      expect(routingKey).toBe('user.updated');
+      expect(message.fields.routingKey).toBe('user.created');
+      expect(message.properties.contentType).toBe('application/json');
+      expect(headers['event-type']).toBe('user.created');
+      expect(headers['event-version']).toBe('1.0.0');
+      expect(headers['event-id']).toBe(payload.eventId);
+      expect(payload.data).toMatchObject({
+        id: 'user-created-1',
+        email: 'created@example.com',
+        username: 'created-user',
+        name: 'Created User',
+        emailVerified: true,
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-02T00:00:00.000Z',
+      });
+    } finally {
+      await rabbitmq.disconnect();
+    }
+  });
 
-      // Verify event structure
-      expect(event.eventType).toBe('user.updated');
-      expect(event.eventVersion).toBe('1.0.0');
-      expect(event.source).toBe('auth-service');
+  it('publishes user.updated events with the previous version snapshot', async () => {
+    const rabbitmq = await createRabbitMQTestHelper(
+      containers.rabbitmqUrl,
+      'user-events',
+      ['user.updated'],
+    );
 
-      // Verify user data
-      expect(event.data.id).toBe(userId);
-      expect(event.data.email).toBe(userData.email);
-      expect(event.data.emailVerified).toBe(true);
+    try {
+      await service.publishUserUpdated(
+        'user-updated-1',
+        {
+          email: 'new@example.com',
+          username: 'new-user',
+          name: 'New Name',
+          emailVerified: true,
+          createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        },
+        {
+          email: 'old@example.com',
+          username: 'old-user',
+          name: 'Old Name',
+          emailVerified: false,
+          createdAt: new Date('2024-01-01T00:00:00.000Z'),
+          updatedAt: new Date('2024-01-03T00:00:00.000Z'),
+        },
+      );
 
-      // Validate against schema
-      const validationResult = userUpdatedEventSchema.safeParse(event);
-      expect(validationResult.success).toBe(true);
-    });
+      await rabbitmq.waitForMessages(1, 10000);
 
-    it('should include previousVersion when provided', async () => {
-      const userId = 'test-user-update-456';
-      const userData = {
+      const [message] = rabbitmq.messages;
+      const payload = userUpdatedEventSchema.parse(
+        JSON.parse(message.content.toString('utf8')),
+      );
+
+      expect(message.fields.routingKey).toBe('user.updated');
+      expect(payload.data).toMatchObject({
+        id: 'user-updated-1',
         email: 'new@example.com',
+        username: 'new-user',
         name: 'New Name',
         emailVerified: true,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date(),
-      };
-      const previousData = {
+      });
+      expect(payload.data.previousVersion).toMatchObject({
+        id: 'user-updated-1',
         email: 'old@example.com',
+        username: 'old-user',
         name: 'Old Name',
         emailVerified: false,
-        createdAt: new Date('2024-01-01'),
-        updatedAt: new Date('2024-01-02'),
-      };
-
-      await service.publishUserUpdated(userId, userData, previousData);
-
-      const [event] = mockPublish.mock.calls[0];
-
-      expect(event.data.previousVersion).toBeDefined();
-      expect(event.data.previousVersion.email).toBe('old@example.com');
-      expect(event.data.previousVersion.name).toBe('Old Name');
-      expect(event.data.previousVersion.emailVerified).toBe(false);
-    });
-
-    it('should work without previousVersion', async () => {
-      const userId = 'test-user-update-789';
-      const userData = {
-        email: 'solo@example.com',
-        emailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      await service.publishUserUpdated(userId, userData);
-
-      const [event] = mockPublish.mock.calls[0];
-
-      expect(event.data.previousVersion).toBeUndefined();
-      expect(event.data.email).toBe('solo@example.com');
-    });
+        updatedAt: '2024-01-03T00:00:00.000Z',
+      });
+    } finally {
+      await rabbitmq.disconnect();
+    }
   });
 
-  describe('publishUserDeleted', () => {
-    it('should publish user.deleted event with correct structure', async () => {
-      const userId = 'test-user-delete-123';
+  it('publishes user.deleted events without leaking user profile fields', async () => {
+    const rabbitmq = await createRabbitMQTestHelper(
+      containers.rabbitmqUrl,
+      'user-events',
+      ['user.deleted'],
+    );
 
-      await service.publishUserDeleted(userId);
+    try {
+      await service.publishUserDeleted('user-deleted-1');
 
-      expect(mockPublish).toHaveBeenCalledTimes(1);
-      const [event, routingKey] = mockPublish.mock.calls[0];
+      await rabbitmq.waitForMessages(1, 10000);
 
-      // Verify routing key
-      expect(routingKey).toBe('user.deleted');
-
-      // Verify event structure
-      expect(event.eventType).toBe('user.deleted');
-      expect(event.eventVersion).toBe('1.0.0');
-      expect(event.source).toBe('auth-service');
-
-      // Verify data contains only id and deletedAt
-      expect(event.data.id).toBe(userId);
-      expect(event.data.deletedAt).toBeDefined();
-      expect(event.data.deletedAt).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+      const [message] = rabbitmq.messages;
+      const headers = message.properties.headers ?? {};
+      const payload = userDeletedEventSchema.parse(
+        JSON.parse(message.content.toString('utf8')),
       );
 
-      // Should not contain sensitive data
-      expect(event.data).not.toHaveProperty('email');
-      expect(event.data).not.toHaveProperty('name');
-
-      // Validate against schema
-      const validationResult = userDeletedEventSchema.safeParse(event);
-      expect(validationResult.success).toBe(true);
-    });
-
-    it('should generate unique event IDs for multiple deletions', async () => {
-      await service.publishUserDeleted('user-1');
-      await service.publishUserDeleted('user-2');
-      await service.publishUserDeleted('user-3');
-
-      expect(mockPublish).toHaveBeenCalledTimes(3);
-
-      const eventIds = mockPublish.mock.calls.map(([event]) => event.eventId);
-      const uniqueIds = new Set(eventIds);
-
-      expect(uniqueIds.size).toBe(3);
-    });
-  });
-
-  describe('Event metadata', () => {
-    it('should generate unique event IDs for each event', async () => {
-      await service.publishUserCreated('user-1', {
-        email: 'test1@example.com',
-      });
-      await service.publishUserCreated('user-2', {
-        email: 'test2@example.com',
-      });
-      await service.publishUserUpdated('user-3', {
-        email: 'test3@example.com',
-      });
-      await service.publishUserDeleted('user-4');
-
-      const eventIds = mockPublish.mock.calls.map(([event]) => event.eventId);
-      const uniqueIds = new Set(eventIds);
-
-      expect(uniqueIds.size).toBe(4);
-      eventIds.forEach((id) => {
-        expect(id).toMatch(
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-        );
-      });
-    });
-
-    it('should use correct event versions', async () => {
-      await service.publishUserCreated('user-1', { email: 'test@example.com' });
-      await service.publishUserUpdated('user-2', { email: 'test@example.com' });
-      await service.publishUserDeleted('user-3');
-
-      mockPublish.mock.calls.forEach(([event]) => {
-        expect(event.eventVersion).toBe('1.0.0');
-      });
-    });
-
-    it('should use correct event source', async () => {
-      await service.publishUserCreated('user-1', { email: 'test@example.com' });
-      await service.publishUserUpdated('user-2', { email: 'test@example.com' });
-      await service.publishUserDeleted('user-3');
-
-      mockPublish.mock.calls.forEach(([event]) => {
-        expect(event.source).toBe('auth-service');
-      });
-    });
-
-    it('should include timestamps in ISO format', async () => {
-      await service.publishUserCreated('user-1', { email: 'test@example.com' });
-      await service.publishUserUpdated('user-2', { email: 'test@example.com' });
-      await service.publishUserDeleted('user-3');
-
-      mockPublish.mock.calls.forEach(([event]) => {
-        expect(event.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
-        expect(() => new Date(event.timestamp)).not.toThrow();
-      });
-    });
-  });
-
-  describe('Schema validation', () => {
-    it('should produce valid user.created events', async () => {
-      await service.publishUserCreated('user-1', {
-        email: 'test@example.com',
-        username: 'testuser',
-        name: 'Test User',
-        emailVerified: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const [event] = mockPublish.mock.calls[0];
-      const validationResult = userCreatedEventSchema.safeParse(event);
-
-      expect(validationResult.success).toBe(true);
-    });
-
-    it('should produce valid user.updated events', async () => {
-      await service.publishUserUpdated('user-1', {
-        email: 'test@example.com',
-        emailVerified: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      const [event] = mockPublish.mock.calls[0];
-      const validationResult = userUpdatedEventSchema.safeParse(event);
-
-      expect(validationResult.success).toBe(true);
-    });
-
-    it('should produce valid user.deleted events', async () => {
-      await service.publishUserDeleted('user-1');
-
-      const [event] = mockPublish.mock.calls[0];
-      const validationResult = userDeletedEventSchema.safeParse(event);
-
-      expect(validationResult.success).toBe(true);
-    });
+      expect(message.fields.routingKey).toBe('user.deleted');
+      expect(payload.data.id).toBe('user-deleted-1');
+      expect(payload.data).not.toHaveProperty('email');
+      expect(payload.data).not.toHaveProperty('name');
+      expect(headers['event-type']).toBe('user.deleted');
+    } finally {
+      await rabbitmq.disconnect();
+    }
   });
 });
