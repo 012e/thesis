@@ -1,11 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import { AppModule } from '../../src/app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import getPort from 'get-port';
+
 import type { TestContainersContext } from './testcontainers.setup';
 
 export interface TestAppContext {
-  app: INestApplication;
+  app: NestExpressApplication;
   module: TestingModule;
+  baseUrl: string;
 }
 
 /**
@@ -15,19 +17,23 @@ export interface TestAppContext {
 export async function createTestApp(
   containers: TestContainersContext,
 ): Promise<TestAppContext> {
-  // Override environment variables for testing
+  const appModulePath = '../../src/app.module';
+  const port = await getPort();
+
   process.env.DATABASE_URL = containers.databaseUrl;
   process.env.RABBITMQ_URL = containers.rabbitmqUrl;
   process.env.BETTER_AUTH_SECRET = 'test-secret-key-for-testing-only';
-  process.env.BETTER_AUTH_URL = 'http://localhost:3001';
+  process.env.BETTER_AUTH_URL = `http://localhost:${port}`;
   process.env.NODE_ENV = 'test';
-  process.env.PORT = '3001';
+  process.env.PORT = port.toString();
+
+  const { AppModule } = await import(appModulePath);
 
   const moduleFixture: TestingModule = await Test.createTestingModule({
     imports: [AppModule],
   }).compile();
 
-  const app = moduleFixture.createNestApplication({
+  const app = moduleFixture.createNestApplication<NestExpressApplication>({
     bodyParser: false, // Required for Better Auth
   });
 
@@ -36,11 +42,12 @@ export async function createTestApp(
     origin: '*',
   });
 
-  await app.init();
+  await app.listen(port);
 
   return {
     app,
     module: moduleFixture,
+    baseUrl: `http://localhost:${port}`,
   };
 }
 

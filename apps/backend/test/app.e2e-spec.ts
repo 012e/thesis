@@ -1,23 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+
+import { createTestApp, closeTestApp } from './helpers/app.setup';
+import { runBetterAuthMigrations } from './helpers/database.setup';
+import {
+  startTestContainers,
+  stopTestContainers,
+  type TestContainersContext,
+} from './helpers/testcontainers.setup';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let testApp: Awaited<ReturnType<typeof createTestApp>>;
+  let containers: TestContainersContext;
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
+  beforeAll(async () => {
+    containers = await startTestContainers();
+    await runBetterAuthMigrations(containers.databaseUrl);
 
-    app = moduleFixture.createNestApplication();
-    await app.init();
+    testApp = await createTestApp(containers);
+  }, 120000);
+
+  afterAll(async () => {
+    await closeTestApp(testApp);
+    await stopTestContainers(containers);
   });
 
   it('/ (GET)', () => {
-    return request(app.getHttpServer())
+    return request(testApp.app.getHttpServer())
       .get('/')
       .expect(200)
       .expect('Hello World!');
