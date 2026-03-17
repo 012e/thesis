@@ -18,8 +18,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -31,6 +29,9 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
+
+      - name: Install just
+        uses: extractions/setup-just@v2
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -44,14 +45,8 @@ jobs:
             nx-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
             nx-${{ runner.os }}-
 
-      - name: Set Nx SHAs for affected detection
-        uses: nrwl/nx-set-shas@v4
-
-      - name: Lint
-        run: pnpm nx affected --target=lint
-
       - name: Build
-        run: pnpm nx affected --target=build
+        run: just build
 
       - name: Test
-        run: pnpm nx affected --target=test
+        run: just test
