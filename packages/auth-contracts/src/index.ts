@@ -42,9 +42,17 @@ const PostContent = z
         "Post content must include at least one of text, poll, or visualization",
     },
   );
+const PostAuthor = z.object({
+  id: z.string(),
+  username: z.string().nullable(),
+  email: z.string(),
+  name: z.string().nullable(),
+});
+
 const Post = z.object({
   id: z.uuid(),
   authorId: z.string(),
+  author: PostAuthor,
   content: PostContent,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

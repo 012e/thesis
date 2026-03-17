@@ -14,6 +14,21 @@ import {
   type PostgresContainerContext,
 } from '../helpers/testcontainers.setup';
 
+/** Insert a minimal user row into the better-auth `user` table. */
+async function insertUser(
+  pool: Pool,
+  id: string,
+  email: string,
+  name = 'Test User',
+): Promise<void> {
+  await pool.query(
+    `INSERT INTO "user" (id, email, name, "emailVerified", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, false, now(), now())
+     ON CONFLICT (id) DO NOTHING`,
+    [id, email, name],
+  );
+}
+
 describe('PostsService integration', () => {
   let containers: PostgresContainerContext;
   let moduleRef: TestingModule;
@@ -39,6 +54,10 @@ describe('PostsService integration', () => {
 
     databaseService = moduleRef.get(DatabaseService);
     postsService = moduleRef.get(PostsService);
+
+    // Seed the two author users used across all tests.
+    await insertUser(pool, 'author-1', 'author1@example.com', 'Author One');
+    await insertUser(pool, 'author-2', 'author2@example.com', 'Author Two');
   }, 120000);
 
   beforeEach(async () => {
@@ -61,6 +80,8 @@ describe('PostsService integration', () => {
 
     expect(fetched).toEqual(created);
     expect(created.authorId).toBe('author-1');
+    expect(created.author.id).toBe('author-1');
+    expect(created.author.email).toBe('author1@example.com');
     expect(created.content).toEqual({
       text: 'Hello from integration test',
     });
@@ -91,6 +112,8 @@ describe('PostsService integration', () => {
       { text: 'Newer post' },
       { text: 'Older post' },
     ]);
+    expect(listedPosts[0].author.id).toBe('author-2');
+    expect(listedPosts[1].author.id).toBe('author-1');
   });
 
   it('updates only posts owned by the author', async () => {
@@ -135,6 +158,7 @@ describe('PostsService integration', () => {
         data: [{ label: 'Yes', value: 4 }],
       },
     });
+    expect(updated?.author.id).toBe('author-1');
   });
 
   it('deletes only posts owned by the author', async () => {
