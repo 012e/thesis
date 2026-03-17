@@ -1,2 +1,5 @@
 [post-create]
 deps = "pnpm i"
+
+[post-start]
+copy = "wt step copy-ignored"
