@@ -1,161 +1,133 @@
-# Agent Guide for Thesis Repository
+Agent Guide for Thesis Repository
 
-This repository is a Hybrid Monorepo containing TypeScript (React, NestJS) and .NET (C#) projects. It uses pnpm, Nx, and Just for workspace, build, and task automation. Agents use this guide to build, test, lint, and follow repository conventions.
+This repository is a hybrid monorepo: TypeScript (React + NestJS) and .NET (C#). It uses pnpm workspaces, Nx for orchestration and Just for convenience scripts. This document provides concise commands, code-style rules, and agent workflows for automated agents and contributors.
 
-1. Quick commands (build / lint / test)
+Quick commands (build / lint / test)
 
-- Root: install deps: `pnpm install` or `just setup` (restores .NET + Node tooling).
-- Start all dev services: `just dev`.
+- Root setup: `pnpm install` or `just setup` (restores Node + .NET tooling).
+- Start dev services: `just dev`.
 
 - TypeScript apps (pnpm workspaces / nx):
-  - Build an app: `pnpm --filter <app-name> build` (example: `pnpm --filter web build`).
-  - Lint an app: `pnpm --filter <app-name> lint` (example: `pnpm --filter backend lint`).
-  - Run all tests for an app: `pnpm --filter <app-name> test` (when the script exists).
-  - Run a single Vitest file (example for `backend`):
-    `pnpm --filter backend test -- test/auth/some.spec.ts`.
-  - Run a single test by name: `pnpm --filter backend test -- -t "should do X"` (Vitest `-t`).
-  - Run Vitest directly: `pnpm --filter backend -- vitest run test/auth/some.spec.ts`.
+  - Build: `pnpm --filter <app-name> build` (e.g. `pnpm --filter web build`).
+  - Lint: `pnpm --filter <app-name> lint` (e.g. `pnpm --filter backend lint`).
+  - Test (all): `pnpm --filter <app-name> test` (if script exists).
+  - Single Vitest file: `pnpm --filter backend test -- test/<path>/file.spec.ts`.
+  - Single test by name: `pnpm --filter backend test -- -t "should do X"`.
+  - Run Vitest directly: `pnpm --filter backend -- vitest run test/<path>/file.spec.ts`.
 
 - Web (React + Vite):
-  - Dev server: `pnpm --filter web dev` or `pnpm --filter web serve`.
+  - Dev: `pnpm --filter web dev` or `pnpm --filter web serve`.
   - Build: `pnpm --filter web build` (runs `tsc -b && vite build`).
 
 - Backend (NestJS):
   - Build: `pnpm --filter backend build` (runs `nest build`).
-  - Tests: `pnpm --filter backend test` / watch: `pnpm --filter backend test:watch`.
+  - Tests: `pnpm --filter backend test`; watch: `pnpm --filter backend test:watch`.
 
-Notes: prefer `just` wrappers when available (`just setup`, `just dev`). Always run the minimal target that verifies your change (project-level build/test).
+Prefer `just` wrappers when present. Run the minimal project-level target that verifies your change.
 
-2. How to run a single test (common examples)
+How to run a single test (cheat sheet)
 
-- Vitest single file: `pnpm --filter backend test -- test/<path>/file.spec.ts`.
-- Vitest single test name: `pnpm --filter backend test -- -t "should do X"`.
-- Vitest single test in watch mode: `pnpm --filter backend test -- --watch -t "should do X"`.
+- Single file: `pnpm --filter backend test -- test/<path>/file.spec.ts`.
+- By test name: `pnpm --filter backend test -- -t "name"`.
+- Watch one test: `pnpm --filter backend test -- --watch -t "name"`.
 
-3. TypeScript / Frontend code style and standards
+Code style and standards (TypeScript / Frontend)
 
-- Formatting: Prettier is required. Repo defaults: 2 spaces, double quotes, semicolons. Run `prettier --check` in CI and `prettier --write` locally.
-- Linting: ESLint (TS/React/Nest). Run `pnpm --filter <app> lint`. Use `--fix` when safe. Add rule exceptions only with a clear comment and a linked ticket.
-- TypeScript: `strict` mode is on. Avoid `any`; prefer `unknown` then narrow. Use `readonly` for immutable fields and prefer `as const` for literal shapes.
+- Formatting & linting:
+  - Prettier required. Repo defaults: 2 spaces, double quotes, semicolons. Use `prettier --check` in CI and `prettier --write` locally.
+  - ESLint enforces TS/React/Nest rules. Run `pnpm --filter <app> lint`. Use `--fix` when safe; document exceptions with inline comment + ticket.
+
+- TypeScript rules:
+  - `strict` mode ON. Avoid `any`; prefer `unknown` then narrow.
+  - Prefer `readonly` for immutable fields and `as const` for literal shapes.
+  - Prefer domain types and `zod` schemas at boundaries. Keep shared DTOs in `packages/shared-dto`.
 
 - Imports:
-  - Order: external packages -> workspace packages (packages/_ or @org/_) -> app absolute imports -> relative imports.
-  - Keep imports grouped and sorted; use ESLint `import/order` rules. Avoid deep relative paths when aliases exist.
-  - Use path aliases only when declared in `tsconfig.json` and supported by build tooling.
+  - Order: external -> workspace packages (`@org/*` or `packages/*`) -> app aliases -> relative imports.
+  - Separate groups with a blank line; enforce via ESLint `import/order`.
+  - Avoid deep relative imports when aliases exist.
 
 - Naming & files:
-  - Files: `kebab-case.ts` / `.tsx` for components.
-  - React components: `PascalCase`. Prefer named exports for easier testing and refactors.
-  - Hooks: `useSomething` (camelCase). Place in `hooks/` or next to component when small.
-  - Constants: `UPPER_SNAKE_CASE` only for compile-time constants; use `camelCase` or `PascalCase` for exported values.
+  - File names: `kebab-case.ts` / `kebab-case.tsx`.
+  - React components: `PascalCase`, prefer named exports.
+  - Hooks: `useSomething` (camelCase). Keep small hooks near components.
+  - Constants: `UPPER_SNAKE_CASE` for compile-time constants; exported runtime values use `camelCase` or `PascalCase`.
 
 - React patterns and state:
-  - Prefer function components and hooks.
-  - Use TanStack Query for server state; colocate queries, cache keys, and types near consuming components.
-  - Forms: must use TanStack Form + zod for schema validation. Create a `zod` schema, infer types (`z.infer<>`), and use a resolver with TanStack Form. Validate on submit and optionally on blur.
-  - Keep components small and split large components into presentational + container when logic grows.
-  - Accessibility: include ARIA roles, semantic HTML, keyboard support and visible focus states.
+  - Prefer function components and hooks. Split heavy components into presentational + container.
+  - Use TanStack Query for server state; colocate queries, cache keys, and types near consumers.
+  - Forms: use TanStack Form + zod. Create zod schemas, infer types (`z.infer<>`) and wire a resolver.
+  - Accessibility: semantic HTML, ARIA only where needed, keyboard support and visible focus states.
 
 - Validation & runtime checks:
-  - Use `zod` for all external input parsing and validation on both client and server.
-  - Parse input early and convert to domain types after validation.
+  - Use `zod` for parsing/validating external inputs on client and server.
+  - Parse early and convert to domain types after validation.
 
 - Error handling:
-  - Do not swallow errors. Throw or return typed errors and let global handlers produce user-facing messages.
+  - Never swallow errors. Throw or return typed/domain errors and let global handlers produce user-facing messages.
   - Prefer custom Error subclasses or discriminated unions for domain errors.
-  - In NestJS controllers/services: throw `HttpException` (or domain-specific exceptions) instead of raw objects.
-  - Log contextual information (request id, user id) but never log secrets or PII.
+  - In NestJS controllers/services throw `HttpException` (or domain-specific exceptions) rather than raw objects.
+  - Log contextual data (request id, user id) but never log secrets or PII.
 
-- UI components & shadcn:
-  - Use `shadcn` components for primitives (Button, Input, Select, Dialog, Tooltip, Dropdown, Card, Badge, Avatar, Form controls).
-  - Use the workspace alias defined in `apps/web/components.json` (e.g., `"ui": "@/components/ui"`) and import from `@/components/ui`.
-  - Add primitives with the shadcn CLI inside the `web` workspace: `pnpm --filter web exec shadcn add <component>`.
+- UI primitives & shadcn:
+  - Use `shadcn` primitives for base components. Import via workspace alias in `apps/web/components.json` (e.g. `@/components/ui`).
+  - Add primitives with the shadcn CLI from inside `web`: `pnpm --filter web exec shadcn add <component>`.
 
-4. C# / .NET style and standards
+.NET / C# guidelines
 
-- Project style: file-scoped namespaces, implicit usings, and top-level statements where appropriate.
-- DTOs: prefer `record` for immutable DTOs and simple transport objects.
-- Naming:
-  - Types and members: `PascalCase`.
-  - Method parameters and locals: `camelCase`.
-  - Interfaces prefixed with `I` (e.g., `IUserRepository`).
-- DI & async:
-  - Use constructor injection. Register services in the composition root (`Program.cs`).
-  - Always use `async/await` for async methods. Accept `CancellationToken` on public/entry async methods and forward it.
-- Logging & errors:
-  - Use structured logging. Avoid string concatenation for logs; prefer structured properties.
-  - Map domain exceptions to HTTP status codes in middleware and avoid leaking internal details.
+- Project style: prefer file-scoped namespaces, implicit usings and top-level statements when appropriate.
+- DTOs: prefer `record` for immutable DTOs; keep shared DTOs in `packages/shared-dto`.
+- Naming: types and members `PascalCase`; parameters and locals `camelCase`; interfaces start with `I`.
+- DI & async: use constructor injection; register services in `Program.cs`. Use `async/await` and accept `CancellationToken` on public async APIs.
+- Logging & errors: use structured logging; map domain exceptions to HTTP status codes and avoid leaking internal details.
 
-5. Imports, formatting and commits (general)
+Imports, formatting and commits (general)
 
-- Imports: keep them tidy. Rely on ESLint and dotnet analyzers to enforce ordering and unused import rules.
-- Formatting: run `prettier --write` for TypeScript changes and `dotnet format` for C# before committing. CI enforces formatting checks.
-- Commits: agents must NOT commit automatically unless explicitly asked. If asked to commit, create small focused commits that explain the why and what.
+- Keep imports tidy. Rely on ESLint and dotnet analyzers.
+- Run `prettier --write` for TypeScript changes and `dotnet format` for C# before committing. CI enforces formatting checks.
+- Agents MUST NOT commit automatically unless explicitly asked. If asked, create small focused commits explaining the why.
 
-6. Agent rules & workflows
+Agent rules & workflows
 
-- Explore First: use `glob` and `grep` to find files and confirm where to change before editing.
+- Explore first: use `glob` and `grep` to find files and confirm where changes belong before editing.
 - Non-destructive edits: do not revert or overwrite unrelated changes in the working tree.
-- DTO sync: when changing backend-facing DTOs, update `packages/shared-dto` and rebuild both sides.
-- Verification: always run the project-level build + tests for the project you changed. Fix lint/type errors before finishing.
+- DTO sync: when changing backend-facing DTOs update `packages/shared-dto` and rebuild both consumer and producer.
+- Verification: always run the project-level `build` + `test` for changed projects and fix lint/type errors before finishing.
 
-7. CI / tooling notes
+CI / tooling notes
 
-- Ensure CI runs `pnpm install`, `pnpm --filter <app> lint`, and `pnpm --filter <app> test` for TS apps.
-- Keep test runs focused (project-level) to speed feedback. Add caching for node_modules / nuget where appropriate.
+- CI should run `pnpm install`, `pnpm --filter <app> lint`, and `pnpm --filter <app> test` for TypeScript apps.
+- Keep test runs focused to speed feedback; add caching for node_modules / nuget where appropriate.
 
-8. Cursor / Copilot rules
+Cursor / Copilot rules
 
-- Cursor rules: none found in repository (no `.cursor/rules/` or `.cursorrules`). If such files are added later, agents must surface and follow them.
-- GitHub Copilot instructions: not found (`.github/copilot-instructions.md` missing). If added later, replicate important guidance here and follow the file.
+- Cursor rules: none found in repository (no `.cursor/rules/` or `.cursorrules`). If such files are added, agents must surface and follow them.
+- GitHub Copilot instructions: not found (`.github/copilot-instructions.md` missing). If added later, replicate important guidance here and follow it.
 
-9. Useful paths
+Useful paths
 
 - `apps/web/package.json` - web scripts and deps
 - `apps/web/components.json` - shadcn component registry / alias
 - `apps/backend/package.json` - backend scripts and vitest config
 - `apps/backend/src` - NestJS controllers/services
 - `packages/shared-dto` - shared TypeScript DTOs
+- `packages/auth-client` - auth client helpers
 
-10. Practical guidance for agents (short checklist)
+Practical checklist for agents (short)
 
-- Run minimal verifying commands after changes: `pnpm --filter <app> build && pnpm --filter <app> test`.
-- When adding forms: wire TanStack Form + zod early, add unit tests for validation, and include type inference (`z.infer`).
-- For UI changes: prefer adding storybook stories or visual tests; update `apps/web/components.json` if adding shared primitives.
-- For cross-cutting changes: run workspace typecheck: `pnpm -w -s tsc --build`.
+- After edits run: `pnpm --filter <app> build && pnpm --filter <app> test` for the affected project.
+- For cross-cutting changes run workspace typecheck: `pnpm -w -s tsc --build`.
+- When adding forms: wire TanStack Form + zod and add validation unit tests early.
 
-If you want me to update anything (add stricter lint rules, CI config, or a PR checklist), tell me which area to modify.
+If you want stricter rules (pre-commit hooks, CI gates, PR checklist) tell me which area to tighten and I will update this file.
 
-11. Website stylistic choices
-
-- Theme: dark-themed, high-contrast, minimalist; "Modern Retro" / terminal-inspired aesthetic that favors a monospace look and a coder-first vibe.
-- Typography: prefer monospace-style fonts for primary UI text; reserve a humanist sans for long-form content only when necessary.
-- Colors: deep black/onyx background, bright cyan/electric blue accents, subtle purples for secondary indicators, muted greys for low-contrast metadata.
-- Layout: three-column social layout (left nav, center feed, right sidebar); use thin dividers and generous vertical rhythm.
-- Components: rounded buttons/avatars to soften the terminal feel; keep borders minimal and focus on content hierarchy via color and spacing.
-
-
-<!-- nx configuration start-->
+<!-- nx configuration start -->
 <!-- Leave the start & end comments to automatically receive updates. -->
 
-## General Guidelines for working with Nx
+Nx guidance
 
-- For navigating/exploring the workspace, invoke the `nx-workspace` skill first - it has patterns for querying projects, targets, and dependencies
-- When running tasks (for example build, lint, test, e2e, etc.), always prefer running the task through `nx` (i.e. `nx run`, `nx run-many`, `nx affected`) instead of using the underlying tooling directly
-- Prefix nx commands with the workspace's package manager (e.g., `pnpm nx build`, `npm exec nx test`) - avoids using globally installed CLI
-- You have access to the Nx MCP server and its tools, use them to help the user
-- For Nx plugin best practices, check `node_modules/@nx/<plugin>/PLUGIN.md`. Not all plugins have this file - proceed without it if unavailable.
-- NEVER guess CLI flags - always check nx_docs or `--help` first when unsure
+- Use the `nx-workspace` skill to inspect projects and targets. Prefer `nx` targets (`nx run`, `nx affected`) over calling underlying tools directly.
+- Prefix nx commands with the package manager (e.g. `pnpm nx build`) to avoid relying on a global CLI.
+- For scaffolding/generators invoke the `nx-generate` skill first.
 
-## Scaffolding & Generators
-
-- For scaffolding tasks (creating apps, libs, project structure, setup), ALWAYS invoke the `nx-generate` skill FIRST before exploring or calling MCP tools
-
-## When to use nx_docs
-
-- USE for: advanced config options, unfamiliar flags, migration guides, plugin configuration, edge cases
-- DON'T USE for: basic generator syntax (`nx g @nx/react:app`), standard commands, things you already know
-- The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
-
-
-<!-- nx configuration end-->
+<!-- nx configuration end -->
