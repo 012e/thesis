@@ -9,6 +9,8 @@ import {
   IconDots,
 } from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export interface PostProps {
   post: PostDto;
@@ -64,8 +66,10 @@ export function Post({ post }: PostProps) {
               <IconDots className="w-4 h-4" />
             </Button>
           </div>
-          <div className="mb-3 leading-normal text-[15px]">
-            {post.content.text}
+          <div className="mb-3 prose prose-sm dark:prose-invert max-w-none break-words">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {post.content.text}
+            </ReactMarkdown>
           </div>
           <div className="flex justify-between items-center max-w-[425px]">
             <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
