@@ -52,3 +52,27 @@ export interface PostDto {
   createdAt: string;
   updatedAt: string;
 }
+
+export type ReactionTypeDto = "upvote" | "downvote";
+
+export interface PostReactionDto {
+  postId: string;
+  userId: string;
+  type: ReactionTypeDto;
+  createdAt: string;
+}
+
+export interface PostReactionSummaryDto {
+  upvotes: number;
+  downvotes: number;
+  userReaction: ReactionTypeDto | null;
+}
+
+export interface ReactorDto {
+  id: string;
+  username: string | null;
+  email: string;
+  name: string | null;
+  reactionType: ReactionTypeDto;
+  reactedAt: string;
+}
