@@ -4,13 +4,14 @@ import { Pool } from 'pg';
 
 import { DATABASE_POOL } from './tokens';
 import * as schema from './schema';
+import * as authSchema from './auth-schema';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
   public readonly db: NodePgDatabase<typeof schema>;
 
   constructor(@Inject(DATABASE_POOL) private readonly pool: Pool) {
-    this.db = drizzle({ client: pool, schema });
+    this.db = drizzle({ client: pool, schema: { ...schema, ...authSchema } });
   }
 
   async onModuleDestroy(): Promise<void> {

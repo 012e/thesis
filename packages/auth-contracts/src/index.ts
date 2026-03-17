@@ -94,6 +94,11 @@ const ReactPostBody = z.object({
   type: ReactionType,
 });
 
+const RecommendationPage = z.object({
+  items: z.array(Post),
+  nextCursor: z.string().nullable(),
+});
+
 export const authContract = c.router({
   login: {
     method: "POST",
@@ -208,6 +213,19 @@ export const authContract = c.router({
       404: z.null(),
     },
     summary: "List users who reacted to a post, optionally filtered by type",
+  },
+  getRecommendations: {
+    method: "GET",
+    path: "/recommendations",
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: RecommendationPage,
+    },
+    summary:
+      "Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).",
   },
 }) satisfies AppRouter;
 

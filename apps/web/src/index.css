@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/jetbrains-mono";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -126,4 +127,25 @@
   html {
     @apply font-sans;
   }
+}
+
+/* MDX Editor Styling */
+.mdx-editor-wrapper {
+  @apply border-input;
+}
+
+.mdx-editor-wrapper .mdx-editor {
+  @apply border-0 bg-background;
+}
+
+.mdx-editor-wrapper .mdx-editor__toolbar {
+  @apply border-b border-border bg-background;
+}
+
+.mdx-editor-wrapper .mdx-editor__content {
+  @apply bg-background;
+}
+
+.mdx-editor-wrapper [contenteditable] {
+  @apply text-foreground bg-background;
 }
