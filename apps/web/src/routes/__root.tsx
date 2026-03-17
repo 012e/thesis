@@ -11,10 +11,11 @@ import { AppLayout } from "@/components/layout/app-layout";
 function RootComponent() {
   const router = useRouterState();
   const isAuthRoute = router.location.pathname.startsWith("/auth");
+  const isChatRoute = router.location.pathname.startsWith("/chat");
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {isAuthRoute ? (
+      {isAuthRoute || isChatRoute ? (
         <Outlet />
       ) : (
         <AppLayout>

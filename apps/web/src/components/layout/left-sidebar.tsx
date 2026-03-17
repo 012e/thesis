@@ -17,6 +17,7 @@ import {
   IconZoom,
   IconZoomFilled,
   IconStarFilled,
+  IconRobot,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { UserProfile } from "./user-profile";
@@ -28,7 +29,7 @@ const navigationItems = [
     selectedIcon: IconZoomFilled,
     label: "Explore",
     href: "/explore",
-  }, // Search usually stays the same
+  },
   {
     icon: IconBell,
     selectedIcon: IconBellFilled,
@@ -40,6 +41,12 @@ const navigationItems = [
     selectedIcon: IconMailFilled,
     label: "Messages",
     href: "/messages",
+  },
+  {
+    icon: IconRobot,
+    selectedIcon: IconRobot,
+    label: "AI Chat",
+    href: "/chat",
   },
   {
     icon: IconUsers,
