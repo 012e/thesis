@@ -1,0 +1,22 @@
+{
+  "name": "ai",
+  "version": "0.0.1",
+  "description": "AI application powered by Mastra",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "mastra dev",
+    "build": "mastra build",
+    "serve": "mastra dev"
+  },
+  "dependencies": {
+    "@mastra/core": "latest",
+    "@t3-oss/env-core": "^0.13.10",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "mastra": "latest",
+    "typescript": "^5.9.3"
+  }
+}

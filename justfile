@@ -10,13 +10,13 @@ setup:
 
 # --- Development ---
 
-# Start backend and frontend in parallel (Nx automatically builds auth-contracts first)
+# Start backend, frontend, and AI service in parallel
 dev:
-    pnpm nx run-many --target=serve --projects=web,backend
+    pnpm nx run-many --target=serve --projects=web,backend,ai
 
 # Start all services including auth-contracts in watch mode
 dev-watch:
-    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend"
+    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend,ai"
 
 # Start only the backend service
 dev-api:
@@ -66,6 +66,14 @@ backend +COMMAND:
 # Run a command in the web app directory
 web +COMMAND:
     (cd apps/web && {{ COMMAND }})
+
+# Run a command in the AI service directory
+ai +COMMAND:
+    (cd apps/ai && {{ COMMAND }})
+
+# Start only the AI service
+dev-ai:
+    pnpm --filter ai dev
 
 # Run a command in the auth-contracts package directory
 auth-contracts +COMMAND:
