@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { auth } from '@/auth';
 import { DatabaseModule } from '@/db/database.module';
 import { PostsModule } from '@/posts/posts.module';
+import { ReactionsModule } from '@/reactions/reactions.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
 import { AppController } from './app.controller';
@@ -15,6 +16,7 @@ import { AuthController } from './auth/auth.controller';
     AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
     DatabaseModule,
     PostsModule,
+    ReactionsModule,
   ],
   providers: [AppService],
 })

@@ -66,6 +66,34 @@ const UpdatePostBody = z.object({
   content: PostContent,
 });
 
+const ReactionType = z.enum(["upvote", "downvote"]);
+
+const PostReaction = z.object({
+  postId: z.string().uuid(),
+  userId: z.string(),
+  type: ReactionType,
+  createdAt: z.iso.datetime(),
+});
+
+const PostReactionSummary = z.object({
+  upvotes: z.number().int().nonnegative(),
+  downvotes: z.number().int().nonnegative(),
+  userReaction: ReactionType.nullable(),
+});
+
+const Reactor = z.object({
+  id: z.string(),
+  username: z.string().nullable(),
+  email: z.string(),
+  name: z.string().nullable(),
+  reactionType: ReactionType,
+  reactedAt: z.iso.datetime(),
+});
+
+const ReactPostBody = z.object({
+  type: ReactionType,
+});
+
 export const authContract = c.router({
   login: {
     method: "POST",
@@ -135,6 +163,51 @@ export const authContract = c.router({
       404: z.null(),
     },
     summary: "Delete a social media post",
+  },
+  reactToPost: {
+    method: "PUT",
+    path: "/posts/:id/reaction",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: ReactPostBody,
+    responses: {
+      200: PostReaction,
+      404: z.null(),
+    },
+    summary: "Upvote or downvote a post (replaces any existing reaction)",
+  },
+  unreactToPost: {
+    method: "DELETE",
+    path: "/posts/:id/reaction",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.undefined(),
+    responses: {
+      200: PostReaction,
+      404: z.null(),
+    },
+    summary: "Remove the current user's reaction from a post",
+  },
+  getReactionSummary: {
+    method: "GET",
+    path: "/posts/:id/reaction",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: PostReactionSummary,
+      404: z.null(),
+    },
+    summary: "Get upvote/downvote counts and the current user's reaction",
+  },
+  listReactors: {
+    method: "GET",
+    path: "/posts/:id/reactors",
+    pathParams: z.object({ id: z.string().uuid() }),
+    query: z.object({
+      type: ReactionType.optional(),
+    }),
+    responses: {
+      200: z.array(Reactor),
+      404: z.null(),
+    },
+    summary: "List users who reacted to a post, optionally filtered by type",
   },
 }) satisfies AppRouter;
 

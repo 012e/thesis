@@ -2,8 +2,10 @@ import type { PostContentDto } from '@repo/shared-dto';
 import { sql } from 'drizzle-orm';
 import {
   jsonb,
+  pgEnum,
   pgTable,
   pgView,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -37,3 +39,23 @@ export const usersView = pgView('users_view', {
 }).as(sql`SELECT id, username, email, name FROM "user"`);
 
 export type UserView = typeof usersView.$inferSelect;
+
+export const reactionTypeEnum = pgEnum('reaction_type', ['upvote', 'downvote']);
+
+export const postReactions = pgTable(
+  'post_reactions',
+  {
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    userId: text('user_id').notNull(),
+    type: reactionTypeEnum('type').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.postId, table.userId] })],
+);
+
+export type PostReaction = typeof postReactions.$inferSelect;
+export type NewPostReaction = typeof postReactions.$inferInsert;

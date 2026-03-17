@@ -113,6 +113,21 @@ Useful paths
 - `packages/shared-dto` - shared TypeScript DTOs
 - `packages/auth-client` - auth client helpers
 
+Backend documentation (AI-oriented reference)
+
+- `docs/backend/README.md` - overview, quick commands, and feature module summary
+- `docs/backend/CONFIG.md` - environment variable reference and production checklist
+- `docs/backend/ARCHITECTURE.md` - module graph, request lifecycle, auth design, testing strategy
+- `docs/backend/API.md` - complete HTTP endpoint reference (Better Auth + ts-rest contract)
+- `docs/backend/DATABASE.md` - schema tables/views, migration commands, and conventions
+
+Web documentation (AI-oriented reference)
+
+- `docs/web/README.md` - overview, stack, directory layout, commands
+- `docs/web/CONFIG.md` - Vite, TypeScript, Tailwind v4, shadcn, env vars
+- `docs/web/ARCHITECTURE.md` - routing, state (Jotai), auth flow, forms, UI components
+- `docs/web/API.md` - ts-rest client usage, full contract table, better-auth client, Zod types
+
 Practical checklist for agents (short)
 
 - After edits run: `pnpm --filter <app> build && pnpm --filter <app> test` for the affected project.
