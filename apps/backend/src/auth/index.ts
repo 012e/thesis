@@ -1,11 +1,14 @@
 import { betterAuth } from 'better-auth';
 
-import { databasePool } from '@/db/pool';
+import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { env } from '@/env';
 import { username, jwt } from 'better-auth/plugins';
+import db from '@/db';
 
 export const auth = betterAuth({
-  database: databasePool,
+  database: drizzleAdapter(db, {
+    provider: 'pg', // or "pg" or "mysql"
+  }),
   trustedOrigins: ['*'],
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,

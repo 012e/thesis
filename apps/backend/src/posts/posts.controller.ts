@@ -131,4 +131,20 @@ export class PostsController {
       };
     });
   }
+
+  @TsRestHandler(authContract.getRecommendations)
+  getRecommendations() {
+    return tsRestHandler(authContract.getRecommendations, async ({ query }) => {
+      const limit = query.limit ?? 20;
+      const result = await this.postsService.recommendations(
+        limit,
+        query.cursor,
+      );
+
+      return {
+        status: 200,
+        body: authContract.getRecommendations.responses[200].parse(result),
+      };
+    });
+  }
 }

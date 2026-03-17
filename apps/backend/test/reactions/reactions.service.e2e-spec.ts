@@ -3,7 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Pool } from 'pg';
 
 import { DatabaseService } from '@/db/database.service';
-import { posts } from '@/db/schema';
+import { posts, postReactions } from '@/db/schema';
+import { user } from '@/db/auth-schema';
 import { DATABASE_POOL } from '@/db/tokens';
 import { ReactionsService } from '@/reactions/reactions.service';
 
@@ -13,21 +14,6 @@ import {
   stopPostgresContainer,
   type PostgresContainerContext,
 } from '../helpers/testcontainers.setup';
-
-/** Insert a minimal user row into the better-auth `user` table. */
-async function insertUser(
-  pool: Pool,
-  id: string,
-  email: string,
-  name = 'Test User',
-): Promise<void> {
-  await pool.query(
-    `INSERT INTO "user" (id, email, name, "emailVerified", "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, false, now(), now())
-     ON CONFLICT (id) DO NOTHING`,
-    [id, email, name],
-  );
-}
 
 describe('ReactionsService integration', () => {
   let containers: PostgresContainerContext;
@@ -57,14 +43,34 @@ describe('ReactionsService integration', () => {
     databaseService = moduleRef.get(DatabaseService);
     reactionsService = moduleRef.get(ReactionsService);
 
-    await insertUser(pool, 'user-1', 'user1@example.com', 'User One');
-    await insertUser(pool, 'user-2', 'user2@example.com', 'User Two');
-    await insertUser(pool, 'user-3', 'user3@example.com', 'User Three');
+    await databaseService.db
+      .insert(user)
+      .values([
+        {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: 'User One',
+          emailVerified: false,
+        },
+        {
+          id: 'user-2',
+          email: 'user2@example.com',
+          name: 'User Two',
+          emailVerified: false,
+        },
+        {
+          id: 'user-3',
+          email: 'user3@example.com',
+          name: 'User Three',
+          emailVerified: false,
+        },
+      ])
+      .onConflictDoNothing();
   }, 120000);
 
   beforeEach(async () => {
-    await pool.query('TRUNCATE TABLE post_reactions RESTART IDENTITY CASCADE');
-    await pool.query('TRUNCATE TABLE posts RESTART IDENTITY CASCADE');
+    await databaseService.db.delete(postReactions);
+    await databaseService.db.delete(posts);
 
     // Create a fresh post for each test.
     const [post] = await databaseService.db

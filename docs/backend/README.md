@@ -38,5 +38,4 @@ The server starts on `PORT` (default `3000`). Copy `.env.example` to `.env` and 
 
 - [CONFIG.md](./CONFIG.md) – environment variable reference
 - [ARCHITECTURE.md](./ARCHITECTURE.md) – module structure, request lifecycle, and design decisions
-- [API.md](./API.md) – complete HTTP endpoint reference
 - [DATABASE.md](./DATABASE.md) – schema, migrations, and database conventions

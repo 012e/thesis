@@ -3,7 +3,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Pool } from 'pg';
 
 import { DatabaseService } from '@/db/database.service';
-import { posts } from '@/db/schema';
+import { posts, postReactions } from '@/db/schema';
+import { user } from '@/db/auth-schema';
 import { DATABASE_POOL } from '@/db/tokens';
 import { PostsService } from '@/posts/posts.service';
 
@@ -13,21 +14,6 @@ import {
   stopPostgresContainer,
   type PostgresContainerContext,
 } from '../helpers/testcontainers.setup';
-
-/** Insert a minimal user row into the better-auth `user` table. */
-async function insertUser(
-  pool: Pool,
-  id: string,
-  email: string,
-  name = 'Test User',
-): Promise<void> {
-  await pool.query(
-    `INSERT INTO "user" (id, email, name, "emailVerified", "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, false, now(), now())
-     ON CONFLICT (id) DO NOTHING`,
-    [id, email, name],
-  );
-}
 
 describe('PostsService integration', () => {
   let containers: PostgresContainerContext;
@@ -56,12 +42,27 @@ describe('PostsService integration', () => {
     postsService = moduleRef.get(PostsService);
 
     // Seed the two author users used across all tests.
-    await insertUser(pool, 'author-1', 'author1@example.com', 'Author One');
-    await insertUser(pool, 'author-2', 'author2@example.com', 'Author Two');
+    await databaseService.db
+      .insert(user)
+      .values([
+        {
+          id: 'author-1',
+          email: 'author1@example.com',
+          name: 'Author One',
+          emailVerified: false,
+        },
+        {
+          id: 'author-2',
+          email: 'author2@example.com',
+          name: 'Author Two',
+          emailVerified: false,
+        },
+      ])
+      .onConflictDoNothing();
   }, 120000);
 
   beforeEach(async () => {
-    await pool.query('TRUNCATE TABLE posts RESTART IDENTITY CASCADE');
+    await databaseService.db.delete(posts);
   });
 
   afterAll(async () => {
@@ -178,5 +179,168 @@ describe('PostsService integration', () => {
     expect(unauthorizedDelete).toBeNull();
     expect(deleted?.id).toBe(created.id);
     expect(fetchedAfterDelete).toBeNull();
+  });
+
+  describe('recommendations', () => {
+    it('returns posts ordered by reaction count descending', async () => {
+      // Create three posts
+      const post1 = await postsService.create('author-1', {
+        content: { text: 'Post with 5 reactions' },
+      });
+      const post2 = await postsService.create('author-2', {
+        content: { text: 'Post with 10 reactions' },
+      });
+      const post3 = await postsService.create('author-1', {
+        content: { text: 'Post with 2 reactions' },
+      });
+
+      // Add reactions to posts
+      await databaseService.db.insert(postReactions).values([
+        { postId: post1.id, userId: 'user-1', type: 'upvote' },
+        { postId: post1.id, userId: 'user-2', type: 'upvote' },
+        { postId: post1.id, userId: 'user-3', type: 'upvote' },
+        { postId: post1.id, userId: 'user-4', type: 'upvote' },
+        { postId: post1.id, userId: 'user-5', type: 'upvote' },
+        { postId: post2.id, userId: 'user-1', type: 'upvote' },
+        { postId: post2.id, userId: 'user-2', type: 'upvote' },
+        { postId: post2.id, userId: 'user-3', type: 'upvote' },
+        { postId: post2.id, userId: 'user-4', type: 'upvote' },
+        { postId: post2.id, userId: 'user-5', type: 'upvote' },
+        { postId: post2.id, userId: 'user-6', type: 'upvote' },
+        { postId: post2.id, userId: 'user-7', type: 'upvote' },
+        { postId: post2.id, userId: 'user-8', type: 'upvote' },
+        { postId: post2.id, userId: 'user-9', type: 'upvote' },
+        { postId: post2.id, userId: 'user-10', type: 'upvote' },
+        { postId: post3.id, userId: 'user-1', type: 'downvote' },
+        { postId: post3.id, userId: 'user-2', type: 'upvote' },
+      ]);
+
+      const result = await postsService.recommendations(10);
+
+      expect(result.items).toHaveLength(3);
+      expect(result.items[0].id).toBe(post2.id);
+      expect(result.items[1].id).toBe(post1.id);
+      expect(result.items[2].id).toBe(post3.id);
+      expect(result.nextCursor).toBeNull();
+    });
+
+    it('returns posts with no reactions at the end', async () => {
+      const postWithReactions = await postsService.create('author-1', {
+        content: { text: 'Popular post' },
+      });
+      const postWithoutReactions = await postsService.create('author-2', {
+        content: { text: 'Unpopular post' },
+      });
+
+      await databaseService.db.insert(postReactions).values({
+        postId: postWithReactions.id,
+        userId: 'user-1',
+        type: 'upvote',
+      });
+
+      const result = await postsService.recommendations(10);
+
+      expect(result.items).toHaveLength(2);
+      expect(result.items[0].id).toBe(postWithReactions.id);
+      expect(result.items[1].id).toBe(postWithoutReactions.id);
+    });
+
+    it('respects the limit parameter', async () => {
+      await postsService.create('author-1', { content: { text: 'Post 1' } });
+      await postsService.create('author-1', { content: { text: 'Post 2' } });
+      await postsService.create('author-1', { content: { text: 'Post 3' } });
+      await postsService.create('author-1', { content: { text: 'Post 4' } });
+      await postsService.create('author-1', { content: { text: 'Post 5' } });
+
+      const result = await postsService.recommendations(3);
+
+      expect(result.items).toHaveLength(3);
+      expect(result.nextCursor).not.toBeNull();
+    });
+
+    it('paginates correctly with cursor', async () => {
+      // Create 5 posts with different reaction counts
+      const posts: Array<{ id: string }> = [];
+      for (let i = 1; i <= 5; i++) {
+        const post = await postsService.create('author-1', {
+          content: { text: `Post ${i}` },
+        });
+        posts.push(post);
+      }
+
+      // Add reactions: post 5 gets 5 reactions, post 4 gets 4, etc.
+      for (let i = 0; i < 5; i++) {
+        for (let j = 0; j <= i; j++) {
+          await databaseService.db.insert(postReactions).values({
+            postId: posts[4 - i].id,
+            userId: `user-${j}`,
+            type: 'upvote',
+          });
+        }
+      }
+
+      // First page: limit 2
+      const page1 = await postsService.recommendations(2);
+      expect(page1.items).toHaveLength(2);
+      expect(page1.items[0].id).toBe(posts[0].id);
+      expect(page1.items[1].id).toBe(posts[1].id);
+      expect(page1.nextCursor).not.toBeNull();
+
+      // Second page: use cursor
+      const page2 = await postsService.recommendations(2, page1.nextCursor!);
+      expect(page2.items).toHaveLength(2);
+      expect(page2.items[0].id).toBe(posts[2].id);
+      expect(page2.items[1].id).toBe(posts[3].id);
+      expect(page2.nextCursor).not.toBeNull();
+
+      // Third page: last item
+      const page3 = await postsService.recommendations(2, page2.nextCursor!);
+      expect(page3.items).toHaveLength(1);
+      expect(page3.items[0].id).toBe(posts[4].id);
+      expect(page3.nextCursor).toBeNull();
+    });
+
+    it('handles invalid cursor gracefully', async () => {
+      await postsService.create('author-1', { content: { text: 'Post 1' } });
+
+      const result = await postsService.recommendations(10, 'invalid-cursor');
+
+      // Should return all posts (cursor is ignored when invalid)
+      expect(result.items).toHaveLength(1);
+    });
+
+    it('returns empty array when no posts exist', async () => {
+      const result = await postsService.recommendations(10);
+
+      expect(result.items).toHaveLength(0);
+      expect(result.nextCursor).toBeNull();
+    });
+
+    it('orders by post ID ascending as tiebreaker when reaction counts are equal', async () => {
+      const post1 = await postsService.create('author-1', {
+        content: { text: 'Post A' },
+      });
+      const post2 = await postsService.create('author-2', {
+        content: { text: 'Post B' },
+      });
+      const post3 = await postsService.create('author-1', {
+        content: { text: 'Post C' },
+      });
+
+      // All posts get exactly 1 upvote
+      await databaseService.db.insert(postReactions).values([
+        { postId: post1.id, userId: 'user-1', type: 'upvote' },
+        { postId: post2.id, userId: 'user-2', type: 'upvote' },
+        { postId: post3.id, userId: 'user-3', type: 'upvote' },
+      ]);
+
+      const result = await postsService.recommendations(10);
+
+      expect(result.items).toHaveLength(3);
+      // All have same reaction count, so should be ordered by post.id ascending
+      const ids = result.items.map((p) => p.id);
+      const sortedIds = [...ids].sort();
+      expect(ids).toEqual(sortedIds);
+    });
   });
 });
