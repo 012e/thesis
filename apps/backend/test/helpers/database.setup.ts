@@ -7,6 +7,7 @@ import { jwt, username } from 'better-auth/plugins';
 
 const appMigrationPaths = [
   resolve(__dirname, '../../drizzle/0000_nifty_spectrum.sql'),
+  resolve(__dirname, '../../drizzle/0001_add_users_view.sql'),
 ];
 
 /**

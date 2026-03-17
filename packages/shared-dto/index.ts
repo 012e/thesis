@@ -37,9 +37,17 @@ export interface PostContentDto {
   visualization?: VisualizationPostContentDto;
 }
 
+export interface PostAuthorDto {
+  id: string;
+  username: string | null;
+  email: string;
+  name: string | null;
+}
+
 export interface PostDto {
   id: string;
   authorId: string;
+  author: PostAuthorDto;
   content: PostContentDto;
   createdAt: string;
   updatedAt: string;

@@ -148,6 +148,9 @@ describe('PostsController integration', () => {
       expect(res.body.id).toBeTruthy();
       expect(res.body.content.text).toBe('Hello world');
       expect(res.body.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+      expect(res.body.author).toBeDefined();
+      expect(res.body.author.id).toBeTruthy();
+      expect(res.body.author.email).toBeTruthy();
     });
 
     it('creates a poll post', async () => {
@@ -205,6 +208,8 @@ describe('PostsController integration', () => {
 
       expect(res.body.id).toBe(created.body.id);
       expect(res.body.content.text).toBe('Find me by ID');
+      expect(res.body.author).toBeDefined();
+      expect(res.body.author.id).toBe(created.body.author.id);
     });
 
     it('returns 404 for a non-existent post', async () => {

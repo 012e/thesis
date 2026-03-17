@@ -1,0 +1,1 @@
+CREATE VIEW "public"."users_view" AS (SELECT id, username, email, name FROM "user");

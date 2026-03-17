@@ -36,8 +36,9 @@ dev-web:
 build:
     pnpm nx run-many --target=build
 
-# Test the entire monorepo using Nx
+# Build all workspace packages, then test the entire monorepo using Nx
 test:
+    pnpm nx run-many --target=build --projects=@repo/shared-dto,@repo/auth-contracts,@repo/auth-client
     pnpm nx run-many --target=test
 
 # --- Docker ---
