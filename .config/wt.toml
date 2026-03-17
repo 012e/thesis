@@ -1,0 +1,2 @@
+[post-create]
+deps = "pnpm i"
