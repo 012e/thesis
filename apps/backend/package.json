@@ -26,14 +26,17 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/terminus": "^11.1.1",
     "@repo/auth-contracts": "workspace:*",
     "@repo/shared-dto": "workspace:*",
     "@t3-oss/env-core": "^0.13.10",
     "@thallesp/nestjs-better-auth": "^2.4.0",
     "@ts-rest/nest": "3.53.0-rc.1",
+    "axios": "^1.13.6",
     "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.1",
     "jose": "^6.1.3",

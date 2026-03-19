@@ -18,6 +18,7 @@ export const env = createEnv({
     ALLOWED_ORIGINS: z
       .union([z.url().nonempty(), z.array(z.url().nonempty())])
       .default('http://localhost:5173'),
+    AI_SERVICE_URL: z.url().default('http://localhost:4111'),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

@@ -11,6 +11,8 @@ async function bootstrap() {
     credentials: true,
     origin: env.ALLOWED_ORIGINS,
   });
+  // Enable graceful shutdown hooks for Terminus
+  app.enableShutdownHooks();
   await app.listen(env.PORT);
 }
 void bootstrap();
