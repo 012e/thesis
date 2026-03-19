@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import { DatabaseModule } from '@/db/database.module';
 import { PostsModule } from '@/posts/posts.module';
 import { ReactionsModule } from '@/reactions/reactions.module';
+import { HealthModule } from '@/health/health.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
 import { AppController } from './app.controller';
@@ -17,6 +18,7 @@ import { AuthController } from './auth/auth.controller';
     DatabaseModule,
     PostsModule,
     ReactionsModule,
+    HealthModule,
   ],
   providers: [AppService],
 })
