@@ -1,20 +1,45 @@
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
-  IconHeart,
   IconMessageCircle,
   IconRepeat,
   IconShare,
   IconBookmark,
   IconDots,
+  IconArrowUp,
+  IconArrowDown,
 } from "@tabler/icons-react";
-import type { PostDto } from "@repo/shared-dto";
+import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
+import { usePostReaction } from "@/hooks/use-post-reaction";
 
 export interface PostProps {
   post: PostDto;
+  initialReactionSummary?: {
+    upvotes: number;
+    downvotes: number;
+    userReaction: ReactionTypeDto | null;
+  };
 }
 
-export function Post({ post }: PostProps) {
+export function Post({ post, initialReactionSummary }: PostProps) {
+  const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
+
+  const userVote = initialReactionSummary?.userReaction ?? null;
+  const upvoteCount = initialReactionSummary?.upvotes ?? post.upvoteCount;
+  const downvoteCount = initialReactionSummary?.downvotes ?? post.downvoteCount;
+
+  const handleVote = (voteType: ReactionTypeDto) => {
+    if (isVoting) return;
+
+    // If clicking the same vote type, remove the vote
+    if (userVote === voteType) {
+      reactToPost({ postId: post.id, type: null });
+    } else {
+      // Add new vote (replaces previous if exists)
+      reactToPost({ postId: post.id, type: voteType });
+    }
+  };
+
   // Format timestamp (simple relative time for now)
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -39,7 +64,7 @@ export function Post({ post }: PostProps) {
   return (
     <article className="p-4 transition-colors cursor-pointer hover:bg-accent/50">
       <div className="flex gap-3">
-        <Avatar className="flex-shrink-0 w-10 h-10">
+        <Avatar className="w-10 h-10 shrink-0">
           <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
             {authorInitial}
           </div>
@@ -80,12 +105,37 @@ export function Post({ post }: PostProps) {
               </div>
               <span className="text-sm">0</span>
             </button>
-            <button className="flex gap-1 items-center transition-colors hover:text-pink-600 group text-muted-foreground">
-              <div className="p-2 rounded-full transition-colors group-hover:bg-pink-600/10">
-                <IconHeart className="w-[18px] h-[18px]" />
+            <div className="flex gap-1 items-center py-1 px-2 rounded-full bg-muted/50">
+              <button
+                onClick={() => handleVote("upvote")}
+                disabled={isVoting}
+                className={`p-1.5 rounded-full transition-all ${
+                  userVote === "upvote"
+                    ? "text-orange-600 bg-orange-600/10"
+                    : "text-muted-foreground hover:text-orange-600 hover:bg-orange-600/10"
+                }`}
+                title="Upvote"
+              >
+                <IconArrowUp className="w-4 h-4" />
+              </button>
+              <div className="flex flex-col gap-0.5 items-center">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {upvoteCount - downvoteCount}
+                </span>
               </div>
-              <span className="text-sm">0</span>
-            </button>
+              <button
+                onClick={() => handleVote("downvote")}
+                disabled={isVoting}
+                className={`p-1.5 rounded-full transition-all ${
+                  userVote === "downvote"
+                    ? "text-blue-600 bg-blue-600/10"
+                    : "text-muted-foreground hover:text-blue-600 hover:bg-blue-600/10"
+                }`}
+                title="Downvote"
+              >
+                <IconArrowDown className="w-4 h-4" />
+              </button>
+            </div>
             <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
                 <IconBookmark className="w-[18px] h-[18px]" />

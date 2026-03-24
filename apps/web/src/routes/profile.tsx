@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useSession } from "@/hooks/use-session";
 import { Avatar } from "@/components/ui/avatar";
@@ -30,7 +30,11 @@ function ProfilePage() {
   }
 
   if (!session) {
-    return <Navigate to="/auth/login" />;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-muted-foreground">Loading session...</div>
+      </div>
+    );
   }
 
   const user = session.user;

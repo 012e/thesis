@@ -41,6 +41,36 @@ test:
     pnpm nx run-many --target=build --projects=@repo/shared-dto,@repo/auth-contracts,@repo/auth-client
     pnpm nx run-many --target=test
 
+# --- E2E Tests ---
+
+# Run e2e tests for web (requires web server to be running)
+e2e:
+    pnpm nx run web-e2e:e2e
+
+# Run e2e tests in headed mode (browser visible)
+e2e-headed:
+    pnpm nx run web-e2e:e2e:headed
+
+# Run e2e tests in UI mode (interactive)
+e2e-ui:
+    pnpm nx run web-e2e:e2e:ui
+
+# Debug e2e tests
+e2e-debug:
+    pnpm nx run web-e2e:e2e:debug
+
+# Generate e2e tests interactively (requires web server to be running)
+e2e-codegen:
+    pnpm nx run web-e2e:e2e-codegen
+
+# Show Playwright test report
+e2e-report:
+    pnpm nx run web-e2e:show-report
+
+# Install Playwright browsers
+e2e-install:
+    pnpm nx run web-e2e:install-browsers
+
 # --- Docker ---
 
 # Start Docker containers (detached)

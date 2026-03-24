@@ -19,12 +19,17 @@ import bearerToken from "@/lib/atoms/bearer-token";
  * Login wrapper that handles token storage and UI feedback
  */
 export async function login(params: LoginParams): Promise<boolean> {
+  // Clear any existing token before attempting login
+  store.set(bearerToken, null);
+
   const result = await authLogin(params);
 
   if (!result.success) {
     toast.error("Login failed", {
       description: result.error || "Invalid email or password",
     });
+    // Ensure token remains cleared on failure
+    store.set(bearerToken, null);
     return false;
   }
 
@@ -150,6 +155,20 @@ export function getToken(): string | null | undefined {
 export async function logout() {
   store.set(bearerToken, null);
   await authClient.signOut();
+}
+
+/**
+ * Handle authentication failure by clearing the token
+ * This should be called when receiving 401 responses from the API
+ */
+export function handleAuthFailure() {
+  const currentToken = store.get(bearerToken);
+  if (currentToken) {
+    store.set(bearerToken, null);
+    toast.error("Session expired", {
+      description: "Please login again to continue",
+    });
+  }
 }
 
 // Re-export types for convenience

@@ -1,7 +1,12 @@
 import { initClient } from "@ts-rest/core";
 import { authContract } from "@repo/auth-contracts";
-import type { PostDto, PostContentDto } from "@repo/shared-dto";
+import type {
+  PostDto,
+  PostContentDto,
+  ReactionTypeDto,
+} from "@repo/shared-dto";
 import { env } from "@/env";
+import { handleAuthFailure } from "@/lib/auth";
 
 const client = initClient(authContract, {
   baseUrl: env.VITE_BACKEND_URL,
@@ -16,9 +21,58 @@ export async function createPost(content: PostContentDto): Promise<PostDto> {
     },
   });
 
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
   if (response.status === 201) {
     return response.body;
   }
 
   throw new Error("Failed to create post");
+}
+
+export async function reactToPost(
+  postId: string,
+  type: ReactionTypeDto,
+): Promise<void> {
+  const response = await client.reactToPost({
+    params: { id: postId },
+    body: {
+      type,
+    },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status !== 200) {
+    throw new Error("Failed to react to post");
+  }
+}
+
+export async function unreactToPost(postId: string): Promise<void> {
+  const response = await client.unreactToPost({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Reaction not found");
+  }
+
+  if (response.status !== 200) {
+    throw new Error("Failed to remove reaction");
+  }
 }

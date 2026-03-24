@@ -1,0 +1,52 @@
+{
+  "name": "web-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/web-e2e",
+  "projectType": "application",
+  "tags": ["type:e2e", "scope:web"],
+  "targets": {
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "playwright test",
+        "cwd": "packages"
+      },
+      "configurations": {
+        "headed": {
+          "command": "playwright test --headed",
+          "cwd": "packages"
+        },
+        "ui": {
+          "command": "playwright test --ui",
+          "cwd": "packages"
+        },
+        "debug": {
+          "command": "playwright test --debug",
+          "cwd": "packages"
+        }
+      }
+    },
+    "e2e-codegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "playwright codegen http://localhost:5173",
+        "cwd": "packages"
+      }
+    },
+    "show-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "playwright show-report",
+        "cwd": "packages"
+      }
+    },
+    "install-browsers": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "playwright install --with-deps",
+        "cwd": "packages"
+      }
+    }
+  },
+  "implicitDependencies": ["web"]
+}

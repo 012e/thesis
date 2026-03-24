@@ -1,0 +1,44 @@
+import { Page } from "@playwright/test";
+import { faker } from "@faker-js/faker";
+import { pathTo } from "@/utils/path";
+
+export type UserCredential = {
+  name: string;
+  email: string;
+  password: string;
+};
+
+export class RegisterPage {
+  private readonly PATH = pathTo("auth", "register");
+  constructor(private readonly page: Page) {}
+
+  async goto() {
+    await this.page.goto(this.PATH);
+  }
+
+  private getRandomCred(): UserCredential {
+    const firstName = faker.person.firstName().toLowerCase();
+    const timestamp = Date.now();
+
+    return {
+      // Result: john-1711206292000@example.com
+      email: `${firstName}-${timestamp}@example.com`,
+      password: faker.internet.password(),
+      name: faker.person.fullName(),
+    };
+  }
+
+  async register(cred: UserCredential) {
+    await this.page.locator("#email").fill(cred.email);
+    await this.page.locator("#name").fill(cred.name);
+    await this.page.locator("#password").fill(cred.password);
+    await this.page.locator("#confirmPassword").fill(cred.password);
+    await this.page.getByRole("button").getByText("Create account").click();
+  }
+
+  async registerAsRandomUser(): Promise<UserCredential> {
+    const cred = this.getRandomCred();
+    await this.register(cred);
+    return cred;
+  }
+}

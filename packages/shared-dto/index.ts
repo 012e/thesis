@@ -51,6 +51,9 @@ export interface PostDto {
   content: PostContentDto;
   createdAt: string;
   updatedAt: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  currentUserReaction: ReactionTypeDto | null;
 }
 
 export type ReactionTypeDto = "upvote" | "downvote";

@@ -49,6 +49,8 @@ const PostAuthor = z.object({
   name: z.string().nullable(),
 });
 
+const ReactionType = z.enum(["upvote", "downvote"]);
+
 const Post = z.object({
   id: z.uuid(),
   authorId: z.string(),
@@ -56,6 +58,9 @@ const Post = z.object({
   content: PostContent,
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
+  upvoteCount: z.number().int().nonnegative(),
+  downvoteCount: z.number().int().nonnegative(),
+  currentUserReaction: ReactionType.nullable(),
 });
 
 const CreatePostBody = z.object({
@@ -66,10 +71,8 @@ const UpdatePostBody = z.object({
   content: PostContent,
 });
 
-const ReactionType = z.enum(["upvote", "downvote"]);
-
 const PostReaction = z.object({
-  postId: z.string().uuid(),
+  postId: z.uuid(),
   userId: z.string(),
   type: ReactionType,
   createdAt: z.iso.datetime(),
@@ -139,7 +142,7 @@ export const authContract = c.router({
   getPost: {
     method: "GET",
     path: "/posts/:id",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     responses: {
       200: Post,
       404: z.null(),
@@ -149,7 +152,7 @@ export const authContract = c.router({
   updatePost: {
     method: "PUT",
     path: "/posts/:id",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     body: UpdatePostBody,
     responses: {
       200: Post,
@@ -161,7 +164,7 @@ export const authContract = c.router({
   deletePost: {
     method: "DELETE",
     path: "/posts/:id",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     responses: {
       200: Post,
       403: z.null(),
@@ -172,7 +175,7 @@ export const authContract = c.router({
   reactToPost: {
     method: "PUT",
     path: "/posts/:id/reaction",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     body: ReactPostBody,
     responses: {
       200: PostReaction,
@@ -183,7 +186,7 @@ export const authContract = c.router({
   unreactToPost: {
     method: "DELETE",
     path: "/posts/:id/reaction",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     body: z.undefined(),
     responses: {
       200: PostReaction,
@@ -194,7 +197,7 @@ export const authContract = c.router({
   getReactionSummary: {
     method: "GET",
     path: "/posts/:id/reaction",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     responses: {
       200: PostReactionSummary,
       404: z.null(),
@@ -204,7 +207,7 @@ export const authContract = c.router({
   listReactors: {
     method: "GET",
     path: "/posts/:id/reactors",
-    pathParams: z.object({ id: z.string().uuid() }),
+    pathParams: z.object({ id: z.uuid() }),
     query: z.object({
       type: ReactionType.optional(),
     }),

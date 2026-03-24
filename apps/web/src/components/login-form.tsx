@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { useRouter, Link } from "@tanstack/react-router";
+import { useRouter, Link, useSearch } from "@tanstack/react-router";
 import { z } from "zod";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,9 @@ export function LoginForm({
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const search = useSearch({ from: "/auth/login" });
+  const redirectUrl = search.redirect || "/";
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -37,11 +40,19 @@ export function LoginForm({
     },
     onSubmit: async ({ value }) => {
       try {
-        await login({
+        const success = await login({
           password: value.password,
           email: value.email,
         });
-        router.navigate({ to: "/" });
+
+        if (success) {
+          // Give the auth client a moment to update session state
+          // This ensures useSession picks up the new session
+          await new Promise((resolve) => setTimeout(resolve, 100));
+
+          // Navigate to the redirect URL or home
+          router.navigate({ to: redirectUrl });
+        }
       } catch (error) {
         console.error("Login failed:", error);
         toast.error("Login failed", {

@@ -1,10 +1,17 @@
 import { and, count, desc, eq, lt, or, sql } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
-import type { PostDto } from '@repo/shared-dto';
+import type { PostDto, ReactionTypeDto } from '@repo/shared-dto';
 import type { z } from 'zod';
 
 import { DatabaseService } from '@/db/database.service';
 import { postReactions, posts, usersView } from '@/db/schema';
+
+const upvoteCount = count(
+  sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
+).as('upvote_count');
+const downvoteCount = count(
+  sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
+).as('downvote_count');
 
 import { createPostSchema, updatePostSchema } from './posts.schemas';
 
@@ -19,7 +26,7 @@ type PostRow = typeof posts.$inferSelect & {
 export class PostsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async list(): Promise<PostDto[]> {
+  async list(userId: string): Promise<PostDto[]> {
     const rows = await this.databaseService.db
       .select({
         id: posts.id,
@@ -33,12 +40,31 @@ export class PostsService {
           email: usersView.email,
           name: usersView.name,
         },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(
+        postReactions,
+        and(
+          eq(posts.id, postReactions.postId),
+          eq(postReactions.userId, userId),
+        ),
+      )
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
       .orderBy(desc(posts.createdAt));
 
-    return rows.map(this.toDto);
+    return rows.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
   }
 
   async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
@@ -63,16 +89,33 @@ export class PostsService {
           email: usersView.email,
           name: usersView.name,
         },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(
+        postReactions,
+        and(
+          eq(posts.id, postReactions.postId),
+          eq(postReactions.userId, authorId),
+        ),
+      )
       .where(eq(posts.id, createdPost.id))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
       .limit(1);
 
-    return this.toDto(row);
+    return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
   }
 
-  async getById(id: string): Promise<PostDto | null> {
+  async getById(id: string, userId?: string): Promise<PostDto | null> {
     const [row] = await this.databaseService.db
       .select({
         id: posts.id,
@@ -86,13 +129,34 @@ export class PostsService {
           email: usersView.email,
           name: usersView.name,
         },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(
+        postReactions,
+        userId
+          ? and(
+              eq(posts.id, postReactions.postId),
+              eq(postReactions.userId, userId),
+            )
+          : eq(posts.id, postReactions.postId),
+      )
       .where(eq(posts.id, id))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
       .limit(1);
 
-    return row ? this.toDto(row) : null;
+    return row
+      ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
+      : null;
   }
 
   async update(
@@ -124,16 +188,36 @@ export class PostsService {
           email: usersView.email,
           name: usersView.name,
         },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(
+        postReactions,
+        and(
+          eq(posts.id, postReactions.postId),
+          eq(postReactions.userId, authorId),
+        ),
+      )
       .where(eq(posts.id, updatedPost.id))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
       .limit(1);
 
-    return row ? this.toDto(row) : null;
+    return row
+      ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
+      : null;
   }
 
   async recommendations(
+    userId: string,
     limit: number = 20,
     cursor?: string,
   ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
@@ -156,10 +240,19 @@ export class PostsService {
           name: usersView.name,
         },
         reactionCount,
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .leftJoin(
+        postReactions,
+        and(
+          eq(posts.id, postReactions.postId),
+          eq(postReactions.userId, userId),
+        ),
+      )
       .groupBy(
         posts.id,
         usersView.id,
@@ -197,7 +290,12 @@ export class PostsService {
           })
         : null;
 
-    return { items: items.map(this.toDto), nextCursor };
+    return {
+      items: items.map((row) =>
+        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+      ),
+      nextCursor,
+    };
   }
 
   private encodeCursor(cursor: {
@@ -246,10 +344,27 @@ export class PostsService {
           email: usersView.email,
           name: usersView.name,
         },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(
+        postReactions,
+        and(
+          eq(posts.id, postReactions.postId),
+          eq(postReactions.userId, authorId),
+        ),
+      )
       .where(eq(posts.id, id))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
       .limit(1);
 
     if (!row || row.authorId !== authorId) return null;
@@ -258,10 +373,13 @@ export class PostsService {
       .delete(posts)
       .where(and(eq(posts.id, id), eq(posts.authorId, authorId)));
 
-    return this.toDto(row);
+    return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
   }
 
-  private readonly toDto = (row: PostRow): PostDto => {
+  private readonly toDto = (
+    row: PostRow & { upvoteCount: number; downvoteCount: number },
+    userReactionType?: ReactionTypeDto | null,
+  ): PostDto => {
     return {
       id: row.id,
       authorId: row.authorId,
@@ -274,6 +392,9 @@ export class PostsService {
       content: row.content,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
+      upvoteCount: row.upvoteCount,
+      downvoteCount: row.downvoteCount,
+      currentUserReaction: userReactionType ?? null,
     };
   };
 }
