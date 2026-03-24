@@ -19,7 +19,9 @@ cp apps/backend/.env.example apps/backend/.env
 | `NODE_ENV`           | No       | `development`                                            | Runtime environment: `development`, `production`, or `test`.                                                                                              |
 | `ALLOWED_ORIGINS`    | No       | `http://localhost:5173`                                  | CORS allowed origins for the NestJS layer. Accepts a single URL string or a JSON array of URL strings. Set to the frontend origin(s).                     |
 
-> `RABBITMQ_URL` appears in `.env.example` but is not yet consumed by `src/env.ts`. It is reserved for future use and can be omitted.
+> `RABBITMQ_URL` appears in `apps/backend/.env.example` and `docker-compose.yaml`, but the running application does not read or use RabbitMQ configuration: there is no RabbitMQ client code (no use of `amqplib`/Nest microservices RMQ client) in `apps/backend/src/` and `src/env.ts` does not declare `RABBITMQ_URL`.
+>
+> In short: RabbitMQ is present in auxiliary files (compose + example env) but it is not installed or used by the backend code. You can either remove the `rabbitmq` service from `docker-compose.yaml` and `RABBITMQ_URL` from `.env.example`, or keep them as an optional integration stub. The docs intentionally do not require RabbitMQ for normal local development.
 
 ## Validation rules
 
