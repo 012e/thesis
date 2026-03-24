@@ -34,7 +34,7 @@ build:
 
 # Build all workspace packages, then test the entire monorepo using Nx
 test:
-    pnpm nx run-many --target=build --projects=@repo/shared-dto,@repo/auth-contracts,@repo/auth-client
+    pnpm nx run-many --target=build --projects=shared-dto,auth-contracts,auth-client
     pnpm nx run-many --target=test
 
 # Run backend tests in verbose mode
