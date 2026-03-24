@@ -6,6 +6,7 @@ import { PostsModule } from '@/posts/posts.module';
 import { ReactionsModule } from '@/reactions/reactions.module';
 import { HealthModule } from '@/health/health.module';
 import { ThreadsModule } from '@/threads/threads.module';
+import { CommentsModule } from '@/comments/comments.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
 import { AppController } from './app.controller';
@@ -21,6 +22,7 @@ import { AuthController } from './auth/auth.controller';
     ReactionsModule,
     HealthModule,
     ThreadsModule,
+    CommentsModule,
   ],
   providers: [AppService],
 })

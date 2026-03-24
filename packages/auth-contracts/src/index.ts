@@ -123,6 +123,22 @@ const GenerateThreadTitleBody = z.object({
   messages: z.array(z.unknown()),
 });
 
+const Comment = z.object({
+  id: z.uuid(),
+  postId: z.uuid(),
+  parentId: z.uuid().nullable().optional(),
+  authorId: z.string(),
+  author: PostAuthor,
+  content: z.string().min(1),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+
+const CreateCommentBody = z.object({
+  content: z.string().min(1),
+  parentId: z.uuid().optional(),
+});
+
 export const authContract = c.router({
   login: {
     method: "POST",
@@ -327,6 +343,70 @@ export const authContract = c.router({
       200: z.object({ title: z.string() }),
     },
     summary: "Generate a title for a thread based on messages",
+  },
+  listComments: {
+    method: "GET",
+    path: "/posts/:postId/comments",
+    pathParams: z.object({ postId: z.uuid() }),
+    responses: {
+      200: z.array(Comment),
+      404: z.null(),
+    },
+    summary: "List comments for a post",
+  },
+  createComment: {
+    method: "POST",
+    path: "/posts/:postId/comments",
+    pathParams: z.object({ postId: z.uuid() }),
+    body: CreateCommentBody,
+    responses: {
+      201: Comment,
+      404: z.null(),
+    },
+    summary: "Create a comment for a post",
+  },
+  deleteComment: {
+    method: "DELETE",
+    path: "/comments/:id",
+    pathParams: z.object({ id: z.uuid() }),
+    body: z.undefined(),
+    responses: {
+      200: Comment,
+      403: z.null(),
+      404: z.null(),
+    },
+    summary: "Delete a comment",
+  },
+  getComment: {
+    method: "GET",
+    path: "/comments/:id",
+    pathParams: z.object({ id: z.uuid() }),
+    responses: {
+      200: Comment,
+      404: z.null(),
+    },
+    summary: "Get a single comment",
+  },
+  listCommentReplies: {
+    method: "GET",
+    path: "/comments/:id/replies",
+    pathParams: z.object({ id: z.uuid() }),
+    responses: {
+      200: z.array(Comment),
+      404: z.null(),
+    },
+    summary: "List direct replies to a comment",
+  },
+  createReply: {
+    method: "POST",
+    path: "/comments/:id/replies",
+    pathParams: z.object({ id: z.uuid() }),
+    body: z.object({ content: z.string().min(1) }),
+    responses: {
+      201: Comment,
+      404: z.null(),
+    },
+    summary: "Create a reply to a comment",
   },
 }) satisfies AppRouter;
 

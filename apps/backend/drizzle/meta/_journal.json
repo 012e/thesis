@@ -15,6 +15,20 @@
       "when": 1773913607960,
       "tag": "0001_nice_domino",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774344493813,
+      "tag": "0002_ambiguous_dark_beast",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1774344893373,
+      "tag": "0003_sticky_zombie",
+      "breakpoints": true
     }
   ]
 }
