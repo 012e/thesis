@@ -1,15 +1,4 @@
 import {
-  ActionBarPrimitive,
-  BranchPickerPrimitive,
-  ComposerPrimitive,
-  MessagePrimitive,
-  ThreadPrimitive,
-  AuiIf,
-  MessagePartPrimitive,
-  useAuiState,
-} from "@assistant-ui/react";
-import type { FC } from "react";
-import {
   IconArrowUp,
   IconChevronLeft,
   IconChevronRight,
@@ -19,52 +8,63 @@ import {
   IconArrowDown,
   IconEdit,
   IconRefresh,
-  IconThumbUp,
-  IconThumbDown,
   IconRobot,
+  IconDownload,
+  IconLoader2,
 } from "@tabler/icons-react";
+import {
+  ActionBarPrimitive,
+  AuiIf,
+  BranchPickerPrimitive,
+  ComposerPrimitive,
+  ErrorPrimitive,
+  MessagePrimitive,
+  ThreadPrimitive,
+  useAuiState,
+} from "@assistant-ui/react";
+import "@assistant-ui/react-markdown/styles/dot.css";
+
+import { Button } from "@/components/ui/button";
+import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { Reasoning, ReasoningGroup } from "@/components/assistant-ui/reasoning";
+import { Sources } from "@/components/assistant-ui/sources";
+import {
+  ComposerAddAttachment,
+  ComposerAttachments,
+  UserMessageAttachments,
+} from "@/components/assistant-ui/attachment";
 import { cn } from "@/lib/utils";
 
-export const Thread: FC = () => {
+export function Thread() {
   return (
-    <ThreadPrimitive.Root className="flex overflow-hidden flex-col h-full bg-background">
-      <ThreadPrimitive.Viewport className="flex overflow-y-scroll flex-col flex-1 scroll-smooth">
+    <ThreadPrimitive.Root className="flex flex-col h-full bg-background">
+      <ThreadPrimitive.Viewport
+        turnAnchor="top"
+        className="flex overflow-y-scroll flex-col flex-1 scroll-smooth"
+      >
         <AuiIf condition={(s) => s.thread.isEmpty}>
           <ThreadWelcome />
         </AuiIf>
 
-        <AuiIf condition={(s) => !s.thread.isEmpty}>
-          <div className="grow min-h-8" />
-        </AuiIf>
-
         <ThreadPrimitive.Messages
           components={{
-            UserMessage: UserMessage,
-            EditComposer: EditComposer,
-            AssistantMessage: AssistantMessage,
+            UserMessage,
+            EditComposer,
+            AssistantMessage,
           }}
         />
 
-        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center px-4 pb-4 mt-4 w-full bg-background">
+        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center px-4 pb-4 mt-auto w-full bg-background">
           <ThreadScrollToBottom />
           <Composer />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
   );
-};
+}
 
-const ThreadScrollToBottom: FC = () => {
-  return (
-    <ThreadPrimitive.ScrollToBottom asChild>
-      <button className="p-2 rounded-full border shadow-md transition-opacity disabled:opacity-0 bg-background hover:bg-accent">
-        <IconArrowDown className="size-4" />
-      </button>
-    </ThreadPrimitive.ScrollToBottom>
-  );
-};
-
-const ThreadWelcome: FC = () => {
+function ThreadWelcome() {
   return (
     <div className="flex flex-col gap-4 justify-center items-center p-8 text-center grow">
       <div className="p-4 rounded-full bg-primary/10">
@@ -76,65 +76,111 @@ const ThreadWelcome: FC = () => {
           Start a conversation with your AI assistant
         </p>
       </div>
+      <div className="grid gap-2 mt-4 w-full max-w-2xl md:grid-cols-2">
+        <ThreadPrimitive.Suggestion
+          prompt="What's the weather in San Francisco?"
+          asChild
+        >
+          <Button
+            variant="outline"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left rounded-2xl hover:bg-accent"
+          >
+            <span className="font-medium">What's the weather</span>
+            <span className="text-muted-foreground">in San Francisco?</span>
+          </Button>
+        </ThreadPrimitive.Suggestion>
+        <ThreadPrimitive.Suggestion
+          prompt="Explain React hooks like useState"
+          asChild
+        >
+          <Button
+            variant="outline"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left rounded-2xl hover:bg-accent"
+          >
+            <span className="font-medium">Explain React hooks</span>
+            <span className="text-muted-foreground">like useState</span>
+          </Button>
+        </ThreadPrimitive.Suggestion>
+      </div>
     </div>
   );
-};
+}
 
-const Composer: FC = () => {
+function Composer() {
   return (
-    <ComposerPrimitive.Root className="flex flex-wrap gap-2 items-end py-2 px-3 w-full max-w-2xl rounded-2xl border shadow-sm transition-shadow focus-within:shadow-md border-input bg-background focus-within:border-ring">
-      <ComposerPrimitive.Input
-        autoFocus
-        placeholder="Message AI assistant..."
-        rows={1}
-        className="max-h-40 text-sm bg-transparent outline-none resize-none grow placeholder:text-muted-foreground"
-      />
+    <ComposerPrimitive.Root className="flex flex-col w-full max-w-2xl">
+      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col rounded-2xl border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+        <ComposerAttachments />
+        <ComposerPrimitive.Input
+          placeholder="Message AI assistant..."
+          className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
+          rows={1}
+          autoFocus
+        />
+        <ComposerAction />
+      </ComposerPrimitive.AttachmentDropzone>
+    </ComposerPrimitive.Root>
+  );
+}
+
+function ComposerAction() {
+  return (
+    <div className="flex justify-between items-center mt-2">
+      <ComposerAddAttachment />
+
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
-          <button className="flex justify-center items-center my-0.5 rounded-full transition-colors disabled:opacity-50 bg-primary text-primary-foreground size-8 hover:bg-primary/90">
+          <button className="flex justify-center items-center rounded-full transition-colors disabled:opacity-50 size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconArrowUp className="size-4" />
           </button>
         </ComposerPrimitive.Send>
       </AuiIf>
+
       <AuiIf condition={(s) => s.thread.isRunning}>
         <ComposerPrimitive.Cancel asChild>
-          <button className="flex justify-center items-center my-0.5 rounded-full transition-colors bg-primary text-primary-foreground size-8 hover:bg-primary/90">
+          <button className="flex justify-center items-center rounded-full transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconPlayerStop className="size-4" />
           </button>
         </ComposerPrimitive.Cancel>
       </AuiIf>
-    </ComposerPrimitive.Root>
+    </div>
   );
-};
+}
 
-const TextPart: FC = () => {
+function ThreadScrollToBottom() {
   return (
-    <MessagePartPrimitive.Text className="text-sm whitespace-pre-wrap break-words" />
+    <ThreadPrimitive.ScrollToBottom asChild>
+      <button className="p-2 rounded-full border shadow-md transition-opacity disabled:opacity-0 bg-background hover:bg-accent">
+        <IconArrowDown className="size-4" />
+      </button>
+    </ThreadPrimitive.ScrollToBottom>
   );
-};
+}
 
-const UserMessage: FC = () => {
+function UserMessage() {
   return (
-    <MessagePrimitive.Root className="grid w-full max-w-2xl auto-rows-auto grid-cols-[minmax(72px,1fr)_auto] gap-y-2 py-4 [&:where(>*)]:col-start-2 mx-auto px-4">
+    <MessagePrimitive.Root
+      className="grid auto-rows-auto gap-y-2 py-4 px-4 mx-auto w-full max-w-2xl grid-cols-[minmax(72px,1fr)_auto]"
+      data-role="user"
+    >
       <UserActionBar />
-      <div className="py-2.5 px-5 max-w-xl rounded-3xl rounded-tr-sm bg-muted text-foreground">
-        <MessagePrimitive.Parts
-          components={{
-            Text: TextPart,
-          }}
-        />
+      <div className="col-start-2 max-w-xl">
+        <UserMessageAttachments />
+        <div className="py-2.5 px-5 rounded-3xl rounded-tr-sm bg-muted text-foreground">
+          <MessagePrimitive.Parts />
+        </div>
       </div>
       <BranchPicker className="col-span-2 justify-end -mr-1" />
     </MessagePrimitive.Root>
   );
-};
+}
 
-const UserActionBar: FC = () => {
+function UserActionBar() {
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
       autohide="not-last"
-      className="flex flex-col col-start-1 row-start-1 gap-1 items-end pr-2 mt-2.5"
+      className="flex flex-col col-start-1 row-start-1 items-end pr-2 mt-2.5"
     >
       <ActionBarPrimitive.Edit asChild>
         <button className="p-1.5 rounded-md transition-colors text-muted-foreground hover:bg-accent">
@@ -143,12 +189,15 @@ const UserActionBar: FC = () => {
       </ActionBarPrimitive.Edit>
     </ActionBarPrimitive.Root>
   );
-};
+}
 
-const EditComposer: FC = () => {
+function EditComposer() {
   return (
     <MessagePrimitive.Root className="flex flex-col gap-2 px-4 pt-2 pb-3 my-4 mx-auto w-full max-w-2xl rounded-xl bg-muted">
-      <ComposerPrimitive.Input className="flex w-full h-8 text-sm bg-transparent outline-none resize-none text-foreground" />
+      <ComposerPrimitive.Input
+        className="flex w-full h-8 text-sm bg-transparent outline-none resize-none text-foreground"
+        autoFocus
+      />
       <div className="flex gap-2 justify-center items-center">
         <ComposerPrimitive.Cancel asChild>
           <button className="py-2 px-4 text-sm font-medium rounded-full border transition-colors border-border hover:bg-accent">
@@ -163,74 +212,107 @@ const EditComposer: FC = () => {
       </div>
     </MessagePrimitive.Root>
   );
-};
+}
 
-const AssistantMessage: FC = () => {
+function AssistantMessage() {
   return (
-    <MessagePrimitive.Root className="grid relative py-4 px-4 mx-auto w-full max-w-2xl grid-cols-[auto_auto_1fr] grid-rows-[auto_1fr]">
-      <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
-        <IconRobot className="size-4 text-primary" />
+    <MessagePrimitive.Root
+      className="flex relative flex-col py-4 px-4 mx-auto w-full max-w-2xl"
+      data-role="assistant"
+    >
+      <div className="flex flex-col justify-center">
+        <div className="flex my-1.5 max-w-xl text-sm leading-relaxed break-words text-foreground">
+          <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
+            <IconRobot className="size-4 text-primary" />
+          </div>
+
+          <MessagePrimitive.Parts
+            components={{
+              Text: MarkdownText,
+              tools: { Fallback: ToolFallback },
+              Reasoning,
+              ReasoningGroup,
+              Source: Sources,
+            }}
+          />
+
+          <MessageError />
+          <AuiIf
+            condition={(s) =>
+              s.thread.isRunning && s.message.content.length === 0
+            }
+          >
+            <div className="flex gap-2 items-center text-muted-foreground">
+              <IconLoader2 className="animate-spin size-4" />
+              <span className="text-sm">Thinking...</span>
+            </div>
+          </AuiIf>
+        </div>
+
+        <div className="flex col-start-2 items-center">
+          <BranchPicker />
+        </div>
+
+        <div className="flex col-start-3 row-start-2 items-center -ml-1">
+          <AssistantActionBar />
+        </div>
       </div>
-      <div className="col-span-2 col-start-2 row-start-1 my-1.5 max-w-xl text-sm leading-relaxed break-words">
-        <MessagePrimitive.Parts
-          components={{
-            Text: TextPart,
-          }}
-        />
-      </div>
-      <AssistantActionBar />
-      <BranchPicker className="col-start-2" />
     </MessagePrimitive.Root>
   );
-};
+}
 
-const CopiedIcon: FC = () => {
-  const isCopied = useAuiState((s) => s.message?.isCopied ?? false);
-  return isCopied ? (
-    <IconCheck className="size-4" />
-  ) : (
-    <IconCopy className="size-4" />
+function MessageError() {
+  return (
+    <MessagePrimitive.Error>
+      <ErrorPrimitive.Root className="p-3 mt-2 text-sm rounded-md border dark:text-red-200 border-destructive bg-destructive/10 text-destructive dark:bg-destructive/5">
+        <ErrorPrimitive.Message className="line-clamp-2" />
+      </ErrorPrimitive.Root>
+    </MessagePrimitive.Error>
   );
-};
+}
 
-const AssistantActionBar: FC = () => {
+function AssistantActionBar() {
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
       autohide="not-last"
       autohideFloat="single-branch"
-      className="flex col-start-3 row-start-2 gap-1 -ml-1 text-muted-foreground data-[floating]:bg-background data-[floating]:absolute data-[floating]:rounded-md data-[floating]:border data-[floating]:p-1 data-[floating]:shadow-sm"
+      className="flex gap-1 text-muted-foreground"
     >
       <ActionBarPrimitive.Copy asChild>
         <button className="p-1.5 rounded-md transition-colors hover:bg-accent">
           <CopiedIcon />
         </button>
       </ActionBarPrimitive.Copy>
+      <ActionBarPrimitive.ExportMarkdown asChild>
+        <button className="p-1.5 rounded-md transition-colors hover:bg-accent">
+          <IconDownload className="size-4" />
+        </button>
+      </ActionBarPrimitive.ExportMarkdown>
       <ActionBarPrimitive.Reload asChild>
         <button className="p-1.5 rounded-md transition-colors hover:bg-accent">
           <IconRefresh className="size-4" />
         </button>
       </ActionBarPrimitive.Reload>
-      <ActionBarPrimitive.FeedbackPositive asChild>
-        <button className="p-1.5 rounded-md transition-colors data-[active]:text-primary hover:bg-accent">
-          <IconThumbUp className="size-4" />
-        </button>
-      </ActionBarPrimitive.FeedbackPositive>
-      <ActionBarPrimitive.FeedbackNegative asChild>
-        <button className="p-1.5 rounded-md transition-colors data-[active]:text-destructive hover:bg-accent">
-          <IconThumbDown className="size-4" />
-        </button>
-      </ActionBarPrimitive.FeedbackNegative>
     </ActionBarPrimitive.Root>
   );
-};
+}
 
-const BranchPicker: FC<{ className?: string }> = ({ className }) => {
+function CopiedIcon() {
+  const isCopied = useAuiState((s) => s.message?.isCopied ?? false);
+  return isCopied ? (
+    <IconCheck className="size-4" />
+  ) : (
+    <IconCopy className="size-4" />
+  );
+}
+
+function BranchPicker({ className }: { className?: string }) {
   return (
     <BranchPickerPrimitive.Root
       hideWhenSingleBranch
       className={cn(
-        "text-muted-foreground inline-flex items-center text-xs",
+        "inline-flex items-center text-xs text-muted-foreground",
         className,
       )}
     >
@@ -249,4 +331,4 @@ const BranchPicker: FC<{ className?: string }> = ({ className }) => {
       </BranchPickerPrimitive.Next>
     </BranchPickerPrimitive.Root>
   );
-};
+}

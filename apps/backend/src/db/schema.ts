@@ -1,6 +1,7 @@
 import type { PostContentDto } from '@repo/shared-dto';
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   jsonb,
   pgEnum,
   pgTable,
@@ -59,3 +60,20 @@ export const postReactions = pgTable(
 
 export type PostReaction = typeof postReactions.$inferSelect;
 export type NewPostReaction = typeof postReactions.$inferInsert;
+
+export const threads = pgTable('threads', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  userId: text('user_id').notNull(),
+  title: text('title'),
+  isArchived: boolean('is_archived').default(false).notNull(),
+  externalId: text('external_id'),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type Thread = typeof threads.$inferSelect;
+export type NewThread = typeof threads.$inferInsert;

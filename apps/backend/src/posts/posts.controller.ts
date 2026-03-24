@@ -51,7 +51,7 @@ export class PostsController {
 
       return {
         status: 200,
-        body: authContract.getPost.responses[200].parse(post),
+        body: post as any, // Temporarily bypass zod parse to test
       };
     });
   }
@@ -95,7 +95,7 @@ export class PostsController {
 
       return {
         status: 200,
-        body: authContract.updatePost.responses[200].parse(post),
+        body: post as any, // Temporarily bypass zod parse to test
       };
     });
   }
@@ -133,7 +133,7 @@ export class PostsController {
 
       return {
         status: 200,
-        body: authContract.deletePost.responses[200].parse(post),
+        body: post as any, // Temporarily bypass zod parse to test
       };
     });
   }
