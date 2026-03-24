@@ -91,6 +91,21 @@ export const comments = pgTable(
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 
+export const userFollows = pgTable(
+  'user_follows',
+  {
+    followerId: text('follower_id').notNull(),
+    followeeId: text('followee_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.followerId, table.followeeId] })],
+);
+
+export type UserFollow = typeof userFollows.$inferSelect;
+export type NewUserFollow = typeof userFollows.$inferInsert;
+
 export const threads = pgTable('threads', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull(),

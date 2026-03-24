@@ -79,3 +79,16 @@ export interface ReactorDto {
   reactionType: ReactionTypeDto;
   reactedAt: string;
 }
+
+export interface FollowUserDto {
+  id: string;
+  username: string | null;
+  email: string;
+  name: string | null;
+}
+
+export interface UserFollowDto {
+  followerId: string;
+  followeeId: string;
+  createdAt: string;
+}
