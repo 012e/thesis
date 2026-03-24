@@ -7,6 +7,7 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout } from "@/components/layout/app-layout";
+import { AuthGuard } from "@/components/auth-guard";
 
 function RootComponent() {
   const router = useRouterState();
@@ -15,13 +16,15 @@ function RootComponent() {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {isAuthRoute || isChatRoute ? (
-        <Outlet />
-      ) : (
-        <AppLayout>
+      <AuthGuard>
+        {isAuthRoute || isChatRoute ? (
           <Outlet />
-        </AppLayout>
-      )}
+        ) : (
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        )}
+      </AuthGuard>
       <Toaster richColors />
       <TanStackRouterDevtools />
     </ThemeProvider>

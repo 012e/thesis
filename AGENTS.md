@@ -1,12 +1,12 @@
 Agent Guide for Thesis Repository
 
-This repository is a hybrid monorepo: TypeScript (React + NestJS) and .NET (C#). It uses pnpm workspaces, Nx for orchestration and Just for convenience scripts. This document provides concise commands, code-style rules, and agent workflows for automated agents and contributors.
+This repository is a hybrid monorepo: TypeScript (React + NestJS). It uses pnpm workspaces, Nx for orchestration and Just for convenience scripts. This document provides concise commands, code-style rules, and agent workflows for automated agents and contributors.
 
 **🚀 START HERE: Before exploring or making changes, read the project documentation in `docs/` to understand the full project structure, architecture, and conventions. This saves context and prevents redundant discovery.**
 
 Quick commands (build / lint / test)
 
-- Root setup: `pnpm install` or `just setup` (restores Node + .NET tooling).
+- Root setup: `pnpm install` or `just setup` (restores Node tooling).
 - Start dev services: `just dev`.
 
 - TypeScript apps (pnpm workspaces / nx):

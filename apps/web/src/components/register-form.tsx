@@ -61,6 +61,8 @@ export function RegisterForm({
         });
 
         if (success) {
+          // Give the auth client a moment to update session state
+          await new Promise((resolve) => setTimeout(resolve, 100));
           router.navigate({ to: "/" });
         }
       } catch (error) {

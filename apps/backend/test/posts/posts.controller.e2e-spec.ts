@@ -151,6 +151,8 @@ describe('PostsController integration', () => {
       expect(res.body.author).toBeDefined();
       expect(res.body.author.id).toBeTruthy();
       expect(res.body.author.email).toBeTruthy();
+      expect(res.body.upvoteCount).toBe(0);
+      expect(res.body.downvoteCount).toBe(0);
     });
 
     it('creates a poll post', async () => {
@@ -210,6 +212,8 @@ describe('PostsController integration', () => {
       expect(res.body.content.text).toBe('Find me by ID');
       expect(res.body.author).toBeDefined();
       expect(res.body.author.id).toBe(created.body.author.id);
+      expect(res.body.upvoteCount).toBe(0);
+      expect(res.body.downvoteCount).toBe(0);
     });
 
     it('returns 404 for a non-existent post', async () => {
@@ -394,8 +398,14 @@ describe('PostsController integration', () => {
 
       expect(res.body.items).toHaveLength(3);
       expect(res.body.items[0].id).toBe(post2.body.id);
+      expect(res.body.items[0].upvoteCount).toBe(10);
+      expect(res.body.items[0].downvoteCount).toBe(0);
       expect(res.body.items[1].id).toBe(post1.body.id);
+      expect(res.body.items[1].upvoteCount).toBe(5);
+      expect(res.body.items[1].downvoteCount).toBe(0);
       expect(res.body.items[2].id).toBe(post3.body.id);
+      expect(res.body.items[2].upvoteCount).toBe(1);
+      expect(res.body.items[2].downvoteCount).toBe(1);
       expect(res.body.nextCursor).toBeNull();
     });
 

@@ -88,6 +88,8 @@ describe('PostsService integration', () => {
     });
     expect(created.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(created.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(created.upvoteCount).toBe(0);
+    expect(created.downvoteCount).toBe(0);
   });
 
   it('lists posts in descending creation order', async () => {
@@ -115,6 +117,10 @@ describe('PostsService integration', () => {
     ]);
     expect(listedPosts[0].author.id).toBe('author-2');
     expect(listedPosts[1].author.id).toBe('author-1');
+    expect(listedPosts[0].upvoteCount).toBe(0);
+    expect(listedPosts[0].downvoteCount).toBe(0);
+    expect(listedPosts[1].upvoteCount).toBe(0);
+    expect(listedPosts[1].downvoteCount).toBe(0);
   });
 
   it('updates only posts owned by the author', async () => {
@@ -215,12 +221,18 @@ describe('PostsService integration', () => {
         { postId: post3.id, userId: 'user-2', type: 'upvote' },
       ]);
 
-      const result = await postsService.recommendations(10);
+      const result = await postsService.recommendations('user-1', 10);
 
       expect(result.items).toHaveLength(3);
       expect(result.items[0].id).toBe(post2.id);
+      expect(result.items[0].upvoteCount).toBe(10);
+      expect(result.items[0].downvoteCount).toBe(0);
       expect(result.items[1].id).toBe(post1.id);
+      expect(result.items[1].upvoteCount).toBe(5);
+      expect(result.items[1].downvoteCount).toBe(0);
       expect(result.items[2].id).toBe(post3.id);
+      expect(result.items[2].upvoteCount).toBe(1);
+      expect(result.items[2].downvoteCount).toBe(1);
       expect(result.nextCursor).toBeNull();
     });
 
@@ -238,11 +250,15 @@ describe('PostsService integration', () => {
         type: 'upvote',
       });
 
-      const result = await postsService.recommendations(10);
+      const result = await postsService.recommendations('user-1', 10);
 
       expect(result.items).toHaveLength(2);
       expect(result.items[0].id).toBe(postWithReactions.id);
+      expect(result.items[0].upvoteCount).toBe(1);
+      expect(result.items[0].downvoteCount).toBe(0);
       expect(result.items[1].id).toBe(postWithoutReactions.id);
+      expect(result.items[1].upvoteCount).toBe(0);
+      expect(result.items[1].downvoteCount).toBe(0);
     });
 
     it('respects the limit parameter', async () => {
@@ -252,7 +268,7 @@ describe('PostsService integration', () => {
       await postsService.create('author-1', { content: { text: 'Post 4' } });
       await postsService.create('author-1', { content: { text: 'Post 5' } });
 
-      const result = await postsService.recommendations(3);
+      const result = await postsService.recommendations('user-1', 3);
 
       expect(result.items).toHaveLength(3);
       expect(result.nextCursor).not.toBeNull();
@@ -280,21 +296,29 @@ describe('PostsService integration', () => {
       }
 
       // First page: limit 2
-      const page1 = await postsService.recommendations(2);
+      const page1 = await postsService.recommendations('user-1', 2);
       expect(page1.items).toHaveLength(2);
       expect(page1.items[0].id).toBe(posts[0].id);
       expect(page1.items[1].id).toBe(posts[1].id);
       expect(page1.nextCursor).not.toBeNull();
 
       // Second page: use cursor
-      const page2 = await postsService.recommendations(2, page1.nextCursor!);
+      const page2 = await postsService.recommendations(
+        'user-1',
+        2,
+        page1.nextCursor!,
+      );
       expect(page2.items).toHaveLength(2);
       expect(page2.items[0].id).toBe(posts[2].id);
       expect(page2.items[1].id).toBe(posts[3].id);
       expect(page2.nextCursor).not.toBeNull();
 
       // Third page: last item
-      const page3 = await postsService.recommendations(2, page2.nextCursor!);
+      const page3 = await postsService.recommendations(
+        'user-1',
+        2,
+        page2.nextCursor!,
+      );
       expect(page3.items).toHaveLength(1);
       expect(page3.items[0].id).toBe(posts[4].id);
       expect(page3.nextCursor).toBeNull();
@@ -303,14 +327,18 @@ describe('PostsService integration', () => {
     it('handles invalid cursor gracefully', async () => {
       await postsService.create('author-1', { content: { text: 'Post 1' } });
 
-      const result = await postsService.recommendations(10, 'invalid-cursor');
+      const result = await postsService.recommendations(
+        'user-1',
+        10,
+        'invalid-cursor',
+      );
 
       // Should return all posts (cursor is ignored when invalid)
       expect(result.items).toHaveLength(1);
     });
 
     it('returns empty array when no posts exist', async () => {
-      const result = await postsService.recommendations(10);
+      const result = await postsService.recommendations('user-1', 10);
 
       expect(result.items).toHaveLength(0);
       expect(result.nextCursor).toBeNull();
@@ -334,7 +362,7 @@ describe('PostsService integration', () => {
         { postId: post3.id, userId: 'user-3', type: 'upvote' },
       ]);
 
-      const result = await postsService.recommendations(10);
+      const result = await postsService.recommendations('user-1', 10);
 
       expect(result.items).toHaveLength(3);
       // All have same reaction count, so should be ordered by post.id ascending

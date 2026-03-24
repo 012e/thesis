@@ -13,9 +13,9 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @TsRestHandler(authContract.listPosts)
-  listPosts() {
+  listPosts(@Session() session: UserSession) {
     return tsRestHandler(authContract.listPosts, async () => {
-      const posts = await this.postsService.list();
+      const posts = await this.postsService.list(session.user.id);
 
       return {
         status: 200,
@@ -38,9 +38,9 @@ export class PostsController {
   }
 
   @TsRestHandler(authContract.getPost)
-  getPost() {
+  getPost(@Session() session: UserSession) {
     return tsRestHandler(authContract.getPost, async ({ params }) => {
-      const post = await this.postsService.getById(params.id);
+      const post = await this.postsService.getById(params.id, session.user.id);
 
       if (!post) {
         return {
@@ -61,7 +61,10 @@ export class PostsController {
     return tsRestHandler(authContract.updatePost, async ({ params, body }) => {
       const input = updatePostSchema.parse(body);
 
-      const existingPost = await this.postsService.getById(params.id);
+      const existingPost = await this.postsService.getById(
+        params.id,
+        session.user.id,
+      );
 
       if (!existingPost) {
         return {
@@ -100,7 +103,10 @@ export class PostsController {
   @TsRestHandler(authContract.deletePost)
   async deletePost(@Session() session: UserSession) {
     return tsRestHandler(authContract.deletePost, async ({ params }) => {
-      const existingPost = await this.postsService.getById(params.id);
+      const existingPost = await this.postsService.getById(
+        params.id,
+        session.user.id,
+      );
 
       if (!existingPost) {
         return {
@@ -133,10 +139,11 @@ export class PostsController {
   }
 
   @TsRestHandler(authContract.getRecommendations)
-  getRecommendations() {
+  getRecommendations(@Session() session: UserSession) {
     return tsRestHandler(authContract.getRecommendations, async ({ query }) => {
       const limit = query.limit ?? 20;
       const result = await this.postsService.recommendations(
+        session.user.id,
         limit,
         query.cursor,
       );
