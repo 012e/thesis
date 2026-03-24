@@ -2,6 +2,7 @@ import type { PostContentDto } from '@repo/shared-dto';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  foreignKey,
   jsonb,
   pgEnum,
   pgTable,
@@ -60,6 +61,35 @@ export const postReactions = pgTable(
 
 export type PostReaction = typeof postReactions.$inferSelect;
 export type NewPostReaction = typeof postReactions.$inferInsert;
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    parentId: uuid('parent_id'),
+    authorId: text('author_id').notNull(),
+    content: text('content').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.parentId],
+      foreignColumns: [table.id],
+      name: 'comments_parent_id_fkey',
+    }).onDelete('cascade'),
+  ],
+);
+
+export type Comment = typeof comments.$inferSelect;
+export type NewComment = typeof comments.$inferInsert;
 
 export const threads = pgTable('threads', {
   id: uuid('id').defaultRandom().primaryKey(),
