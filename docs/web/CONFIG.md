@@ -69,3 +69,5 @@ Additionally hardcoded (not yet env-driven):
 | ----------------------- | ---------------------------------------------------------------- |
 | `http://localhost:3000` | `packages/auth-client/src/auth-client.ts` (better-auth base URL) |
 | `"/"`                   | `apps/web/src/lib/api/auth.ts` (ts-rest base URL)                |
+
+Note: the workspace `package.json` includes both `@tabler/icons-react` and `lucide-react`, and also lists `radix-ui` as a dependency. The project prefers `@tabler/icons-react` and the shadcn `base-lyra` primitives (`@base-ui/react`) — avoid introducing Radix primitives or switching icon families without an intentional migration.
