@@ -102,6 +102,27 @@ const RecommendationPage = z.object({
   nextCursor: z.string().nullable(),
 });
 
+const Thread = z.object({
+  id: z.uuid(),
+  externalId: z.string().optional().nullable(),
+  title: z.string().nullable(),
+  isArchived: z.boolean(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
+});
+
+const CreateThreadBody = z.object({
+  localId: z.string().optional(),
+});
+
+const UpdateThreadTitleBody = z.object({
+  title: z.string(),
+});
+
+const GenerateThreadTitleBody = z.object({
+  messages: z.array(z.unknown()),
+});
+
 export const authContract = c.router({
   login: {
     method: "POST",
@@ -229,6 +250,83 @@ export const authContract = c.router({
     },
     summary:
       "Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).",
+  },
+  listThreads: {
+    method: "GET",
+    path: "/threads",
+    responses: {
+      200: z.array(Thread),
+    },
+    summary: "List all threads for the current user",
+  },
+  createThread: {
+    method: "POST",
+    path: "/threads",
+    body: CreateThreadBody,
+    responses: {
+      201: Thread,
+    },
+    summary: "Create a new thread",
+  },
+  getThread: {
+    method: "GET",
+    path: "/threads/:id",
+    pathParams: z.object({ id: z.uuid() }),
+    responses: {
+      200: Thread,
+      404: z.null(),
+    },
+    summary: "Get a thread by ID",
+  },
+  updateThreadTitle: {
+    method: "PATCH",
+    path: "/threads/:id",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: UpdateThreadTitleBody,
+    responses: {
+      200: z.object({ success: z.boolean() }),
+    },
+    summary: "Update thread title",
+  },
+  archiveThread: {
+    method: "POST",
+    path: "/threads/:id/archive",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.undefined(),
+    responses: {
+      200: z.object({ success: z.boolean() }),
+    },
+    summary: "Archive a thread",
+  },
+  unarchiveThread: {
+    method: "POST",
+    path: "/threads/:id/unarchive",
+    pathParams: z.object({ id: z.uuid() }),
+    body: z.undefined(),
+    responses: {
+      200: z.object({ success: z.boolean() }),
+    },
+    summary: "Unarchive a thread",
+  },
+  deleteThread: {
+    method: "DELETE",
+    path: "/threads/:id",
+    pathParams: z.object({ id: z.uuid() }),
+    body: z.undefined(),
+    responses: {
+      200: z.object({ success: z.boolean() }),
+    },
+    summary: "Delete a thread",
+  },
+  generateThreadTitle: {
+    method: "POST",
+    path: "/threads/:id/title",
+    pathParams: z.object({ id: z.uuid() }),
+    body: GenerateThreadTitleBody,
+    responses: {
+      200: z.object({ title: z.string() }),
+    },
+    summary: "Generate a title for a thread based on messages",
   },
 }) satisfies AppRouter;
 

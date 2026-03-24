@@ -1,4 +1,4 @@
-import { and, count, desc, eq, lt, or, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, lt, or, sql } from 'drizzle-orm';
 import { Injectable } from '@nestjs/common';
 import type { PostDto, ReactionTypeDto } from '@repo/shared-dto';
 import type { z } from 'zod';
@@ -8,10 +8,16 @@ import { postReactions, posts, usersView } from '@/db/schema';
 
 const upvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
-).as('upvote_count');
+).as('upvoteCount');
 const downvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
-).as('downvote_count');
+).as('downvoteCount');
+
+const getUserReactionType = (userId: string) => {
+  return sql<
+    string | null
+  >`MAX(CASE WHEN ${postReactions.userId} = ${sql.raw(`'${userId}'`)} THEN ${postReactions.type} END)`;
+};
 
 import { createPostSchema, updatePostSchema } from './posts.schemas';
 
@@ -42,17 +48,11 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: getUserReactionType(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        and(
-          eq(posts.id, postReactions.postId),
-          eq(postReactions.userId, userId),
-        ),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .groupBy(
         posts.id,
         usersView.id,
@@ -91,17 +91,11 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        and(
-          eq(posts.id, postReactions.postId),
-          eq(postReactions.userId, authorId),
-        ),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .where(eq(posts.id, createdPost.id))
       .groupBy(
         posts.id,
@@ -131,19 +125,13 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: userId
+          ? getUserReactionType(userId)
+          : sql<string | null>`NULL`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        userId
-          ? and(
-              eq(posts.id, postReactions.postId),
-              eq(postReactions.userId, userId),
-            )
-          : eq(posts.id, postReactions.postId),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .where(eq(posts.id, id))
       .groupBy(
         posts.id,
@@ -190,17 +178,11 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        and(
-          eq(posts.id, postReactions.postId),
-          eq(postReactions.userId, authorId),
-        ),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .where(eq(posts.id, updatedPost.id))
       .groupBy(
         posts.id,
@@ -242,17 +224,11 @@ export class PostsService {
         reactionCount,
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: getUserReactionType(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        and(
-          eq(posts.id, postReactions.postId),
-          eq(postReactions.userId, userId),
-        ),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .groupBy(
         posts.id,
         usersView.id,
@@ -276,7 +252,7 @@ export class PostsService {
     }
 
     const rows = await query
-      .orderBy(desc(reactionCount), posts.id)
+      .orderBy(desc(reactionCount), asc(posts.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
@@ -346,17 +322,11 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
-        userReactionType: sql<string | null>`MAX(${postReactions.type})`,
+        userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(
-        postReactions,
-        and(
-          eq(posts.id, postReactions.postId),
-          eq(postReactions.userId, authorId),
-        ),
-      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .where(eq(posts.id, id))
       .groupBy(
         posts.id,
