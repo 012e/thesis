@@ -19,10 +19,6 @@ dev-watch:
     pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend,ai"
 
 # Start only the backend service
-dev-api:
-    pnpm --filter backend serve
-
-# Start only the backend service
 dev-backend:
     pnpm --filter backend serve
 
@@ -40,6 +36,18 @@ build:
 test:
     pnpm nx run-many --target=build --projects=@repo/shared-dto,@repo/auth-contracts,@repo/auth-client
     pnpm nx run-many --target=test
+
+# Run backend tests in verbose mode
+test-verbose:
+    pnpm --filter backend run test:verbose
+
+# Run backend tests in watch mode
+test-watch:
+    pnpm --filter backend test:watch
+
+# Run backend e2e tests
+test-e2e:
+    pnpm --filter backend test:e2e
 
 # --- E2E Tests ---
 
@@ -101,18 +109,6 @@ web +COMMAND:
 ai +COMMAND:
     (cd apps/ai && {{ COMMAND }})
 
-# Start only the AI service
-dev-ai:
-    pnpm --filter ai dev
-
 # Run a command in the auth-contracts package directory
 auth-contracts +COMMAND:
     (cd packages/auth-contracts && {{ COMMAND }})
-
-# Build the auth-contracts package
-build-auth-contracts:
-    pnpm --filter @repo/auth-contracts build
-
-# Typecheck the auth-contracts package
-typecheck-auth-contracts:
-    pnpm --filter @repo/auth-contracts typecheck
