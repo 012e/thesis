@@ -101,7 +101,7 @@ The ts-rest `AuthController` stubs (`/auth/login`, `/auth/me`) exist only to sat
 
 ## ts-rest contract integration
 
-The shared contract is defined in `packages/auth-contracts/src/index.ts`. It is the single source of truth for:
+The shared contract is defined in `packages/rest-contracts/src/index.ts`. It is the single source of truth for:
 
 - HTTP method and path
 - Path parameters, query parameters, and request body shape
@@ -109,7 +109,7 @@ The shared contract is defined in `packages/auth-contracts/src/index.ts`. It is 
 
 Both the backend (`@ts-rest/nest`) and frontend (`@ts-rest/react-query` or similar) consume this contract. Adding a new endpoint requires:
 
-1. Adding the route definition to `packages/auth-contracts/src/index.ts`.
+1. Adding the route definition to `packages/rest-contracts/src/index.ts`.
 2. Adding a `@TsRestHandler` method in the appropriate NestJS controller.
 3. Implementing the service method.
 4. Updating `packages/shared-dto` if a new shared DTO is needed.

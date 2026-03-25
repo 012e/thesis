@@ -30,7 +30,7 @@ The server starts on `PORT` (default `3000`). Copy `.env.example` to `.env` and 
 
 - **NestJS 11** – module/controller/service architecture, dependency injection.
 - **Better Auth** – session management and JWT generation. Integrated via `@thallesp/nestjs-better-auth`. Auth routes live at `/api/auth/*` and are handled by Better Auth's own middleware; `bodyParser` is disabled at the NestJS level so Better Auth can parse the raw request body.
-- **ts-rest** – typed HTTP contract library. All routes are declared in `@repo/auth-contracts` and implemented with `@TsRestHandler` decorators. The contract is the single source of truth shared between backend and frontend.
+- **ts-rest** – typed HTTP contract library. All routes are declared in `@repo/rest-contracts` and implemented with `@TsRestHandler` decorators. The contract is the single source of truth shared between backend and frontend.
 - **Drizzle ORM** – SQL query builder and schema definition. Migrations are stored in `drizzle/` and run via `drizzle-kit migrate`.
 - **Zod 4** – runtime validation at request boundaries.
 

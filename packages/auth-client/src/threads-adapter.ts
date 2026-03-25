@@ -1,7 +1,7 @@
 import { type RemoteThreadListAdapter } from "@assistant-ui/react";
 import { createAssistantStream } from "assistant-stream";
 import { type ClientInferRequest, initClient } from "@ts-rest/core";
-import { authContract } from "@repo/auth-contracts";
+import { authContract } from "@repo/rest-contracts";
 
 type Client = any; // We can't easily infer the exact client type here without passing initClient args, so using any for now or better type if possible.
 // Actually, let's just assume the user passes a client that matches the contract.

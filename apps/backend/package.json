@@ -36,7 +36,7 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/terminus": "^11.1.1",
-    "@repo/auth-contracts": "workspace:*",
+    "@repo/rest-contracts": "workspace:*",
     "@repo/shared-dto": "workspace:*",
     "@t3-oss/env-core": "^0.13.10",
     "@thallesp/nestjs-better-auth": "^2.4.0",

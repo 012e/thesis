@@ -14,9 +14,9 @@ setup:
 dev:
     pnpm nx run-many --target=serve --projects=web,backend,ai
 
-# Start all services including auth-contracts in watch mode
+# Start all services including rest-contracts in watch mode
 dev-watch:
-    pnpm concurrently "pnpm --filter @repo/auth-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend,ai"
+    pnpm concurrently "pnpm --filter @repo/rest-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend,ai"
 
 # Start only the backend service
 dev-backend:
@@ -34,7 +34,7 @@ build:
 
 # Build all workspace packages, then test the entire monorepo using Nx
 test:
-    pnpm nx run-many --target=build --projects=shared-dto,auth-contracts,auth-client
+    pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm nx run-many --target=test
 
 # Run backend tests in verbose mode
@@ -109,6 +109,6 @@ web +COMMAND:
 ai +COMMAND:
     (cd apps/ai && {{ COMMAND }})
 
-# Run a command in the auth-contracts package directory
-auth-contracts +COMMAND:
-    (cd packages/auth-contracts && {{ COMMAND }})
+# Run a command in the rest-contracts package directory
+rest-contracts +COMMAND:
+    (cd packages/rest-contracts && {{ COMMAND }})
