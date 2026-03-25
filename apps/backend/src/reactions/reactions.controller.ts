@@ -3,7 +3,7 @@ import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { Session } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
-import { authContract } from '@repo/rest-contracts';
+import { reactionsContract } from '@repo/rest-contracts';
 
 import { ReactionsService } from './reactions.service';
 
@@ -11,49 +11,55 @@ import { ReactionsService } from './reactions.service';
 export class ReactionsController {
   constructor(private readonly reactionsService: ReactionsService) {}
 
-  @TsRestHandler(authContract.reactToPost)
+  @TsRestHandler(reactionsContract.reactToPost)
   reactToPost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.reactToPost, async ({ params, body }) => {
-      const reaction = await this.reactionsService.react(
-        params.id,
-        session.user.id,
-        body.type,
-      );
+    return tsRestHandler(
+      reactionsContract.reactToPost,
+      async ({ params, body }) => {
+        const reaction = await this.reactionsService.react(
+          params.id,
+          session.user.id,
+          body.type,
+        );
 
-      if (!reaction) {
-        return { status: 404, body: null };
-      }
+        if (!reaction) {
+          return { status: 404, body: null };
+        }
 
-      return {
-        status: 200,
-        body: authContract.reactToPost.responses[200].parse(reaction),
-      };
-    });
+        return {
+          status: 200,
+          body: reactionsContract.reactToPost.responses[200].parse(reaction),
+        };
+      },
+    );
   }
 
-  @TsRestHandler(authContract.unreactToPost)
+  @TsRestHandler(reactionsContract.unreactToPost)
   unreactToPost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.unreactToPost, async ({ params }) => {
-      const reaction = await this.reactionsService.unreact(
-        params.id,
-        session.user.id,
-      );
+    return tsRestHandler(
+      reactionsContract.unreactToPost,
+      async ({ params }) => {
+        const reaction = await this.reactionsService.unreact(
+          params.id,
+          session.user.id,
+        );
 
-      if (!reaction) {
-        return { status: 404, body: null };
-      }
+        if (!reaction) {
+          return { status: 404, body: null };
+        }
 
-      return {
-        status: 200,
-        body: authContract.unreactToPost.responses[200].parse(reaction),
-      };
-    });
+        return {
+          status: 200,
+          body: reactionsContract.unreactToPost.responses[200].parse(reaction),
+        };
+      },
+    );
   }
 
-  @TsRestHandler(authContract.getReactionSummary)
+  @TsRestHandler(reactionsContract.getReactionSummary)
   getReactionSummary(@Session() session: UserSession) {
     return tsRestHandler(
-      authContract.getReactionSummary,
+      reactionsContract.getReactionSummary,
       async ({ params }) => {
         const summary = await this.reactionsService.getSummary(
           params.id,
@@ -66,16 +72,18 @@ export class ReactionsController {
 
         return {
           status: 200,
-          body: authContract.getReactionSummary.responses[200].parse(summary),
+          body: reactionsContract.getReactionSummary.responses[200].parse(
+            summary,
+          ),
         };
       },
     );
   }
 
-  @TsRestHandler(authContract.listReactors)
+  @TsRestHandler(reactionsContract.listReactors)
   listReactors() {
     return tsRestHandler(
-      authContract.listReactors,
+      reactionsContract.listReactors,
       async ({ params, query }) => {
         const reactors = await this.reactionsService.listReactors(
           params.id,
@@ -88,7 +96,7 @@ export class ReactionsController {
 
         return {
           status: 200,
-          body: authContract.listReactors.responses[200].parse(reactors),
+          body: reactionsContract.listReactors.responses[200].parse(reactors),
         };
       },
     );

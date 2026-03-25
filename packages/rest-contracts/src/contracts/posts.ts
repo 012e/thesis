@@ -1,0 +1,85 @@
+import { initContract } from "@ts-rest/core";
+import { z } from "zod";
+import { User } from "../schemas/shared";
+import {
+  Post,
+  CreatePostBody,
+  UpdatePostBody,
+  RecommendationPage,
+} from "../schemas/post";
+import {
+  Reactor,
+  PostReaction,
+  PostReactionSummary,
+  ReactPostBody,
+} from "../schemas/reaction";
+
+const c = initContract();
+
+export const postsContract = c.router({
+  listPosts: {
+    method: "GET",
+    path: "/posts",
+    responses: {
+      200: z.array(Post),
+    },
+    summary: "List social media posts",
+  },
+  createPost: {
+    method: "POST",
+    path: "/posts",
+    body: CreatePostBody,
+    responses: {
+      201: Post,
+    },
+    summary: "Create a social media post",
+  },
+  getPost: {
+    method: "GET",
+    path: "/posts/:id",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: Post,
+      404: z.null(),
+    },
+    summary: "Get a social media post",
+  },
+  updatePost: {
+    method: "PUT",
+    path: "/posts/:id",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: UpdatePostBody,
+    responses: {
+      200: Post,
+      403: z.null(),
+      404: z.null(),
+    },
+    summary: "Update a social media post",
+  },
+  deletePost: {
+    method: "DELETE",
+    path: "/posts/:id",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: Post,
+      403: z.null(),
+      404: z.null(),
+    },
+    summary: "Delete a social media post",
+  },
+  getRecommendations: {
+    method: "GET",
+    path: "/recommendations",
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: RecommendationPage,
+    },
+    summary:
+      "Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).",
+  },
+});
+
+export type PostsContract = typeof postsContract;

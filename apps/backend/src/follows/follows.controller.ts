@@ -3,7 +3,7 @@ import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { Session } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
-import { authContract } from '@repo/rest-contracts';
+import { followsContract } from '@repo/rest-contracts';
 
 import { FollowsService } from './follows.service';
 
@@ -11,9 +11,9 @@ import { FollowsService } from './follows.service';
 export class FollowsController {
   constructor(private readonly followsService: FollowsService) {}
 
-  @TsRestHandler(authContract.followUser)
+  @TsRestHandler(followsContract.followUser)
   followUser(@Session() session: UserSession) {
-    return tsRestHandler(authContract.followUser, async ({ params }) => {
+    return tsRestHandler(followsContract.followUser, async ({ params }) => {
       if (params.id === session.user.id) {
         return { status: 400, body: null };
       }
@@ -28,14 +28,14 @@ export class FollowsController {
 
       return {
         status: 201,
-        body: authContract.followUser.responses[201].parse(follow),
+        body: followsContract.followUser.responses[201].parse(follow),
       };
     });
   }
 
-  @TsRestHandler(authContract.unfollowUser)
+  @TsRestHandler(followsContract.unfollowUser)
   unfollowUser(@Session() session: UserSession) {
-    return tsRestHandler(authContract.unfollowUser, async ({ params }) => {
+    return tsRestHandler(followsContract.unfollowUser, async ({ params }) => {
       const follow = await this.followsService.unfollow(
         session.user.id,
         params.id,
@@ -47,14 +47,14 @@ export class FollowsController {
 
       return {
         status: 200,
-        body: authContract.unfollowUser.responses[200].parse(follow),
+        body: followsContract.unfollowUser.responses[200].parse(follow),
       };
     });
   }
 
-  @TsRestHandler(authContract.listFollowers)
+  @TsRestHandler(followsContract.listFollowers)
   listFollowers() {
-    return tsRestHandler(authContract.listFollowers, async ({ params }) => {
+    return tsRestHandler(followsContract.listFollowers, async ({ params }) => {
       const users = await this.followsService.listFollowers(params.id);
 
       if (!users) {
@@ -63,14 +63,14 @@ export class FollowsController {
 
       return {
         status: 200,
-        body: authContract.listFollowers.responses[200].parse(users),
+        body: followsContract.listFollowers.responses[200].parse(users),
       };
     });
   }
 
-  @TsRestHandler(authContract.listFollowing)
+  @TsRestHandler(followsContract.listFollowing)
   listFollowing() {
-    return tsRestHandler(authContract.listFollowing, async ({ params }) => {
+    return tsRestHandler(followsContract.listFollowing, async ({ params }) => {
       const users = await this.followsService.listFollowing(params.id);
 
       if (!users) {
@@ -79,7 +79,7 @@ export class FollowsController {
 
       return {
         status: 200,
-        body: authContract.listFollowing.responses[200].parse(users),
+        body: followsContract.listFollowing.responses[200].parse(users),
       };
     });
   }

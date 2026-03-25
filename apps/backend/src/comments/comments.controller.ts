@@ -2,28 +2,28 @@ import { Controller } from '@nestjs/common';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { Session } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import { authContract } from '@repo/rest-contracts';
+import { commentsContract } from '@repo/rest-contracts';
 import { CommentsService } from './comments.service';
 
 @Controller()
 export class CommentsController {
   constructor(private readonly commentsService: CommentsService) {}
 
-  @TsRestHandler(authContract.listComments)
+  @TsRestHandler(commentsContract.listComments)
   listComments(@Session() session: UserSession) {
-    return tsRestHandler(authContract.listComments, async ({ params }) => {
+    return tsRestHandler(commentsContract.listComments, async ({ params }) => {
       const comments = await this.commentsService.list(params.postId);
       return {
         status: 200,
-        body: authContract.listComments.responses[200].parse(comments),
+        body: commentsContract.listComments.responses[200].parse(comments),
       };
     });
   }
 
-  @TsRestHandler(authContract.createComment)
+  @TsRestHandler(commentsContract.createComment)
   createComment(@Session() session: UserSession) {
     return tsRestHandler(
-      authContract.createComment,
+      commentsContract.createComment,
       async ({ params, body }) => {
         const comment = await this.commentsService.create(
           session.user.id,
@@ -33,15 +33,15 @@ export class CommentsController {
         );
         return {
           status: 201,
-          body: authContract.createComment.responses[201].parse(comment),
+          body: commentsContract.createComment.responses[201].parse(comment),
         };
       },
     );
   }
 
-  @TsRestHandler(authContract.deleteComment)
+  @TsRestHandler(commentsContract.deleteComment)
   deleteComment(@Session() session: UserSession) {
-    return tsRestHandler(authContract.deleteComment, async ({ params }) => {
+    return tsRestHandler(commentsContract.deleteComment, async ({ params }) => {
       const existingComment = await this.commentsService.getById(params.id);
 
       if (!existingComment) {
@@ -67,9 +67,9 @@ export class CommentsController {
     });
   }
 
-  @TsRestHandler(authContract.getComment)
+  @TsRestHandler(commentsContract.getComment)
   getComment(@Session() session: UserSession) {
-    return tsRestHandler(authContract.getComment, async ({ params }) => {
+    return tsRestHandler(commentsContract.getComment, async ({ params }) => {
       const comment = await this.commentsService.getById(params.id);
 
       if (!comment) {
@@ -81,15 +81,15 @@ export class CommentsController {
 
       return {
         status: 200,
-        body: authContract.getComment.responses[200].parse(comment),
+        body: commentsContract.getComment.responses[200].parse(comment),
       };
     });
   }
 
-  @TsRestHandler(authContract.listCommentReplies)
+  @TsRestHandler(commentsContract.listCommentReplies)
   listCommentReplies(@Session() session: UserSession) {
     return tsRestHandler(
-      authContract.listCommentReplies,
+      commentsContract.listCommentReplies,
       async ({ params }) => {
         const parent = await this.commentsService.getById(params.id);
         if (!parent) {
@@ -102,34 +102,39 @@ export class CommentsController {
         const replies = await this.commentsService.listReplies(params.id);
         return {
           status: 200,
-          body: authContract.listCommentReplies.responses[200].parse(replies),
+          body: commentsContract.listCommentReplies.responses[200].parse(
+            replies,
+          ),
         };
       },
     );
   }
 
-  @TsRestHandler(authContract.createReply)
+  @TsRestHandler(commentsContract.createReply)
   createReply(@Session() session: UserSession) {
-    return tsRestHandler(authContract.createReply, async ({ params, body }) => {
-      const parent = await this.commentsService.getById(params.id);
-      if (!parent) {
+    return tsRestHandler(
+      commentsContract.createReply,
+      async ({ params, body }) => {
+        const parent = await this.commentsService.getById(params.id);
+        if (!parent) {
+          return {
+            status: 404,
+            body: null,
+          };
+        }
+
+        const comment = await this.commentsService.create(
+          session.user.id,
+          parent.postId,
+          body.content,
+          params.id,
+        );
+
         return {
-          status: 404,
-          body: null,
+          status: 201,
+          body: commentsContract.createReply.responses[201].parse(comment),
         };
-      }
-
-      const comment = await this.commentsService.create(
-        session.user.id,
-        parent.postId,
-        body.content,
-        params.id,
-      );
-
-      return {
-        status: 201,
-        body: authContract.createReply.responses[201].parse(comment),
-      };
-    });
+      },
+    );
   }
 }
