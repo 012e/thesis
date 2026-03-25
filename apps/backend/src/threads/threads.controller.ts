@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { Session } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { authContract } from '@repo/rest-contracts';
+import { threadsContract } from '@repo/rest-contracts';
 
 import { ThreadsService } from './threads.service';
 
@@ -10,9 +10,9 @@ import { ThreadsService } from './threads.service';
 export class ThreadsController {
   constructor(private readonly threadsService: ThreadsService) {}
 
-  @TsRestHandler(authContract.listThreads)
+  @TsRestHandler(threadsContract.listThreads)
   list(@Session() session: UserSession) {
-    return tsRestHandler(authContract.listThreads, async () => {
+    return tsRestHandler(threadsContract.listThreads, async () => {
       const threads = await this.threadsService.list(session.user.id);
       return {
         status: 200,
@@ -28,9 +28,9 @@ export class ThreadsController {
     });
   }
 
-  @TsRestHandler(authContract.createThread)
+  @TsRestHandler(threadsContract.createThread)
   create(@Session() session: UserSession) {
-    return tsRestHandler(authContract.createThread, async ({ body }) => {
+    return tsRestHandler(threadsContract.createThread, async ({ body }) => {
       const thread = await this.threadsService.create(
         session.user.id,
         body.localId,
@@ -49,9 +49,9 @@ export class ThreadsController {
     });
   }
 
-  @TsRestHandler(authContract.getThread)
+  @TsRestHandler(threadsContract.getThread)
   get(@Session() session: UserSession) {
-    return tsRestHandler(authContract.getThread, async ({ params }) => {
+    return tsRestHandler(threadsContract.getThread, async ({ params }) => {
       const thread = await this.threadsService.getById(
         params.id,
         session.user.id,
@@ -73,10 +73,10 @@ export class ThreadsController {
     });
   }
 
-  @TsRestHandler(authContract.updateThreadTitle)
+  @TsRestHandler(threadsContract.updateThreadTitle)
   rename(@Session() session: UserSession) {
     return tsRestHandler(
-      authContract.updateThreadTitle,
+      threadsContract.updateThreadTitle,
       async ({ params, body }) => {
         await this.threadsService.updateTitle(
           params.id,
@@ -88,34 +88,37 @@ export class ThreadsController {
     );
   }
 
-  @TsRestHandler(authContract.archiveThread)
+  @TsRestHandler(threadsContract.archiveThread)
   archive(@Session() session: UserSession) {
-    return tsRestHandler(authContract.archiveThread, async ({ params }) => {
+    return tsRestHandler(threadsContract.archiveThread, async ({ params }) => {
       await this.threadsService.archive(params.id, session.user.id);
       return { status: 200, body: { success: true } };
     });
   }
 
-  @TsRestHandler(authContract.unarchiveThread)
+  @TsRestHandler(threadsContract.unarchiveThread)
   unarchive(@Session() session: UserSession) {
-    return tsRestHandler(authContract.unarchiveThread, async ({ params }) => {
-      await this.threadsService.unarchive(params.id, session.user.id);
-      return { status: 200, body: { success: true } };
-    });
+    return tsRestHandler(
+      threadsContract.unarchiveThread,
+      async ({ params }) => {
+        await this.threadsService.unarchive(params.id, session.user.id);
+        return { status: 200, body: { success: true } };
+      },
+    );
   }
 
-  @TsRestHandler(authContract.deleteThread)
+  @TsRestHandler(threadsContract.deleteThread)
   deleteThread(@Session() session: UserSession) {
-    return tsRestHandler(authContract.deleteThread, async ({ params }) => {
+    return tsRestHandler(threadsContract.deleteThread, async ({ params }) => {
       await this.threadsService.delete(params.id, session.user.id);
       return { status: 200, body: { success: true } };
     });
   }
 
-  @TsRestHandler(authContract.generateThreadTitle)
+  @TsRestHandler(threadsContract.generateThreadTitle)
   generateTitle(@Session() session: UserSession) {
     return tsRestHandler(
-      authContract.generateThreadTitle,
+      threadsContract.generateThreadTitle,
       async ({ params, body }) => {
         const firstUserMessage = body.messages?.find(
           (

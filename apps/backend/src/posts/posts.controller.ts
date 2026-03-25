@@ -3,7 +3,7 @@ import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { Session } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 
-import { authContract } from '@repo/rest-contracts';
+import { postsContract } from '@repo/rest-contracts';
 
 import { createPostSchema, updatePostSchema } from './posts.schemas';
 import { PostsService } from './posts.service';
@@ -12,34 +12,34 @@ import { PostsService } from './posts.service';
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
-  @TsRestHandler(authContract.listPosts)
+  @TsRestHandler(postsContract.listPosts)
   listPosts(@Session() session: UserSession) {
-    return tsRestHandler(authContract.listPosts, async () => {
+    return tsRestHandler(postsContract.listPosts, async () => {
       const posts = await this.postsService.list(session.user.id);
 
       return {
         status: 200,
-        body: authContract.listPosts.responses[200].parse(posts),
+        body: postsContract.listPosts.responses[200].parse(posts),
       };
     });
   }
 
-  @TsRestHandler(authContract.createPost)
+  @TsRestHandler(postsContract.createPost)
   createPost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.createPost, async ({ body }) => {
+    return tsRestHandler(postsContract.createPost, async ({ body }) => {
       const input = createPostSchema.parse(body);
       const post = await this.postsService.create(session.user.id, input);
 
       return {
         status: 201,
-        body: authContract.createPost.responses[201].parse(post),
+        body: postsContract.createPost.responses[201].parse(post),
       };
     });
   }
 
-  @TsRestHandler(authContract.getPost)
+  @TsRestHandler(postsContract.getPost)
   getPost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.getPost, async ({ params }) => {
+    return tsRestHandler(postsContract.getPost, async ({ params }) => {
       const post = await this.postsService.getById(params.id, session.user.id);
 
       if (!post) {
@@ -56,9 +56,9 @@ export class PostsController {
     });
   }
 
-  @TsRestHandler(authContract.updatePost)
+  @TsRestHandler(postsContract.updatePost)
   updatePost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.updatePost, async ({ params, body }) => {
+    return tsRestHandler(postsContract.updatePost, async ({ params, body }) => {
       const input = updatePostSchema.parse(body);
 
       const existingPost = await this.postsService.getById(
@@ -100,9 +100,9 @@ export class PostsController {
     });
   }
 
-  @TsRestHandler(authContract.deletePost)
+  @TsRestHandler(postsContract.deletePost)
   async deletePost(@Session() session: UserSession) {
-    return tsRestHandler(authContract.deletePost, async ({ params }) => {
+    return tsRestHandler(postsContract.deletePost, async ({ params }) => {
       const existingPost = await this.postsService.getById(
         params.id,
         session.user.id,
@@ -138,20 +138,23 @@ export class PostsController {
     });
   }
 
-  @TsRestHandler(authContract.getRecommendations)
+  @TsRestHandler(postsContract.getRecommendations)
   getRecommendations(@Session() session: UserSession) {
-    return tsRestHandler(authContract.getRecommendations, async ({ query }) => {
-      const limit = query.limit ?? 20;
-      const result = await this.postsService.recommendations(
-        session.user.id,
-        limit,
-        query.cursor,
-      );
+    return tsRestHandler(
+      postsContract.getRecommendations,
+      async ({ query }) => {
+        const limit = query.limit ?? 20;
+        const result = await this.postsService.recommendations(
+          session.user.id,
+          limit,
+          query.cursor,
+        );
 
-      return {
-        status: 200,
-        body: authContract.getRecommendations.responses[200].parse(result),
-      };
-    });
+        return {
+          status: 200,
+          body: postsContract.getRecommendations.responses[200].parse(result),
+        };
+      },
+    );
   }
 }
