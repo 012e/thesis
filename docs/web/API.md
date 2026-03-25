@@ -2,7 +2,7 @@
 
 Two client layers:
 
-- **ts-rest** (`src/lib/api/auth.ts`) — typed client for all app endpoints, inferred from `@repo/auth-contracts`
+- **ts-rest** (`src/lib/api/auth.ts`) — typed client for all app endpoints, inferred from `@repo/rest-contracts`
 - **better-auth** (`@repo/auth-client`) — auth flows (session, sign-in/up, password reset)
 
 ## ts-rest Client

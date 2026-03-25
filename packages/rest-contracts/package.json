@@ -1,5 +1,5 @@
 {
-  "name": "@repo/auth-contracts",
+  "name": "@repo/rest-contracts",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -15,8 +15,8 @@
     "build": "rm -f tsconfig.tsbuildinfo && tsc",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "echo 'No lint configured for auth-contracts' && exit 0",
-    "test": "echo 'No tests configured for auth-contracts' && exit 0"
+    "lint": "echo 'No lint configured for rest-contracts' && exit 0",
+    "test": "echo 'No tests configured for rest-contracts' && exit 0"
   },
   "dependencies": {
     "@repo/shared-dto": "workspace:*",

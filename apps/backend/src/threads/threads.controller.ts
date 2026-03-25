@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { Session } from '@thallesp/nestjs-better-auth';
 import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { authContract } from '@repo/auth-contracts';
+import { authContract } from '@repo/rest-contracts';
 
 import { ThreadsService } from './threads.service';
 

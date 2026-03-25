@@ -1,5 +1,5 @@
 import { initClient } from "@ts-rest/core";
-import authContract from "@repo/auth-contracts";
+import authContract from "@repo/rest-contracts";
 
 const client = initClient(authContract, {
   baseUrl: "/", // adjust to backend base URL in real projects

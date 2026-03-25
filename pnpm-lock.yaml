@@ -60,9 +60,9 @@ importers:
       '@nestjs/terminus':
         specifier: ^11.1.1
         version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.13(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.13.6)(rxjs@7.8.2))(@nestjs/common@11.1.13(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.13)(@nestjs/microservices@11.1.13)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@repo/auth-contracts':
+      '@repo/rest-contracts':
         specifier: workspace:*
-        version: link:../../packages/auth-contracts
+        version: link:../../packages/rest-contracts
       '@repo/shared-dto':
         specifier: workspace:*
         version: link:../../packages/shared-dto
@@ -232,9 +232,9 @@ importers:
       '@repo/auth-client':
         specifier: workspace:*
         version: link:../../packages/auth-client
-      '@repo/auth-contracts':
+      '@repo/rest-contracts':
         specifier: workspace:*
-        version: link:../../packages/auth-contracts
+        version: link:../../packages/rest-contracts
       '@repo/shared-dto':
         specifier: workspace:*
         version: link:../../packages/shared-dto
@@ -376,7 +376,7 @@ importers:
         specifier: ^5.0.0
         version: 5.9.3
 
-  packages/auth-contracts:
+  packages/rest-contracts:
     dependencies:
       '@repo/shared-dto':
         specifier: workspace:*

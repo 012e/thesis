@@ -19,7 +19,7 @@ pnpm --filter web lint
 | Client state  | Jotai v2                                 | custom store for imperative access outside React            |
 | Forms         | TanStack Form + Zod                      | per-field `safeParse`, no global adapter                    |
 | Auth          | `better-auth` via `@repo/auth-client`    | JWT persisted via `atomWithStorage`                         |
-| API           | `@ts-rest/core` + `@repo/auth-contracts` | fully typed from Zod schemas                                |
+| API           | `@ts-rest/core` + `@repo/rest-contracts` | fully typed from Zod schemas                                |
 | UI primitives | `@base-ui/react` (NOT Radix)             | shadcn `base-lyra` style, CVA variants                      |
 | Styling       | Tailwind CSS v4 (Vite plugin)            | no `tailwind.config.js`; OKLCH design tokens in `index.css` |
 | Icons         | `@tabler/icons-react` (NOT Lucide)       |                                                             |
@@ -56,7 +56,7 @@ src/
 ## Workspace Dependencies
 
 - `@repo/auth-client` → `packages/auth-client`
-- `@repo/auth-contracts` → `packages/auth-contracts`
+- `@repo/rest-contracts` → `packages/rest-contracts`
 
 ## Further Reading
 

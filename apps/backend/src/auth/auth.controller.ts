@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import { authContract } from '@repo/auth-contracts';
+import { authContract } from '@repo/rest-contracts';
 
 @Controller()
 export class AuthController {

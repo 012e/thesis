@@ -56,4 +56,4 @@ Requires `DATABASE_URL` environment variable to be set.
 
 Posts are stored in the `posts` table with a `jsonb` `content` column so the payload can represent text posts, polls, visualizations, and other future content types.
 
-Routes are defined in `@repo/auth-contracts` and implemented in `src/posts/posts.controller.ts`.
+Routes are defined in `@repo/rest-contracts` and implemented in `src/posts/posts.controller.ts`.

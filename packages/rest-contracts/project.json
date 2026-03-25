@@ -1,7 +1,7 @@
 {
-  "name": "auth-contracts",
+  "name": "rest-contracts",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/auth-contracts/src",
+  "sourceRoot": "packages/rest-contracts/src",
   "projectType": "library",
   "tags": ["type:contracts", "scope:shared"],
   "targets": {
@@ -10,28 +10,28 @@
       "outputs": ["{projectRoot}/dist"],
       "options": {
         "command": "rm -f tsconfig.tsbuildinfo && tsc",
-        "cwd": "packages/auth-contracts"
+        "cwd": "packages/rest-contracts"
       }
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
         "command": "eslint . --max-warnings=0",
-        "cwd": "packages/auth-contracts"
+        "cwd": "packages/rest-contracts"
       }
     },
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "echo 'No tests configured for auth-contracts' && exit 0",
-        "cwd": "packages/auth-contracts"
+        "command": "echo 'No tests configured for rest-contracts' && exit 0",
+        "cwd": "packages/rest-contracts"
       }
     },
     "typecheck": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsc --noEmit",
-        "cwd": "packages/auth-contracts"
+        "cwd": "packages/rest-contracts"
       }
     }
   }

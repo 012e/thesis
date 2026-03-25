@@ -102,7 +102,7 @@ Better Auth migrations are in `better-auth_migrations/` and create the `user`, `
 2. Export the inferred `$inferSelect` / `$inferInsert` types.
 3. Run `pnpm --filter backend db:generate` to generate the migration SQL.
 4. Review the generated file in `drizzle/` and run `pnpm --filter backend db:migrate` to apply it.
-5. If the table produces a new DTO, add it to `packages/shared-dto` and update the contract in `packages/auth-contracts`.
+5. If the table produces a new DTO, add it to `packages/shared-dto` and update the contract in `packages/rest-contracts`.
 
 ## Test database
 
