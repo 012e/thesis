@@ -247,5 +247,44 @@ describe('Auth integration', () => {
       expect(response.body.user).toBeDefined();
       expect(response.body.user.email).toBe(email);
     });
+    describe('/auth/me endpoint', () => {
+      it('returns 401 for unauthenticated requests', async () => {
+        await request(testApp.app.getHttpServer()).get('/auth/me').expect(401);
+      });
+
+      it('returns user data for authenticated requests', async () => {
+        const email = `auth-me-${Date.now()}@example.com`;
+        const username = `authme${Date.now()}`;
+
+        const registerRes = await request(testApp.app.getHttpServer())
+          .post('/api/auth/sign-up/email')
+          .send({
+            email,
+            username,
+            password: 'TestPassword123!',
+            name: 'Auth Me User',
+          })
+          .expect(200);
+
+        const setCookieHeader = registerRes.headers['set-cookie'] as
+          | string[]
+          | string;
+        const cookies = Array.isArray(setCookieHeader)
+          ? setCookieHeader
+          : [setCookieHeader];
+        const sessionCookieEntry = cookies.find((c) =>
+          c.startsWith('better-auth.session_token='),
+        );
+
+        const response = await request(testApp.app.getHttpServer())
+          .get('/auth/me')
+          .set('Cookie', sessionCookieEntry!.split(';')[0])
+          .expect(200);
+
+        expect(response.body).toBeDefined();
+        expect(response.body.id).toBeTruthy();
+        expect(response.body.username).toBe(username);
+      });
+    });
   });
 });

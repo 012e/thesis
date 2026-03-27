@@ -22,7 +22,7 @@ export async function login({
   if (error) {
     return {
       success: false,
-      error: "Failed to retrieve authentication token",
+      error: `fuck 1 Failed to retrieve authentication token: ${error}`,
     };
   }
 

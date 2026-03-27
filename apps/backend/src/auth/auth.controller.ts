@@ -1,5 +1,6 @@
 import { Controller } from '@nestjs/common';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { AllowAnonymous, Session } from '@thallesp/nestjs-better-auth';
+import type { UserSession } from '@thallesp/nestjs-better-auth';
 import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
 import { authContract } from '@repo/rest-contracts';
 
@@ -17,10 +18,16 @@ export class AuthController {
   }
 
   @TsRestHandler(authContract.me)
-  me() {
-    // Placeholder: real session info is accessible via Better Auth's session endpoint.
+  me(@Session() session: UserSession) {
     return tsRestHandler(authContract.me, async () => {
-      return { status: 401, body: null };
+      const user = session.user as typeof session.user & { username: string };
+      return {
+        status: 200,
+        body: {
+          id: user.id,
+          username: user.username,
+        },
+      };
     });
   }
 }

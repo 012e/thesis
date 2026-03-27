@@ -92,3 +92,33 @@ export interface UserFollowDto {
   followeeId: string;
   createdAt: string;
 }
+
+export interface CommentDto {
+  id: string;
+  postId: string;
+  parentId: string | null;
+  authorId: string;
+  author: PostAuthorDto;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCommentDto {
+  content: string;
+  parentId?: string;
+}
+
+export interface UserProfileDto {
+  id: string;
+  username: string | null;
+  displayUsername: string | null;
+  email: string;
+  name: string | null;
+  image: string | null;
+  createdAt: string;
+  followersCount: number;
+  followingCount: number;
+  postCount: number;
+  isFollowing: boolean;
+}
