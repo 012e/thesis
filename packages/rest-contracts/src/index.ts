@@ -6,6 +6,7 @@ import { reactionsContract } from "./contracts/reactions";
 import { followsContract } from "./contracts/follows";
 import { threadsContract } from "./contracts/threads";
 import { commentsContract } from "./contracts/comments";
+import { usersContract } from "./contracts/users";
 
 const c = initContract();
 
@@ -16,6 +17,7 @@ export const appContract = c.router({
   ...followsContract,
   ...threadsContract,
   ...commentsContract,
+  ...usersContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -48,3 +50,8 @@ export * from "./schemas/thread";
 export * from "./schemas/comment";
 
 export default appContract;
+
+export { usersContract } from "./contracts/users";
+export type { UsersContract } from "./contracts/users";
+
+export * from "./schemas/user";

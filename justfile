@@ -12,19 +12,7 @@ setup:
 
 # Start backend, frontend, and AI service in parallel
 dev:
-    pnpm nx run-many --target=serve --projects=web,backend,ai
-
-# Start all services including rest-contracts in watch mode
-dev-watch:
-    pnpm concurrently "pnpm --filter @repo/rest-contracts dev" "pnpm nx run-many --target=serve --projects=web,backend,ai"
-
-# Start only the backend service
-dev-backend:
-    pnpm --filter backend serve
-
-# Start only the Web App
-dev-web:
-    pnpm --filter web dev
+    pnpm nx run-many --target=serve --projects=web,backend,ai,rest-contracts --parallel=10
 
 # --- Build & Test ---
 

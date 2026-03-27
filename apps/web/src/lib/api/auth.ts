@@ -1,9 +1,4 @@
-import { initClient } from "@ts-rest/core";
-import authContract from "@repo/rest-contracts";
-
-const client = initClient(authContract, {
-  baseUrl: "/", // adjust to backend base URL in real projects
-});
+import { client } from ".";
 
 export async function login(username: string, password: string) {
   const res = await client.login({ body: { username, password } });

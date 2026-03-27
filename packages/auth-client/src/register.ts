@@ -1,16 +1,8 @@
 import { authClient } from "./auth-client";
 import type { RegisterParams, AuthResult } from "./types";
 
-export async function register({
-  name,
-  email,
-  password,
-}: RegisterParams): Promise<AuthResult> {
-  const { data, error } = await authClient.signUp.email({
-    email,
-    password,
-    name,
-  });
+export async function register(params: RegisterParams): Promise<AuthResult> {
+  const { data, error } = await authClient.signUp.email(params);
 
   if (error) {
     return {
@@ -25,18 +17,15 @@ export async function register({
       error: "Registration failed",
     };
   }
-
-  // Get JWT token after successful registration
-  const tokenResult = await authClient.token();
-  if (tokenResult.error) {
+  if (!data.token) {
     return {
       success: false,
-      error: "Failed to retrieve authentication token",
+      error: "No token found",
     };
   }
 
   return {
     success: true,
-    token: tokenResult.data.token,
+    token: data.token,
   };
 }

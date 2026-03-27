@@ -7,19 +7,14 @@ import {
   IconMail,
   IconMailFilled,
   IconUsers,
-  IconBookmark,
-  IconBookmarkFilled,
   IconSparkles,
   IconUser,
   IconUserFilled,
-  IconDotsCircleHorizontal,
-  IconLayoutDistributeHorizontalFilled,
   IconZoom,
   IconZoomFilled,
   IconStarFilled,
   IconRobot,
 } from "@tabler/icons-react";
-import { Button } from "@/components/ui/button";
 import { UserProfile } from "./user-profile";
 
 const navigationItems = [
@@ -55,12 +50,6 @@ const navigationItems = [
     href: "/communities",
   },
   {
-    icon: IconBookmark,
-    selectedIcon: IconBookmarkFilled,
-    label: "Bookmarks",
-    href: "/bookmarks",
-  },
-  {
     icon: IconSparkles,
     selectedIcon: IconStarFilled,
     label: "Premium",
@@ -71,12 +60,6 @@ const navigationItems = [
     selectedIcon: IconUserFilled,
     label: "Profile",
     href: "/profile",
-  },
-  {
-    icon: IconDotsCircleHorizontal,
-    selectedIcon: IconLayoutDistributeHorizontalFilled,
-    label: "More",
-    href: "/more",
   },
 ];
 
@@ -118,13 +101,6 @@ export function LeftSidebar() {
             </Link>
           ))}
         </nav>
-
-        <Button
-          size="lg"
-          className="mt-4 w-full font-bold rounded-full text-[15px] h-[52px]"
-        >
-          Post
-        </Button>
       </div>
 
       <UserProfile />

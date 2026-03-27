@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +12,7 @@ import {
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
+import { CommentsDialog } from "./comments-dialog";
 
 export interface PostProps {
   post: PostDto;
@@ -23,6 +25,7 @@ export interface PostProps {
 
 export function Post({ post, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
+  const [commentsOpen, setCommentsOpen] = useState(false);
 
   const userVote = initialReactionSummary?.userReaction ?? null;
   const upvoteCount = initialReactionSummary?.upvotes ?? post.upvoteCount;
@@ -93,7 +96,10 @@ export function Post({ post, initialReactionSummary }: PostProps) {
             {post.content.text}
           </div>
           <div className="flex justify-between items-center max-w-[425px]">
-            <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
+            <button
+              className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary"
+              onClick={() => setCommentsOpen(true)}
+            >
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
                 <IconMessageCircle className="w-[18px] h-[18px]" />
               </div>
@@ -149,6 +155,13 @@ export function Post({ post, initialReactionSummary }: PostProps) {
           </div>
         </div>
       </div>
+
+      {/* Comments Dialog */}
+      <CommentsDialog
+        post={post}
+        open={commentsOpen}
+        onOpenChange={setCommentsOpen}
+      />
     </article>
   );
 }
