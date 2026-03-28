@@ -108,7 +108,7 @@ describe('PostsService integration', () => {
       },
     ]);
 
-    const listedPosts = await postsService.list();
+    const listedPosts = await postsService.list('test-user');
 
     expect(listedPosts).toHaveLength(2);
     expect(listedPosts.map((post) => post.content)).toEqual([

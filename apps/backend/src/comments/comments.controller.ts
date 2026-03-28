@@ -12,7 +12,10 @@ export class CommentsController {
   @TsRestHandler(commentsContract.listComments)
   listComments(@Session() session: UserSession) {
     return tsRestHandler(commentsContract.listComments, async ({ params }) => {
-      const comments = await this.commentsService.list(params.postId);
+      const comments = await this.commentsService.list(
+        params.postId,
+        session?.user?.id,
+      );
       return {
         status: 200,
         body: commentsContract.listComments.responses[200].parse(comments),
@@ -70,7 +73,10 @@ export class CommentsController {
   @TsRestHandler(commentsContract.getComment)
   getComment(@Session() session: UserSession) {
     return tsRestHandler(commentsContract.getComment, async ({ params }) => {
-      const comment = await this.commentsService.getById(params.id);
+      const comment = await this.commentsService.getById(
+        params.id,
+        session?.user?.id,
+      );
 
       if (!comment) {
         return {
@@ -99,7 +105,10 @@ export class CommentsController {
           };
         }
 
-        const replies = await this.commentsService.listReplies(params.id);
+        const replies = await this.commentsService.listReplies(
+          params.id,
+          session?.user?.id,
+        );
         return {
           status: 200,
           body: commentsContract.listCommentReplies.responses[200].parse(

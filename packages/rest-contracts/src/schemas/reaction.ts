@@ -14,6 +14,19 @@ export const PostReactionSummary = z.object({
   userReaction: ReactionType.nullable(),
 });
 
+export const CommentReaction = z.object({
+  commentId: z.string().uuid(),
+  userId: z.string(),
+  type: ReactionType,
+  createdAt: z.string().datetime(),
+});
+
+export const CommentReactionSummary = z.object({
+  upvotes: z.number().int().nonnegative(),
+  downvotes: z.number().int().nonnegative(),
+  userReaction: ReactionType.nullable(),
+});
+
 export const Reactor = z.object({
   id: z.string(),
   username: z.string().nullable(),
@@ -27,7 +40,14 @@ export const ReactPostBody = z.object({
   type: ReactionType,
 });
 
+export const ReactCommentBody = z.object({
+  type: ReactionType,
+});
+
 export type PostReactionType = z.infer<typeof PostReaction>;
 export type PostReactionSummaryType = z.infer<typeof PostReactionSummary>;
+export type CommentReactionType = z.infer<typeof CommentReaction>;
+export type CommentReactionSummaryType = z.infer<typeof CommentReactionSummary>;
 export type ReactorType = z.infer<typeof Reactor>;
 export type ReactPostBodyType = z.infer<typeof ReactPostBody>;
+export type ReactCommentBodyType = z.infer<typeof ReactCommentBody>;

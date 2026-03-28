@@ -102,6 +102,22 @@ export interface CommentDto {
   content: string;
   createdAt: string;
   updatedAt: string;
+  upvoteCount: number;
+  downvoteCount: number;
+  currentUserReaction: ReactionTypeDto | null;
+}
+
+export interface CommentReactionDto {
+  commentId: string;
+  userId: string;
+  type: ReactionTypeDto;
+  createdAt: string;
+}
+
+export interface CommentReactionSummaryDto {
+  upvotes: number;
+  downvotes: number;
+  userReaction: ReactionTypeDto | null;
 }
 
 export interface CreateCommentDto {
