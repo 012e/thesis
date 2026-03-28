@@ -31,4 +31,13 @@ describe('AppController (e2e)', () => {
       .expect(200)
       .expect('Hello World!');
   });
+
+  it('/openapi (GET)', async () => {
+    const response = await request(testApp.app.getHttpServer())
+      .get('/openapi')
+      .expect(200);
+
+    expect(response.body).toHaveProperty('openapi');
+    expect(response.body.info.title).toBe('Posts API');
+  });
 });

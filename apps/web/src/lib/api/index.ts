@@ -6,4 +6,5 @@ export const client = initClient(appContract, {
   baseUrl: env.VITE_BACKEND_URL,
   baseHeaders: {},
   credentials: "include",
+  validateResponse: true,
 });

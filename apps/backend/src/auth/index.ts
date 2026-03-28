@@ -2,7 +2,7 @@ import { betterAuth } from 'better-auth';
 
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { env } from '@/env';
-import { username, jwt } from 'better-auth/plugins';
+import { username, jwt, bearer } from 'better-auth/plugins';
 import db from '@/db';
 
 export const auth = betterAuth({
@@ -18,5 +18,5 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [username(), jwt()],
+  plugins: [username(), jwt(), bearer()],
 });

@@ -22,6 +22,7 @@
     "@repo/auth-client": "workspace:*",
     "@repo/rest-contracts": "workspace:*",
     "@repo/shared-dto": "workspace:*",
+    "@scalar/api-reference-react": "^0.9.15",
     "@t3-oss/env-core": "^0.13.10",
     "@tabler/icons-react": "^3.36.1",
     "@tailwindcss/vite": "^4.1.17",
