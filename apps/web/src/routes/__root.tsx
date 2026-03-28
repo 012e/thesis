@@ -13,11 +13,12 @@ function RootComponent() {
   const router = useRouterState();
   const isAuthRoute = router.location.pathname.startsWith("/auth");
   const isChatRoute = router.location.pathname.startsWith("/chat");
+  const isApiRoute = router.location.pathname.startsWith("/api");
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthGuard>
-        {isAuthRoute || isChatRoute ? (
+        {isAuthRoute || isChatRoute || isApiRoute ? (
           <Outlet />
         ) : (
           <AppLayout>
