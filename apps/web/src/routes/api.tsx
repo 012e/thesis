@@ -4,16 +4,15 @@ import "@scalar/api-reference-react/style.css";
 import { env } from "@/env";
 import { authClient } from "@repo/auth-client";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import bearerToken from "@/lib/atoms/bearer-token";
 
 export const Route = createFileRoute("/api")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { data: response } = useSuspenseQuery({
-    queryFn: () => authClient.token(),
-    queryKey: ["access token"],
-  });
+  const token = useAtomValue(bearerToken);
   return (
     <ApiReferenceReact
       configuration={{
@@ -24,7 +23,7 @@ function RouteComponent() {
             httpBearer: {
               name: "Authorization",
               in: "header",
-              value: `Bearer ${response.data.token}`,
+              value: `Bearer ${token}`,
             },
           },
         },

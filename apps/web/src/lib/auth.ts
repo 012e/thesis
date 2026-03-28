@@ -22,19 +22,27 @@ export async function login(params: LoginParams): Promise<boolean> {
   // Clear any existing token before attempting login
   store.set(bearerToken, null);
 
-  const result = await authLogin(params);
+  const result = await authClient.signIn.email(
+    {
+      email: params.email,
+      password: params.password,
+    },
+    {
+      onSuccess: (ctx: any) => {
+        const authToken = ctx.response.headers.get("set-auth-token"); // get the token from the response headers
+        if (authToken) {
+          store.set(bearerToken, authToken);
+        }
+      },
+    },
+  );
 
-  if (!result.success) {
+  if (result.error) {
     toast.error("Login failed", {
-      description: result.error || "Invalid email or password",
+      description: result.error.message || "Invalid email or password",
     });
-    // Ensure token remains cleared on failure
     store.set(bearerToken, null);
     return false;
-  }
-
-  if (result.token) {
-    store.set(bearerToken, result.token);
   }
 
   toast.success("Login successful", {
@@ -48,17 +56,20 @@ export async function login(params: LoginParams): Promise<boolean> {
  * Register wrapper that handles token storage and UI feedback
  */
 export async function register(params: RegisterParams): Promise<boolean> {
-  const result = await authRegister(params);
+  const result = await authClient.signUp.email(params, {
+    onSuccess: (ctx: any) => {
+      const authToken = ctx.response.headers.get("set-auth-token"); // get the token from the response headers
+      if (authToken) {
+        store.set(bearerToken, authToken);
+      }
+    },
+  });
 
-  if (!result.success) {
+  if (result.error) {
     toast.error("Registration failed", {
-      description: result.error || "Unable to create account",
+      description: result.error.message ?? "Unable to create account",
     });
     return false;
-  }
-
-  if (result.token) {
-    store.set(bearerToken, result.token);
   }
 
   toast.success("Account created successfully", {
