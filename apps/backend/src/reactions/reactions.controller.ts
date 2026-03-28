@@ -101,4 +101,99 @@ export class ReactionsController {
       },
     );
   }
+
+  @TsRestHandler(reactionsContract.reactToComment)
+  reactToComment(@Session() session: UserSession) {
+    return tsRestHandler(
+      reactionsContract.reactToComment,
+      async ({ params, body }) => {
+        const reaction = await this.reactionsService.reactToComment(
+          params.id,
+          session.user.id,
+          body.type,
+        );
+
+        if (!reaction) {
+          return { status: 404, body: null };
+        }
+
+        return {
+          status: 200,
+          body: reactionsContract.reactToComment.responses[200].parse(reaction),
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(reactionsContract.unreactToComment)
+  unreactToComment(@Session() session: UserSession) {
+    return tsRestHandler(
+      reactionsContract.unreactToComment,
+      async ({ params }) => {
+        const reaction = await this.reactionsService.unreactToComment(
+          params.id,
+          session.user.id,
+        );
+
+        if (!reaction) {
+          return { status: 404, body: null };
+        }
+
+        return {
+          status: 200,
+          body: reactionsContract.unreactToComment.responses[200].parse(
+            reaction,
+          ),
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(reactionsContract.getCommentReactionSummary)
+  getCommentReactionSummary(@Session() session: UserSession) {
+    return tsRestHandler(
+      reactionsContract.getCommentReactionSummary,
+      async ({ params }) => {
+        const summary = await this.reactionsService.getCommentSummary(
+          params.id,
+          session.user.id,
+        );
+
+        if (!summary) {
+          return { status: 404, body: null };
+        }
+
+        return {
+          status: 200,
+          body: reactionsContract.getCommentReactionSummary.responses[200].parse(
+            summary,
+          ),
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(reactionsContract.listCommentReactors)
+  listCommentReactors() {
+    return tsRestHandler(
+      reactionsContract.listCommentReactors,
+      async ({ params, query }) => {
+        const reactors = await this.reactionsService.listCommentReactors(
+          params.id,
+          query.type,
+        );
+
+        if (!reactors) {
+          return { status: 404, body: null };
+        }
+
+        return {
+          status: 200,
+          body: reactionsContract.listCommentReactors.responses[200].parse(
+            reactors,
+          ),
+        };
+      },
+    );
+  }
 }

@@ -3,12 +3,20 @@ import { Injectable } from '@nestjs/common';
 import type {
   PostReactionDto,
   PostReactionSummaryDto,
+  CommentReactionDto,
+  CommentReactionSummaryDto,
   ReactorDto,
   ReactionTypeDto,
 } from '@repo/shared-dto';
 
 import { DatabaseService } from '@/db/database.service';
-import { postReactions, posts, usersView } from '@/db/schema';
+import {
+  postReactions,
+  commentReactions,
+  posts,
+  comments,
+  usersView,
+} from '@/db/schema';
 
 @Injectable()
 export class ReactionsService {
@@ -43,6 +51,32 @@ export class ReactionsService {
   }
 
   /**
+   * Upsert a reaction for a comment by a user.
+   */
+  async reactToComment(
+    commentId: string,
+    userId: string,
+    type: ReactionTypeDto,
+  ): Promise<CommentReactionDto | null> {
+    const commentExists = await this.commentExists(commentId);
+    if (!commentExists) return null;
+
+    const [row] = await this.databaseService.db
+      .insert(commentReactions)
+      .values({ commentId, userId, type })
+      .onConflictDoUpdate({
+        target: [commentReactions.commentId, commentReactions.userId],
+        set: {
+          type,
+          createdAt: sql`now()`,
+        },
+      })
+      .returning();
+
+    return this.toCommentReactionDto(row);
+  }
+
+  /**
    * Remove a user's reaction from a post.
    * Returns the deleted reaction, or null if none existed or the post does not exist.
    */
@@ -61,6 +95,29 @@ export class ReactionsService {
       .returning();
 
     return row ? this.toReactionDto(row) : null;
+  }
+
+  /**
+   * Remove a user's reaction from a comment.
+   */
+  async unreactToComment(
+    commentId: string,
+    userId: string,
+  ): Promise<CommentReactionDto | null> {
+    const commentExists = await this.commentExists(commentId);
+    if (!commentExists) return null;
+
+    const [row] = await this.databaseService.db
+      .delete(commentReactions)
+      .where(
+        and(
+          eq(commentReactions.commentId, commentId),
+          eq(commentReactions.userId, userId),
+        ),
+      )
+      .returning();
+
+    return row ? this.toCommentReactionDto(row) : null;
   }
 
   /**
@@ -98,6 +155,54 @@ export class ReactionsService {
         and(
           eq(postReactions.postId, postId),
           eq(postReactions.userId, requestingUserId),
+        ),
+      )
+      .limit(1);
+
+    return {
+      upvotes: upvoteRow?.cnt ?? 0,
+      downvotes: downvoteRow?.cnt ?? 0,
+      userReaction: (userRow?.type as ReactionTypeDto) ?? null,
+    };
+  }
+
+  /**
+   * Return upvote/downvote counts and the requesting user's own reaction for a comment.
+   */
+  async getCommentSummary(
+    commentId: string,
+    requestingUserId: string,
+  ): Promise<CommentReactionSummaryDto | null> {
+    const commentExists = await this.commentExists(commentId);
+    if (!commentExists) return null;
+
+    const [upvoteRow] = await this.databaseService.db
+      .select({ cnt: count() })
+      .from(commentReactions)
+      .where(
+        and(
+          eq(commentReactions.commentId, commentId),
+          eq(commentReactions.type, 'upvote'),
+        ),
+      );
+
+    const [downvoteRow] = await this.databaseService.db
+      .select({ cnt: count() })
+      .from(commentReactions)
+      .where(
+        and(
+          eq(commentReactions.commentId, commentId),
+          eq(commentReactions.type, 'downvote'),
+        ),
+      );
+
+    const [userRow] = await this.databaseService.db
+      .select({ type: commentReactions.type })
+      .from(commentReactions)
+      .where(
+        and(
+          eq(commentReactions.commentId, commentId),
+          eq(commentReactions.userId, requestingUserId),
         ),
       )
       .limit(1);
@@ -148,6 +253,44 @@ export class ReactionsService {
     }));
   }
 
+  /**
+   * List all users who reacted to a comment.
+   */
+  async listCommentReactors(
+    commentId: string,
+    type?: ReactionTypeDto,
+  ): Promise<ReactorDto[] | null> {
+    const commentExists = await this.commentExists(commentId);
+    if (!commentExists) return null;
+
+    const conditions = [eq(commentReactions.commentId, commentId)];
+    if (type) {
+      conditions.push(eq(commentReactions.type, type));
+    }
+
+    const rows = await this.databaseService.db
+      .select({
+        id: usersView.id,
+        username: usersView.username,
+        email: usersView.email,
+        name: usersView.name,
+        reactionType: commentReactions.type,
+        reactedAt: commentReactions.createdAt,
+      })
+      .from(commentReactions)
+      .innerJoin(usersView, eq(commentReactions.userId, usersView.id))
+      .where(and(...conditions));
+
+    return rows.map((row) => ({
+      id: row.id,
+      username: row.username ?? null,
+      email: row.email,
+      name: row.name ?? null,
+      reactionType: row.reactionType as ReactionTypeDto,
+      reactedAt: row.reactedAt.toISOString(),
+    }));
+  }
+
   private async postExists(postId: string): Promise<boolean> {
     const [row] = await this.databaseService.db
       .select({ id: posts.id })
@@ -157,10 +300,28 @@ export class ReactionsService {
     return !!row;
   }
 
+  private async commentExists(commentId: string): Promise<boolean> {
+    const [row] = await this.databaseService.db
+      .select({ id: comments.id })
+      .from(comments)
+      .where(eq(comments.id, commentId))
+      .limit(1);
+    return !!row;
+  }
+
   private readonly toReactionDto = (
     row: typeof postReactions.$inferSelect,
   ): PostReactionDto => ({
     postId: row.postId,
+    userId: row.userId,
+    type: row.type as ReactionTypeDto,
+    createdAt: row.createdAt.toISOString(),
+  });
+
+  private readonly toCommentReactionDto = (
+    row: typeof commentReactions.$inferSelect,
+  ): CommentReactionDto => ({
+    commentId: row.commentId,
     userId: row.userId,
     type: row.type as ReactionTypeDto,
     createdAt: row.createdAt.toISOString(),

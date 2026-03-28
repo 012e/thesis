@@ -91,6 +91,24 @@ export const comments = pgTable(
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 
+export const commentReactions = pgTable(
+  'comment_reactions',
+  {
+    commentId: uuid('comment_id')
+      .notNull()
+      .references(() => comments.id, { onDelete: 'cascade' }),
+    userId: text('user_id').notNull(),
+    type: reactionTypeEnum('type').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.commentId, table.userId] })],
+);
+
+export type CommentReaction = typeof commentReactions.$inferSelect;
+export type NewCommentReaction = typeof commentReactions.$inferInsert;
+
 export const userFollows = pgTable(
   'user_follows',
   {
