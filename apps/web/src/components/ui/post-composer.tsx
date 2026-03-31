@@ -13,17 +13,21 @@ import { Avatar } from "./avatar";
 import { Button } from "./button";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useSession } from "@/hooks/use-session";
-import type { PostContentDto } from "@repo/shared-dto";
+import type { PostContentDto, PollPostContentDto } from "@repo/shared-dto";
 import {
   IconAlertCircle,
   IconLoader2,
   IconPhotoOff,
   IconX,
+  IconChartBar,
 } from "@tabler/icons-react";
+import { PollCreator } from "@/components/poll-creator";
 
 export function PostComposer() {
   const [content, setContent] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [poll, setPoll] = useState<PollPostContentDto | undefined>(undefined);
   const { mutate: createPost, isPending } = useCreatePost();
   const { data: session } = useSession();
   const editorRef = useRef(null);
@@ -39,18 +43,30 @@ export function PostComposer() {
       session?.user?.email?.[0]
     )?.toUpperCase() || "U";
 
+  // Content is valid if there's text OR a valid poll
+  const hasValidContent = content.trim() !== "" || poll !== undefined;
+  const canPost = hasValidContent && !isExceeded;
+
   const handlePost = async () => {
-    if (!content.trim()) {
+    if (!canPost) {
       return;
     }
 
-    const postContent: PostContentDto = {
-      text: content.trim(),
-    };
+    const postContent: PostContentDto = {};
+
+    if (content.trim()) {
+      postContent.text = content.trim();
+    }
+
+    if (poll) {
+      postContent.poll = poll;
+    }
 
     createPost(postContent, {
       onSuccess: () => {
         setContent("");
+        setPoll(undefined);
+        setShowPollCreator(false);
         setIsOpen(false);
       },
     });
@@ -58,14 +74,32 @@ export function PostComposer() {
 
   const handleClear = () => {
     setContent("");
+    setPoll(undefined);
+    setShowPollCreator(false);
   };
 
   const handleClose = () => {
     setIsOpen(false);
     // Optionally clear content on close
-    if (content && !isPending) {
+    if ((content || poll) && !isPending) {
       setContent("");
+      setPoll(undefined);
+      setShowPollCreator(false);
     }
+  };
+
+  const handlePollToggle = () => {
+    if (showPollCreator) {
+      setShowPollCreator(false);
+      setPoll(undefined);
+    } else {
+      setShowPollCreator(true);
+    }
+  };
+
+  const handlePollClose = () => {
+    setShowPollCreator(false);
+    setPoll(undefined);
   };
 
   if (!isOpen) {
@@ -120,6 +154,11 @@ export function PostComposer() {
                 />
               </div>
 
+              {/* Poll Creator */}
+              {showPollCreator && (
+                <PollCreator onPollChange={setPoll} onClose={handlePollClose} />
+              )}
+
               {/* Character counter */}
               <div className="flex justify-between items-center px-2 mt-2">
                 <div className="text-xs text-muted-foreground">
@@ -149,6 +188,19 @@ export function PostComposer() {
                 >
                   <IconPhotoOff className="w-5 h-5" />
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={`w-9 h-9 rounded-full hover:text-primary hover:bg-primary/10 ${
+                    showPollCreator
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground"
+                  }`}
+                  onClick={handlePollToggle}
+                  title={showPollCreator ? "Remove poll" : "Add a poll"}
+                >
+                  <IconChartBar className="w-5 h-5" />
+                </Button>
               </div>
 
               <div className="flex gap-2">
@@ -156,14 +208,14 @@ export function PostComposer() {
                   variant="outline"
                   className="px-4 rounded-full"
                   onClick={handleClear}
-                  disabled={!content || isPending}
+                  disabled={(!content && !poll) || isPending}
                 >
                   Clear
                 </Button>
                 <Button
                   className="px-6 font-bold rounded-full"
                   onClick={handlePost}
-                  disabled={!content.trim() || isPending || isExceeded}
+                  disabled={!canPost || isPending}
                 >
                   {isPending && (
                     <IconLoader2 className="mr-2 w-4 h-4 animate-spin" />

@@ -9,6 +9,7 @@ import { ThreadsModule } from '@/threads/threads.module';
 import { CommentsModule } from '@/comments/comments.module';
 import { UsersModule } from '@/users/users.module';
 import { FollowsModule } from '@/follows/follows.module';
+import { PollsModule } from '@/polls/polls.module';
 import { McpFeatureModule } from './mcp/mcp-feature.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
@@ -28,6 +29,7 @@ import { AuthController } from './auth/auth.controller';
     CommentsModule,
     UsersModule,
     FollowsModule,
+    PollsModule,
     McpFeatureModule,
   ],
   providers: [AppService],

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PostMarkdown } from "@/components/ui/post-markdown";
 import {
   IconMessageCircle,
   IconRepeat,
@@ -13,6 +14,7 @@ import {
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
 import { CommentsDialog } from "./comments-dialog";
+import { PollDisplay } from "./poll-display";
 
 export interface PostProps {
   post: PostDto;
@@ -92,9 +94,14 @@ export function Post({ post, initialReactionSummary }: PostProps) {
               <IconDots className="w-4 h-4" />
             </Button>
           </div>
-          <div className="mb-3 leading-normal text-[15px]">
-            {post.content.text}
-          </div>
+          {post.content.text && (
+            <div className="mb-3 leading-normal text-[15px]">
+              <PostMarkdown content={post.content.text} />
+            </div>
+          )}
+          {post.content.poll && (
+            <PollDisplay postId={post.id} poll={post.content.poll} />
+          )}
           <div className="flex justify-between items-center max-w-[425px]">
             <button
               className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary"
