@@ -37,6 +37,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/terminus": "^11.1.1",
     "@openapi-contrib/json-schema-to-openapi-schema": "^4.3.1",
+    "@rekog/mcp-nest": "^1.9.8",
     "@repo/rest-contracts": "workspace:*",
     "@repo/shared-dto": "workspace:*",
     "@t3-oss/env-core": "^0.13.10",

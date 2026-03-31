@@ -3,6 +3,7 @@ import { chatRoute } from "@mastra/ai-sdk";
 
 import { env } from "../env";
 import { assistantAgent } from "./agents/assistant";
+import { streamRoute } from "./routes/stream";
 
 export const mastra = new Mastra({
   agents: { assistantAgent },
@@ -22,6 +23,7 @@ export const mastra = new Mastra({
       chatRoute({
         path: "/chat/:agentId",
       }),
+      streamRoute,
     ],
   },
 });
