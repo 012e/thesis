@@ -124,6 +124,26 @@ export const userFollows = pgTable(
 export type UserFollow = typeof userFollows.$inferSelect;
 export type NewUserFollow = typeof userFollows.$inferInsert;
 
+export const pollVotes = pgTable(
+  'poll_votes',
+  {
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    optionId: text('option_id').notNull(),
+    userId: text('user_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.postId, table.optionId, table.userId] }),
+  ],
+);
+
+export type PollVote = typeof pollVotes.$inferSelect;
+export type NewPollVote = typeof pollVotes.$inferInsert;
+
 export const threads = pgTable('threads', {
   id: uuid('id').defaultRandom().primaryKey(),
   userId: text('user_id').notNull(),

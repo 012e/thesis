@@ -43,6 +43,13 @@
       "when": 1774688848715,
       "tag": "0005_parallel_the_enforcers",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1774967114865,
+      "tag": "0006_cool_puff_adder",
+      "breakpoints": true
     }
   ]
 }

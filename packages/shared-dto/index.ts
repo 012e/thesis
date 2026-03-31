@@ -138,3 +138,26 @@ export interface UserProfileDto {
   postCount: number;
   isFollowing: boolean;
 }
+
+export interface PollVoteDto {
+  postId: string;
+  optionId: string;
+  userId: string;
+  createdAt: string;
+}
+
+export interface PollOptionResultDto {
+  optionId: string;
+  label: string;
+  voteCount: number;
+  percentage: number;
+}
+
+export interface PollResultsDto {
+  postId: string;
+  totalVotes: number;
+  options: PollOptionResultDto[];
+  userVotes: string[];
+  isClosed: boolean;
+  closesAt?: string | null;
+}
