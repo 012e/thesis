@@ -25,20 +25,29 @@ const visualizationPostContentSchema = z.object({
   unit: z.string().min(1).optional(),
 });
 
+const postImageSchema = z.object({
+  url: z.string().url(),
+  key: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
 export const postContentSchema = z
   .object({
     text: z.string().min(1).optional(),
     poll: pollPostContentSchema.optional(),
     visualization: visualizationPostContentSchema.optional(),
+    images: z.array(postImageSchema).optional(),
   })
   .refine(
     (content) =>
       content.text !== undefined ||
       content.poll !== undefined ||
-      content.visualization !== undefined,
+      content.visualization !== undefined ||
+      (content.images !== undefined && content.images.length > 0),
     {
       message:
-        'Post content must include at least one of text, poll, or visualization',
+        'Post content must include at least one of text, poll, visualization, or images',
     },
   );
 

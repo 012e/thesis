@@ -31,10 +31,18 @@ export interface VisualizationPostContentDto {
   unit?: string;
 }
 
+export interface PostImageDto {
+  url: string;
+  key: string;
+  width: number;
+  height: number;
+}
+
 export interface PostContentDto {
   text?: string;
   poll?: PollPostContentDto;
   visualization?: VisualizationPostContentDto;
+  images?: PostImageDto[];
 }
 
 export interface PostAuthorDto {

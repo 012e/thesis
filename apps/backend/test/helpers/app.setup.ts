@@ -1,8 +1,11 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import getPort from 'get-port';
 
-import type { PostgresContainerContext } from './testcontainers.setup';
+import type {
+  PostgresContainerContext,
+  MinioContainerContext,
+} from './testcontainers.setup';
 
 export interface TestAppContext {
   app: NestExpressApplication;
@@ -16,6 +19,8 @@ export interface TestAppContext {
  */
 export async function createTestApp(
   containers: PostgresContainerContext,
+  overrides?: (builder: TestingModuleBuilder) => TestingModuleBuilder,
+  minioContainer?: MinioContainerContext,
 ): Promise<TestAppContext> {
   const appModulePath = '../../src/app.module';
   const port = await getPort();
@@ -26,11 +31,28 @@ export async function createTestApp(
   process.env.NODE_ENV = 'test';
   process.env.PORT = port.toString();
 
+  // Configure MinIO if provided
+  if (minioContainer) {
+    process.env.MINIO_ENDPOINT = minioContainer.endpoint.split(':')[0];
+    process.env.MINIO_PORT = minioContainer.port.toString();
+    process.env.MINIO_ACCESS_KEY = minioContainer.accessKey;
+    process.env.MINIO_SECRET_KEY = minioContainer.secretKey;
+    process.env.MINIO_BUCKET = 'test-bucket';
+    process.env.MINIO_PUBLIC_URL = minioContainer.publicUrl;
+    process.env.MINIO_USE_SSL = 'false';
+  }
+
   const { AppModule } = await import(appModulePath);
 
-  const moduleFixture: TestingModule = await Test.createTestingModule({
+  let moduleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
-  }).compile();
+  });
+
+  if (overrides) {
+    moduleBuilder = overrides(moduleBuilder);
+  }
+
+  const moduleFixture: TestingModule = await moduleBuilder.compile();
 
   const app = moduleFixture.createNestApplication<NestExpressApplication>({
     bodyParser: false, // Required for Better Auth

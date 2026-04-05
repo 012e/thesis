@@ -2,8 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import { env } from "@/env";
-import { authClient } from "@repo/auth-client";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import bearerToken from "@/lib/atoms/bearer-token";
 

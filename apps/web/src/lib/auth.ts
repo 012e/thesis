@@ -1,6 +1,4 @@
 import {
-  login as authLogin,
-  register as authRegister,
   requestPasswordReset as authRequestPasswordReset,
   resetPassword as authResetPassword,
   updateProfile as authUpdateProfile,

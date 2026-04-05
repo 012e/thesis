@@ -1,14 +1,27 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import request from 'supertest';
 import { Pool } from 'pg';
+import sharp from 'sharp';
 
 import { closeTestApp, createTestApp } from '../helpers/app.setup';
 import { runBetterAuthMigrations } from '../helpers/database.setup';
 import {
   startPostgresContainer,
   stopPostgresContainer,
+  startMinioContainer,
+  stopMinioContainer,
   type PostgresContainerContext,
+  type MinioContainerContext,
 } from '../helpers/testcontainers.setup';
+import { StorageService } from '@/storage/storage.service';
 
 /**
  * Register a user via the HTTP API and return the session cookie string.
@@ -40,6 +53,7 @@ async function registerAndGetSessionCookie(
 describe('PostsController integration', () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
+  let minioContainer: MinioContainerContext;
   let pool: Pool;
 
   // Two distinct users for authorization tests
@@ -48,9 +62,10 @@ describe('PostsController integration', () => {
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
+    minioContainer = await startMinioContainer();
     await runBetterAuthMigrations(containers.databaseUrl);
 
-    testApp = await createTestApp(containers);
+    testApp = await createTestApp(containers, undefined, minioContainer);
     pool = new Pool({ connectionString: containers.databaseUrl });
 
     const server = request(testApp.app.getHttpServer());
@@ -68,6 +83,7 @@ describe('PostsController integration', () => {
     await pool.end();
     await closeTestApp(testApp);
     await stopPostgresContainer(containers);
+    await stopMinioContainer(minioContainer);
   });
 
   beforeEach(async () => {
@@ -580,6 +596,323 @@ describe('PostsController integration', () => {
 
       // Should either reject or clamp to 100
       expect(res.status).toBeGreaterThanOrEqual(400);
+    });
+  });
+
+  describe('Posts with Images Integration', () => {
+    it('should create a post with images successfully', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const postContent = {
+        text: 'Check out these images!',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/image1.webp`,
+            key: 'images/user-123/image1.webp',
+            width: 1200,
+            height: 800,
+          },
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/image2.webp`,
+            key: 'images/user-123/image2.webp',
+            width: 800,
+            height: 600,
+          },
+        ],
+      };
+
+      const res = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: postContent })
+        .expect(201);
+
+      expect(res.body.id).toBeTruthy();
+      expect(res.body.content.text).toBe('Check out these images!');
+      expect(res.body.content.images).toHaveLength(2);
+      expect(res.body.content.images[0].key).toBe('images/user-123/image1.webp');
+      expect(res.body.content.images[0].width).toBe(1200);
+      expect(res.body.content.images[0].height).toBe(800);
+    });
+
+    it('should retrieve a post with images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const postContent = {
+        text: 'Post with image',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/test.webp`,
+            key: 'images/test.webp',
+            width: 1000,
+            height: 750,
+          },
+        ],
+      };
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: postContent })
+        .expect(201);
+
+      const res = await server
+        .get(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body.content.images).toHaveLength(1);
+      expect(res.body.content.images[0].key).toBe('images/test.webp');
+    });
+
+    it('should update a post and preserve images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const originalContent = {
+        text: 'Original text',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/original.webp`,
+            key: 'images/original.webp',
+            width: 800,
+            height: 600,
+          },
+        ],
+      };
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: originalContent })
+        .expect(201);
+
+      const updatedContent = {
+        text: 'Updated text',
+        images: originalContent.images,
+      };
+
+      const res = await server
+        .put(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .send({ content: updatedContent })
+        .expect(200);
+
+      expect(res.body.content.text).toBe('Updated text');
+      expect(res.body.content.images).toHaveLength(1);
+      expect(res.body.content.images[0].key).toBe('images/original.webp');
+    });
+
+    it('should delete post with images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const postContent = {
+        text: 'Post to be deleted',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/delete1.webp`,
+            key: 'images/delete1.webp',
+            width: 800,
+            height: 600,
+          },
+        ],
+      };
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: postContent })
+        .expect(201);
+
+      await server
+        .delete(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      // Post should be gone
+      await server
+        .get(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .expect(404);
+    });
+
+    it('should not delete post if authorization fails', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const postContent = {
+        text: 'Protected post',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/protected.webp`,
+            key: 'images/protected.webp',
+            width: 800,
+            height: 600,
+          },
+        ],
+      };
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: postContent })
+        .expect(201);
+
+      // Try to delete with different user
+      await server
+        .delete(`/posts/${created.body.id}`)
+        .set('Cookie', userBCookie)
+        .expect(403);
+
+      // Post should still exist
+      await server
+        .get(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .expect(200);
+    });
+
+    it('should handle posts with no images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const res = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: { text: 'No images here' } })
+        .expect(201);
+
+      expect(res.body.content.text).toBe('No images here');
+      expect(res.body.content.images).toBeUndefined();
+    });
+
+    it('should handle updating post to add images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: { text: 'Initially no images' } })
+        .expect(201);
+
+      const updatedContent = {
+        text: 'Now with images',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/new.webp`,
+            key: 'images/new.webp',
+            width: 1000,
+            height: 750,
+          },
+        ],
+      };
+
+      const res = await server
+        .put(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .send({ content: updatedContent })
+        .expect(200);
+
+      expect(res.body.content.text).toBe('Now with images');
+      expect(res.body.content.images).toHaveLength(1);
+      expect(res.body.content.images[0].key).toBe('images/new.webp');
+    });
+
+    it('should handle updating post to remove images', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const originalContent = {
+        text: 'With images',
+        images: [
+          {
+            url: `${minioContainer.publicUrl}/test-bucket/remove.webp`,
+            key: 'images/remove.webp',
+            width: 800,
+            height: 600,
+          },
+        ],
+      };
+
+      const created = await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({ content: originalContent })
+        .expect(201);
+
+      const updatedContent = {
+        text: 'Images removed',
+      };
+
+      const res = await server
+        .put(`/posts/${created.body.id}`)
+        .set('Cookie', userACookie)
+        .send({ content: updatedContent })
+        .expect(200);
+
+      expect(res.body.content.text).toBe('Images removed');
+      expect(res.body.content.images).toBeUndefined();
+    });
+
+    it('should include images in feed posts', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({
+          content: {
+            text: 'Feed post with image',
+            images: [
+              {
+                url: `${minioContainer.publicUrl}/test-bucket/feed.webp`,
+                key: 'images/feed.webp',
+                width: 1200,
+                height: 800,
+              },
+            ],
+          },
+        })
+        .expect(201);
+
+      const res = await server
+        .get('/posts')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body.length).toBeGreaterThan(0);
+      const postWithImage = res.body.find((p: { content: { text: string } }) => p.content.text === 'Feed post with image');
+      expect(postWithImage).toBeDefined();
+      expect(postWithImage.content.images).toHaveLength(1);
+      expect(postWithImage.content.images[0].key).toBe('images/feed.webp');
+    });
+
+    it('should include images in recommendations', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post('/posts')
+        .set('Cookie', userACookie)
+        .send({
+          content: {
+            text: 'Recommended post with images',
+            images: [
+              {
+                url: `${minioContainer.publicUrl}/test-bucket/rec.webp`,
+                key: 'images/rec.webp',
+                width: 1000,
+                height: 750,
+              },
+            ],
+          },
+        })
+        .expect(201);
+
+      const res = await server
+        .get('/recommendations')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body.items.length).toBeGreaterThan(0);
+      const postWithImage = res.body.items.find((p: { content: { text: string } }) => p.content.text === 'Recommended post with images');
+      expect(postWithImage).toBeDefined();
+      expect(postWithImage.content.images).toHaveLength(1);
+      expect(postWithImage.content.images[0].key).toBe('images/rec.webp');
     });
   });
 });

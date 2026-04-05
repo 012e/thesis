@@ -1,5 +1,6 @@
 import * as supertest from 'supertest';
 import { INestApplication } from '@nestjs/common';
+import { expect } from 'vitest';
 
 export async function createE2ETestUser(
   app: INestApplication,
@@ -15,8 +16,18 @@ export async function createE2ETestUser(
       username,
       password: 'TestPassword123!',
       name: 'Test User',
-    })
-    .expect(200);
+    });
+
+  if (registerRes.status !== 200) {
+    console.error(
+      'Registration failed:',
+      registerRes.status,
+      registerRes.body,
+      registerRes.text,
+    );
+  }
+
+  expect(registerRes.status).toBe(200);
 
   const headers = registerRes.headers;
 

@@ -1,4 +1,3 @@
-import { authClient } from "@repo/auth-client";
 import { client } from ".";
 
 export async function login(username: string, password: string) {

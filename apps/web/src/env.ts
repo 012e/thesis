@@ -7,7 +7,7 @@ export const env = createEnv({
     VITE_MASTRA_CHAT_URL: z
       .url()
       .default("http://localhost:4111/chat/assistant"),
-    VITE_BACKEND_URL: z.url().default("http://localhost:3000/"),
+    VITE_BACKEND_URL: z.url().default("http://localhost:3000"),
   },
   runtimeEnv: import.meta.env,
   emptyStringAsUndefined: true,
