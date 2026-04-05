@@ -19,6 +19,17 @@ export const env = createEnv({
       .union([z.url().nonempty(), z.array(z.url().nonempty())])
       .default('http://localhost:5173'),
     AI_SERVICE_URL: z.url().default('http://localhost:4111'),
+    // MinIO/S3 configuration
+    MINIO_ENDPOINT: z.string().default('localhost'),
+    MINIO_PORT: z.coerce.number().default(9000),
+    MINIO_USE_SSL: z
+      .string()
+      .default('false')
+      .transform((v) => v === 'true'),
+    MINIO_ACCESS_KEY: z.string().default('minioadmin'),
+    MINIO_SECRET_KEY: z.string().default('minioadmin'),
+    MINIO_BUCKET: z.string().default('posts-images'),
+    MINIO_PUBLIC_URL: z.url().default('http://localhost:9000'),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

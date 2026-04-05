@@ -10,6 +10,7 @@ import { CommentsModule } from '@/comments/comments.module';
 import { UsersModule } from '@/users/users.module';
 import { FollowsModule } from '@/follows/follows.module';
 import { PollsModule } from '@/polls/polls.module';
+import { UploadsModule } from '@/uploads/uploads.module';
 import { McpFeatureModule } from './mcp/mcp-feature.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
@@ -30,6 +31,7 @@ import { AuthController } from './auth/auth.controller';
     UsersModule,
     FollowsModule,
     PollsModule,
+    UploadsModule,
     McpFeatureModule,
   ],
   providers: [AppService],

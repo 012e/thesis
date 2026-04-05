@@ -1,10 +1,11 @@
-import { and, asc, count, desc, eq, lt, or, sql } from 'drizzle-orm';
-import { Injectable } from '@nestjs/common';
+import { and, asc, count, desc, eq, or, sql } from 'drizzle-orm';
+import { Injectable, Logger } from '@nestjs/common';
 import type { PostDto, ReactionTypeDto } from '@repo/shared-dto';
 import type { z } from 'zod';
 
 import { DatabaseService } from '@/db/database.service';
 import { postReactions, posts, usersView } from '@/db/schema';
+import { StorageService } from '@/storage/storage.service';
 
 const upvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
@@ -30,7 +31,12 @@ type PostRow = typeof posts.$inferSelect & {
 
 @Injectable()
 export class PostsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  private readonly logger = new Logger(PostsService.name);
+
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly storageService: StorageService,
+  ) {}
 
   async list(userId: string): Promise<PostDto[]> {
     const rows = await this.databaseService.db
@@ -339,9 +345,19 @@ export class PostsService {
 
     if (!row || row.authorId !== authorId) return null;
 
+    // Delete the post from database
     await this.databaseService.db
       .delete(posts)
       .where(and(eq(posts.id, id), eq(posts.authorId, authorId)));
+
+    // Clean up images from storage (fire and forget, don't block the response)
+    const images = row.content.images;
+    if (images && images.length > 0) {
+      const imageKeys = images.map((img) => img.key);
+      this.storageService.deleteImages(imageKeys).catch((error) => {
+        this.logger.error(`Failed to delete images for post ${id}:`, error);
+      });
+    }
 
     return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
   }

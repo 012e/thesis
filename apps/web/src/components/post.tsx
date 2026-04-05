@@ -11,7 +11,7 @@ import {
   IconArrowUp,
   IconArrowDown,
 } from "@tabler/icons-react";
-import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
+import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
@@ -23,6 +23,76 @@ export interface PostProps {
     downvotes: number;
     userReaction: ReactionTypeDto | null;
   };
+}
+
+interface PostImagesProps {
+  images: PostImageDto[];
+}
+
+function PostImages({ images }: PostImagesProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  if (images.length === 0) return null;
+
+  const gridClass =
+    images.length === 1
+      ? "grid-cols-1"
+      : images.length === 2
+        ? "grid-cols-2"
+        : images.length === 3
+          ? "grid-cols-2"
+          : "grid-cols-2";
+
+  return (
+    <>
+      <div
+        className={`grid ${gridClass} gap-0.5 mt-3 rounded-xl overflow-hidden border`}
+      >
+        {images.map((image, index) => {
+          // For 3 images, make the first one span full width
+          const isFirstOfThree = images.length === 3 && index === 0;
+
+          return (
+            <button
+              key={image.key}
+              type="button"
+              className={`relative overflow-hidden bg-muted ${
+                isFirstOfThree ? "col-span-2" : ""
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(image.url);
+              }}
+            >
+              <img
+                src={image.url}
+                alt={`Post image ${index + 1}`}
+                className={`w-full object-cover ${
+                  images.length === 1 ? "max-h-[512px]" : "h-40"
+                }`}
+                loading="lazy"
+              />
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Lightbox */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            alt="Full size"
+            className="max-w-[90vw] max-h-[90vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
+  );
 }
 
 export function Post({ post, initialReactionSummary }: PostProps) {
@@ -99,10 +169,17 @@ export function Post({ post, initialReactionSummary }: PostProps) {
               <PostMarkdown content={post.content.text} />
             </div>
           )}
+
           {post.content.poll && (
             <PollDisplay postId={post.id} poll={post.content.poll} />
           )}
-          <div className="flex justify-between items-center max-w-[425px]">
+
+          {/* Post Images */}
+          {post.content.images && post.content.images.length > 0 && (
+            <PostImages images={post.content.images} />
+          )}
+
+          <div className="flex justify-between items-center max-w-[425px] mt-3">
             <button
               className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary"
               onClick={() => setCommentsOpen(true)}

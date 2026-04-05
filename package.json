@@ -10,6 +10,11 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.28.2",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
+  },
   "devDependencies": {
     "nx": "^22.5.0",
     "prettier": "^3.8.1",

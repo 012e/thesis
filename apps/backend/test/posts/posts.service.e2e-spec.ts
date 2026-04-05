@@ -15,6 +15,8 @@ import {
   type PostgresContainerContext,
 } from '../helpers/testcontainers.setup';
 
+import { StorageService } from '@/storage/storage.service';
+
 describe('PostsService integration', () => {
   let containers: PostgresContainerContext;
   let moduleRef: TestingModule;
@@ -35,6 +37,12 @@ describe('PostsService integration', () => {
         },
         DatabaseService,
         PostsService,
+        {
+          provide: StorageService,
+          useValue: {
+            deleteImages: async () => {},
+          },
+        },
       ],
     }).compile();
 

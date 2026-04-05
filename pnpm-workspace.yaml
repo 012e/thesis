@@ -2,14 +2,4 @@ packages:
   - apps/*
   - packages/*
 
-onlyBuiltDependencies:
-  - '@nestjs/core'
-  - '@nx-dotnet/core'
-  - '@swc/core'
-  - cpu-features
-  - esbuild
-  - msw
-  - nx
-  - protobufjs
-  - ssh2
-  - unrs-resolver
+onlyBuiltDependencies: '[''sharp'']'

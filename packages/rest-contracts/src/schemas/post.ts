@@ -26,20 +26,29 @@ export const VisualizationPostContent = z.object({
   unit: z.string().min(1).optional(),
 });
 
+export const PostImage = z.object({
+  url: z.string().url(),
+  key: z.string().min(1),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
 export const PostContent = z
   .object({
     text: z.string().min(1).optional(),
     poll: PollPostContent.optional(),
     visualization: VisualizationPostContent.optional(),
+    images: z.array(PostImage).max(4).optional(),
   })
   .refine(
     (content) =>
       content.text !== undefined ||
       content.poll !== undefined ||
-      content.visualization !== undefined,
+      content.visualization !== undefined ||
+      (content.images !== undefined && content.images.length > 0),
     {
       message:
-        "Post content must include at least one of text, poll, or visualization",
+        "Post content must include at least one of text, poll, visualization, or images",
     },
   );
 
@@ -74,6 +83,7 @@ export type VisualizationDataPointType = z.infer<typeof VisualizationDataPoint>;
 export type VisualizationPostContentType = z.infer<
   typeof VisualizationPostContent
 >;
+export type PostImageType = z.infer<typeof PostImage>;
 export type PostContentType = z.infer<typeof PostContent>;
 export type PostType = z.infer<typeof Post>;
 export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
