@@ -37,6 +37,37 @@ test-watch:
 test-e2e:
     pnpm --filter backend test:e2e
 
+# Run module-specific backend tests
+test-auth:
+    pnpm --filter backend test:auth
+
+test-posts:
+    pnpm --filter backend test:posts
+
+test-comments:
+    pnpm --filter backend test:comments
+
+test-polls:
+    pnpm --filter backend test:polls
+
+test-follows:
+    pnpm --filter backend test:follows
+
+test-reactions:
+    pnpm --filter backend test:reactions
+
+test-users:
+    pnpm --filter backend test:users
+
+test-uploads:
+    pnpm --filter backend test:uploads
+
+test-playground:
+    pnpm --filter backend test:playground
+
+test-app:
+    pnpm --filter backend test:app
+
 # --- E2E Tests ---
 
 # Run e2e tests for web (requires web server to be running)

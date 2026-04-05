@@ -8,6 +8,7 @@ import { threadsContract } from "./contracts/threads";
 import { commentsContract } from "./contracts/comments";
 import { usersContract } from "./contracts/users";
 import { pollsContract } from "./contracts/polls";
+import { playgroundContract } from "./contracts/playground";
 
 const c = initContract();
 
@@ -20,6 +21,7 @@ export const appContract = c.router({
   ...commentsContract,
   ...usersContract,
   ...pollsContract,
+  ...playgroundContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -60,4 +62,8 @@ export type { UsersContract } from "./contracts/users";
 export { pollsContract } from "./contracts/polls";
 export type { PollsContract } from "./contracts/polls";
 
+export { playgroundContract } from "./contracts/playground";
+export type { PlaygroundContract } from "./contracts/playground";
+
 export * from "./schemas/user";
+export * from "./schemas/playground";
