@@ -25,69 +25,72 @@ test:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm nx run-many --target=test
 
+build-backend:
+    pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts
+
 # Run backend tests in verbose mode
-test-verbose:
+test-verbose: build-backend
     pnpm --filter backend run test:verbose
 
 # Run backend tests in watch mode
-test-watch:
+test-watch: build-backend
     pnpm --filter backend test:watch
 
 # Run backend e2e tests
-test-e2e:
+test-e2e: build-backend
     pnpm --filter backend test:e2e
 
 # Run module-specific backend tests
-test-auth:
+test-auth: build-backend
     pnpm --filter backend test:auth
 
-test-posts:
+test-posts: build-backend
     pnpm --filter backend test:posts
 
-test-comments:
+test-comments: build-backend
     pnpm --filter backend test:comments
 
-test-polls:
+test-polls: build-backend
     pnpm --filter backend test:polls
 
-test-follows:
+test-follows: build-backend
     pnpm --filter backend test:follows
 
-test-reactions:
+test-reactions: build-backend
     pnpm --filter backend test:reactions
 
-test-users:
+test-users: build-backend
     pnpm --filter backend test:users
 
-test-uploads:
+test-uploads: build-backend
     pnpm --filter backend test:uploads
 
-test-playground:
+test-playground: build-backend
     pnpm --filter backend test:playground
 
-test-app:
+test-app: build-backend
     pnpm --filter backend test:app
 
 # --- E2E Tests ---
 
 # Run e2e tests for web (requires web server to be running)
-e2e:
+e2e: build-backend
     pnpm nx run web-e2e:e2e
 
 # Run e2e tests in headed mode (browser visible)
-e2e-headed:
+e2e-headed: build-backend
     pnpm nx run web-e2e:e2e:headed
 
 # Run e2e tests in UI mode (interactive)
-e2e-ui:
+e2e-ui: build-backend
     pnpm nx run web-e2e:e2e:ui
 
 # Debug e2e tests
-e2e-debug:
+e2e-debug: build-backend
     pnpm nx run web-e2e:e2e:debug
 
 # Generate e2e tests interactively (requires web server to be running)
-e2e-codegen:
+e2e-codegen: build-backend
     pnpm nx run web-e2e:e2e-codegen
 
 # Show Playwright test report
