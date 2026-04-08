@@ -1,0 +1,49 @@
+name: PR Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  test:
+    name: ${{ matrix.target }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - test-app
+          - test-auth
+          - test-comments
+          - test-follows
+          - test-playground
+          - test-polls
+          - test-posts
+          - test-reactions
+          - test-uploads
+          - test-users
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Setup Just
+        uses: extractions/setup-just@v2
+
+      - name: Install dependencies
+        run: just setup
+
+      - name: Run ${{ matrix.target }}
+        run: just ${{ matrix.target }}
