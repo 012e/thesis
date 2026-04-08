@@ -14,6 +14,10 @@ setup:
 dev:
     pnpm nx run-many --target=serve --projects=web,backend,ai,rest-contracts --parallel=10
 
+# Start Storybook for the web app
+storybook:
+    pnpm nx storybook web
+
 # --- Build & Test ---
 
 # Build the entire monorepo using Nx

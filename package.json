@@ -16,8 +16,24 @@
     ]
   },
   "devDependencies": {
+    "@nx/js": "22.6.4",
+    "@nx/storybook": "^22.6.4",
+    "@nx/web": "22.6.4",
+    "@storybook/react": "8.6.18",
+    "@storybook/react-vite": "8.6.18",
+    "@swc-node/register": "~1.11.1",
+    "@swc/core": "~1.15.5",
+    "@swc/helpers": "~0.5.18",
     "nx": "^22.5.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "storybook": "8.6.18",
+    "ts-node": "10.9.1",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
+  },
+  "msw": {
+    "workerDirectory": [
+      "apps/web/public"
+    ]
   }
 }
