@@ -2,11 +2,9 @@ set shell := ["bash", "-c"]
 
 # --- Setup ---
 
-# Install all dependencies (Node & .NET)
+# Install all dependencies Node
 setup:
     pnpm install
-    dotnet tool restore
-    dotnet restore
 
 # --- Development ---
 
