@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { PostComposer } from './post-composer';
 import { http, HttpResponse } from 'msw';
+import { faker } from '@faker-js/faker';
 
 const meta = {
   title: 'Components/PostComposer',
@@ -71,7 +72,7 @@ export const WithImagesAndPolls: Story = {
             images: [
               {
                 key: 'img1',
-                url: 'https://images.unsplash.com/photo-1506744626753-1fa44df14dd1?w=800&q=80',
+                url: faker.image.urlPicsumPhotos(),
               },
             ],
           });
