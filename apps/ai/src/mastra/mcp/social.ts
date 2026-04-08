@@ -1,41 +1,28 @@
-import { MCPClient } from "@mastra/mcp";
-import { env } from "../../env";
+import { MCPClient } from '@mastra/mcp';
+import { env } from '../../env';
 
 /**
- * Singleton MCP client for the social media backend.
+ * Creates a curried MCP client with authentication header baked in.
+ * Each request gets its own client instance with the auth token embedded.
  *
- * This client uses the requestContext pattern to support per-request authentication.
- * Pass a requestContext with 'Authorization' key to agent.stream() or agent.generate()
- * to authenticate requests to the backend MCP server.
- *
- * @example
- * ```typescript
- * const requestContext = new Map();
- * requestContext.set('Authorization', 'Bearer token');
- *
- * const stream = await agent.stream(message, {
- *   toolsets: await socialMcpClient.listToolsets(),
- *   requestContext,
- * });
- * ```
+ * @param authHeader - The Authorization header value (e.g., "Bearer token")
+ * @returns A new MCPClient instance configured with the auth header
  */
-export const socialMcpClient = new MCPClient({
-  id: "social-mcp-client",
-  servers: {
-    social: {
-      url: new URL(`${env.BACKEND_URL}/mcp/sse`),
-      fetch: async (url, init, requestContext) => {
-        const headers = new Headers(init?.headers);
+export function createSocialMcpClient(authHeader: string): MCPClient {
+  return new MCPClient({
+    id: 'social-mcp-client',
+    servers: {
+      social: {
+        url: new URL(`${env.BACKEND_URL}/mcp/sse`),
+        fetch: async (url, init) => {
+          const headers = new Headers(init?.headers);
 
-        // Extract Authorization header from requestContext
-        // This allows per-request authentication while reusing the same MCP connection
-        const authHeader = requestContext?.get("Authorization");
-        if (authHeader && typeof authHeader === "string") {
-          headers.set("Authorization", authHeader);
-        }
+          // Curry the auth header into the fetch function
+          headers.set('Authorization', authHeader);
 
-        return fetch(url, { ...init, headers });
+          return fetch(url, { ...init, headers });
+        },
       },
     },
-  },
-});
+  });
+}

@@ -1,40 +1,64 @@
-import { registerApiRoute } from "@mastra/core/server";
-import { RequestContext } from "@mastra/core/request-context";
-import { z } from "zod";
-import { assistantAgent } from "../agents/assistant";
-import { socialMcpClient } from "../mcp/social";
+import { registerApiRoute } from '@mastra/core/server';
+import { handleChatStream } from '@mastra/ai-sdk';
+import { z } from 'zod';
+import { createSocialMcpClient } from '../mcp/social';
 
 /**
- * Stream route for AI agent responses with authenticated MCP clients.
+ * Chat stream route for AI agent responses with authenticated MCP clients.
  *
- * This route uses the requestContext pattern to forward per-request authentication
- * to the MCP client without creating new connections. The singleton MCP client
- * reuses the SSE connection while supporting different auth tokens per request.
+ * This route creates a curried MCP client per request with the auth token
+ * baked into the client's fetch function, eliminating the need for RequestContext.
+ *
+ * Compatible with Vercel AI SDK's AssistantChatTransport.
  *
  * Usage:
- * POST /stream
+ * POST /chat/:agentId
  * Headers:
  *   Authorization: Bearer <token>
  * Body:
- *   { "message": "Your message here" }
+ *   {
+ *     "messages": [{ "id": "1", "role": "user", "parts": [{ "type": "text", "text": "Hello" }] }],
+ *     "trigger": "submit-message"
+ *   }
  *
- * Response: text/plain stream of AI-generated text chunks
+ * Response: AI SDK-compatible UIMessage stream
  */
 
-const StreamRequestSchema = z.object({
-  message: z
-    .string()
-    .min(1, "Message is required and must be a non-empty string"),
+// UIMessage format from Vercel AI SDK
+// Use permissive schema since parts can be text, file, tool-call, tool-result, etc.
+const UIMessageSchema = z.object({
+  id: z.string(),
+  role: z.enum(['user', 'assistant', 'system']),
+  parts: z.array(z.any()), // Accept any part type
+  metadata: z.any().optional(),
 });
 
-export const streamRoute = registerApiRoute("/stream", {
-  method: "POST",
+const StreamRequestSchema = z.object({
+  messages: z.array(UIMessageSchema).min(1, 'At least one message is required'),
+  trigger: z.enum(['submit-message', 'regenerate-message']).optional(),
+  messageId: z.string().optional(),
+  metadata: z.any().optional(),
+  resumeData: z.record(z.string(), z.any()).optional(),
+  // Optional AI SDK fields
+  callSettings: z.any().optional(),
+  system: z.any().optional(),
+  config: z.any().optional(),
+  tools: z.any().optional(),
+});
+
+export const streamRoute = registerApiRoute('/chat/:agentId', {
+  method: 'POST',
   handler: async (c) => {
     try {
-      const authHeader = c.req.header("Authorization");
-
+      const authHeader = c.req.header('Authorization');
       if (!authHeader) {
-        return c.json({ error: "Authorization header is required" }, 401);
+        return c.json({ error: 'Authorization header is required' }, 401);
+      }
+
+      // Extract agentId from path params
+      const agentId = c.req.param('agentId');
+      if (!agentId) {
+        return c.json({ error: 'agentId is required in path' }, 400);
       }
 
       // Parse and validate request body
@@ -44,58 +68,58 @@ export const streamRoute = registerApiRoute("/stream", {
       if (!parseResult.success) {
         return c.json(
           {
-            error: "Invalid request body",
+            error: 'Invalid request body',
             details: parseResult.error.issues,
           },
           400,
         );
       }
 
-      const { message } = parseResult.data;
+      const { messages, trigger, metadata, resumeData } = parseResult.data;
 
-      // Create requestContext with auth data
-      // This RequestContext gets forwarded to the MCP client's custom fetch function
-      const requestContext = new RequestContext([
-        ["Authorization", authHeader],
-      ]);
+      // Create a curried MCP client with the auth header baked in
+      const mcpClient = createSocialMcpClient(authHeader);
 
-      // Get toolsets from the singleton MCP client
-      // The connection is reused, only authentication changes per request
-      const toolsets = await socialMcpClient.listToolsets();
+      // Get toolsets from the curried MCP client
+      const toolsets = await mcpClient.listToolsets();
 
-      // Stream the agent response with requestContext
-      // The agent will forward requestContext to MCP tools during execution
-      const stream = await assistantAgent.stream(message, {
-        toolsets,
-        requestContext,
+      // Use Mastra's handleChatStream for AI SDK-compatible streaming
+      // Note: mastra is imported dynamically to avoid circular dependency
+      const { mastra } = await import('../index.js');
+      const stream = await handleChatStream({
+        mastra,
+        agentId,
+        params: {
+          messages,
+          trigger,
+          resumeData,
+        } as any,
+        defaultOptions: {
+          toolsets,
+        } as any,
       });
 
-      // Create a ReadableStream from the text stream
-      const readableStream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of stream.textStream) {
-              controller.enqueue(new TextEncoder().encode(chunk));
-            }
-            controller.close();
-          } catch (error) {
-            controller.error(error);
-          }
-        },
-      });
+      // Return AI SDK-compatible stream response
+      // Convert object stream to SSE format, then encode to bytes
+      const sseStream = stream
+        .pipeThrough(new (await import('ai')).JsonToSseTransformStream())
+        .pipeThrough(new TextEncoderStream());
 
-      return new Response(readableStream, {
+      return new Response(sseStream, {
+        status: 200,
         headers: {
-          "Content-Type": "text/plain; charset=utf-8",
-          "Cache-Control": "no-cache",
-          Connection: "keep-alive",
+          'Content-Type': 'text/event-stream; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          Connection: 'keep-alive',
+          'X-Vercel-AI-Data-Stream': 'v1',
+          'x-accel-buffering': 'no',
         },
       });
     } catch (error) {
-      console.error("Stream route error:", error);
+      console.error('Stream route error:', error);
       return c.json(
         {
-          error: "Internal server error",
+          error: 'Internal server error',
           details: error instanceof Error ? error.message : String(error),
         },
         500,

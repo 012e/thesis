@@ -11,7 +11,7 @@ import {
   IconRobot,
   IconDownload,
   IconLoader2,
-} from "@tabler/icons-react";
+} from '@tabler/icons-react';
 import {
   ActionBarPrimitive,
   AuiIf,
@@ -21,20 +21,20 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
   useAuiState,
-} from "@assistant-ui/react";
-import "@assistant-ui/react-markdown/styles/dot.css";
+} from '@assistant-ui/react';
+import '@assistant-ui/react-markdown/styles/dot.css';
 
-import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
-import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
-import { Reasoning, ReasoningGroup } from "@/components/assistant-ui/reasoning";
-import { Sources } from "@/components/assistant-ui/sources";
+import { Button } from '@/components/ui/button';
+import { MarkdownText } from '@/components/assistant-ui/markdown-text';
+import { ToolFallback } from '@/components/assistant-ui/tool-fallback';
+import { Reasoning, ReasoningGroup } from '@/components/assistant-ui/reasoning';
+import { Sources } from '@/components/assistant-ui/sources';
 import {
   ComposerAddAttachment,
   ComposerAttachments,
   UserMessageAttachments,
-} from "@/components/assistant-ui/attachment";
-import { cn } from "@/lib/utils";
+} from '@/components/assistant-ui/attachment';
+import { cn } from '@/lib/utils';
 
 export function Thread() {
   return (
@@ -160,11 +160,11 @@ function ThreadScrollToBottom() {
 function UserMessage() {
   return (
     <MessagePrimitive.Root
-      className="grid auto-rows-auto gap-y-2 py-4 px-4 mx-auto w-full max-w-2xl grid-cols-[minmax(72px,1fr)_auto]"
+      className="grid auto-rows-auto gap-y-2 py-4 px-4 mx-auto w-full max-w-2xl grid-cols-[minmax(72px,1fr)_auto] group"
       data-role="user"
     >
       <UserActionBar />
-      <div className="col-start-2 max-w-xl">
+      <div className="col-start-2 max-w-xl break-words">
         <UserMessageAttachments />
         <div className="py-2.5 px-5 rounded-3xl rounded-tr-sm bg-muted text-foreground">
           <MessagePrimitive.Parts />
@@ -179,8 +179,7 @@ function UserActionBar() {
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
-      autohide="not-last"
-      className="flex flex-col col-start-1 row-start-1 items-end pr-2 mt-2.5"
+      className="flex flex-col col-start-1 row-start-1 items-end pr-2 mt-2.5 opacity-0 transition-opacity group-hover:opacity-100"
     >
       <ActionBarPrimitive.Edit asChild>
         <button className="p-1.5 rounded-md transition-colors text-muted-foreground hover:bg-accent">
@@ -217,7 +216,7 @@ function EditComposer() {
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root
-      className="flex relative flex-col py-4 px-4 mx-auto w-full max-w-2xl"
+      className="flex relative flex-col p-2 mx-auto w-full max-w-2xl group"
       data-role="assistant"
     >
       <div className="flex flex-col justify-center">
@@ -275,9 +274,7 @@ function AssistantActionBar() {
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
-      autohide="not-last"
-      autohideFloat="single-branch"
-      className="flex gap-1 text-muted-foreground"
+      className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground"
     >
       <ActionBarPrimitive.Copy asChild>
         <button className="p-1.5 rounded-md transition-colors hover:bg-accent">
@@ -312,7 +309,7 @@ function BranchPicker({ className }: { className?: string }) {
     <BranchPickerPrimitive.Root
       hideWhenSingleBranch
       className={cn(
-        "inline-flex items-center text-xs text-muted-foreground",
+        'inline-flex items-center text-xs text-muted-foreground',
         className,
       )}
     >
