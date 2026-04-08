@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed": "tsx scripts/seed.ts",
-    "build-storybook": "build-storybook -s public"
+    "build-storybook": "pnpx build-storybook -s public"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.12.19",
