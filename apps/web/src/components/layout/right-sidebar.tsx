@@ -1,42 +1,42 @@
-import { IconSearch, IconX } from "@tabler/icons-react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { IconSearch, IconX } from '@tabler/icons-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Avatar } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 const newsItems = [
   {
-    category: "Other",
-    title: "Bitcoin Surges Back Above $70,000 After Early February Dip",
-    posts: "46.6K",
-    time: "23 hours ago",
+    category: 'Other',
+    title: 'Bitcoin Surges Back Above $70,000 After Early February Dip',
+    posts: '46.6K',
+    time: '23 hours ago',
   },
   {
-    category: "Entertainment",
+    category: 'Entertainment',
     title:
       "Elon Musk Questions Childless AI Ethicists' Stake in Humanity's Future",
-    posts: "35.2K",
-    time: "23 hours ago",
+    posts: '35.2K',
+    time: '23 hours ago',
   },
   {
-    category: "Entertainment",
+    category: 'Entertainment',
     title:
-      "Shota Goshozono Leaves MAPPA After Directing Jujutsu Kaisen Season 3 Cour 1",
-    posts: "2,085",
-    time: "Trending now",
+      'Shota Goshozono Leaves MAPPA After Directing Jujutsu Kaisen Season 3 Cour 1',
+    posts: '2,085',
+    time: 'Trending now',
     trending: true,
   },
 ];
 
 const trendingItems = [
   {
-    location: "Trending in Vietnam",
-    topic: "pga tour rise",
+    location: 'Trending in Vietnam',
+    topic: 'pga tour rise',
   },
   {
-    location: "Trending in Vietnam",
-    topic: "#TrendingTopic",
+    location: 'Trending in Vietnam',
+    topic: '#TrendingTopic',
   },
 ];
 
@@ -124,7 +124,7 @@ export function RightSidebar() {
           </CardHeader>
           <CardContent className="p-0">
             {trendingItems.map((item, index) => (
-              <button
+              <div
                 key={index}
                 className="flex justify-between items-start py-3 px-4 w-full text-left transition-colors hover:bg-accent"
               >
@@ -141,7 +141,7 @@ export function RightSidebar() {
                 >
                   <IconDotsCircleHorizontal className="w-4 h-4" />
                 </Button>
-              </button>
+              </div>
             ))}
           </CardContent>
         </Card>
@@ -150,7 +150,7 @@ export function RightSidebar() {
   );
 }
 
-function IconDotsCircleHorizontal(props: React.ComponentProps<"svg">) {
+function IconDotsCircleHorizontal(props: React.ComponentProps<'svg'>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
