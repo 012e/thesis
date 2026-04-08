@@ -2,17 +2,19 @@ set shell := ["bash", "-c"]
 
 # --- Setup ---
 
-# Install all dependencies (Node & .NET)
+# Install all dependencies Node
 setup:
     pnpm install
-    dotnet tool restore
-    dotnet restore
 
 # --- Development ---
 
 # Start backend, frontend, and AI service in parallel
 dev:
     pnpm nx run-many --target=serve --projects=web,backend,ai,rest-contracts --parallel=10
+
+# Start Storybook for the web app
+storybook:
+    pnpm nx storybook web
 
 # --- Build & Test ---
 
