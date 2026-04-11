@@ -1,27 +1,31 @@
 import { registerApiRoute } from '@mastra/core/server';
-import { handleChatStream } from '@mastra/ai-sdk';
+import { toAISdkStream } from '@mastra/ai-sdk';
+import { createUIMessageStreamResponse } from 'ai';
 import { z } from 'zod';
-import { createSocialMcpClient } from '../mcp/social';
+import { createOrchestratorAgent } from '../agents/orchestrator-agent';
 
 /**
- * Chat stream route for AI agent responses with authenticated MCP clients.
+ * Chat stream route for the assistant agent with authenticated MCP clients.
  *
- * This route creates a curried MCP client per request with the auth token
- * baked into the client's fetch function, eliminating the need for RequestContext.
+ * Creates a per-request MCP client with the auth token baked in, then
+ * streams the agent response in AI SDK UIMessage format.
  *
  * Compatible with Vercel AI SDK's AssistantChatTransport.
  *
  * Usage:
- * POST /chat/:agentId
+ * POST /chat
  * Headers:
  *   Authorization: Bearer <token>
  * Body:
  *   {
  *     "messages": [{ "id": "1", "role": "user", "parts": [{ "type": "text", "text": "Hello" }] }],
- *     "trigger": "submit-message"
  *   }
  *
  * Response: AI SDK-compatible UIMessage stream
+ *
+ * The orchestrator is created fresh per-request so each request's MCP tools
+ * carry the correct auth token. Sub-agents receive their domain-specific tools
+ * at construction time inside `createOrchestratorAgent`.
  */
 
 // UIMessage format from Vercel AI SDK
@@ -39,29 +43,12 @@ const StreamRequestSchema = z.object({
   messageId: z.string().optional(),
   metadata: z.any().optional(),
   resumeData: z.record(z.string(), z.any()).optional(),
-  // Optional AI SDK fields
-  callSettings: z.any().optional(),
-  system: z.any().optional(),
-  config: z.any().optional(),
-  tools: z.any().optional(),
 });
 
-export const streamRoute = registerApiRoute('/chat/:agentId', {
+export const streamRoute = registerApiRoute('/chat', {
   method: 'POST',
   handler: async (c) => {
     try {
-      const authHeader = c.req.header('Authorization');
-      if (!authHeader) {
-        return c.json({ error: 'Authorization header is required' }, 401);
-      }
-
-      // Extract agentId from path params
-      const agentId = c.req.param('agentId');
-      if (!agentId) {
-        return c.json({ error: 'agentId is required in path' }, 400);
-      }
-
-      // Parse and validate request body
       const body = await c.req.json();
       const parseResult = StreamRequestSchema.safeParse(body);
 
@@ -75,45 +62,20 @@ export const streamRoute = registerApiRoute('/chat/:agentId', {
         );
       }
 
-      const { messages, trigger, metadata, resumeData } = parseResult.data;
+      const { messages } = parseResult.data;
+      const context = c.get('requestContext');
 
-      // Create a curried MCP client with the auth header baked in
-      const mcpClient = createSocialMcpClient(authHeader);
+      // Build a per-request orchestrator with auth-aware MCP tools baked into
+      // each sub-agent at construction time.
+      const orchestrator = await createOrchestratorAgent(context);
 
-      // Get toolsets from the curried MCP client
-      const toolsets = await mcpClient.listToolsets();
-
-      // Use Mastra's handleChatStream for AI SDK-compatible streaming
-      // Note: mastra is imported dynamically to avoid circular dependency
-      const { mastra } = await import('../index.js');
-      const stream = await handleChatStream({
-        mastra,
-        agentId,
-        params: {
-          messages,
-          trigger,
-          resumeData,
-        } as any,
-        defaultOptions: {
-          toolsets,
-        } as any,
+      const agentStream = await orchestrator.stream(messages, {
+        maxSteps: 20,
       });
 
-      // Return AI SDK-compatible stream response
-      // Convert object stream to SSE format, then encode to bytes
-      const sseStream = stream
-        .pipeThrough(new (await import('ai')).JsonToSseTransformStream())
-        .pipeThrough(new TextEncoderStream());
-
-      return new Response(sseStream, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-          'X-Vercel-AI-Data-Stream': 'v1',
-          'x-accel-buffering': 'no',
-        },
+      return createUIMessageStreamResponse({
+        // Cast resolves Node.js vs Web Streams API ambient type mismatch; runtime is correct
+        stream: toAISdkStream(agentStream, { from: 'agent' }) as any,
       });
     } catch (error) {
       console.error('Stream route error:', error);

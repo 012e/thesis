@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Tool, type Context } from '@rekog/mcp-nest';
 import { z } from 'zod';
-import { PostsService } from '../posts/posts.service';
-import { CommentsService } from '../comments/comments.service';
+import { PostsService } from '../../posts/posts.service';
+import { CommentsService } from '../../comments/comments.service';
 
 @Injectable()
 export class PostTools {
@@ -25,7 +25,7 @@ export class PostTools {
   })
   async getRecentPosts(
     { limit }: { limit: number },
-    context: Context,
+    _context: Context,
     request: any,
   ) {
     const user = request.user;
@@ -53,7 +53,7 @@ export class PostTools {
   })
   async getPostThread(
     { postId }: { postId: string },
-    context: Context,
+    _context: Context,
     request: any,
   ) {
     const user = request.user;
@@ -86,7 +86,11 @@ export class PostTools {
       text: z.string().min(1).describe('Text content of the post'),
     }),
   })
-  async createPost({ text }: { text: string }, context: Context, request: any) {
+  async createPost(
+    { text }: { text: string },
+    _context: Context,
+    request: any,
+  ) {
     const user = request.user;
     if (!user)
       return { content: [{ type: 'text', text: 'Error: Not authenticated' }] };
@@ -115,7 +119,7 @@ export class PostTools {
   })
   async updatePost(
     { postId, text }: { postId: string; text: string },
-    context: Context,
+    _context: Context,
     request: any,
   ) {
     const user = request.user;
@@ -156,7 +160,7 @@ export class PostTools {
   })
   async deletePost(
     { postId }: { postId: string },
-    context: Context,
+    _context: Context,
     request: any,
   ) {
     const user = request.user;
