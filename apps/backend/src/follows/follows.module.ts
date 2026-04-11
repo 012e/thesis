@@ -9,5 +9,6 @@ import { FollowsService } from './follows.service';
   imports: [DatabaseModule],
   controllers: [FollowsController],
   providers: [FollowsService],
+  exports: [FollowsService],
 })
 export class FollowsModule {}

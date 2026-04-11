@@ -1,28 +1,45 @@
 import { MCPClient } from '@mastra/mcp';
 import { env } from '../../env';
+import { RequestContext } from '@mastra/core/request-context';
 
-/**
- * Creates a curried MCP client with authentication header baked in.
- * Each request gets its own client instance with the auth token embedded.
- *
- * @param authHeader - The Authorization header value (e.g., "Bearer token")
- * @returns A new MCPClient instance configured with the auth header
- */
-export function createSocialMcpClient(authHeader: string): MCPClient {
+function createAuthFetch(context: RequestContext) {
+  return async (url: URL | RequestInfo, init?: RequestInit) => {
+    const headers = new Headers(init?.headers);
+    const authHeader = context?.get('authorization') as string | undefined;
+    if (authHeader) {
+      headers.set('Authorization', authHeader);
+    }
+    return fetch(url, { ...init, headers });
+  };
+}
+
+function createMcpClient(context: RequestContext) {
+  const fetchWithAuth = createAuthFetch(context);
   return new MCPClient({
     id: 'social-mcp-client',
     servers: {
-      social: {
-        url: new URL(`${env.BACKEND_URL}/mcp/sse`),
-        fetch: async (url, init) => {
-          const headers = new Headers(init?.headers);
-
-          // Curry the auth header into the fetch function
-          headers.set('Authorization', authHeader);
-
-          return fetch(url, { ...init, headers });
-        },
+      identity: {
+        url: new URL(`${env.BACKEND_URL}/mcp/identity/sse`),
+        fetch: fetchWithAuth,
+      },
+      posts: {
+        url: new URL(`${env.BACKEND_URL}/mcp/posts/sse`),
+        fetch: fetchWithAuth,
+      },
+      interactions: {
+        url: new URL(`${env.BACKEND_URL}/mcp/interactions/sse`),
+        fetch: fetchWithAuth,
       },
     },
   });
+}
+
+export async function getSocialMcpToolsets(context: RequestContext) {
+  const client = createMcpClient(context);
+  const toolsets = await client.listToolsets();
+  return {
+    identityToolset: toolsets.identity,
+    postsToolset: toolsets.posts,
+    interactionsToolset: toolsets.interactions,
+  };
 }

@@ -9,5 +9,6 @@ import { ReactionsService } from './reactions.service';
   imports: [DatabaseModule],
   controllers: [ReactionsController],
   providers: [ReactionsService],
+  exports: [ReactionsService],
 })
 export class ReactionsModule {}

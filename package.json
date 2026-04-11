@@ -12,7 +12,26 @@
   "packageManager": "pnpm@10.28.2",
   "pnpm": {
     "onlyBuiltDependencies": [
-      "sharp"
+      "'",
+      "@nestjs/core",
+      "@swc/core",
+      "[",
+      "]",
+      "a",
+      "core-js",
+      "cpu-features",
+      "es5-ext",
+      "esbuild",
+      "h",
+      "microsandbox",
+      "msw",
+      "nx",
+      "p",
+      "protobufjs",
+      "r",
+      "s",
+      "ssh2",
+      "vue-demi"
     ]
   },
   "devDependencies": {

@@ -17,6 +17,7 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const token = useAtomValue(bearerToken);
   const runtime = useRemoteThreadListRuntime({
+    adapter: threadListAdapter,
     runtimeHook: () =>
       useChatRuntime({
         transport: new AssistantChatTransport({
@@ -26,7 +27,6 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
           },
         }),
       }),
-    adapter: threadListAdapter,
   });
 
   return (
