@@ -30,6 +30,9 @@ test:
 build-backend:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts
 
+build-auth:
+    pnpm nx run-many --output-style=static --target=build --projects=auth-client
+
 # Run backend tests in verbose mode
 test-verbose: build-backend
     pnpm --filter backend run test:verbose
@@ -43,7 +46,7 @@ test-e2e: build-backend
     pnpm --filter backend test:e2e
 
 # Run module-specific backend tests
-test-auth: build-backend
+test-auth: build-backend build-auth
     pnpm --filter backend test:auth
 
 test-posts: build-backend
