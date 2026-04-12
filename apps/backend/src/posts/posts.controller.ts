@@ -37,6 +37,18 @@ export class PostsController {
     });
   }
 
+  @TsRestHandler(postsContract.searchPosts)
+  searchPosts(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.searchPosts, async ({ query }) => {
+      const results = await this.postsService.search(query.q, session.user.id);
+
+      return {
+        status: 200,
+        body: results as any,
+      };
+    });
+  }
+
   @TsRestHandler(postsContract.getPost)
   getPost(@Session() session: UserSession) {
     return tsRestHandler(postsContract.getPost, async ({ params }) => {

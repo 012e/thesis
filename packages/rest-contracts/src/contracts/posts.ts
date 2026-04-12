@@ -1,52 +1,57 @@
-import { initContract } from "@ts-rest/core";
-import { z } from "zod";
-import { User } from "../schemas/shared";
+import { initContract } from '@ts-rest/core';
+import { z } from 'zod';
 import {
   Post,
   CreatePostBody,
   UpdatePostBody,
   RecommendationPage,
-} from "../schemas/post";
-import {
-  Reactor,
-  PostReaction,
-  PostReactionSummary,
-  ReactPostBody,
-} from "../schemas/reaction";
+} from '../schemas/post';
 
 const c = initContract();
 
 export const postsContract = c.router({
   listPosts: {
-    method: "GET",
-    path: "/posts",
+    method: 'GET',
+    path: '/posts',
     responses: {
       200: z.array(Post),
     },
-    summary: "List social media posts",
+    summary: 'List social media posts',
   },
   createPost: {
-    method: "POST",
-    path: "/posts",
+    method: 'POST',
+    path: '/posts',
     body: CreatePostBody,
     responses: {
       201: Post,
     },
-    summary: "Create a social media post",
+    summary: 'Create a social media post',
+  },
+  searchPosts: {
+    method: 'GET',
+    path: '/posts/search',
+    query: z.object({
+      q: z.string().min(1),
+    }),
+    responses: {
+      200: z.array(Post),
+    },
+    summary:
+      'Full-text search posts by content text using ParadeDB BM25. Results are ordered by relevance score descending.',
   },
   getPost: {
-    method: "GET",
-    path: "/posts/:id",
+    method: 'GET',
+    path: '/posts/:id',
     pathParams: z.object({ id: z.string().uuid() }),
     responses: {
       200: Post,
       404: z.null(),
     },
-    summary: "Get a social media post",
+    summary: 'Get a social media post',
   },
   updatePost: {
-    method: "PUT",
-    path: "/posts/:id",
+    method: 'PUT',
+    path: '/posts/:id',
     pathParams: z.object({ id: z.string().uuid() }),
     body: UpdatePostBody,
     responses: {
@@ -54,22 +59,22 @@ export const postsContract = c.router({
       403: z.null(),
       404: z.null(),
     },
-    summary: "Update a social media post",
+    summary: 'Update a social media post',
   },
   deletePost: {
-    method: "DELETE",
-    path: "/posts/:id",
+    method: 'DELETE',
+    path: '/posts/:id',
     pathParams: z.object({ id: z.string().uuid() }),
     responses: {
       200: Post,
       403: z.null(),
       404: z.null(),
     },
-    summary: "Delete a social media post",
+    summary: 'Delete a social media post',
   },
   getRecommendations: {
-    method: "GET",
-    path: "/recommendations",
+    method: 'GET',
+    path: '/recommendations',
     query: z.object({
       limit: z.coerce.number().int().positive().max(100).optional(),
       cursor: z.string().optional(),
@@ -78,7 +83,7 @@ export const postsContract = c.router({
       200: RecommendationPage,
     },
     summary:
-      "Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).",
+      'Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).',
   },
 });
 

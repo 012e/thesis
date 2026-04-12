@@ -50,6 +50,13 @@
       "when": 1774967114865,
       "tag": "0006_cool_puff_adder",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1744416000000,
+      "tag": "0007_paradedb_bm25_search",
+      "breakpoints": true
     }
   ]
 }

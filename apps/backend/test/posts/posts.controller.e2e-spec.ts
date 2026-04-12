@@ -630,7 +630,9 @@ describe('PostsController integration', () => {
       expect(res.body.id).toBeTruthy();
       expect(res.body.content.text).toBe('Check out these images!');
       expect(res.body.content.images).toHaveLength(2);
-      expect(res.body.content.images[0].key).toBe('images/user-123/image1.webp');
+      expect(res.body.content.images[0].key).toBe(
+        'images/user-123/image1.webp',
+      );
       expect(res.body.content.images[0].width).toBe(1200);
       expect(res.body.content.images[0].height).toBe(800);
     });
@@ -876,7 +878,10 @@ describe('PostsController integration', () => {
         .expect(200);
 
       expect(res.body.length).toBeGreaterThan(0);
-      const postWithImage = res.body.find((p: { content: { text: string } }) => p.content.text === 'Feed post with image');
+      const postWithImage = res.body.find(
+        (p: { content: { text: string } }) =>
+          p.content.text === 'Feed post with image',
+      );
       expect(postWithImage).toBeDefined();
       expect(postWithImage.content.images).toHaveLength(1);
       expect(postWithImage.content.images[0].key).toBe('images/feed.webp');
@@ -909,7 +914,10 @@ describe('PostsController integration', () => {
         .expect(200);
 
       expect(res.body.items.length).toBeGreaterThan(0);
-      const postWithImage = res.body.items.find((p: { content: { text: string } }) => p.content.text === 'Recommended post with images');
+      const postWithImage = res.body.items.find(
+        (p: { content: { text: string } }) =>
+          p.content.text === 'Recommended post with images',
+      );
       expect(postWithImage).toBeDefined();
       expect(postWithImage.content.images).toHaveLength(1);
       expect(postWithImage.content.images[0].key).toBe('images/rec.webp');
