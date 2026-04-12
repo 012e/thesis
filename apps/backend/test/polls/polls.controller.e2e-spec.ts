@@ -4,38 +4,12 @@ import { Pool } from 'pg';
 
 import { closeTestApp, createTestApp } from '../helpers/app.setup';
 import { runBetterAuthMigrations } from '../helpers/database.setup';
+import { registerAndGetSessionCookie } from '../helpers/auth.helper';
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
 } from '../helpers/testcontainers.setup';
-
-/**
- * Register a user via the HTTP API and return the session cookie string.
- */
-async function registerAndGetSessionCookie(
-  server: ReturnType<typeof request>,
-  email: string,
-  password = 'TestPassword123!',
-  name = 'Test User',
-): Promise<string> {
-  const res = await server
-    .post('/api/auth/sign-up/email')
-    .send({ email, password, name })
-    .expect(200);
-
-  const setCookieHeader = res.headers['set-cookie'] as string[] | string;
-  const cookies = Array.isArray(setCookieHeader)
-    ? setCookieHeader
-    : [setCookieHeader];
-  const entry = cookies.find((c) => c.startsWith('better-auth.session_token='));
-  if (!entry) {
-    throw new Error(
-      `No session cookie found in Set-Cookie: ${JSON.stringify(cookies)}`,
-    );
-  }
-  return entry.split(';')[0];
-}
 
 describe('PollsController integration', () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;

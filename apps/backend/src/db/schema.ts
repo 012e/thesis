@@ -10,6 +10,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
 } from 'drizzle-orm/pg-core';
 
@@ -160,3 +161,60 @@ export const threads = pgTable('threads', {
 
 export type Thread = typeof threads.$inferSelect;
 export type NewThread = typeof threads.$inferInsert;
+
+/**
+ * Direct message type enum — extensible for future types (image, file, etc.)
+ */
+export const directMessageTypeEnum = pgEnum('direct_message_type', ['text']);
+
+/**
+ * Represents a 1-on-1 conversation between two users.
+ * user_a_id is always the lexicographically smaller user ID to ensure uniqueness.
+ */
+export const conversations = pgTable(
+  'conversations',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userAId: text('user_a_id').notNull(),
+    userBId: text('user_b_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique('conversations_user_pair_unique').on(table.userAId, table.userBId),
+  ],
+);
+
+export type Conversation = typeof conversations.$inferSelect;
+export type NewConversation = typeof conversations.$inferInsert;
+
+/**
+ * Individual direct messages within a conversation.
+ * Includes nullable columns for future features (read receipts, soft delete, attachments).
+ */
+export const directMessages = pgTable('direct_messages', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  conversationId: uuid('conversation_id')
+    .notNull()
+    .references(() => conversations.id, { onDelete: 'cascade' }),
+  senderId: text('sender_id').notNull(),
+  content: text('content').notNull(),
+  type: directMessageTypeEnum('type').default('text').notNull(),
+  /** Reserved for future read receipt support — null means unread */
+  readAt: timestamp('read_at', { withTimezone: true }),
+  /** Reserved for future soft-delete / message editing support */
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type DirectMessage = typeof directMessages.$inferSelect;
+export type NewDirectMessage = typeof directMessages.$inferInsert;

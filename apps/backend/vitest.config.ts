@@ -7,6 +7,8 @@ export default defineConfig({
     globals: true,
     root: resolve(__dirname, './'),
     include: ['test/**/*.e2e-spec.ts'],
+    maxWorkers: 1,
+    fileParallelism: false,
   },
   plugins: [
     // This is required to build the test files with SWC

@@ -1,5 +1,6 @@
 import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 import getPort from 'get-port';
 
 import type {
@@ -62,6 +63,9 @@ export async function createTestApp(
     credentials: true,
     origin: '*',
   });
+
+  // Enable Socket.IO WebSocket adapter (required for MessagesGateway)
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   await app.listen(port);
 
