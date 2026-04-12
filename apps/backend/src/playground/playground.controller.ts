@@ -13,7 +13,8 @@ export class PlaygroundController {
   constructor(private readonly playgroundService: PlaygroundService) {}
 
   @TsRestHandler(playgroundContract.executeCode)
-  executeCode(@Session() session: UserSession) {
+  executeCode(@Session() _session: UserSession) {
+    void _session;
     return tsRestHandler(playgroundContract.executeCode, async ({ body }) => {
       try {
         // Validate input

@@ -9,5 +9,6 @@ import { ThreadsService } from './threads.service';
   imports: [DatabaseModule],
   controllers: [ThreadsController],
   providers: [ThreadsService],
+  exports: [ThreadsService],
 })
 export class ThreadsModule {}
