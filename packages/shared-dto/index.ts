@@ -16,7 +16,7 @@ export interface PollPostContentDto {
   closesAt?: string | null;
 }
 
-export type VisualizationTypeDto = "bar" | "line" | "pie" | "table";
+export type VisualizationTypeDto = 'bar' | 'line' | 'pie' | 'table';
 
 export interface VisualizationDataPointDto {
   label: string;
@@ -64,7 +64,7 @@ export interface PostDto {
   currentUserReaction: ReactionTypeDto | null;
 }
 
-export type ReactionTypeDto = "upvote" | "downvote";
+export type ReactionTypeDto = 'upvote' | 'downvote';
 
 export interface PostReactionDto {
   postId: string;
@@ -168,4 +168,39 @@ export interface PollResultsDto {
   userVotes: string[];
   isClosed: boolean;
   closesAt?: string | null;
+}
+
+// ─── Direct Messaging ────────────────────────────────────────────────────────
+
+/** Supported message content types. Extensible for future types (image, file…). */
+export type DirectMessageTypeDto = 'text';
+
+export interface DirectMessageDto {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  content: string;
+  type: DirectMessageTypeDto;
+  /** ISO datetime. null means not yet read (reserved for future read receipts). */
+  readAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ConversationParticipantDto {
+  id: string;
+  username: string | null;
+  displayUsername: string | null;
+  name: string | null;
+  image: string | null;
+}
+
+export interface ConversationDto {
+  id: string;
+  /** The other participant from the perspective of the requesting user. */
+  otherUser: ConversationParticipantDto;
+  /** Most recent message in this conversation, if any. */
+  lastMessage: DirectMessageDto | null;
+  createdAt: string;
+  updatedAt: string;
 }

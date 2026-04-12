@@ -1,124 +1,208 @@
-Agent Guide for Thesis Repository
+# Agent Guide — Thesis Repository
 
-This repository is a hybrid monorepo: TypeScript (React + NestJS). It uses pnpm workspaces, Nx for orchestration and Just for convenience scripts. Agents use this file as the canonical handbook for commands, conventions, and safe behaviors.
+Hybrid monorepo: React 19 + NestJS + Mastra AI service. pnpm workspaces, Nx for orchestration, justfiles for convenience scripts.
 
-Read `docs/` before changing architecture or contracts — it prevents duplicate discovery and class of mistakes.
+**Read `docs/` before changing architecture or contracts.**
 
-Quick commands (build / lint / test)
+---
 
-- Root setup: `pnpm install` or `just setup` (restores Node tooling).
-- Start dev services: `just dev` (preferred when present).
+## Repo map (read this first)
 
-- TypeScript apps (pnpm workspaces / nx):
-  - Build: `pnpm --filter <app-name> build` (e.g. `pnpm --filter web build`).
-  - Lint: `pnpm --filter <app-name> lint` (e.g. `pnpm --filter backend lint`).
-  - Test (all): `pnpm --filter <app-name> test` (runs the test script defined in that package).
-  - Run single test file (Vitest): `pnpm --filter backend test -- test/<path>/file.spec.ts`.
-  - Run single test by name: `pnpm --filter backend test -- -t "test name"`.
-  - Run Vitest directly (bypass npm script): `pnpm --filter backend -- vitest run test/<path>/file.spec.ts`.
+```
+apps/
+  web/        React 19 + Vite SPA (package name: "web")
+  backend/    NestJS REST API + MCP server (package name: "backend")
+  ai/         Mastra AI agent service (package name: "ai")
+packages/
+  shared-dto/       @repo/shared-dto  — pure TS interface DTOs (no runtime)
+  rest-contracts/   @repo/rest-contracts — ts-rest contracts + Zod schemas (built with tsup)
+  auth-client/      @repo/auth-client — Better Auth client helpers
+  web-e2e/          @repo/web-e2e — Playwright E2E for web
+```
 
-- Web (React + Vite):
-  - Dev: `pnpm --filter web dev` or `pnpm --filter web serve`.
-  - Build: `pnpm --filter web build` (runs `tsc -b && vite build`).
+### Key source files to orient quickly
 
-- Backend (NestJS):
-  - Build: `pnpm --filter backend build` (runs `nest build`).
-  - Test: `pnpm --filter backend test` ; watch: `pnpm --filter backend test:watch`.
+| What                                    | Where                                                                        |
+| --------------------------------------- | ---------------------------------------------------------------------------- |
+| Backend entrypoint                      | `apps/backend/src/main.ts`                                                   |
+| Backend root module                     | `apps/backend/src/app.module.ts`                                             |
+| Backend env vars                        | `apps/backend/src/env.ts`                                                    |
+| Backend Drizzle schema                  | `apps/backend/src/db/schema.ts` (app), `src/db/auth-schema.ts` (Better Auth) |
+| All API contracts (ts-rest + Zod)       | `packages/rest-contracts/src/index.ts` + `src/contracts/`                    |
+| All shared DTOs                         | `packages/shared-dto/index.ts`                                               |
+| Web entrypoint                          | `apps/web/src/main.tsx`                                                      |
+| Web routes (auto-generated, never edit) | `apps/web/src/routeTree.gen.ts`                                              |
+| Web env vars                            | `apps/web/src/env.ts`                                                        |
+| AI service entrypoint                   | `apps/ai/src/mastra/index.ts`                                                |
+| Auth flow                               | `apps/backend/src/auth/index.ts` (Better Auth instance)                      |
 
-Tips: prefer `just` wrappers where available. Use `pnpm -w -s tsc --build` for cross-project type checks.
+### Backend module layout
 
-How to run a single test (cheat sheet)
+Feature modules under `apps/backend/src/`: `posts/`, `comments/`, `reactions/`, `follows/`, `polls/`, `users/`, `uploads/`, `threads/`, `playground/`, `seed/`, `health/`, `mcp/`.
 
-- Single file (Vitest): `pnpm --filter backend test -- test/<path>/file.spec.ts`.
-- By test name: `pnpm --filter backend test -- -t "name"`.
-- Watch a single test: `pnpm --filter backend test -- --watch -t "name"`.
+Each feature: `*.controller.ts` (ts-rest handlers) + `*.service.ts` + `*.module.ts`. NestJS pattern — controllers are thin, services hold logic.
 
-Code style and standards (TypeScript / Frontend)
+### Web route/component layout
 
-- Formatting & linting:
-  - Prettier required. Repo defaults: 2 spaces, double quotes, semicolons. Run `prettier --check` in CI and `prettier --write` locally.
-  - ESLint enforces TS/React/Nest rules. Run `pnpm --filter <app> lint`. Use `--fix` when safe; document why you bypass rules with an inline comment linking a ticket.
+```
+apps/web/src/
+  routes/          TanStack Router file-based routes
+    __root.tsx     ThemeProvider + AuthGuard + AppLayout
+    index.tsx      Home feed
+    chat.tsx       AI chat page (assistant-ui + Mastra SSE)
+    auth/          login, register, forgot-password, reset-password
+  components/
+    assistant-ui/  AI chat UI (chat-runtime-provider.tsx, thread.tsx, thread-list.tsx)
+    layout/        AppLayout, sidebars
+    ui/            shadcn primitives
+  lib/
+    api/           ts-rest client call modules (auth, posts, comments, etc.)
+    atoms/         Jotai atoms (bearerToken stored in localStorage)
+    chat/          thread-list-adapter.ts
+```
 
-- TypeScript rules:
-  - `strict` mode ON. Avoid `any`; prefer `unknown` then narrow. Use `eslint`/`tsc` to catch missed `any`.
-  - Prefer `readonly` for immutable fields and `as const` for constant literal shapes.
-  - Use Zod for schema parsing/validation at external boundaries; keep shared DTOs in `packages/shared-dto` and update consumers on change.
+---
 
-- Imports:
-  - Order imports: external -> workspace packages (`@org/*` or `packages/*`) -> app aliases -> relative imports.
-  - Separate groups with a blank line; verify via ESLint `import/order` autofix.
-  - Prefer path aliases to deep relative imports.
+## Architecture — must-know patterns
 
-- Naming & files:
-  - Files: `kebab-case.ts` / `kebab-case.tsx`.
-  - React components: `PascalCase`. Prefer named exports for easier refactors.
-  - Hooks: `useSomething` (camelCase). Keep small hooks colocated with components.
-  - Constants: `UPPER_SNAKE_CASE` for compile-time constants; runtime exported values use `camelCase` or `PascalCase`.
+**API contract-first**: All HTTP routes defined once in `packages/rest-contracts` (ts-rest + Zod). Backend uses `@ts-rest/nest`; web uses ts-rest client. Never add routes outside the contract.
 
-- React patterns & state:
-  - Prefer function components and hooks; split heavy components into presentational + container.
-  - Use TanStack Query for server cache/state; colocate queries, cache keys, and types with consumers.
-  - Forms: use TanStack Form + zod. Create zod schemas, infer types (`z.infer<>`) and wire a resolver.
-  - Accessibility: semantic HTML, minimal ARIA, keyboard support and visible focus states.
+**Auth**: Better Auth (emailAndPassword + username + jwt + bearer plugins). JWT stored in localStorage via Jotai `atomWithStorage`. Web attaches it as `Authorization: Bearer <token>` to all API calls and to the AI chat transport.
 
-- Validation & runtime checks:
-  - Parse external inputs early with Zod and convert to domain types.
-  - Validate server inputs in controllers/services and return typed errors.
+**AI integration**: Mastra AI service (port 4111) exposes `/chat` SSE stream. Backend exposes three MCP servers at `/mcp/identity/sse`, `/mcp/posts/sse`, `/mcp/interactions/sse`. Mastra MCPClient connects per-request with the user's JWT.
 
-- Error handling:
-  - Do not swallow errors. Throw or return typed/domain errors and let global handlers format messages.
-  - Prefer custom Error subclasses or discriminated unions for domain errors.
-  - In NestJS controllers/services throw `HttpException` (or domain-specific exceptions) rather than returning raw objects.
-  - Log contextual data (request id, user id) but never log secrets or PII.
+**Database**: PostgreSQL via ParadeDB image (adds BM25 full-text search). Migration `0007_paradedb_bm25_search.sql` enables full-text search on posts. Use DrizzleORM — no raw SQL in services.
 
-  - Use `shadcn` primitives for base components. Import via workspace alias in `apps/web/components.json` (e.g. `@/components/ui`).
-  - Add primitives with the shadcn CLI from inside `web`: `pnpm --filter web exec shadcn add <component>`.
+**DTO sync rule**: When changing any backend-facing DTO, update `packages/shared-dto` and rebuild consumers: `pnpm --filter @repo/shared-dto build`.
 
-Imports, formatting and commits (general)
+---
 
-- Keep imports tidy. Rely on ESLint and project linters.
-- Run `prettier --write` for TypeScript changes before committing. CI enforces formatting checks.
-- Agents MUST NOT commit automatically unless explicitly asked. If asked, create small focused commits explaining the why.
+## Commands
 
-Agent rules & workflows
+### Setup & dev
 
-- Explore first: use `glob` and `grep` to locate files and confirm where changes belong before editing.
-- Non-destructive edits: do not revert or overwrite unrelated changes in the working tree.
-- DTO sync: when changing backend-facing DTOs update `packages/shared-dto` and rebuild both consumer and producer.
-- Verify: run affected project's `build` + `test` and workspace typecheck `pnpm -w -s tsc --build` before finishing.
+```bash
+just setup           # pnpm install
+just dev             # serves web + backend + ai + rest-contracts in parallel
+just up              # docker compose up -d (Postgres/ParadeDB + MinIO)
+just down            # docker compose down
+```
 
-CI / tooling notes
+### Build
 
-- CI should run `pnpm install`, `pnpm --filter <app> lint`, and `pnpm --filter <app> test` for TypeScript apps.
-- Keep test runs focused to speed feedback; use `--filter` and run single-file tests when possible.
+```bash
+pnpm --filter web build           # tsc -b && vite build
+pnpm --filter backend build       # nest build
+pnpm --filter @repo/rest-contracts build  # tsup (dual CJS/ESM — must build before backend tests)
+pnpm --filter @repo/shared-dto build      # tsc
+pnpm -w -s tsc --build            # cross-project typecheck
+```
 
-Cursor / Copilot rules
+### Test (backend — all tests are integration, no mocks)
 
-- Cursor rules: I searched for `.cursor/rules/` and `.cursorrules` — none found in the repo. If you add them, agents must surface and follow them.
-- GitHub Copilot instructions: `.github/copilot-instructions.md` not present. If added, agents should include and follow guidance from it.
+```bash
+pnpm --filter backend test                    # vitest run --silent (all suites)
+pnpm --filter backend test:auth               # vitest run test/auth/
+pnpm --filter backend test:posts              # vitest run test/posts/
+pnpm --filter backend test:comments           # vitest run test/comments/
+pnpm --filter backend test:follows            # vitest run test/follows/
+pnpm --filter backend test:reactions          # vitest run test/reactions/
+pnpm --filter backend test:users              # vitest run test/users/
+pnpm --filter backend test:uploads            # vitest run test/uploads/
+pnpm --filter backend test:polls              # vitest run test/polls/
+pnpm --filter backend test:playground         # vitest run test/playground/
+pnpm --filter backend test:app                # vitest run test/app.e2e-spec.ts
 
-Useful paths
+# Single file or named test
+pnpm --filter backend test -- test/posts/posts.controller.e2e-spec.ts
+pnpm --filter backend test -- -t "test name"
 
-- `apps/web/package.json` - web scripts and deps
-- `apps/web/components.json` - shadcn component registry / alias
-- `apps/backend/package.json` - backend scripts and vitest config
-- `apps/backend/src` - NestJS controllers/services
-- `packages/shared-dto` - shared TypeScript DTOs
-- `packages/auth-client` - auth client helpers
+# Or via just (handles building deps first)
+just test-posts      # builds shared-dto + rest-contracts then runs test:posts
+just test-auth       # etc.
+```
 
-Documentation references
+### Database
 
-- `docs/backend/README.md`, `docs/backend/CONFIG.md`, `docs/backend/ARCHITECTURE.md`, `docs/backend/API.md`, `docs/backend/DATABASE.md`.
-- `docs/web/README.md`, `docs/web/CONFIG.md`, `docs/web/ARCHITECTURE.md`, `docs/web/API.md`.
+```bash
+pnpm --filter backend db:generate  # drizzle-kit generate (creates SQL migration file)
+pnpm --filter backend db:migrate   # drizzle-kit migrate (apply migrations)
+pnpm --filter backend db:push      # drizzle-kit push (dev shortcut, no file created)
+pnpm --filter backend db:studio    # open Drizzle Studio in browser
+pnpm --filter backend auth:migrate # regenerate src/db/auth-schema.ts from Better Auth CLI
+```
 
-Practical checklist for agents (short)
+### E2E (web)
 
-- After edits run: `pnpm --filter <app> build && pnpm --filter <app> test` for the affected project.
-- For cross-cutting changes run workspace typecheck: `pnpm -w -s tsc --build`.
-- When adding forms: wire TanStack Form + zod and add validation unit tests early.
+```bash
+just e2e             # pnpm nx run web-e2e:e2e
+just e2e-headed      # headed browser
+just e2e-ui          # Playwright UI mode
+```
 
-Nx guidance
+### UI components (shadcn)
 
-- Use the `nx-workspace` skill to inspect projects and targets. Prefer `nx` targets (`nx run`, `nx affected`) over calling underlying tools directly.
-- Prefix nx commands with the package manager (e.g. `pnpm nx build`) to avoid relying on a global CLI.
-- For scaffolding/generators invoke the `nx-generate` skill first.
+```bash
+pnpm --filter web exec shadcn add <component>   # add shadcn component to web
+```
+
+---
+
+## Testing quirks
+
+- **All backend tests are integration** — no mocks. Each suite boots a real NestJS app against a real **ParadeDB container** (via Testcontainers). Docker must be running.
+- Container lifecycle is shared via `test/global-setup.ts`. Per-suite NestJS app setup in `test/helpers/app.setup.ts`.
+- **Build deps before running tests.** `packages/rest-contracts` and `packages/shared-dto` must be compiled first (`just test-<domain>` does this automatically; raw `pnpm --filter backend test` does not).
+- Tests files are `*.e2e-spec.ts` in `apps/backend/test/`. The vitest config uses `maxWorkers: 1` and `fileParallelism: false` to prevent container conflicts.
+- CI runs 10 parallel matrix jobs (one per domain). `just test-<domain>` is what CI calls.
+
+---
+
+## Adding a new feature (backend + web)
+
+1. Add/update route contract in `packages/rest-contracts/src/contracts/<domain>.ts` and re-export from `src/index.ts`.
+2. Add/update DTOs in `packages/shared-dto/index.ts` if needed.
+3. Build packages: `pnpm --filter @repo/rest-contracts build && pnpm --filter @repo/shared-dto build`.
+4. Add NestJS module (`*.module.ts`), controller (`*.controller.ts`), service (`*.service.ts`) in `apps/backend/src/<domain>/`. Import in `app.module.ts`.
+5. If new DB table: add to `apps/backend/src/db/schema.ts`, then `pnpm --filter backend db:generate && pnpm --filter backend db:migrate`.
+6. Add integration tests in `apps/backend/test/<domain>/<domain>.e2e-spec.ts`.
+7. Add web API client in `apps/web/src/lib/api/<domain>.ts`.
+8. Web routes use TanStack Router file-based routing — add files under `apps/web/src/routes/`. `routeTree.gen.ts` is auto-generated on `dev`/`build`, never edit it.
+9. Forms: TanStack Form + Zod schema → infer type with `z.infer<>`.
+10. Verify: `pnpm --filter backend build && just test-<domain> && pnpm --filter web build && pnpm -w -s tsc --build`.
+
+---
+
+## Code conventions (non-obvious ones only)
+
+- `kebab-case.ts` / `kebab-case.tsx` for filenames; `PascalCase` for React components (named exports).
+- UI primitives use `@base-ui/react` (not Radix). Tailwind CSS v4. Import shadcn via `@/components/ui`.
+- State: Jotai for global atoms, TanStack Query for server cache. No Redux or Context for data.
+- Env vars validated at startup via `@t3-oss/env-core` in each app. Add new vars to `src/env.ts` and update `.env.example`.
+- `strict: true` TS everywhere. No `any` — use `unknown` and narrow.
+- In NestJS throw `HttpException` subclasses, not raw objects.
+- Import order: external → `@repo/*` workspace → `@/` app alias → relative.
+
+---
+
+## Useful paths
+
+| Path                           | Purpose                                           |
+| ------------------------------ | ------------------------------------------------- |
+| `docs/backend/ARCHITECTURE.md` | Module graph, request lifecycle, testing strategy |
+| `docs/backend/DATABASE.md`     | DB schema, migration history, Drizzle commands    |
+| `docs/web/ARCHITECTURE.md`     | Provider tree, routing, state, auth flow          |
+| `apps/web/components.json`     | shadcn config / path alias                        |
+| `docker-compose.yaml`          | Postgres (ParadeDB), MinIO services               |
+| `justfile`                     | All convenience task definitions                  |
+| `nx.json`                      | Nx target defaults and caching config             |
+
+---
+
+## Agent rules
+
+- **Do not explore blindly.** Read this file + `docs/` first. Start coding after confirming which package and files to change.
+- Non-destructive edits: never revert unrelated changes in the working tree.
+- Do not commit unless explicitly asked.
+- After any edit: run `pnpm --filter <app> build` + domain test + `pnpm -w -s tsc --build` for cross-cutting changes.
+- Use `nx-workspace` skill to inspect Nx project config before running `nx` commands.
