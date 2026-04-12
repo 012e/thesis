@@ -12,6 +12,7 @@ import { FollowsModule } from '@/follows/follows.module';
 import { PollsModule } from '@/polls/polls.module';
 import { UploadsModule } from '@/uploads/uploads.module';
 import { PlaygroundModule } from '@/playground/playground.module';
+import { SeedModule } from '@/seed/seed.module';
 import { IdentityMcpModule } from './mcp/identity/identity-mcp.module';
 import { PostsMcpModule } from './mcp/posts/posts-mcp.module';
 import { InteractionsMcpModule } from './mcp/interactions/interactions-mcp.module';
@@ -36,6 +37,7 @@ import { AuthController } from './auth/auth.controller';
     PollsModule,
     UploadsModule,
     PlaygroundModule,
+    SeedModule,
     IdentityMcpModule,
     PostsMcpModule,
     InteractionsMcpModule,
