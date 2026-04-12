@@ -182,9 +182,15 @@ describe('PollsController integration', () => {
 
       expect(res.body.totalVotes).toBe(1);
       expect(res.body.userVotes).toEqual(['opt1']);
-      expect(res.body.options.find((o: any) => o.optionId === 'opt1').voteCount).toBe(1);
-      expect(res.body.options.find((o: any) => o.optionId === 'opt1').percentage).toBe(100);
-      expect(res.body.options.find((o: any) => o.optionId === 'opt2').voteCount).toBe(0);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'opt1').voteCount,
+      ).toBe(1);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'opt1').percentage,
+      ).toBe(100);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'opt2').voteCount,
+      ).toBe(0);
     });
 
     it('allows voting on a multiple-selection poll', async () => {
@@ -254,8 +260,12 @@ describe('PollsController integration', () => {
 
       expect(res.body.totalVotes).toBe(1);
       expect(res.body.userVotes).toEqual(['second']);
-      expect(res.body.options.find((o: any) => o.optionId === 'first').voteCount).toBe(0);
-      expect(res.body.options.find((o: any) => o.optionId === 'second').voteCount).toBe(1);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'first').voteCount,
+      ).toBe(0);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'second').voteCount,
+      ).toBe(1);
     });
 
     it('rejects invalid option IDs', async () => {
@@ -309,8 +319,12 @@ describe('PollsController integration', () => {
 
       expect(resA.body.totalVotes).toBe(2);
       expect(resA.body.userVotes).toEqual(['alpha']);
-      expect(resA.body.options.find((o: any) => o.optionId === 'alpha').voteCount).toBe(1);
-      expect(resA.body.options.find((o: any) => o.optionId === 'beta').voteCount).toBe(1);
+      expect(
+        resA.body.options.find((o: any) => o.optionId === 'alpha').voteCount,
+      ).toBe(1);
+      expect(
+        resA.body.options.find((o: any) => o.optionId === 'beta').voteCount,
+      ).toBe(1);
 
       // Check results from User B's perspective
       const resB = await request(testApp.app.getHttpServer())
@@ -348,8 +362,12 @@ describe('PollsController integration', () => {
         .expect(200);
 
       expect(res.body.totalVotes).toBe(4);
-      expect(res.body.options.find((o: any) => o.optionId === 'majority').percentage).toBe(75);
-      expect(res.body.options.find((o: any) => o.optionId === 'minority').percentage).toBe(25);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'majority').percentage,
+      ).toBe(75);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'minority').percentage,
+      ).toBe(25);
     });
 
     it('returns 400 for a post without a poll', async () => {
@@ -433,7 +451,9 @@ describe('PollsController integration', () => {
 
       expect(res.body.totalVotes).toBe(0);
       expect(res.body.userVotes).toEqual([]);
-      expect(res.body.options.find((o: any) => o.optionId === 'yes').voteCount).toBe(0);
+      expect(
+        res.body.options.find((o: any) => o.optionId === 'yes').voteCount,
+      ).toBe(0);
     });
 
     it('does not affect other users votes when unvoting', async () => {

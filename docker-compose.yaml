@@ -1,10 +1,10 @@
 services:
   postgres:
-    image: postgres:18.1-alpine
-    container_name: postgres_db_18
+    image: paradedb/paradedb:latest
+    container_name: paradedb_db
     restart: always
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
     environment:
       POSTGRES_USER: username
@@ -16,7 +16,7 @@ services:
       - ./tmp/postgres_data:/var/lib/postgresql/data
 
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,8 +26,8 @@ services:
     container_name: minio_storage
     restart: always
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
 
     environment:
       MINIO_ROOT_USER: minioadmin
@@ -39,7 +39,7 @@ services:
     command: server /data --console-address ":9001"
 
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ['CMD', 'mc', 'ready', 'local']
       interval: 10s
       timeout: 5s
       retries: 5

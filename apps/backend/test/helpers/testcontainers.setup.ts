@@ -20,8 +20,8 @@ export interface MinioContainerContext {
 }
 
 export async function startPostgresContainer(): Promise<PostgresContainerContext> {
-  console.log('Starting PostgreSQL container...');
-  const postgres = await new PostgreSqlContainer('postgres:18.1-alpine')
+  console.log('Starting ParadeDB container...');
+  const postgres = await new PostgreSqlContainer('paradedb/paradedb:latest')
     .withUsername('testuser')
     .withPassword('testpass')
     .withDatabase('testdb')
@@ -29,7 +29,7 @@ export async function startPostgresContainer(): Promise<PostgresContainerContext
     .start();
 
   const databaseUrl = postgres.getConnectionUri();
-  console.log(`PostgreSQL started at ${databaseUrl}`);
+  console.log(`ParadeDB started at ${databaseUrl}`);
 
   return {
     postgres,
