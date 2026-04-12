@@ -225,27 +225,29 @@ function AssistantMessage() {
             <IconRobot className="size-4 text-primary" />
           </div>
 
-          <MessagePrimitive.Parts
-            components={{
-              Text: MarkdownText,
-              tools: { Fallback: ToolFallback },
-              Reasoning,
-              ReasoningGroup,
-              Source: Sources,
-            }}
-          />
+          <div className="flex flex-col gap-2 min-w-0 flex-1">
+            <MessagePrimitive.Parts
+              components={{
+                Text: MarkdownText,
+                tools: { Fallback: ToolFallback },
+                Reasoning,
+                ReasoningGroup,
+                Source: Sources,
+              }}
+            />
 
-          <MessageError />
-          <AuiIf
-            condition={(s) =>
-              s.thread.isRunning && s.message.content.length === 0
-            }
-          >
-            <div className="flex gap-2 items-center text-muted-foreground">
-              <IconLoader2 className="animate-spin size-4" />
-              <span className="text-sm">Thinking...</span>
-            </div>
-          </AuiIf>
+            <MessageError />
+            <AuiIf
+              condition={(s) =>
+                s.thread.isRunning && s.message.content.length === 0
+              }
+            >
+              <div className="flex gap-2 items-center text-muted-foreground">
+                <IconLoader2 className="animate-spin size-4" />
+                <span className="text-sm">Thinking...</span>
+              </div>
+            </AuiIf>
+          </div>
         </div>
 
         <div className="flex col-start-2 items-center">
