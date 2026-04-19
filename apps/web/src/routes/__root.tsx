@@ -2,18 +2,20 @@ import {
   createRootRoute,
   Outlet,
   useRouterState,
-} from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/router-devtools";
-import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
-import { AppLayout } from "@/components/layout/app-layout";
-import { AuthGuard } from "@/components/auth-guard";
+} from '@tanstack/react-router';
+import { ThemeProvider } from '@/components/theme-provider';
+import { Toaster } from '@/components/ui/sonner';
+import { AppLayout } from '@/components/layout/app-layout';
+import { AuthGuard } from '@/components/auth-guard';
+import { TanStackDevtools } from '@tanstack/react-devtools';
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 
 function RootComponent() {
   const router = useRouterState();
-  const isAuthRoute = router.location.pathname.startsWith("/auth");
-  const isChatRoute = router.location.pathname.startsWith("/chat");
-  const isApiRoute = router.location.pathname.startsWith("/api");
+  const isAuthRoute = router.location.pathname.startsWith('/auth');
+  const isChatRoute = router.location.pathname.startsWith('/chat');
+  const isApiRoute = router.location.pathname.startsWith('/api');
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -27,7 +29,22 @@ function RootComponent() {
         )}
       </AuthGuard>
       <Toaster richColors />
-      <TanStackRouterDevtools />
+      <TanStackDevtools
+        config={{
+          position: 'bottom-left',
+          defaultOpen: false,
+        }}
+        plugins={[
+          {
+            name: 'TanStack Query',
+            render: <ReactQueryDevtoolsPanel />,
+          },
+          {
+            name: 'TanStack Router',
+            render: <TanStackRouterDevtoolsPanel />,
+          },
+        ]}
+      />
     </ThemeProvider>
   );
 }
