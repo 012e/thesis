@@ -1,5 +1,7 @@
 set shell := ["bash", "-c"]
 
+BACKEND_URL := "http://localhost:3000"
+
 # --- Setup ---
 
 # Install all dependencies Node
@@ -29,6 +31,9 @@ test:
 
 migrate-db:
     pnpm --filter backend run db:migrate
+
+seed:
+    curl -X POST "{{ BACKEND_URL }}/seed"
 
 build-backend:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts
