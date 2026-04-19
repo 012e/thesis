@@ -1,5 +1,5 @@
-import { ConversationsBubble } from './conversations-bubble';
-import { ChatWindowList } from './chat-window-list';
+import { ConversationsBubble } from "./conversations-bubble";
+import { ChatWindowList } from "./chat-window-list";
 
 /**
  * Root chat UI component. Mount once inside AppLayout.

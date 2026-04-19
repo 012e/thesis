@@ -21,7 +21,7 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 export function UserProfile() {
   const router = useRouter();
   const { data: session } = useSession();
-  const { data: profile } = useUserProfile(session?.user.id ?? '');
+  const { data: profile } = useUserProfile(session?.user.id ?? "");
 
   const handleLogout = async () => {
     await logout();
@@ -48,7 +48,10 @@ export function UserProfile() {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex gap-3 items-center p-3 w-full text-left transition-colors hover:bg-accent">
         <Avatar className="w-10 h-10">
-          <AvatarImage src={profile?.image ?? undefined} alt={user?.name || undefined} />
+          <AvatarImage
+            src={profile?.image ?? undefined}
+            alt={user?.name || undefined}
+          />
           <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
             {initials}
           </AvatarFallback>

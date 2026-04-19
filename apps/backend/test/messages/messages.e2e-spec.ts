@@ -1,21 +1,21 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
-import { Pool } from 'pg';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import request from "supertest";
+import { Pool } from "pg";
 
-import { closeTestApp, createTestApp } from '../helpers/app.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
-import { registerAndGetSession } from '../helpers/auth.helper';
+import { closeTestApp, createTestApp } from "../helpers/app.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { registerAndGetSession } from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
 // ---------------------------------------------------------------------------
 // Suite
 // ---------------------------------------------------------------------------
 
-describe('MessagesController integration', () => {
+describe("MessagesController integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let pool: Pool;
@@ -57,7 +57,7 @@ describe('MessagesController integration', () => {
     // A follows B so they can exchange DMs
     await server
       .post(`/users/${userBId}/follow`)
-      .set('Cookie', userACookie)
+      .set("Cookie", userACookie)
       .expect(201);
   }, 120_000);
 
@@ -70,35 +70,35 @@ describe('MessagesController integration', () => {
   beforeEach(async () => {
     // Truncate message-related tables; preserve users & follows
     await pool.query(
-      'TRUNCATE TABLE direct_messages, conversations RESTART IDENTITY CASCADE',
+      "TRUNCATE TABLE direct_messages, conversations RESTART IDENTITY CASCADE",
     );
   });
 
   // ─── listConversations ─────────────────────────────────────────────────────
 
-  describe('GET /conversations', () => {
-    it('returns empty array when user has no conversations', async () => {
+  describe("GET /conversations", () => {
+    it("returns empty array when user has no conversations", async () => {
       const res = await request(testApp.app.getHttpServer())
-        .get('/conversations')
-        .set('Cookie', userACookie)
+        .get("/conversations")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual([]);
     });
 
-    it('returns conversations the current user participates in', async () => {
+    it("returns conversations the current user participates in", async () => {
       const server = request(testApp.app.getHttpServer());
 
       // Create a conversation between A and B
       await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
       const res = await server
-        .get('/conversations')
-        .set('Cookie', userACookie)
+        .get("/conversations")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(Array.isArray(res.body)).toBe(true);
@@ -113,20 +113,20 @@ describe('MessagesController integration', () => {
       expect(conv.lastMessage).toBeNull();
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations')
+        .get("/conversations")
         .expect(401);
     });
   });
 
   // ─── startConversation ─────────────────────────────────────────────────────
 
-  describe('POST /conversations', () => {
-    it('creates a new conversation when A follows B', async () => {
+  describe("POST /conversations", () => {
+    it("creates a new conversation when A follows B", async () => {
       const res = await request(testApp.app.getHttpServer())
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -134,55 +134,55 @@ describe('MessagesController integration', () => {
         otherUser: { id: userBId },
         lastMessage: null,
       });
-      expect(typeof res.body.id).toBe('string');
+      expect(typeof res.body.id).toBe("string");
     });
 
-    it('is idempotent — returns existing conversation on duplicate request', async () => {
+    it("is idempotent — returns existing conversation on duplicate request", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const first = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
       // Second call returns same conversation with 200
       const second = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(200);
 
       expect(first.body.id).toBe(second.body.id);
     });
 
-    it('returns 400 when trying to start a conversation with yourself', async () => {
+    it("returns 400 when trying to start a conversation with yourself", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userAId })
         .expect(400);
     });
 
-    it('returns 404 when A does not follow the recipient (C)', async () => {
+    it("returns 404 when A does not follow the recipient (C)", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userCId })
         .expect(404);
     });
 
-    it('returns 404 when recipient user does not exist', async () => {
+    it("returns 404 when recipient user does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations')
-        .set('Cookie', userACookie)
-        .send({ recipientId: '00000000-0000-0000-0000-000000000000' })
+        .post("/conversations")
+        .set("Cookie", userACookie)
+        .send({ recipientId: "00000000-0000-0000-0000-000000000000" })
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations')
+        .post("/conversations")
         .send({ recipientId: userBId })
         .expect(401);
     });
@@ -190,13 +190,13 @@ describe('MessagesController integration', () => {
 
   // ─── getConversation ───────────────────────────────────────────────────────
 
-  describe('GET /conversations/:id', () => {
-    it('returns the conversation for a participant', async () => {
+  describe("GET /conversations/:id", () => {
+    it("returns the conversation for a participant", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -204,19 +204,19 @@ describe('MessagesController integration', () => {
 
       const res = await server
         .get(`/conversations/${convId}`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body.id).toBe(convId);
       expect(res.body.otherUser.id).toBe(userBId);
     });
 
-    it('also returns the conversation for the other participant (B)', async () => {
+    it("also returns the conversation for the other participant (B)", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -224,7 +224,7 @@ describe('MessagesController integration', () => {
 
       const res = await server
         .get(`/conversations/${convId}`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(200);
 
       expect(res.body.id).toBe(convId);
@@ -232,12 +232,12 @@ describe('MessagesController integration', () => {
       expect(res.body.otherUser.id).toBe(userAId);
     });
 
-    it('returns 403 when non-participant requests the conversation', async () => {
+    it("returns 403 when non-participant requests the conversation", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -245,33 +245,33 @@ describe('MessagesController integration', () => {
 
       await server
         .get(`/conversations/${convId}`)
-        .set('Cookie', userCCookie)
+        .set("Cookie", userCCookie)
         .expect(403);
     });
 
-    it('returns 404 when conversation does not exist', async () => {
+    it("returns 404 when conversation does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations/00000000-0000-0000-0000-000000000000')
-        .set('Cookie', userACookie)
+        .get("/conversations/00000000-0000-0000-0000-000000000000")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations/00000000-0000-0000-0000-000000000000')
+        .get("/conversations/00000000-0000-0000-0000-000000000000")
         .expect(401);
     });
   });
 
   // ─── sendMessage ──────────────────────────────────────────────────────────
 
-  describe('POST /conversations/:id/messages', () => {
-    it('sends a message and returns the message DTO', async () => {
+  describe("POST /conversations/:id/messages", () => {
+    it("sends a message and returns the message DTO", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -279,27 +279,27 @@ describe('MessagesController integration', () => {
 
       const res = await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'Hello, B!' })
+        .set("Cookie", userACookie)
+        .send({ content: "Hello, B!" })
         .expect(201);
 
       expect(res.body).toMatchObject({
         conversationId: convId,
         senderId: userAId,
-        content: 'Hello, B!',
-        type: 'text',
+        content: "Hello, B!",
+        type: "text",
         readAt: null,
       });
-      expect(typeof res.body.id).toBe('string');
+      expect(typeof res.body.id).toBe("string");
       expect(res.body.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('allows the other participant (B) to send a reply', async () => {
+    it("allows the other participant (B) to send a reply", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -307,19 +307,19 @@ describe('MessagesController integration', () => {
 
       const res = await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userBCookie)
-        .send({ content: 'Hey A!' })
+        .set("Cookie", userBCookie)
+        .send({ content: "Hey A!" })
         .expect(201);
 
       expect(res.body.senderId).toBe(userBId);
     });
 
-    it('returns 403 when a non-participant tries to send a message', async () => {
+    it("returns 403 when a non-participant tries to send a message", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -327,36 +327,36 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userCCookie)
-        .send({ content: 'Intruder!' })
+        .set("Cookie", userCCookie)
+        .send({ content: "Intruder!" })
         .expect(403);
     });
 
-    it('returns 404 when conversation does not exist', async () => {
+    it("returns 404 when conversation does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations/00000000-0000-0000-0000-000000000000/messages')
-        .set('Cookie', userACookie)
-        .send({ content: 'ghost message' })
+        .post("/conversations/00000000-0000-0000-0000-000000000000/messages")
+        .set("Cookie", userACookie)
+        .send({ content: "ghost message" })
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations/00000000-0000-0000-0000-000000000000/messages')
-        .send({ content: 'ghost message' })
+        .post("/conversations/00000000-0000-0000-0000-000000000000/messages")
+        .send({ content: "ghost message" })
         .expect(401);
     });
   });
 
   // ─── listMessages ─────────────────────────────────────────────────────────
 
-  describe('GET /conversations/:id/messages', () => {
-    it('returns empty list when no messages exist', async () => {
+  describe("GET /conversations/:id/messages", () => {
+    it("returns empty list when no messages exist", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -364,19 +364,19 @@ describe('MessagesController integration', () => {
 
       const res = await server
         .get(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body.messages).toEqual([]);
       expect(res.body.nextCursor).toBeNull();
     });
 
-    it('returns messages newest-first', async () => {
+    it("returns messages newest-first", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -384,8 +384,8 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'First' })
+        .set("Cookie", userACookie)
+        .send({ content: "First" })
         .expect(201);
 
       // Small delay to guarantee distinct createdAt timestamps
@@ -393,27 +393,27 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'Second' })
+        .set("Cookie", userACookie)
+        .send({ content: "Second" })
         .expect(201);
 
       const res = await server
         .get(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       const contents = (res.body.messages as { content: string }[]).map(
         (m) => m.content,
       );
-      expect(contents).toEqual(['Second', 'First']);
+      expect(contents).toEqual(["Second", "First"]);
     });
 
-    it('paginates with nextCursor when there are more messages than the limit', async () => {
+    it("paginates with nextCursor when there are more messages than the limit", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -423,7 +423,7 @@ describe('MessagesController integration', () => {
       for (let i = 1; i <= 3; i++) {
         await server
           .post(`/conversations/${convId}/messages`)
-          .set('Cookie', userACookie)
+          .set("Cookie", userACookie)
           .send({ content: `Message ${i}` })
           .expect(201);
         await new Promise((r) => setTimeout(r, 10));
@@ -432,11 +432,11 @@ describe('MessagesController integration', () => {
       // Request with limit=2 — should get 2 messages and a cursor
       const page1 = await server
         .get(`/conversations/${convId}/messages?limit=2`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(page1.body.messages).toHaveLength(2);
-      expect(typeof page1.body.nextCursor).toBe('string');
+      expect(typeof page1.body.nextCursor).toBe("string");
 
       // Fetch page 2 using the cursor
       const cursor = page1.body.nextCursor as string;
@@ -444,19 +444,19 @@ describe('MessagesController integration', () => {
         .get(
           `/conversations/${convId}/messages?limit=2&before=${encodeURIComponent(cursor)}`,
         )
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(page2.body.messages).toHaveLength(1);
       expect(page2.body.nextCursor).toBeNull();
     });
 
-    it('returns 403 for non-participants', async () => {
+    it("returns 403 for non-participants", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -464,29 +464,29 @@ describe('MessagesController integration', () => {
 
       await server
         .get(`/conversations/${convId}/messages`)
-        .set('Cookie', userCCookie)
+        .set("Cookie", userCCookie)
         .expect(403);
     });
 
-    it('returns 404 when conversation does not exist', async () => {
+    it("returns 404 when conversation does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations/00000000-0000-0000-0000-000000000000/messages')
-        .set('Cookie', userACookie)
+        .get("/conversations/00000000-0000-0000-0000-000000000000/messages")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations/00000000-0000-0000-0000-000000000000/messages')
+        .get("/conversations/00000000-0000-0000-0000-000000000000/messages")
         .expect(401);
     });
 
-    it('lastMessage on the conversation is updated after sending', async () => {
+    it("lastMessage on the conversation is updated after sending", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -494,55 +494,55 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'Ping!' })
+        .set("Cookie", userACookie)
+        .send({ content: "Ping!" })
         .expect(201);
 
       const convRes = await server
         .get(`/conversations/${convId}`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(convRes.body.lastMessage).not.toBeNull();
-      expect(convRes.body.lastMessage.content).toBe('Ping!');
+      expect(convRes.body.lastMessage.content).toBe("Ping!");
     });
   });
 
   // ─── getUnreadCount ───────────────────────────────────────────────────────
 
-  describe('GET /conversations/unread-count', () => {
-    it('returns 0 when the user has no conversations', async () => {
+  describe("GET /conversations/unread-count", () => {
+    it("returns 0 when the user has no conversations", async () => {
       const res = await request(testApp.app.getHttpServer())
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual({ total: 0 });
     });
 
-    it('returns 0 when conversations exist but no messages have been sent', async () => {
+    it("returns 0 when conversations exist but no messages have been sent", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
       const res = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual({ total: 0 });
     });
 
-    it('counts messages sent by the other participant as unread', async () => {
+    it("counts messages sent by the other participant as unread", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -551,31 +551,31 @@ describe('MessagesController integration', () => {
       // B sends 2 messages to A
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userBCookie)
-        .send({ content: 'Hello A!' })
+        .set("Cookie", userBCookie)
+        .send({ content: "Hello A!" })
         .expect(201);
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userBCookie)
-        .send({ content: 'Are you there?' })
+        .set("Cookie", userBCookie)
+        .send({ content: "Are you there?" })
         .expect(201);
 
       // A's unread count should be 2
       const res = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual({ total: 2 });
     });
 
-    it('does not count messages sent by the requesting user as unread', async () => {
+    it("does not count messages sent by the requesting user as unread", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -584,76 +584,76 @@ describe('MessagesController integration', () => {
       // A sends a message — should not appear in A's own unread count
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'I sent this' })
+        .set("Cookie", userACookie)
+        .send({ content: "I sent this" })
         .expect(201);
 
       const res = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual({ total: 0 });
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/conversations/unread-count')
+        .get("/conversations/unread-count")
         .expect(401);
     });
   });
 
   // ─── markConversationRead ─────────────────────────────────────────────────
 
-  describe('POST /conversations/:id/read', () => {
-    it('marks all unread messages as read, bringing unread count to 0', async () => {
+  describe("POST /conversations/:id/read", () => {
+    it("marks all unread messages as read, bringing unread count to 0", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
       const convId = created.body.id as string;
 
       // B sends 3 messages to A
-      for (const content of ['Msg 1', 'Msg 2', 'Msg 3']) {
+      for (const content of ["Msg 1", "Msg 2", "Msg 3"]) {
         await server
           .post(`/conversations/${convId}/messages`)
-          .set('Cookie', userBCookie)
+          .set("Cookie", userBCookie)
           .send({ content })
           .expect(201);
       }
 
       // Verify A has 3 unread before marking
       const before = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
       expect(before.body.total).toBe(3);
 
       // A marks the conversation as read
       await server
         .post(`/conversations/${convId}/read`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .send({})
         .expect(200);
 
       // Unread count should now be 0
       const after = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userACookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userACookie)
         .expect(200);
       expect(after.body.total).toBe(0);
     });
 
-    it('does not affect messages sent by the user themselves', async () => {
+    it("does not affect messages sent by the user themselves", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -662,30 +662,30 @@ describe('MessagesController integration', () => {
       // A sends a message, then calls read — own messages should not be touched
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
-        .send({ content: 'From A' })
+        .set("Cookie", userACookie)
+        .send({ content: "From A" })
         .expect(201);
 
       await server
         .post(`/conversations/${convId}/read`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .send({})
         .expect(200);
 
       // B's unread count: A sent 1 message, which B hasn't read
       const res = await server
-        .get('/conversations/unread-count')
-        .set('Cookie', userBCookie)
+        .get("/conversations/unread-count")
+        .set("Cookie", userBCookie)
         .expect(200);
       expect(res.body.total).toBe(1);
     });
 
-    it('is idempotent — calling read twice does not error', async () => {
+    it("is idempotent — calling read twice does not error", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -693,30 +693,30 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/messages`)
-        .set('Cookie', userBCookie)
-        .send({ content: 'Hi' })
+        .set("Cookie", userBCookie)
+        .send({ content: "Hi" })
         .expect(201);
 
       await server
         .post(`/conversations/${convId}/read`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .send({})
         .expect(200);
 
       // Second call must also succeed
       await server
         .post(`/conversations/${convId}/read`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .send({})
         .expect(200);
     });
 
-    it('returns 403 when a non-participant calls read', async () => {
+    it("returns 403 when a non-participant calls read", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
-        .post('/conversations')
-        .set('Cookie', userACookie)
+        .post("/conversations")
+        .set("Cookie", userACookie)
         .send({ recipientId: userBId })
         .expect(201);
 
@@ -724,22 +724,22 @@ describe('MessagesController integration', () => {
 
       await server
         .post(`/conversations/${convId}/read`)
-        .set('Cookie', userCCookie)
+        .set("Cookie", userCCookie)
         .send({})
         .expect(403);
     });
 
-    it('returns 404 when conversation does not exist', async () => {
+    it("returns 404 when conversation does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations/00000000-0000-0000-0000-000000000000/read')
-        .set('Cookie', userACookie)
+        .post("/conversations/00000000-0000-0000-0000-000000000000/read")
+        .set("Cookie", userACookie)
         .send({})
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/conversations/00000000-0000-0000-0000-000000000000/read')
+        .post("/conversations/00000000-0000-0000-0000-000000000000/read")
         .send({})
         .expect(401);
     });

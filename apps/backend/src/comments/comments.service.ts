@@ -1,16 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
-import { DatabaseService } from '@/db/database.service';
-import { comments, commentReactions, usersView } from '@/db/schema';
-import { eq, desc, and, count, sql } from 'drizzle-orm';
-import { UsersService } from '@/users/users.service';
+import { Injectable } from "@nestjs/common";
+import type { CommentDto, ReactionTypeDto } from "@repo/shared-dto";
+import { DatabaseService } from "@/db/database.service";
+import { comments, commentReactions, usersView } from "@/db/schema";
+import { eq, desc, and, count, sql } from "drizzle-orm";
+import { UsersService } from "@/users/users.service";
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
-).as('upvoteCount');
+).as("upvoteCount");
 const downvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'downvote' THEN 1 END`,
-).as('downvoteCount');
+).as("downvoteCount");
 
 const getUserReactionType = (userId: string) => {
   return sql<

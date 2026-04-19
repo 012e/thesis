@@ -1,10 +1,10 @@
-import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
-import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { Inject, Injectable, OnModuleDestroy } from "@nestjs/common";
+import { drizzle, NodePgDatabase } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
-import { DATABASE_POOL } from './tokens';
-import * as schema from './schema';
-import * as authSchema from './auth-schema';
+import { DATABASE_POOL } from "./tokens";
+import * as schema from "./schema";
+import * as authSchema from "./auth-schema";
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {

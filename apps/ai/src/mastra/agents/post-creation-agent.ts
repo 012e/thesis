@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { MODEL_SUB_AGENT } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { MODEL_SUB_AGENT } from "../constants";
 
 /**
  * Post-creation agent — owns all write operations on posts.
@@ -13,10 +13,10 @@ import { MODEL_SUB_AGENT } from '../constants';
  * HTTP request carries its own authentication context.
  */
 export const postCreationAgent = new Agent({
-  id: 'post-creation-agent',
-  name: 'Post Creation Agent',
+  id: "post-creation-agent",
+  name: "Post Creation Agent",
   description:
-    'Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content. Does NOT handle comments or reactions.',
+    "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content. Does NOT handle comments or reactions.",
   instructions: `You are the content publishing specialist for a social media platform.
 
 Your responsibilities:

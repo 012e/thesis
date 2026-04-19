@@ -5,6 +5,7 @@ import type {
   AuthResult,
 } from "./types";
 
+// TODO: remove constant
 const BASE_URL = "http://localhost:3000";
 
 export async function requestPasswordReset({

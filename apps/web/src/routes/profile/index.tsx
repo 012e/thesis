@@ -1,19 +1,19 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { Suspense, useState } from 'react';
-import { useSession } from '@/hooks/use-session';
-import { useUserProfileSuspense } from '@/hooks/use-user-profile';
-import { useUserPostsSuspense } from '@/hooks/use-user-posts';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { PageSpinner } from '@/components/ui/spinner';
-import { EditProfileDialog } from '@/components/edit-profile-dialog';
-import { Post } from '@/components/post';
-import { IconCalendar, IconMail, IconEdit } from '@tabler/icons-react';
-type SessionData = NonNullable<ReturnType<typeof useSession>['data']>;
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense, useState } from "react";
+import { useSession } from "@/hooks/use-session";
+import { useUserProfileSuspense } from "@/hooks/use-user-profile";
+import { useUserPostsSuspense } from "@/hooks/use-user-posts";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { PageSpinner } from "@/components/ui/spinner";
+import { EditProfileDialog } from "@/components/edit-profile-dialog";
+import { Post } from "@/components/post";
+import { IconCalendar, IconMail, IconEdit } from "@tabler/icons-react";
+type SessionData = NonNullable<ReturnType<typeof useSession>["data"]>;
 
-export const Route = createFileRoute('/profile/')({
+export const Route = createFileRoute("/profile/")({
   component: ProfilePage,
 });
 
@@ -47,19 +47,19 @@ function ProfileContent({
   const user = session.user;
   const initials = user.name
     ? user.name
-        .split(' ')
+        .split(" ")
         .map((n) => n[0])
-        .join('')
+        .join("")
         .toUpperCase()
         .slice(0, 2)
-    : user.email?.charAt(0).toUpperCase() || 'U';
+    : user.email?.charAt(0).toUpperCase() || "U";
 
   const joinDate = user.createdAt
-    ? new Date(user.createdAt).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
+    ? new Date(user.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
       })
-    : 'Unknown';
+    : "Unknown";
 
   return (
     <div className="min-h-screen">
@@ -74,7 +74,7 @@ function ProfileContent({
               {profile?.image ? (
                 <AvatarImage
                   src={profile.image}
-                  alt={user.name || 'Profile'}
+                  alt={user.name || "Profile"}
                   className="object-cover w-full h-full rounded-full"
                 />
               ) : (
@@ -98,7 +98,7 @@ function ProfileContent({
 
         {/* Profile Info */}
         <div className="mt-4">
-          <h1 className="text-2xl font-bold">{user.name || 'User'}</h1>
+          <h1 className="text-2xl font-bold">{user.name || "User"}</h1>
           {user.email && (
             <div className="flex gap-2 items-center mt-2 text-muted-foreground">
               <IconMail className="w-4 h-4" />
@@ -162,8 +162,8 @@ function ProfileContent({
         onOpenChange={setIsEditDialogOpen}
         userId={userId}
         defaultValues={{
-          name: user.name || '',
-          image: profile?.image || '',
+          name: user.name || "",
+          image: profile?.image || "",
         }}
         onSuccess={() => {
           refetch();

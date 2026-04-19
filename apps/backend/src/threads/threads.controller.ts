@@ -1,10 +1,10 @@
-import { Controller } from '@nestjs/common';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import { Session } from '@thallesp/nestjs-better-auth';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { threadsContract } from '@repo/rest-contracts';
+import { Controller } from "@nestjs/common";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
+import { Session } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { threadsContract } from "@repo/rest-contracts";
 
-import { ThreadsService } from './threads.service';
+import { ThreadsService } from "./threads.service";
 
 @Controller()
 export class ThreadsController {
@@ -128,28 +128,28 @@ export class ThreadsController {
             content: string | { type: string; text?: string }[];
           } => {
             return (
-              typeof m === 'object' &&
+              typeof m === "object" &&
               m !== null &&
-              'role' in m &&
-              (m as { role: unknown }).role === 'user'
+              "role" in m &&
+              (m as { role: unknown }).role === "user"
             );
           },
         );
 
-        let title = 'New Chat';
-        if (firstUserMessage && 'content' in firstUserMessage) {
+        let title = "New Chat";
+        if (firstUserMessage && "content" in firstUserMessage) {
           const content = firstUserMessage.content;
-          if (typeof content === 'string') {
+          if (typeof content === "string") {
             title = content.slice(0, 50);
           } else if (Array.isArray(content)) {
             const textPart = content.find(
               (p): p is { type: string; text: string } =>
-                typeof p === 'object' &&
+                typeof p === "object" &&
                 p !== null &&
-                'type' in p &&
-                (p as { type: unknown }).type === 'text' &&
-                'text' in p &&
-                typeof (p as { text: unknown }).text === 'string',
+                "type" in p &&
+                (p as { type: unknown }).type === "text" &&
+                "text" in p &&
+                typeof (p as { text: unknown }).text === "string",
             );
             if (textPart) {
               title = textPart.text.slice(0, 50);

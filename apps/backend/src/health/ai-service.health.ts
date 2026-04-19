@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { HttpHealthIndicator, HealthIndicatorService } from '@nestjs/terminus';
-import { env } from '@/env';
+import { Injectable } from "@nestjs/common";
+import { HttpHealthIndicator, HealthIndicatorService } from "@nestjs/terminus";
+import { env } from "@/env";
 
 @Injectable()
 export class AiServiceHealthIndicator {
@@ -23,7 +23,7 @@ export class AiServiceHealthIndicator {
           message:
             fallbackError instanceof Error
               ? fallbackError.message
-              : 'Unknown error',
+              : "Unknown error",
         });
       }
     }

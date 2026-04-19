@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { HealthIndicatorService } from '@nestjs/terminus';
-import { DatabaseService } from '@/db/database.service';
+import { Injectable } from "@nestjs/common";
+import { HealthIndicatorService } from "@nestjs/terminus";
+import { DatabaseService } from "@/db/database.service";
 
 @Injectable()
 export class DatabaseHealthIndicator {
@@ -13,11 +13,11 @@ export class DatabaseHealthIndicator {
     const indicator = this.healthIndicatorService.check(key);
     try {
       // Execute a simple query to verify database connectivity
-      await this.databaseService.db.execute('SELECT NOW()');
+      await this.databaseService.db.execute("SELECT NOW()");
       return indicator.up();
     } catch (error) {
       return indicator.down({
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: error instanceof Error ? error.message : "Unknown error",
       });
     }
   }

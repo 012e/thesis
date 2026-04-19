@@ -1,11 +1,11 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { reactionsContract } from '@repo/rest-contracts';
+import { reactionsContract } from "@repo/rest-contracts";
 
-import { ReactionsService } from './reactions.service';
+import { ReactionsService } from "./reactions.service";
 
 @Controller()
 export class ReactionsController {

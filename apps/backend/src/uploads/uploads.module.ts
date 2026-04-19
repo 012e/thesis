@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-import { StorageModule } from '@/storage';
+import { StorageModule } from "@/storage";
 
-import { UploadsController } from './uploads.controller';
+import { UploadsController } from "./uploads.controller";
 
 @Module({
   imports: [StorageModule],

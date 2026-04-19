@@ -1,10 +1,10 @@
-import { Memory } from '@mastra/memory';
-import { PostgresStore } from '@mastra/pg';
+import { Memory } from "@mastra/memory";
+import { PostgresStore } from "@mastra/pg";
 
-import { env } from '../env';
+import { env } from "../env";
 
 export const pgStore = new PostgresStore({
-  id: 'pg-storage',
+  id: "pg-storage",
   connectionString: env.DATABASE_URL,
 });
 

@@ -1,19 +1,19 @@
-import { useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
-import { type Socket } from 'socket.io-client';
-import bearerToken from '@/lib/atoms/bearer-token';
-import { env } from '@/env';
-import { getOrCreateMessagesSocket } from '@/lib/socket/messages-socket';
-import { getUnreadCount } from '@/lib/api/messages';
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { type Socket } from "socket.io-client";
+import bearerToken from "@/lib/atoms/bearer-token";
+import { env } from "@/env";
+import { getOrCreateMessagesSocket } from "@/lib/socket/messages-socket";
+import { getUnreadCount } from "@/lib/api/messages";
 
 // ─── Event constant (mirrors messages.gateway.ts) ────────────────────────────
 
-const WS_NEW_MESSAGE_NOTIFICATION = 'new-message-notification';
+const WS_NEW_MESSAGE_NOTIFICATION = "new-message-notification";
 
 // ─── Query key ───────────────────────────────────────────────────────────────
 
-export const unreadCountKey = ['conversations', 'unread-count'] as const;
+export const unreadCountKey = ["conversations", "unread-count"] as const;
 
 // ─── Notification payload type (mirrors gateway) ─────────────────────────────
 

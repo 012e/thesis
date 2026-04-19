@@ -1,12 +1,12 @@
-import { Test, TestingModule, TestingModuleBuilder } from '@nestjs/testing';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { IoAdapter } from '@nestjs/platform-socket.io';
-import getPort from 'get-port';
+import { Test, TestingModule, TestingModuleBuilder } from "@nestjs/testing";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { IoAdapter } from "@nestjs/platform-socket.io";
+import getPort from "get-port";
 
 import type {
   PostgresContainerContext,
   MinioContainerContext,
-} from './testcontainers.setup';
+} from "./testcontainers.setup";
 
 export interface TestAppContext {
   app: NestExpressApplication;
@@ -23,24 +23,24 @@ export async function createTestApp(
   overrides?: (builder: TestingModuleBuilder) => TestingModuleBuilder,
   minioContainer?: MinioContainerContext,
 ): Promise<TestAppContext> {
-  const appModulePath = '../../src/app.module';
+  const appModulePath = "../../src/app.module";
   const port = await getPort();
 
   process.env.DATABASE_URL = containers.databaseUrl;
-  process.env.BETTER_AUTH_SECRET = 'test-secret-key-for-testing-only';
+  process.env.BETTER_AUTH_SECRET = "test-secret-key-for-testing-only";
   process.env.BETTER_AUTH_URL = `http://localhost:${port}`;
-  process.env.NODE_ENV = 'test';
+  process.env.NODE_ENV = "test";
   process.env.PORT = port.toString();
 
   // Configure MinIO if provided
   if (minioContainer) {
-    process.env.MINIO_ENDPOINT = minioContainer.endpoint.split(':')[0];
+    process.env.MINIO_ENDPOINT = minioContainer.endpoint.split(":")[0];
     process.env.MINIO_PORT = minioContainer.port.toString();
     process.env.MINIO_ACCESS_KEY = minioContainer.accessKey;
     process.env.MINIO_SECRET_KEY = minioContainer.secretKey;
-    process.env.MINIO_BUCKET = 'test-bucket';
+    process.env.MINIO_BUCKET = "test-bucket";
     process.env.MINIO_PUBLIC_URL = minioContainer.publicUrl;
-    process.env.MINIO_USE_SSL = 'false';
+    process.env.MINIO_USE_SSL = "false";
   }
 
   const { AppModule } = await import(appModulePath);
@@ -61,7 +61,7 @@ export async function createTestApp(
 
   app.enableCors({
     credentials: true,
-    origin: '*',
+    origin: "*",
   });
 
   // Enable Socket.IO WebSocket adapter (required for MessagesGateway)

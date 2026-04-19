@@ -1,5 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import sharp from 'sharp';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import sharp from "sharp";
 
 export interface ProcessedImage {
   buffer: Buffer;
@@ -9,10 +9,10 @@ export interface ProcessedImage {
 }
 
 const ALLOWED_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -33,7 +33,7 @@ export class ImageProcessorService {
     // Validate MIME type
     if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
       throw new BadRequestException(
-        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(', ')}`,
+        `Invalid file type. Allowed types: ${ALLOWED_MIME_TYPES.join(", ")}`,
       );
     }
 
@@ -48,7 +48,7 @@ export class ImageProcessorService {
     const metadata = await sharp(buffer).metadata();
 
     if (!metadata.width || !metadata.height) {
-      throw new BadRequestException('Invalid image: could not read dimensions');
+      throw new BadRequestException("Invalid image: could not read dimensions");
     }
 
     // Determine if resizing is needed
@@ -60,7 +60,7 @@ export class ImageProcessorService {
 
     if (needsResize) {
       processor = processor.resize(MAX_DIMENSION, MAX_DIMENSION, {
-        fit: 'inside',
+        fit: "inside",
         withoutEnlargement: true,
       });
     }
@@ -73,7 +73,7 @@ export class ImageProcessorService {
 
     return {
       buffer: processedBuffer,
-      contentType: 'image/webp',
+      contentType: "image/webp",
       width: finalMetadata.width ?? metadata.width,
       height: finalMetadata.height ?? metadata.height,
     };
@@ -86,8 +86,8 @@ export class ImageProcessorService {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 8);
     const sanitizedFilename = filename
-      .replace(/[^a-zA-Z0-9.-]/g, '_')
-      .replace(/\.[^.]+$/, '.webp'); // Replace extension with .webp
+      .replace(/[^a-zA-Z0-9.-]/g, "_")
+      .replace(/\.[^.]+$/, ".webp"); // Replace extension with .webp
     return `posts/${userId}/${timestamp}-${random}-${sanitizedFilename}`;
   }
 }

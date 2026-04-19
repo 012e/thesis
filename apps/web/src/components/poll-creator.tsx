@@ -46,7 +46,9 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
       })),
       allowsMultipleSelections,
       closesAt: hasExpiration
-        ? new Date(Date.now() + expirationDays * 24 * 60 * 60 * 1000).toISOString()
+        ? new Date(
+            Date.now() + expirationDays * 24 * 60 * 60 * 1000,
+          ).toISOString()
         : null,
     };
 
@@ -208,11 +210,13 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
       </div>
 
       {/* Validation message */}
-      {!isValid && (question.trim() !== "" || options.some((o) => o.label.trim() !== "")) && (
-        <p className="mt-3 text-sm text-amber-600">
-          Polls need a question and at least 2 options
-        </p>
-      )}
+      {!isValid &&
+        (question.trim() !== "" ||
+          options.some((o) => o.label.trim() !== "")) && (
+          <p className="mt-3 text-sm text-amber-600">
+            Polls need a question and at least 2 options
+          </p>
+        )}
     </div>
   );
 }

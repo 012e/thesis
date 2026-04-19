@@ -1,10 +1,10 @@
-import { and, desc, eq } from 'drizzle-orm';
-import { Injectable } from '@nestjs/common';
-import type { FollowUserDto, UserFollowDto } from '@repo/shared-dto';
+import { and, desc, eq } from "drizzle-orm";
+import { Injectable } from "@nestjs/common";
+import type { FollowUserDto, UserFollowDto } from "@repo/shared-dto";
 
-import { DatabaseService } from '@/db/database.service';
-import { userFollows, usersView } from '@/db/schema';
-import { UsersService } from '@/users/users.service';
+import { DatabaseService } from "@/db/database.service";
+import { userFollows, usersView } from "@/db/schema";
+import { UsersService } from "@/users/users.service";
 
 @Injectable()
 export class FollowsService {

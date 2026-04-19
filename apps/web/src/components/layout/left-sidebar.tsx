@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link } from "@tanstack/react-router";
 import {
   IconHome,
   IconHomeFilled,
@@ -12,47 +12,47 @@ import {
   IconZoomFilled,
   IconStarFilled,
   IconRobot,
-} from '@tabler/icons-react';
-import { UserProfile } from './user-profile';
-import { useUnreadNotifications } from '@/hooks/messages/use-unread-notifications';
+} from "@tabler/icons-react";
+import { UserProfile } from "./user-profile";
+import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
 
 const navigationItems = [
-  { icon: IconHome, selectedIcon: IconHomeFilled, label: 'Home', href: '/' },
+  { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
   {
     icon: IconZoom,
     selectedIcon: IconZoomFilled,
-    label: 'Explore',
-    href: '/explore',
+    label: "Explore",
+    href: "/explore",
   },
   {
     icon: IconBell,
     selectedIcon: IconBellFilled,
-    label: 'Notifications',
-    href: '/notifications',
+    label: "Notifications",
+    href: "/notifications",
   },
   {
     icon: IconRobot,
     selectedIcon: IconRobot,
-    label: 'AI Chat',
-    href: '/chat',
+    label: "AI Chat",
+    href: "/chat",
   },
   {
     icon: IconUsers,
     selectedIcon: IconUsers,
-    label: 'Communities',
-    href: '/communities',
+    label: "Communities",
+    href: "/communities",
   },
   {
     icon: IconSparkles,
     selectedIcon: IconStarFilled,
-    label: 'Premium',
-    href: '/premium',
+    label: "Premium",
+    href: "/premium",
   },
   {
     icon: IconUser,
     selectedIcon: IconUserFilled,
-    label: 'Profile',
-    href: '/profile',
+    label: "Profile",
+    href: "/profile",
   },
 ];
 
@@ -86,14 +86,14 @@ export function LeftSidebar() {
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;
-                const hasUnread = item.href === '/messages' && unreadCount > 0;
+                const hasUnread = item.href === "/messages" && unreadCount > 0;
                 return (
                   <>
                     <div className="relative">
                       <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
                       {hasUnread && (
                         <span className="flex absolute -top-1.5 -right-1.5 justify-center items-center px-1 font-bold leading-none rounded-full min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px]">
-                          {unreadCount > 99 ? '99+' : unreadCount}
+                          {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
                       )}
                     </div>

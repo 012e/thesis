@@ -1,19 +1,19 @@
-import { and, asc, count, desc, eq, or, sql } from 'drizzle-orm';
-import { Injectable, Logger } from '@nestjs/common';
-import type { PostDto, ReactionTypeDto } from '@repo/shared-dto';
-import type { z } from 'zod';
+import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
+import { Injectable, Logger } from "@nestjs/common";
+import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
+import type { z } from "zod";
 
-import { DatabaseService } from '@/db/database.service';
-import { postReactions, posts, usersView } from '@/db/schema';
-import { StorageService } from '@/storage/storage.service';
-import { UsersService } from '@/users/users.service';
+import { DatabaseService } from "@/db/database.service";
+import { postReactions, posts, usersView } from "@/db/schema";
+import { StorageService } from "@/storage/storage.service";
+import { UsersService } from "@/users/users.service";
 
 const upvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
-).as('upvoteCount');
+).as("upvoteCount");
 const downvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
-).as('downvoteCount');
+).as("downvoteCount");
 
 const getUserReactionType = (userId: string) => {
   return sql<
@@ -21,7 +21,7 @@ const getUserReactionType = (userId: string) => {
   >`MAX(CASE WHEN ${postReactions.userId} = ${sql.raw(`'${userId}'`)} THEN ${postReactions.type} END)`;
 };
 
-import { createPostSchema, updatePostSchema } from './posts.schemas';
+import { createPostSchema, updatePostSchema } from "./posts.schemas";
 
 type CreatePostInput = z.infer<typeof createPostSchema>;
 type UpdatePostInput = z.infer<typeof updatePostSchema>;
@@ -40,7 +40,10 @@ export class PostsService {
     private readonly usersService: UsersService,
   ) {}
 
-  async listByUser(authorId: string, requestingUserId: string): Promise<PostDto[]> {
+  async listByUser(
+    authorId: string,
+    requestingUserId: string,
+  ): Promise<PostDto[]> {
     const rows = await this.databaseService.db
       .select({
         id: posts.id,
@@ -291,24 +294,24 @@ export class PostsService {
     return result.rows.map((row) => {
       const r = row as Record<string, unknown>;
       return {
-        id: r['id'] as string,
-        authorId: r['author_id'] as string,
+        id: r["id"] as string,
+        authorId: r["author_id"] as string,
         author: {
-          id: r['author_id_u'] as string,
-          username: (r['author_username'] as string | null) ?? null,
-          email: r['author_email'] as string,
-          name: (r['author_name'] as string | null) ?? null,
+          id: r["author_id_u"] as string,
+          username: (r["author_username"] as string | null) ?? null,
+          email: r["author_email"] as string,
+          name: (r["author_name"] as string | null) ?? null,
           image: this.usersService.resolveAvatarUrl(
-            (r['author_image'] as string | null) ?? null,
+            (r["author_image"] as string | null) ?? null,
           ),
         },
-        content: r['content'] as PostDto['content'],
-        createdAt: new Date(r['created_at'] as string).toISOString(),
-        updatedAt: new Date(r['updated_at'] as string).toISOString(),
-        upvoteCount: Number(r['upvote_count']),
-        downvoteCount: Number(r['downvote_count']),
+        content: r["content"] as PostDto["content"],
+        createdAt: new Date(r["created_at"] as string).toISOString(),
+        updatedAt: new Date(r["updated_at"] as string).toISOString(),
+        upvoteCount: Number(r["upvote_count"]),
+        downvoteCount: Number(r["downvote_count"]),
         currentUserReaction:
-          (r['user_reaction_type'] as ReactionTypeDto | null) ?? null,
+          (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
       } satisfies PostDto;
     });
   }
@@ -320,7 +323,7 @@ export class PostsService {
   ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
     const parsed = cursor ? this.decodeCursor(cursor) : null;
 
-    const reactionCount = count(postReactions.postId).as('reaction_count');
+    const reactionCount = count(postReactions.postId).as("reaction_count");
 
     // Build the query without cursor filtering first
     let query = this.databaseService.db
@@ -395,7 +398,7 @@ export class PostsService {
     reactionCount: number;
     postId: string;
   }): string {
-    return Buffer.from(JSON.stringify(cursor)).toString('base64url');
+    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
   }
 
   private decodeCursor(cursor: string): {
@@ -404,16 +407,16 @@ export class PostsService {
   } | null {
     try {
       const decoded = JSON.parse(
-        Buffer.from(cursor, 'base64url').toString('utf8'),
+        Buffer.from(cursor, "base64url").toString("utf8"),
       ) as unknown;
       if (
-        typeof decoded === 'object' &&
+        typeof decoded === "object" &&
         decoded !== null &&
-        'reactionCount' in decoded &&
-        'postId' in decoded &&
+        "reactionCount" in decoded &&
+        "postId" in decoded &&
         typeof (decoded as { reactionCount: unknown }).reactionCount ===
-          'number' &&
-        typeof (decoded as { postId: unknown }).postId === 'string'
+          "number" &&
+        typeof (decoded as { postId: unknown }).postId === "string"
       ) {
         return decoded as { reactionCount: number; postId: string };
       }

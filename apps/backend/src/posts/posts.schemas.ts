@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const pollPostOptionSchema = z.object({
   id: z.string().min(1),
@@ -19,7 +19,7 @@ const visualizationDataPointSchema = z.object({
 
 const visualizationPostContentSchema = z.object({
   title: z.string().min(1),
-  visualizationType: z.enum(['bar', 'line', 'pie', 'table']),
+  visualizationType: z.enum(["bar", "line", "pie", "table"]),
   data: z.array(visualizationDataPointSchema).min(1),
   description: z.string().min(1).optional(),
   unit: z.string().min(1).optional(),
@@ -47,7 +47,7 @@ export const postContentSchema = z
       (content.images !== undefined && content.images.length > 0),
     {
       message:
-        'Post content must include at least one of text, poll, visualization, or images',
+        "Post content must include at least one of text, poll, visualization, or images",
     },
   );
 

@@ -2,8 +2,8 @@ import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from './helpers/testcontainers.setup';
-import { runBetterAuthMigrations } from './helpers/database.setup';
+} from "./helpers/testcontainers.setup";
+import { runBetterAuthMigrations } from "./helpers/database.setup";
 
 let globalContainers: PostgresContainerContext | null = null;
 let initPromise: Promise<PostgresContainerContext> | null = null;
@@ -19,7 +19,7 @@ export async function getTestContainers(): Promise<PostgresContainerContext> {
 
   if (!initPromise) {
     initPromise = (async () => {
-      console.log('Initializing shared test containers...');
+      console.log("Initializing shared test containers...");
       const containers = await startPostgresContainer();
       await runBetterAuthMigrations(containers.databaseUrl);
       globalContainers = containers;

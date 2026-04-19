@@ -1,4 +1,4 @@
-import { createScorer } from '@mastra/core/evals';
+import { createScorer } from "@mastra/core/evals";
 
 /**
  * Intent-alignment scorer — checks whether the orchestrator's response is
@@ -11,11 +11,11 @@ import { createScorer } from '@mastra/core/evals';
  * Score: 1 = response aligns with user intent, 0 = clear mismatch detected.
  */
 export const intentAlignmentScorer = createScorer({
-  id: 'intent-alignment',
-  name: 'Intent Alignment',
+  id: "intent-alignment",
+  name: "Intent Alignment",
   description:
-    'Validates that the orchestrator performed the action the user asked for and did not confuse read vs write operations, or act on the wrong entity.',
-  type: 'agent',
+    "Validates that the orchestrator performed the action the user asked for and did not confuse read vs write operations, or act on the wrong entity.",
+  type: "agent",
 }).generateScore(({ run }) => {
   const input = run.input;
   const output = run.output;
@@ -27,29 +27,29 @@ export const intentAlignmentScorer = createScorer({
     input.inputMessages ?? [];
   const lastUserMessage = [...inputMessages]
     .reverse()
-    .find((m) => m.role === 'user');
+    .find((m) => m.role === "user");
 
   if (!lastUserMessage) return 1; // No user message to compare against — skip
 
   const userText =
-    typeof lastUserMessage.content === 'string'
+    typeof lastUserMessage.content === "string"
       ? lastUserMessage.content.toLowerCase()
-      : '';
+      : "";
 
   // Extract all response text
   const responseText = output
     .map((msg: { content: unknown }) => {
-      if (typeof msg.content === 'string') return msg.content;
+      if (typeof msg.content === "string") return msg.content;
       if (Array.isArray(msg.content)) {
         return msg.content
           .map((part: { type?: string; text?: string }) =>
-            part.type === 'text' ? (part.text ?? '') : '',
+            part.type === "text" ? (part.text ?? "") : "",
           )
-          .join(' ');
+          .join(" ");
       }
-      return '';
+      return "";
     })
-    .join(' ')
+    .join(" ")
     .toLowerCase();
 
   // --- Mismatch detection rules ---

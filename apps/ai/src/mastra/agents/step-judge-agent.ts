@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { MODEL_JUDGE } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { MODEL_JUDGE } from "../constants";
 
 /**
  * Step-judge agent — an LLM judge that evaluates whether the orchestrator has
@@ -50,10 +50,10 @@ import { MODEL_JUDGE } from '../constants';
  * ```
  */
 export const stepJudgeAgent = new Agent({
-  id: 'step-judge',
-  name: 'Step Judge',
+  id: "step-judge",
+  name: "Step Judge",
   description:
-    'Evaluates whether the orchestrator has fully completed all steps implied by the user request. Returns COMPLETE or INCOMPLETE with a detailed reason.',
+    "Evaluates whether the orchestrator has fully completed all steps implied by the user request. Returns COMPLETE or INCOMPLETE with a detailed reason.",
   instructions: `You are a strict completion judge for a social media AI assistant.
 
 Your only job is to read a USER REQUEST and the ORCHESTRATOR OUTPUT that was produced in response, then decide whether every step the user asked for has been fully addressed.

@@ -1,11 +1,11 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { followsContract } from '@repo/rest-contracts';
+import { followsContract } from "@repo/rest-contracts";
 
-import { FollowsService } from './follows.service';
+import { FollowsService } from "./follows.service";
 
 @Controller()
 export class FollowsController {

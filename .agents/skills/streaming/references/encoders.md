@@ -4,18 +4,22 @@ Encode and decode streaming formats.
 
 ## Available Encoders
 
-| Encoder | Format | Use Case |
-|---------|--------|----------|
-| `DataStreamEncoder` | AI SDK Data Stream | Default (used by `toUIMessageStreamResponse`) |
-| `AssistantTransportEncoder` | Native SSE (`data: {chunk}`) | Custom backends that want all chunk types |
-| `PlainTextEncoder` | Text-only | Very simple demos |
+| Encoder                     | Format                       | Use Case                                      |
+| --------------------------- | ---------------------------- | --------------------------------------------- |
+| `DataStreamEncoder`         | AI SDK Data Stream           | Default (used by `toUIMessageStreamResponse`) |
+| `AssistantTransportEncoder` | Native SSE (`data: {chunk}`) | Custom backends that want all chunk types     |
+| `PlainTextEncoder`          | Text-only                    | Very simple demos                             |
 
 ## DataStreamEncoder
 
 AI SDK compatible format. You normally don't call it directly—wrap an `AssistantStream`:
 
 ```ts
-import { AssistantStream, DataStreamEncoder, DataStreamDecoder } from "assistant-stream";
+import {
+  AssistantStream,
+  DataStreamEncoder,
+  DataStreamDecoder,
+} from "assistant-stream";
 
 // Server
 const response = AssistantStream.toResponse(stream, new DataStreamEncoder());
@@ -38,10 +42,16 @@ import {
 } from "assistant-stream";
 
 // Encoding: wrap AssistantStream chunks
-const response = AssistantStream.toResponse(stream, new AssistantTransportEncoder());
+const response = AssistantStream.toResponse(
+  stream,
+  new AssistantTransportEncoder(),
+);
 
 // Decoding
-const stream = AssistantStream.fromResponse(response, new AssistantTransportDecoder());
+const stream = AssistantStream.fromResponse(
+  response,
+  new AssistantTransportDecoder(),
+);
 for await (const chunk of stream) {
   console.log(chunk);
 }
@@ -134,5 +144,5 @@ while (reader) {
 ```ts
 // Check if response is valid SSE
 const contentType = response.headers.get("Content-Type");
-console.log("Content-Type:", contentType);  // Should be text/event-stream
+console.log("Content-Type:", contentType); // Should be text/event-stream
 ```

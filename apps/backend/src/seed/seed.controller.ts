@@ -1,9 +1,9 @@
-import { Controller, Post } from '@nestjs/common';
-import { AllowAnonymous } from '@thallesp/nestjs-better-auth';
+import { Controller, Post } from "@nestjs/common";
+import { AllowAnonymous } from "@thallesp/nestjs-better-auth";
 
-import { SeedService } from './seed.service';
+import { SeedService } from "./seed.service";
 
-@Controller('seed')
+@Controller("seed")
 export class SeedController {
   constructor(private readonly seedService: SeedService) {}
 

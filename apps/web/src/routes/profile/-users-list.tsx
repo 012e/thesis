@@ -1,6 +1,6 @@
-import { Link } from '@tanstack/react-router';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card } from '@/components/ui/card';
+import { Link } from "@tanstack/react-router";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 
 type User = {
   id: string;
@@ -29,9 +29,9 @@ export function UsersList({ users, emptyMessage }: UsersListProps) {
       {users.map((user) => {
         const initials = user.name
           ? user.name
-              .split(' ')
+              .split(" ")
               .map((n) => n[0])
-              .join('')
+              .join("")
               .toUpperCase()
               .slice(0, 2)
           : user.email.charAt(0).toUpperCase();
@@ -54,7 +54,7 @@ export function UsersList({ users, emptyMessage }: UsersListProps) {
             </Avatar>
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium truncate">
-                {user.name || user.username || 'User'}
+                {user.name || user.username || "User"}
               </span>
               <span className="text-xs text-muted-foreground truncate">
                 {user.username ? `@${user.username}` : user.email}

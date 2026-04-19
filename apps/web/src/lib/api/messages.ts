@@ -1,12 +1,12 @@
-import type { ConversationDto, DirectMessageDto } from '@repo/shared-dto';
-import { client } from '.';
+import type { ConversationDto, DirectMessageDto } from "@repo/shared-dto";
+import { client } from ".";
 
 export async function listConversations(): Promise<ConversationDto[]> {
   const response = await client.listConversations();
   if (response.status === 200) {
     return response.body;
   }
-  throw new Error('Failed to load conversations');
+  throw new Error("Failed to load conversations");
 }
 
 export async function startConversation(
@@ -17,12 +17,12 @@ export async function startConversation(
     return response.body;
   }
   if (response.status === 400) {
-    throw new Error('Cannot start a conversation with yourself');
+    throw new Error("Cannot start a conversation with yourself");
   }
   if (response.status === 404) {
-    throw new Error('User not found or you must follow them first');
+    throw new Error("User not found or you must follow them first");
   }
-  throw new Error('Failed to start conversation');
+  throw new Error("Failed to start conversation");
 }
 
 /**
@@ -34,7 +34,7 @@ export async function getUnreadCount(): Promise<number> {
   if (response.status === 200) {
     return response.body.total;
   }
-  throw new Error('Failed to load unread count');
+  throw new Error("Failed to load unread count");
 }
 
 export async function getConversation(
@@ -47,12 +47,12 @@ export async function getConversation(
     return response.body;
   }
   if (response.status === 403) {
-    throw new Error('Access denied');
+    throw new Error("Access denied");
   }
   if (response.status === 404) {
-    throw new Error('Conversation not found');
+    throw new Error("Conversation not found");
   }
-  throw new Error('Failed to load conversation');
+  throw new Error("Failed to load conversation");
 }
 
 /**
@@ -70,12 +70,12 @@ export async function markConversationRead(
     return;
   }
   if (response.status === 403) {
-    throw new Error('Access denied');
+    throw new Error("Access denied");
   }
   if (response.status === 404) {
-    throw new Error('Conversation not found');
+    throw new Error("Conversation not found");
   }
-  throw new Error('Failed to mark conversation as read');
+  throw new Error("Failed to mark conversation as read");
 }
 
 export async function listMessages(
@@ -93,12 +93,12 @@ export async function listMessages(
     return response.body;
   }
   if (response.status === 403) {
-    throw new Error('Access denied');
+    throw new Error("Access denied");
   }
   if (response.status === 404) {
-    throw new Error('Conversation not found');
+    throw new Error("Conversation not found");
   }
-  throw new Error('Failed to load messages');
+  throw new Error("Failed to load messages");
 }
 
 export async function sendMessageRest(
@@ -113,11 +113,10 @@ export async function sendMessageRest(
     return response.body;
   }
   if (response.status === 403) {
-    throw new Error('Access denied');
+    throw new Error("Access denied");
   }
   if (response.status === 404) {
-    throw new Error('Conversation not found');
+    throw new Error("Conversation not found");
   }
-  throw new Error('Failed to send message');
+  throw new Error("Failed to send message");
 }
-

@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { MODEL_SUB_AGENT } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { MODEL_SUB_AGENT } from "../constants";
 
 /**
  * Interactions agent — owns all engagement operations.
@@ -13,10 +13,10 @@ import { MODEL_SUB_AGENT } from '../constants';
  * HTTP request carries its own authentication context.
  */
 export const interactionsAgent = new Agent({
-  id: 'interactions-agent',
-  name: 'Interactions Agent',
+  id: "interactions-agent",
+  name: "Interactions Agent",
   description:
-    'Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.',
+    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.",
   instructions: `You are the engagement specialist for a social media platform.
 
 Your responsibilities:

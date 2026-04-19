@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { MODEL_SUB_AGENT } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { MODEL_SUB_AGENT } from "../constants";
 
 /**
  * Identity agent — owns the social graph domain.
@@ -14,10 +14,10 @@ import { MODEL_SUB_AGENT } from '../constants';
  * HTTP request carries its own authentication context.
  */
 export const identityAgent = new Agent({
-  id: 'identity-agent',
-  name: 'Identity Agent',
+  id: "identity-agent",
+  name: "Identity Agent",
   description:
-    'Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task.',
+    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task.",
   instructions: `You are the identity specialist for a social media platform.
 
 Your responsibilities:

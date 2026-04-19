@@ -2,8 +2,11 @@
   "name": "@repo/web-e2e",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "description": "End-to-end tests for the web application",
+  "keywords": [],
+  "license": "ISC",
+  "author": "",
+  "type": "module",
   "scripts": {
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -11,9 +14,6 @@
     "test:codegen": "playwright codegen",
     "show-report": "playwright show-report"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@t3-oss/env-core": "^0.13.10",
     "zod": "^4.3.6"

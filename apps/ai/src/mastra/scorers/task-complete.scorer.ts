@@ -1,4 +1,4 @@
-import { createScorer } from '@mastra/core/evals';
+import { createScorer } from "@mastra/core/evals";
 
 /**
  * Task-complete scorer — validates whether the orchestrator has fully addressed
@@ -11,11 +11,11 @@ import { createScorer } from '@mastra/core/evals';
  * Score: 1 = task appears complete, 0 = incomplete or ambiguous.
  */
 export const taskCompleteScorer = createScorer({
-  id: 'task-complete',
-  name: 'Task Completeness',
+  id: "task-complete",
+  name: "Task Completeness",
   description:
-    'Checks whether the orchestrator response contains a concrete result or confirmation rather than an unresolved question or partial answer.',
-  type: 'agent',
+    "Checks whether the orchestrator response contains a concrete result or confirmation rather than an unresolved question or partial answer.",
+  type: "agent",
 }).generateScore(({ run }) => {
   const output = run.output;
   if (!output || output.length === 0) return 0;
@@ -23,32 +23,32 @@ export const taskCompleteScorer = createScorer({
   // Collect all text content from the output messages
   const text = output
     .map((msg: { content: unknown }) => {
-      if (typeof msg.content === 'string') return msg.content;
+      if (typeof msg.content === "string") return msg.content;
       if (Array.isArray(msg.content)) {
         return msg.content
           .map((part: { type?: string; text?: string }) =>
-            part.type === 'text' ? (part.text ?? '') : '',
+            part.type === "text" ? (part.text ?? "") : "",
           )
-          .join(' ');
+          .join(" ");
       }
-      return '';
+      return "";
     })
-    .join(' ')
+    .join(" ")
     .toLowerCase();
 
   if (text.trim().length === 0) return 0;
 
   // Signals that the response is still open / incomplete
   const incompleteSignals = [
-    'i need more information',
-    'could you clarify',
-    'please provide',
-    'i am unable to',
+    "i need more information",
+    "could you clarify",
+    "please provide",
+    "i am unable to",
     "i'm unable to",
-    'i cannot complete',
+    "i cannot complete",
     "i can't complete",
-    'what would you like',
-    'let me know what',
+    "what would you like",
+    "let me know what",
   ];
 
   const hasIncompleteSignal = incompleteSignals.some((signal) =>
@@ -58,20 +58,20 @@ export const taskCompleteScorer = createScorer({
 
   // Signals that a concrete action was taken or an answer was given
   const completeSignals = [
-    'successfully',
-    'created',
-    'updated',
-    'deleted',
-    'posted',
-    'followed',
-    'unfollowed',
-    'reacted',
-    'commented',
-    'here are',
-    'here is',
-    'the post',
-    'the comment',
-    'the profile',
+    "successfully",
+    "created",
+    "updated",
+    "deleted",
+    "posted",
+    "followed",
+    "unfollowed",
+    "reacted",
+    "commented",
+    "here are",
+    "here is",
+    "the post",
+    "the comment",
+    "the profile",
   ];
 
   const hasCompleteSignal = completeSignals.some((signal) =>

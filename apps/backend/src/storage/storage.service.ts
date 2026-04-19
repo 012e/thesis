@@ -5,10 +5,10 @@ import {
   CreateBucketCommand,
   HeadBucketCommand,
   PutBucketPolicyCommand,
-} from '@aws-sdk/client-s3';
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+} from "@aws-sdk/client-s3";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 
-import { env } from '@/env';
+import { env } from "@/env";
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -19,8 +19,8 @@ export class StorageService implements OnModuleInit {
 
   constructor() {
     this.client = new S3Client({
-      endpoint: `http${env.MINIO_USE_SSL ? 's' : ''}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`,
-      region: 'us-east-1', // MinIO requires a region, but it's not used
+      endpoint: `http${env.MINIO_USE_SSL ? "s" : ""}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}`,
+      region: "us-east-1", // MinIO requires a region, but it's not used
       credentials: {
         accessKeyId: env.MINIO_ACCESS_KEY,
         secretAccessKey: env.MINIO_SECRET_KEY,
@@ -48,9 +48,9 @@ export class StorageService implements OnModuleInit {
       } catch (error: unknown) {
         if (
           error &&
-          typeof error === 'object' &&
-          'name' in error &&
-          (error.name === 'NotFound' || error.name === 'NoSuchBucket')
+          typeof error === "object" &&
+          "name" in error &&
+          (error.name === "NotFound" || error.name === "NoSuchBucket")
         ) {
           this.logger.log(`Creating bucket "${this.bucket}"...`);
           await this.client.send(
@@ -64,12 +64,12 @@ export class StorageService implements OnModuleInit {
 
       // Always apply public read policy (covers pre-existing buckets that may lack it)
       const policy = {
-        Version: '2012-10-17',
+        Version: "2012-10-17",
         Statement: [
           {
-            Effect: 'Allow',
-            Principal: '*',
-            Action: ['s3:GetObject'],
+            Effect: "Allow",
+            Principal: "*",
+            Action: ["s3:GetObject"],
             Resource: [`arn:aws:s3:::${this.bucket}/*`],
           },
         ],
@@ -88,9 +88,9 @@ export class StorageService implements OnModuleInit {
           : `Public read policy ensured on bucket "${this.bucket}"`,
       );
     } catch (error: unknown) {
-      this.logger.error('Failed to check/create bucket', error);
+      this.logger.error("Failed to check/create bucket", error);
       // Do not crash the application in test environment if Minio is not available
-      if (env.NODE_ENV !== 'test') {
+      if (env.NODE_ENV !== "test") {
         throw error;
       }
     }

@@ -1,5 +1,5 @@
-import { Agent } from '@mastra/core/agent';
-import { MODEL_SUB_AGENT } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { MODEL_SUB_AGENT } from "../constants";
 
 /**
  * Post-discovery agent — owns all read operations on posts.
@@ -12,10 +12,10 @@ import { MODEL_SUB_AGENT } from '../constants';
  * HTTP request carries its own authentication context.
  */
 export const postDiscoveryAgent = new Agent({
-  id: 'post-discovery-agent',
-  name: 'Post Discovery Agent',
+  id: "post-discovery-agent",
+  name: "Post Discovery Agent",
   description:
-    'Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion.',
+    "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion.",
   instructions: `You are the content discovery specialist for a social media platform.
 
 Your responsibilities:

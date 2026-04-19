@@ -1,10 +1,10 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import Cropper from 'react-easy-crop';
-import type { Area, Point } from 'react-easy-crop';
-import { useForm } from '@tanstack/react-form';
-import { useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
+import { useState, useCallback, useRef, useEffect } from "react";
+import Cropper from "react-easy-crop";
+import type { Area, Point } from "react-easy-crop";
+import { useForm } from "@tanstack/react-form";
+import { useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,33 +12,33 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { updateProfile } from '@/lib/auth';
-import { uploadImages } from '@/lib/api/uploads';
-import { updateAvatar } from '@/lib/api/users';
+} from "@/components/ui/dialog";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { updateProfile } from "@/lib/auth";
+import { uploadImages } from "@/lib/api/uploads";
+import { updateAvatar } from "@/lib/api/users";
 
 const editProfileSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
+  name: z.string().min(1, "Name is required").max(100, "Name is too long"),
 });
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const image = new Image();
-    image.addEventListener('load', () => resolve(image));
-    image.addEventListener('error', (err) => reject(err));
-    image.setAttribute('crossOrigin', 'anonymous');
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (err) => reject(err));
+    image.setAttribute("crossOrigin", "anonymous");
     image.src = url;
   });
 }
 
 async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
   const image = await createImage(imageSrc);
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Could not get canvas context');
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not get canvas context");
 
   canvas.width = pixelCrop.width;
   canvas.height = pixelCrop.height;
@@ -59,12 +59,12 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error('Failed to create image blob'));
+          reject(new Error("Failed to create image blob"));
           return;
         }
-        resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+        resolve(new File([blob], "avatar.jpg", { type: "image/jpeg" }));
       },
-      'image/jpeg',
+      "image/jpeg",
       0.92,
     );
   });
@@ -92,7 +92,7 @@ export function EditProfileDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Current avatar URL (set after a successful upload)
-  const [avatarUrl, setAvatarUrl] = useState(defaultValues.image ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(defaultValues.image ?? "");
 
   // Crop state
   const [rawImageSrc, setRawImageSrc] = useState<string | null>(null);
@@ -105,7 +105,7 @@ export function EditProfileDialog({
   // Reset state whenever the dialog opens
   useEffect(() => {
     if (open) {
-      setAvatarUrl(defaultValues.image ?? '');
+      setAvatarUrl(defaultValues.image ?? "");
       setRawImageSrc(null);
       setUploadError(null);
       setCrop({ x: 0, y: 0 });
@@ -122,7 +122,7 @@ export function EditProfileDialog({
     if (!file) return;
 
     const reader = new FileReader();
-    reader.addEventListener('load', () => {
+    reader.addEventListener("load", () => {
       setRawImageSrc(reader.result as string);
       setCrop({ x: 0, y: 0 });
       setZoom(1);
@@ -130,7 +130,7 @@ export function EditProfileDialog({
     });
     reader.readAsDataURL(file);
     // Reset so the same file can be re-selected
-    e.target.value = '';
+    e.target.value = "";
   };
 
   const handleCropCancel = () => {
@@ -154,7 +154,7 @@ export function EditProfileDialog({
       setRawImageSrc(null);
     } catch (err) {
       setUploadError(
-        err instanceof Error ? err.message : 'Upload failed. Please try again.',
+        err instanceof Error ? err.message : "Upload failed. Please try again.",
       );
     } finally {
       setIsUploading(false);
@@ -173,7 +173,7 @@ export function EditProfileDialog({
       if (!success) return;
 
       // Persist avatar separately in our own user_profiles table.
-      if (avatarUrl && avatarUrl !== (defaultValues.image ?? '')) {
+      if (avatarUrl && avatarUrl !== (defaultValues.image ?? "")) {
         await updateAvatar(avatarUrl);
         // Invalidate the profile query so all avatar consumers refresh.
         await queryClient.invalidateQueries();
@@ -187,12 +187,12 @@ export function EditProfileDialog({
   // Sync name field when dialog re-opens with different defaultValues
   useEffect(() => {
     if (open) {
-      form.setFieldValue('name', defaultValues.name);
+      form.setFieldValue("name", defaultValues.name);
     }
   }, [open, defaultValues.name]);
 
   const isCropping = rawImageSrc !== null;
-  const initials = (defaultValues.name || '?').charAt(0).toUpperCase();
+  const initials = (defaultValues.name || "?").charAt(0).toUpperCase();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -201,7 +201,7 @@ export function EditProfileDialog({
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
             {isCropping
-              ? 'Drag to reposition. Use the slider to zoom.'
+              ? "Drag to reposition. Use the slider to zoom."
               : "Make changes to your profile here. Click save when you're done."}
           </DialogDescription>
         </DialogHeader>
@@ -258,7 +258,7 @@ export function EditProfileDialog({
                 onClick={handleCropApply}
                 disabled={isUploading || !croppedAreaPixels}
               >
-                {isUploading ? 'Uploading...' : 'Apply'}
+                {isUploading ? "Uploading..." : "Apply"}
               </Button>
             </DialogFooter>
           </div>
@@ -348,7 +348,7 @@ export function EditProfileDialog({
                     />
                     {field.state.meta.errors.length > 0 && (
                       <span className="text-red-500 text-xm">
-                        {field.state.meta.errors.join(', ')}
+                        {field.state.meta.errors.join(", ")}
                       </span>
                     )}
                   </Field>
@@ -369,7 +369,7 @@ export function EditProfileDialog({
               >
                 {([canSubmit, isSubmitting]) => (
                   <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                    {isSubmitting ? 'Saving...' : 'Save Changes'}
+                    {isSubmitting ? "Saving..." : "Save Changes"}
                   </Button>
                 )}
               </form.Subscribe>

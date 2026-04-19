@@ -1,17 +1,17 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
-import { Pool } from 'pg';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import request from "supertest";
+import { Pool } from "pg";
 
-import { closeTestApp, createTestApp } from '../helpers/app.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
-import { registerAndGetSessionCookie } from '../helpers/auth.helper';
+import { closeTestApp, createTestApp } from "../helpers/app.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { registerAndGetSessionCookie } from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
-describe('ReactionsController integration', () => {
+describe("ReactionsController integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let pool: Pool;
@@ -47,138 +47,138 @@ describe('ReactionsController integration', () => {
   });
 
   beforeEach(async () => {
-    await pool.query('TRUNCATE TABLE post_reactions RESTART IDENTITY CASCADE');
-    await pool.query('TRUNCATE TABLE posts RESTART IDENTITY CASCADE');
+    await pool.query("TRUNCATE TABLE post_reactions RESTART IDENTITY CASCADE");
+    await pool.query("TRUNCATE TABLE posts RESTART IDENTITY CASCADE");
 
     // Create a fresh post owned by User A for each test.
     const server = request(testApp.app.getHttpServer());
     const res = await server
-      .post('/posts')
-      .set('Cookie', userACookie)
-      .send({ content: { text: 'Reaction test post' } })
+      .post("/posts")
+      .set("Cookie", userACookie)
+      .send({ content: { text: "Reaction test post" } })
       .expect(201);
 
     postId = res.body.id as string;
   });
 
-  describe('PUT /posts/:id/reaction', () => {
-    it('upvotes a post and returns the reaction', async () => {
+  describe("PUT /posts/:id/reaction", () => {
+    it("upvotes a post and returns the reaction", async () => {
       const res = await request(testApp.app.getHttpServer())
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       expect(res.body.postId).toBe(postId);
-      expect(res.body.type).toBe('upvote');
+      expect(res.body.type).toBe("upvote");
       expect(res.body.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('downvotes a post and returns the reaction', async () => {
+    it("downvotes a post and returns the reaction", async () => {
       const res = await request(testApp.app.getHttpServer())
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
-      expect(res.body.type).toBe('downvote');
+      expect(res.body.type).toBe("downvote");
     });
 
-    it('replaces an upvote with a downvote', async () => {
+    it("replaces an upvote with a downvote", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       const res = await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
-      expect(res.body.type).toBe('downvote');
+      expect(res.body.type).toBe("downvote");
 
       // Verify summary reflects the change.
       const summary = await server
         .get(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(200);
 
       expect(summary.body.upvotes).toBe(0);
       expect(summary.body.downvotes).toBe(1);
     });
 
-    it('returns 404 for a non-existent post', async () => {
+    it("returns 404 for a non-existent post", async () => {
       await request(testApp.app.getHttpServer())
-        .put('/posts/00000000-0000-0000-0000-000000000000/reaction')
-        .set('Cookie', userBCookie)
-        .send({ type: 'upvote' })
+        .put("/posts/00000000-0000-0000-0000-000000000000/reaction")
+        .set("Cookie", userBCookie)
+        .send({ type: "upvote" })
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .put(`/posts/${postId}/reaction`)
-        .send({ type: 'upvote' })
+        .send({ type: "upvote" })
         .expect(401);
     });
   });
 
-  describe('DELETE /posts/:id/reaction', () => {
-    it('removes an existing reaction and returns it', async () => {
+  describe("DELETE /posts/:id/reaction", () => {
+    it("removes an existing reaction and returns it", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       const res = await server
         .delete(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(200);
 
-      expect(res.body.type).toBe('upvote');
+      expect(res.body.type).toBe("upvote");
 
       // Summary should now show 0 upvotes.
       const summary = await server
         .get(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(200);
 
       expect(summary.body.upvotes).toBe(0);
     });
 
-    it('returns 404 when the user has no reaction to remove', async () => {
+    it("returns 404 when the user has no reaction to remove", async () => {
       await request(testApp.app.getHttpServer())
         .delete(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(404);
     });
 
-    it('returns 404 for a non-existent post', async () => {
+    it("returns 404 for a non-existent post", async () => {
       await request(testApp.app.getHttpServer())
-        .delete('/posts/00000000-0000-0000-0000-000000000000/reaction')
-        .set('Cookie', userBCookie)
+        .delete("/posts/00000000-0000-0000-0000-000000000000/reaction")
+        .set("Cookie", userBCookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .delete(`/posts/${postId}/reaction`)
         .expect(401);
     });
   });
 
-  describe('GET /posts/:id/reaction', () => {
-    it('returns zero counts and null userReaction when nobody has reacted', async () => {
+  describe("GET /posts/:id/reaction", () => {
+    it("returns zero counts and null userReaction when nobody has reacted", async () => {
       const res = await request(testApp.app.getHttpServer())
         .get(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual({
@@ -188,24 +188,24 @@ describe('ReactionsController integration', () => {
       });
     });
 
-    it('counts multiple upvotes and downvotes', async () => {
+    it("counts multiple upvotes and downvotes", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userACookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
       const res = await server
         .get(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body.upvotes).toBe(1);
@@ -217,60 +217,60 @@ describe('ReactionsController integration', () => {
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
       const res = await server
         .get(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
+        .set("Cookie", userBCookie)
         .expect(200);
 
-      expect(res.body.userReaction).toBe('downvote');
+      expect(res.body.userReaction).toBe("downvote");
     });
 
-    it('returns 404 for a non-existent post', async () => {
+    it("returns 404 for a non-existent post", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/posts/00000000-0000-0000-0000-000000000000/reaction')
-        .set('Cookie', userACookie)
+        .get("/posts/00000000-0000-0000-0000-000000000000/reaction")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .get(`/posts/${postId}/reaction`)
         .expect(401);
     });
   });
 
-  describe('GET /posts/:id/reactors', () => {
-    it('returns an empty array when nobody has reacted', async () => {
+  describe("GET /posts/:id/reactors", () => {
+    it("returns an empty array when nobody has reacted", async () => {
       const res = await request(testApp.app.getHttpServer())
         .get(`/posts/${postId}/reactors`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual([]);
     });
 
-    it('returns all reactors with user details', async () => {
+    it("returns all reactors with user details", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userACookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
       const res = await server
         .get(`/posts/${postId}/reactors`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toHaveLength(2);
@@ -280,62 +280,62 @@ describe('ReactionsController integration', () => {
       expect(res.body[0].reactedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('filters reactors by upvote type', async () => {
+    it("filters reactors by upvote type", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userACookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
       const res = await server
         .get(`/posts/${postId}/reactors?type=upvote`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toHaveLength(1);
-      expect(res.body[0].reactionType).toBe('upvote');
+      expect(res.body[0].reactionType).toBe("upvote");
     });
 
-    it('filters reactors by downvote type', async () => {
+    it("filters reactors by downvote type", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userACookie)
-        .send({ type: 'upvote' })
+        .set("Cookie", userACookie)
+        .send({ type: "upvote" })
         .expect(200);
 
       await server
         .put(`/posts/${postId}/reaction`)
-        .set('Cookie', userBCookie)
-        .send({ type: 'downvote' })
+        .set("Cookie", userBCookie)
+        .send({ type: "downvote" })
         .expect(200);
 
       const res = await server
         .get(`/posts/${postId}/reactors?type=downvote`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toHaveLength(1);
-      expect(res.body[0].reactionType).toBe('downvote');
+      expect(res.body[0].reactionType).toBe("downvote");
     });
 
-    it('returns 404 for a non-existent post', async () => {
+    it("returns 404 for a non-existent post", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/posts/00000000-0000-0000-0000-000000000000/reactors')
-        .set('Cookie', userACookie)
+        .get("/posts/00000000-0000-0000-0000-000000000000/reactors")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .get(`/posts/${postId}/reactors`)
         .expect(401);

@@ -87,9 +87,7 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
 
       <div className="space-y-2">
         {poll.options.map((option) => {
-          const result = results?.options.find(
-            (o) => o.optionId === option.id,
-          );
+          const result = results?.options.find((o) => o.optionId === option.id);
           const percentage = result?.percentage ?? 0;
           const voteCount = result?.voteCount ?? 0;
           const isSelected =
@@ -125,7 +123,9 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
                   {isSelected && showResults && (
                     <IconCheck className="w-4 h-4 text-primary" />
                   )}
-                  <span className={cn(isSelected && showResults && "font-medium")}>
+                  <span
+                    className={cn(isSelected && showResults && "font-medium")}
+                  >
                     {option.label}
                   </span>
                 </div>

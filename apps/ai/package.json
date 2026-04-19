@@ -1,8 +1,8 @@
 {
   "name": "ai",
   "version": "0.0.1",
-  "description": "AI application powered by Mastra",
   "private": true,
+  "description": "AI application powered by Mastra",
   "type": "module",
   "scripts": {
     "dev": "mastra dev",

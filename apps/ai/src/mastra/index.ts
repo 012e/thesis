@@ -1,14 +1,14 @@
-import { Mastra } from '@mastra/core';
+import { Mastra } from "@mastra/core";
 
-import { env } from '../env';
-import { assistantAgent } from './agents/assistant';
-import { identityAgent } from './agents/identity-agent';
-import { postCreationAgent } from './agents/post-creation-agent';
-import { postDiscoveryAgent } from './agents/post-discovery-agent';
-import { interactionsAgent } from './agents/interactions-agent';
-import { pgStore } from './memory';
-import { streamRoute } from './routes/stream';
-import { RequestContext } from '@mastra/core/request-context';
+import { env } from "../env";
+import { assistantAgent } from "./agents/assistant";
+import { identityAgent } from "./agents/identity-agent";
+import { postCreationAgent } from "./agents/post-creation-agent";
+import { postDiscoveryAgent } from "./agents/post-discovery-agent";
+import { interactionsAgent } from "./agents/interactions-agent";
+import { pgStore } from "./memory";
+import { streamRoute } from "./routes/stream";
+import { RequestContext } from "@mastra/core/request-context";
 
 /**
  * Mastra server instance.
@@ -37,29 +37,29 @@ export const mastra = new Mastra({
   server: {
     port: env.PORT,
     cors: {
-      origin: '*',
+      origin: "*",
       allowHeaders: [
-        'Content-Type',
-        'Authorization',
-        'Origin',
-        'User-Agent',
-        'Accept',
+        "Content-Type",
+        "Authorization",
+        "Origin",
+        "User-Agent",
+        "Accept",
       ],
     },
     middleware: [
       async (c, next) => {
-        const context = c.get('requestContext') as RequestContext;
+        const context = c.get("requestContext") as RequestContext;
         if (!context) {
-          throw new Error('Context must be available');
+          throw new Error("Context must be available");
         }
-        const authHeader = c.req.header('Authorization');
-        const token = authHeader?.startsWith('Bearer ')
-          ? authHeader.split(' ')[1]
+        const authHeader = c.req.header("Authorization");
+        const token = authHeader?.startsWith("Bearer ")
+          ? authHeader.split(" ")[1]
           : undefined;
         if (!token) {
-          return new Response('Unauthorized', { status: 401 });
+          return new Response("Unauthorized", { status: 401 });
         }
-        context.set('authorization', token);
+        context.set("authorization", token);
 
         await next();
       },

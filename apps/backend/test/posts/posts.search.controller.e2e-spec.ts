@@ -1,10 +1,10 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
-import { Pool } from 'pg';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import request from "supertest";
+import { Pool } from "pg";
 
-import { closeTestApp, createTestApp } from '../helpers/app.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
-import { registerAndGetSessionCookie } from '../helpers/auth.helper';
+import { closeTestApp, createTestApp } from "../helpers/app.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { registerAndGetSessionCookie } from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,
@@ -12,9 +12,9 @@ import {
   stopMinioContainer,
   type PostgresContainerContext,
   type MinioContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
-describe('GET /posts/search', () => {
+describe("GET /posts/search", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let minioContainer: MinioContainerContext;
@@ -44,98 +44,98 @@ describe('GET /posts/search', () => {
   });
 
   beforeEach(async () => {
-    await pool.query('TRUNCATE TABLE posts RESTART IDENTITY CASCADE');
+    await pool.query("TRUNCATE TABLE posts RESTART IDENTITY CASCADE");
   });
 
-  it('returns 401 when not authenticated', async () => {
+  it("returns 401 when not authenticated", async () => {
     await request(testApp.app.getHttpServer())
-      .get('/posts/search?q=hello')
+      .get("/posts/search?q=hello")
       .expect(401);
   });
 
-  it('returns 400 when q is missing', async () => {
+  it("returns 400 when q is missing", async () => {
     const res = await request(testApp.app.getHttpServer())
-      .get('/posts/search')
-      .set('Cookie', userCookie);
+      .get("/posts/search")
+      .set("Cookie", userCookie);
 
     expect(res.status).toBeGreaterThanOrEqual(400);
     expect(res.status).toBeLessThan(500);
   });
 
-  it('returns posts matching the query term', async () => {
+  it("returns posts matching the query term", async () => {
     const server = request(testApp.app.getHttpServer());
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'GraphQL APIs are flexible and efficient' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "GraphQL APIs are flexible and efficient" } })
       .expect(201);
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'REST APIs follow a stateless architecture' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "REST APIs follow a stateless architecture" } })
       .expect(201);
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'Baking sourdough bread at home' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "Baking sourdough bread at home" } })
       .expect(201);
 
     const res = await server
-      .get('/posts/search?q=GraphQL')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=GraphQL")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
 
     const texts: string[] = res.body.map((p: { content: { text?: string } }) =>
-      (p.content.text ?? '').toLowerCase(),
+      (p.content.text ?? "").toLowerCase(),
     );
-    expect(texts.every((t) => t.includes('graphql'))).toBe(true);
+    expect(texts.every((t) => t.includes("graphql"))).toBe(true);
   });
 
-  it('excludes posts that do not match the query', async () => {
+  it("excludes posts that do not match the query", async () => {
     const server = request(testApp.app.getHttpServer());
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'Microservices architecture with Kubernetes' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "Microservices architecture with Kubernetes" } })
       .expect(201);
 
     const res = await server
-      .get('/posts/search?q=blockchain')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=blockchain")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body).toHaveLength(0);
   });
 
-  it('returns an empty array when there are no posts', async () => {
+  it("returns an empty array when there are no posts", async () => {
     const res = await request(testApp.app.getHttpServer())
-      .get('/posts/search?q=anything')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=anything")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(res.body).toEqual([]);
   });
 
-  it('returns correct PostDto shape for each result', async () => {
+  it("returns correct PostDto shape for each result", async () => {
     const server = request(testApp.app.getHttpServer());
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'Monorepo tooling with Nx and Turborepo' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "Monorepo tooling with Nx and Turborepo" } })
       .expect(201);
 
     const res = await server
-      .get('/posts/search?q=Monorepo')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=Monorepo")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(res.body.length).toBeGreaterThan(0);
@@ -147,69 +147,69 @@ describe('GET /posts/search', () => {
     expect(post.content).toBeDefined();
     expect(post.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(post.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-    expect(typeof post.upvoteCount).toBe('number');
-    expect(typeof post.downvoteCount).toBe('number');
+    expect(typeof post.upvoteCount).toBe("number");
+    expect(typeof post.downvoteCount).toBe("number");
   });
 
-  it('is case-insensitive', async () => {
+  it("is case-insensitive", async () => {
     const server = request(testApp.app.getHttpServer());
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
+      .post("/posts")
+      .set("Cookie", userCookie)
       .send({
         content: {
-          text: 'WebAssembly brings near-native performance to browsers',
+          text: "WebAssembly brings near-native performance to browsers",
         },
       })
       .expect(201);
 
     const resLower = await server
-      .get('/posts/search?q=webassembly')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=webassembly")
+      .set("Cookie", userCookie)
       .expect(200);
 
     const resUpper = await server
-      .get('/posts/search?q=WEBASSEMBLY')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=WEBASSEMBLY")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(resLower.body.length).toBeGreaterThan(0);
     expect(resUpper.body.length).toBeGreaterThan(0);
   });
 
-  it('matches multiple posts when several contain the search term', async () => {
+  it("matches multiple posts when several contain the search term", async () => {
     const server = request(testApp.app.getHttpServer());
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'PostgreSQL full-text search capabilities' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "PostgreSQL full-text search capabilities" } })
       .expect(201);
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
+      .post("/posts")
+      .set("Cookie", userCookie)
       .send({
-        content: { text: 'PostgreSQL vs MySQL: which database to choose' },
+        content: { text: "PostgreSQL vs MySQL: which database to choose" },
       })
       .expect(201);
 
     await server
-      .post('/posts')
-      .set('Cookie', userCookie)
-      .send({ content: { text: 'Redis caching strategies for web apps' } })
+      .post("/posts")
+      .set("Cookie", userCookie)
+      .send({ content: { text: "Redis caching strategies for web apps" } })
       .expect(201);
 
     const res = await server
-      .get('/posts/search?q=PostgreSQL')
-      .set('Cookie', userCookie)
+      .get("/posts/search?q=PostgreSQL")
+      .set("Cookie", userCookie)
       .expect(200);
 
     expect(res.body.length).toBeGreaterThanOrEqual(2);
     const texts: string[] = res.body.map((p: { content: { text?: string } }) =>
-      (p.content.text ?? '').toLowerCase(),
+      (p.content.text ?? "").toLowerCase(),
     );
-    expect(texts.every((t) => t.includes('postgresql'))).toBe(true);
+    expect(texts.every((t) => t.includes("postgresql"))).toBe(true);
   });
 });

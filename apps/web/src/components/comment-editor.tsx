@@ -51,7 +51,10 @@ export function CommentEditor({
   return (
     <div className={`flex gap-2 ${isReply ? "py-2" : "p-4 border-b"}`}>
       <Avatar className={`shrink-0 ${isReply ? "w-8 h-8" : "w-10 h-10"}`}>
-        <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+        <AvatarImage
+          src={session?.user?.image ?? undefined}
+          alt={session?.user?.name || undefined}
+        />
         <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
           {userInitial}
         </AvatarFallback>
