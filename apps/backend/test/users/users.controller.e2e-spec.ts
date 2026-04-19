@@ -4,7 +4,7 @@ import { DatabaseService } from '@/db/database.service';
 import { closeTestApp, createTestApp } from '../helpers/app.setup';
 import { runBetterAuthMigrations } from '../helpers/database.setup';
 import { createE2ETestUser } from '../helpers/auth.helper';
-import { userFollows, posts } from '@/db/schema';
+import { userFollows, posts, userProfiles } from '@/db/schema';
 import {
   startPostgresContainer,
   stopPostgresContainer,
@@ -233,6 +233,66 @@ describe('UsersController (e2e)', () => {
       expect(u).toHaveProperty('name');
       expect(u).toHaveProperty('image');
       expect(u).not.toHaveProperty('email');
+    });
+  });
+
+  describe('PATCH /users/me/avatar', () => {
+    it('should save the avatar URL and return it in the response', async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        'avatartest@example.com',
+        'avatartest',
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const avatarUrl = 'https://cdn.example.com/avatars/avatartest.webp';
+
+      const response = await request(testApp.app.getHttpServer())
+        .patch('/users/me/avatar')
+        .set('Cookie', cookie ? [cookie as string] : [])
+        .send({ avatarUrl })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.image).toBe(avatarUrl);
+
+      // Verify it was persisted: the row must exist in user_profiles.
+      const { eq } = await import('drizzle-orm');
+      const [profileRow] = await databaseService.db
+        .select()
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, userId))
+        .limit(1);
+
+      expect(profileRow).toBeDefined();
+      expect(profileRow?.avatarUrl).toBe(avatarUrl);
+    });
+
+    it('should reflect the saved avatar in GET /users/:id/profile', async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        'avatarprofile@example.com',
+        'avatarprofile',
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const avatarUrl = 'https://cdn.example.com/avatars/avatarprofile.webp';
+
+      // Set the avatar
+      await request(testApp.app.getHttpServer())
+        .patch('/users/me/avatar')
+        .set('Cookie', cookie ? [cookie as string] : [])
+        .send({ avatarUrl })
+        .expect(200);
+
+      // Profile should return the saved URL exactly.
+      const profileResponse = await request(testApp.app.getHttpServer())
+        .get(`/users/${userId}/profile`)
+        .set('Cookie', cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(profileResponse.body.image).toBe(avatarUrl);
     });
   });
 });
