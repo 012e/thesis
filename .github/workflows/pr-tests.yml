@@ -26,6 +26,7 @@ jobs:
           - test-reactions
           - test-uploads
           - test-users
+          - test-messages
 
     steps:
       - name: Checkout code
