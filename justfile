@@ -117,6 +117,9 @@ e2e-report:
 e2e-install:
     pnpm nx run web-e2e:install-browsers
 
+lint:
+    pnpm dlx oxlint
+
 # --- Docker ---
 
 # Start Docker containers (detached)

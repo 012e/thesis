@@ -7,7 +7,7 @@
     "dev": "vite",
     "serve": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "oxlint",
     "preview": "vite preview",
     "seed": "tsx scripts/seed.ts",
     "build-storybook": "storybook build"
