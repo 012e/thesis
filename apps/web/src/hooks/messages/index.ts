@@ -11,3 +11,8 @@ export type {
   UseMessageSocketReturn,
   TypingIndicatorPayload,
 } from './use-message-socket';
+export { useUnreadNotifications, unreadCountKey } from './use-unread-notifications';
+export type {
+  UseUnreadNotificationsReturn,
+  NewMessageNotificationPayload,
+} from './use-unread-notifications';

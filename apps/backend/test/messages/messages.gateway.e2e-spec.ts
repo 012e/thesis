@@ -25,6 +25,7 @@ const WS_SEND_MESSAGE = 'send-message';
 const WS_TYPING = 'typing';
 const WS_NEW_MESSAGE = 'new-message';
 const WS_TYPING_INDICATOR = 'typing-indicator';
+const WS_NEW_MESSAGE_NOTIFICATION = 'new-message-notification';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -536,6 +537,127 @@ describe('MessagesGateway WebSocket integration', () => {
 
       await allReceived;
       expect(received).toEqual(['First', 'Second', 'Third']);
+
+      await disconnectSocket(socketA);
+    });
+  });
+
+  // ─── new-message-notification (per-user room) ─────────────────────────────
+
+  describe(WS_NEW_MESSAGE_NOTIFICATION, () => {
+    it('recipient receives notification without having joined the conversation room', async () => {
+      const convId = await createConversation();
+
+      // A sends; B connects but does NOT emit join-conversation
+      const [socketA, socketB] = await Promise.all([
+        connectSocket(testApp.baseUrl, userAToken),
+        connectSocket(testApp.baseUrl, userBToken),
+      ]);
+
+      // A joins the conversation room to be able to send
+      await joinRoom(socketA, convId);
+
+      // B listens for the notification — no join-conversation emitted
+      const notificationPromise = waitForEvent<Record<string, unknown>>(
+        socketB,
+        WS_NEW_MESSAGE_NOTIFICATION,
+      );
+
+      socketA.emit(WS_SEND_MESSAGE, {
+        conversationId: convId,
+        content: 'Notify B!',
+      });
+
+      const notification = await notificationPromise;
+
+      expect(notification).toMatchObject({
+        conversationId: convId,
+        senderId: userAId,
+        preview: 'Notify B!',
+      });
+
+      await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
+    });
+
+    it('preview is truncated to 100 characters', async () => {
+      const convId = await createConversation();
+
+      const [socketA, socketB] = await Promise.all([
+        connectSocket(testApp.baseUrl, userAToken),
+        connectSocket(testApp.baseUrl, userBToken),
+      ]);
+
+      await joinRoom(socketA, convId);
+
+      const notificationPromise = waitForEvent<Record<string, unknown>>(
+        socketB,
+        WS_NEW_MESSAGE_NOTIFICATION,
+      );
+
+      const longContent = 'x'.repeat(200);
+      socketA.emit(WS_SEND_MESSAGE, {
+        conversationId: convId,
+        content: longContent,
+      });
+
+      const notification = await notificationPromise;
+
+      expect(typeof notification.preview).toBe('string');
+      expect((notification.preview as string).length).toBe(100);
+
+      await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
+    });
+
+    it('non-participants do not receive new-message-notification', async () => {
+      const convId = await createConversation(); // A ↔ B
+
+      const [socketA, socketC] = await Promise.all([
+        connectSocket(testApp.baseUrl, userAToken),
+        connectSocket(testApp.baseUrl, userCToken), // C is not in the conversation
+      ]);
+
+      await joinRoom(socketA, convId);
+
+      let cGotNotification = false;
+      socketC.on(WS_NEW_MESSAGE_NOTIFICATION, () => {
+        cGotNotification = true;
+      });
+
+      const msgOnA = waitForEvent(socketA, WS_NEW_MESSAGE);
+      socketA.emit(WS_SEND_MESSAGE, {
+        conversationId: convId,
+        content: 'Private to B only',
+      });
+      await msgOnA;
+
+      // Give C a window to (incorrectly) receive the notification
+      await new Promise((r) => setTimeout(r, 300));
+      expect(cGotNotification).toBe(false);
+
+      await Promise.all([disconnectSocket(socketA), disconnectSocket(socketC)]);
+    });
+
+    it('sender does not receive notification for their own message', async () => {
+      const convId = await createConversation();
+
+      const socketA = await connectSocket(testApp.baseUrl, userAToken);
+      await joinRoom(socketA, convId);
+
+      let senderGotNotification = false;
+      socketA.on(WS_NEW_MESSAGE_NOTIFICATION, () => {
+        senderGotNotification = true;
+      });
+
+      const msgOnA = waitForEvent(socketA, WS_NEW_MESSAGE);
+      socketA.emit(WS_SEND_MESSAGE, {
+        conversationId: convId,
+        content: 'My own message',
+      });
+      await msgOnA;
+
+      // Give sender a window to (incorrectly) receive self-notification
+      await new Promise((r) => setTimeout(r, 300));
+      expect(senderGotNotification).toBe(false);
 
       await disconnectSocket(socketA);
     });

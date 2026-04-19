@@ -76,6 +76,9 @@ test-playground: build-backend
 test-app: build-backend
     pnpm --filter backend test:app
 
+test-messages: build-backend
+    pnpm --filter backend test:messages
+
 # --- E2E Tests ---
 
 # Run e2e tests for web (requires web server to be running)

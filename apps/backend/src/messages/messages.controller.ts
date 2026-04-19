@@ -50,6 +50,18 @@ export class MessagesController {
     );
   }
 
+  // Registered before getConversation so the literal path segment "unread-count"
+  // takes precedence over the :id parameter at the NestJS routing layer.
+  @TsRestHandler(messagesContract.getUnreadCount)
+  getUnreadCount(@Session() session: UserSession) {
+    return tsRestHandler(messagesContract.getUnreadCount, async () => {
+      const total = await this.messagesService.getTotalUnreadCount(
+        session.user.id,
+      );
+      return { status: 200, body: { total } };
+    });
+  }
+
   @TsRestHandler(messagesContract.getConversation)
   getConversation(@Session() session: UserSession) {
     return tsRestHandler(
@@ -112,6 +124,30 @@ export class MessagesController {
             body.content,
           );
           return { status: 201, body: message };
+        } catch (err) {
+          if (err instanceof ForbiddenException) {
+            return { status: 403, body: null };
+          }
+          if (err instanceof NotFoundException) {
+            return { status: 404, body: null };
+          }
+          throw err;
+        }
+      },
+    );
+  }
+
+  @TsRestHandler(messagesContract.markConversationRead)
+  markConversationRead(@Session() session: UserSession) {
+    return tsRestHandler(
+      messagesContract.markConversationRead,
+      async ({ params }) => {
+        try {
+          await this.messagesService.markConversationRead(
+            params.id,
+            session.user.id,
+          );
+          return { status: 200, body: null };
         } catch (err) {
           if (err instanceof ForbiddenException) {
             return { status: 403, body: null };
