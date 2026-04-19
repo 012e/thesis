@@ -95,7 +95,7 @@ pnpm --filter web build           # tsc -b && vite build
 pnpm --filter backend build       # nest build
 pnpm --filter @repo/rest-contracts build  # tsup (dual CJS/ESM — must build before backend tests)
 pnpm --filter @repo/shared-dto build      # tsc
-pnpm -w -s tsc --build            # cross-project typecheck
+ just build                         # cross-project build & typecheck (use this instead of running tsc directly)
 ```
 
 ### Test (backend — all tests are integration, no mocks)
@@ -169,7 +169,7 @@ pnpm --filter web exec shadcn add <component>   # add shadcn component to web
 7. Add web API client in `apps/web/src/lib/api/<domain>.ts`.
 8. Web routes use TanStack Router file-based routing — add files under `apps/web/src/routes/`. `routeTree.gen.ts` is auto-generated on `dev`/`build`, never edit it.
 9. Forms: TanStack Form + Zod schema → infer type with `z.infer<>`.
-10. Verify: `pnpm --filter backend build && just test-<domain> && pnpm --filter web build && pnpm -w -s tsc --build`.
+ 10. Verify: `pnpm --filter backend build && just test-<domain> && pnpm --filter web build && just build`.
 
 ---
 
@@ -204,5 +204,5 @@ pnpm --filter web exec shadcn add <component>   # add shadcn component to web
 - **Do not explore blindly.** Read this file + `docs/` first. Start coding after confirming which package and files to change.
 - Non-destructive edits: never revert unrelated changes in the working tree.
 - Do not commit unless explicitly asked.
-- After any edit: run `pnpm --filter <app> build` + domain test + `pnpm -w -s tsc --build` for cross-cutting changes.
+- After any edit: run `pnpm --filter <app> build` + domain test + `just build` for cross-cutting changes.
 - Use `nx-workspace` skill to inspect Nx project config before running `nx` commands.
