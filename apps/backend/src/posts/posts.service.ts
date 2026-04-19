@@ -38,6 +38,42 @@ export class PostsService {
     private readonly storageService: StorageService,
   ) {}
 
+  async listByUser(authorId: string, requestingUserId: string): Promise<PostDto[]> {
+    const rows = await this.databaseService.db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          email: usersView.email,
+          name: usersView.name,
+        },
+        upvoteCount,
+        downvoteCount,
+        userReactionType: getUserReactionType(requestingUserId),
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(eq(posts.authorId, authorId))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+      )
+      .orderBy(desc(posts.createdAt));
+
+    return rows.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
+  }
+
   async list(userId: string): Promise<PostDto[]> {
     const rows = await this.databaseService.db
       .select({

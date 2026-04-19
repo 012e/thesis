@@ -85,6 +85,16 @@ export const postsContract = c.router({
     summary:
       'Get recommended posts for the current user, ordered by total reaction count descending. Paginated with a keyset cursor encoding (reactionCount, postId).',
   },
+  listUserPosts: {
+    method: 'GET',
+    path: '/users/:id/posts',
+    pathParams: z.object({ id: z.string() }),
+    responses: {
+      200: z.array(Post),
+      404: z.null(),
+    },
+    summary: 'List posts by a specific user, ordered by creation date descending.',
+  },
 });
 
 export type PostsContract = typeof postsContract;

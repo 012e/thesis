@@ -6,6 +6,27 @@ import type {
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
 
+export async function fetchUserPosts(userId: string): Promise<PostDto[]> {
+  const response = await client.listUserPosts({
+    params: { id: userId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to fetch user posts");
+}
+
 export async function createPost(content: PostContentDto): Promise<PostDto> {
   const response = await client.createPost({
     body: {

@@ -152,21 +152,31 @@ export class PostsController {
 
   @TsRestHandler(postsContract.getRecommendations)
   getRecommendations(@Session() session: UserSession) {
-    return tsRestHandler(
-      postsContract.getRecommendations,
-      async ({ query }) => {
-        const limit = query.limit ?? 20;
-        const result = await this.postsService.recommendations(
-          session.user.id,
-          limit,
-          query.cursor,
-        );
+    return tsRestHandler(postsContract.getRecommendations, async ({ query }) => {
+      const limit = query.limit ?? 20;
+      const result = await this.postsService.recommendations(
+        session.user.id,
+        limit,
+        query.cursor,
+      );
+      return {
+        status: 200,
+        body: postsContract.getRecommendations.responses[200].parse(result),
+      };
+    });
+  }
 
-        return {
-          status: 200,
-          body: postsContract.getRecommendations.responses[200].parse(result),
-        };
-      },
-    );
+  @TsRestHandler(postsContract.listUserPosts)
+  listUserPosts(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.listUserPosts, async ({ params }) => {
+      const userPosts = await this.postsService.listByUser(
+        params.id,
+        session.user.id,
+      );
+      return {
+        status: 200,
+        body: userPosts as any,
+      };
+    });
   }
 }

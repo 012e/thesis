@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { getUserProfile } from "@/lib/api/users";
 import { useSession } from "./use-session";
 
@@ -9,6 +9,14 @@ export function useUserProfile(userId: string) {
     queryKey: ["users", userId, "profile"],
     queryFn: () => getUserProfile(userId),
     enabled: !!session && !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+}
+
+export function useUserProfileSuspense(userId: string) {
+  return useSuspenseQuery({
+    queryKey: ["users", userId, "profile"],
+    queryFn: () => getUserProfile(userId),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 }
