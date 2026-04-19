@@ -11,9 +11,6 @@ jobs:
   lint:
     name: Lint (${{ matrix.project }})
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ${{ matrix.working-directory }}
 
     strategy:
       fail-fast: false
@@ -40,3 +37,4 @@ jobs:
         with:
           deny: correctness
           warn: suspicious
+          working-directory: ${{ matrix.working-directory }}
