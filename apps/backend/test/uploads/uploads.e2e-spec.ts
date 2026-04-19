@@ -43,7 +43,7 @@ describe("Uploads (e2e)", () => {
     await runBetterAuthMigrations(dbContainer.databaseUrl);
 
     // Dynamically import to ensure env vars are used
-    // @ts-ignore
+    // @ts-expect-error
     const { StorageService } = await import("@/storage/storage.service");
 
     appCtx = await createTestApp(dbContainer, (builder) => {

@@ -5,11 +5,9 @@ import {
   describe,
   expect,
   it,
-  vi,
 } from "vitest";
 import request from "supertest";
 import { Pool } from "pg";
-import sharp from "sharp";
 
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
@@ -22,7 +20,6 @@ import {
   type PostgresContainerContext,
   type MinioContainerContext,
 } from "../helpers/testcontainers.setup";
-import { StorageService } from "@/storage/storage.service";
 
 describe("PostsController integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
