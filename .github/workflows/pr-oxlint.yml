@@ -9,27 +9,11 @@ on:
 
 jobs:
   lint:
-    name: Lint (${{ matrix.project }})
+    name: Lint
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - project: web
-            working-directory: apps/web
-          - project: backend
-            working-directory: apps/backend
-          - project: ai
-            working-directory: apps/ai
-          - project: auth-client
-            working-directory: packages/auth-client
-          - project: rest-contracts
-            working-directory: packages/rest-contracts
-          - project: shared-dto
-            working-directory: packages/shared-dto
-          - project: web-e2e
-            working-directory: packages/web-e2e
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -37,5 +21,3 @@ jobs:
         with:
           deny: correctness
           warn: suspicious
-          working-directory: ${{ matrix.working-directory }}
-          all-files: true
