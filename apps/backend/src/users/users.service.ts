@@ -3,11 +3,57 @@ import { and, count, eq, sql } from 'drizzle-orm';
 import { DatabaseService } from '@/db/database.service';
 import { user } from '@/db/auth-schema';
 import { userFollows, posts } from '@/db/schema';
-import type { UserProfileDto } from '@repo/shared-dto';
+import type { UserProfileDto, UserSearchResultDto } from '@repo/shared-dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  async search(query: string): Promise<UserSearchResultDto[]> {
+    // ParadeDB's @@@ operator cannot be used inside queries that also have JOINs
+    // because the BM25 scan context does not propagate through join planner nodes.
+    // Solution: run a standalone BM25 search first (with score) in a CTE, then
+    // JOIN back to "user" on the resulting IDs in the outer query.
+    //
+    // paradedb.boolean(should => ARRAY[...]) performs an OR across the three
+    // indexed text fields (name, email, username). NULL usernames are simply
+    // absent from the index and will never produce a false match.
+    const result = await this.databaseService.db.execute(sql`
+      WITH bm25 AS (
+        SELECT id, paradedb.score(id) AS bm25_score
+        FROM "user"
+        WHERE id @@@ paradedb.boolean(
+          should => ARRAY[
+            paradedb.match('name', ${query}),
+            paradedb.match('email', ${query}),
+            paradedb.match('username', ${query})
+          ]
+        )
+        LIMIT 20
+      )
+      SELECT
+        u.id,
+        u.username,
+        u.display_username,
+        u.name,
+        u.image,
+        bm25.bm25_score
+      FROM bm25
+      JOIN "user" u ON u.id = bm25.id
+      ORDER BY bm25.bm25_score DESC
+    `);
+
+    return result.rows.map((row) => {
+      const r = row as Record<string, unknown>;
+      return {
+        id: r['id'] as string,
+        username: (r['username'] as string | null) ?? null,
+        displayUsername: (r['display_username'] as string | null) ?? null,
+        name: (r['name'] as string | null) ?? null,
+        image: (r['image'] as string | null) ?? null,
+      } satisfies UserSearchResultDto;
+    });
+  }
 
   async getProfile(
     userId: string,

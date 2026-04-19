@@ -9,6 +9,17 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @TsRestHandler(usersContract.searchUsers)
+  searchUsers(@Session() _session: UserSession) {
+    return tsRestHandler(usersContract.searchUsers, async ({ query }) => {
+      const results = await this.usersService.search(query.q);
+      return {
+        status: 200,
+        body: usersContract.searchUsers.responses[200].parse(results),
+      };
+    });
+  }
+
   @TsRestHandler(usersContract.getUserProfile)
   getUserProfile(@Session() session: UserSession) {
     return tsRestHandler(usersContract.getUserProfile, async ({ params }) => {

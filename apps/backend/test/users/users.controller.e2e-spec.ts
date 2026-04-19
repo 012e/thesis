@@ -109,4 +109,130 @@ describe('UsersController (e2e)', () => {
         .expect(401);
     });
   });
+
+  describe('GET /users/search', () => {
+    let authCookie: string;
+
+    beforeAll(async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        'srchactor@example.com',
+        'srchactor',
+      );
+      if (!cookie) throw new Error('No session cookie returned from user creation');
+      authCookie = cookie;
+    });
+
+    it('should return 401 if not authenticated', () => {
+      return request(testApp.app.getHttpServer())
+        .get('/users/search?q=test')
+        .expect(401);
+    });
+
+    it('should return an empty array when no users match the query', async () => {
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=zzznomatchzzzxxx99999')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+
+    it('should find users by username', async () => {
+      await createE2ETestUser(testApp.app, 'srchbyusr@example.com', 'srchbyusr');
+
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=srchbyusr')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+      const usernames = response.body.map((u: any) => u.username);
+      expect(usernames).toContain('srchbyusr');
+    });
+
+    it('should find users by name', async () => {
+      // createE2ETestUser hardcodes name='Test User', so call sign-up directly
+      await request(testApp.app.getHttpServer())
+        .post('/api/auth/sign-up/email')
+        .send({
+          email: 'srchbyname@example.com',
+          username: 'srchbyname',
+          password: 'TestPassword123!',
+          name: 'Zephyranthes',
+        })
+        .expect(200);
+
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=Zephyranthes')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+      const names = response.body.map((u: any) => u.name);
+      expect(names).toContain('Zephyranthes');
+    });
+
+    it('should find users by email (email is indexed but not returned)', async () => {
+      // Use a unique email local-part that differs from the username so we can
+      // be sure the match is driven by the email field, not the username field.
+      await request(testApp.app.getHttpServer())
+        .post('/api/auth/sign-up/email')
+        .send({
+          email: 'zxqemailsrch@example.com',
+          username: 'emailsrchuser',
+          password: 'TestPassword123!',
+          name: 'Test User',
+        })
+        .expect(200);
+
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=zxqemailsrch')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+      const usernames = response.body.map((u: any) => u.username);
+      expect(usernames).toContain('emailsrchuser');
+    });
+
+    it('should not expose email in the response', async () => {
+      await createE2ETestUser(testApp.app, 'srchprivacy@example.com', 'srchprivacy');
+
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=srchprivacy')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      response.body.forEach((u: any) => {
+        // email is used for indexing but must never appear in the response
+        expect(u).not.toHaveProperty('email');
+      });
+    });
+
+    it('should return results with the correct shape', async () => {
+      await createE2ETestUser(testApp.app, 'srchshape@example.com', 'srchshape');
+
+      const response = await request(testApp.app.getHttpServer())
+        .get('/users/search?q=srchshape')
+        .set('Cookie', [authCookie])
+        .expect(200);
+
+      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const u = response.body[0];
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(u.id).toBeTruthy();
+      expect(u).toHaveProperty('username');
+      expect(u).toHaveProperty('displayUsername');
+      expect(u).toHaveProperty('name');
+      expect(u).toHaveProperty('image');
+      expect(u).not.toHaveProperty('email');
+    });
+  });
 });

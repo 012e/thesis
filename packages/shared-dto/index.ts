@@ -1,3 +1,11 @@
+export interface UserSearchResultDto {
+  id: string;
+  username: string | null;
+  displayUsername: string | null;
+  name: string | null;
+  image: string | null;
+}
+
 export interface UserDto {
   id: string;
   username: string;
