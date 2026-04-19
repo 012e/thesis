@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useSession } from "@/hooks/use-session";
-import { Avatar } from "@/components/ui/avatar";
+import { useUserProfile } from "@/hooks/use-user-profile";
+import { useFollowers } from "@/hooks/use-followers";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -11,6 +13,7 @@ import {
   IconMail,
   IconUser,
   IconEdit,
+  IconUsers,
 } from "@tabler/icons-react";
 
 export const Route = createFileRoute("/profile")({
@@ -20,6 +23,11 @@ export const Route = createFileRoute("/profile")({
 function ProfilePage() {
   const { data: session, isPending, refetch } = useSession();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  const userId = session?.user.id ?? "";
+  const { data: profile } = useUserProfile(userId);
+  const { data: followers, isLoading: followersLoading } =
+    useFollowers(userId);
 
   if (isPending) {
     return (
@@ -65,15 +73,15 @@ function ProfilePage() {
           <div className="absolute -top-20">
             <Avatar className="w-32 h-32 rounded-full border-4 border-background">
               {user.image ? (
-                <img
+                <AvatarImage
                   src={user.image}
                   alt={user.name || "Profile"}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <div className="flex justify-center items-center w-full h-full text-4xl font-bold rounded-full border-none bg-primary text-primary-foreground">
+                <AvatarFallback className="flex justify-center items-center w-full h-full text-4xl font-bold rounded-full border-none bg-primary text-primary-foreground">
                   {initials}
-                </div>
+                </AvatarFallback>
               )}
             </Avatar>
           </div>
@@ -109,17 +117,84 @@ function ProfilePage() {
         {/* Profile Stats */}
         <div className="grid grid-cols-3 gap-6 text-center">
           <Card className="p-4">
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {profile?.postCount ?? 0}
+            </div>
             <div className="text-sm text-muted-foreground">Posts</div>
           </Card>
           <Card className="p-4">
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {profile?.followingCount ?? 0}
+            </div>
             <div className="text-sm text-muted-foreground">Following</div>
           </Card>
           <Card className="p-4">
-            <div className="text-2xl font-bold">0</div>
+            <div className="text-2xl font-bold">
+              {profile?.followersCount ?? 0}
+            </div>
             <div className="text-sm text-muted-foreground">Followers</div>
           </Card>
+        </div>
+
+        {/* Followers Section */}
+        <div className="mt-6">
+          <h2 className="flex gap-2 items-center mb-4 text-xl font-semibold">
+            <IconUsers className="w-5 h-5" />
+            Followers
+            {followers && followers.length > 0 && (
+              <span className="text-sm font-normal text-muted-foreground">
+                ({followers.length})
+              </span>
+            )}
+          </h2>
+
+          {followersLoading ? (
+            <Card className="p-6 text-center">
+              <div className="text-muted-foreground text-sm">
+                Loading followers...
+              </div>
+            </Card>
+          ) : !followers || followers.length === 0 ? (
+            <Card className="p-8 text-center">
+              <div className="text-muted-foreground">No followers yet</div>
+            </Card>
+          ) : (
+            <Card className="divide-y divide-border">
+              {followers.map((follower) => {
+                const followerInitials = follower.name
+                  ? follower.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)
+                  : follower.email.charAt(0).toUpperCase();
+
+                return (
+                  <div
+                    key={follower.id}
+                    className="flex items-center gap-3 px-4 py-3"
+                  >
+                    <Avatar className="w-10 h-10 shrink-0">
+                      <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                        {followerInitials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-medium text-sm truncate">
+                        {follower.name || follower.username || "User"}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate">
+                        {follower.username
+                          ? `@${follower.username}`
+                          : follower.email}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </Card>
+          )}
         </div>
 
         {/* Account Details */}
