@@ -20,6 +20,7 @@
     "@swc/helpers": "~0.5.18",
     "nx": "^22.5.0",
     "oxfmt": "^0.45.0",
+    "oxlint": "^1.60.0",
     "storybook": "8.6.18",
     "ts-node": "10.9.1",
     "typescript": "^5.9.3",
