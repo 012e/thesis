@@ -38,3 +38,4 @@ jobs:
           deny: correctness
           warn: suspicious
           working-directory: ${{ matrix.working-directory }}
+          all-files: true
