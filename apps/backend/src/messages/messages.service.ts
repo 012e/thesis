@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, lt, ne, or, sql } from 'drizzle-orm';
 import {
   ForbiddenException,
   Injectable,
@@ -226,6 +226,82 @@ export class MessagesService {
   }
 
   // ─── Private helpers ────────────────────────────────────────────────────────
+
+  /**
+   * Returns the raw participant IDs for a conversation without ownership checks.
+   * Used by the WebSocket gateway to resolve the recipient after a message is sent.
+   * The caller is responsible for having already validated the sender is a participant.
+   */
+  async getConversationParticipantIds(
+    conversationId: string,
+  ): Promise<{ userAId: string; userBId: string }> {
+    const [row] = await this.databaseService.db
+      .select({
+        userAId: conversations.userAId,
+        userBId: conversations.userBId,
+      })
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    if (!row) throw new NotFoundException('Conversation not found');
+    return row;
+  }
+
+  /**
+   * Returns the total number of unread messages for a user across all conversations.
+   * A message is unread if the user is not the sender and `readAt` is NULL.
+   */
+  async getTotalUnreadCount(userId: string): Promise<number> {
+    const [result] = await this.databaseService.db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(directMessages)
+      .innerJoin(
+        conversations,
+        eq(directMessages.conversationId, conversations.id),
+      )
+      .where(
+        and(
+          or(
+            eq(conversations.userAId, userId),
+            eq(conversations.userBId, userId),
+          ),
+          ne(directMessages.senderId, userId),
+          isNull(directMessages.readAt),
+        ),
+      );
+
+    return result?.count ?? 0;
+  }
+
+  /**
+   * Marks all unread messages in a conversation as read for the given user.
+   * Only affects messages sent by the other participant (not the user's own messages).
+   */
+  async markConversationRead(
+    conversationId: string,
+    userId: string,
+  ): Promise<void> {
+    const [conv] = await this.databaseService.db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    if (!conv) throw new NotFoundException('Conversation not found');
+    this.assertParticipant(conv, userId);
+
+    await this.databaseService.db
+      .update(directMessages)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(directMessages.conversationId, conversationId),
+          ne(directMessages.senderId, userId),
+          isNull(directMessages.readAt),
+        ),
+      );
+  }
 
   private assertParticipant(
     conversation: typeof conversations.$inferSelect,

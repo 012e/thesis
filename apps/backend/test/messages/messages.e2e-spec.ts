@@ -507,4 +507,241 @@ describe('MessagesController integration', () => {
       expect(convRes.body.lastMessage.content).toBe('Ping!');
     });
   });
+
+  // ─── getUnreadCount ───────────────────────────────────────────────────────
+
+  describe('GET /conversations/unread-count', () => {
+    it('returns 0 when the user has no conversations', async () => {
+      const res = await request(testApp.app.getHttpServer())
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body).toEqual({ total: 0 });
+    });
+
+    it('returns 0 when conversations exist but no messages have been sent', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const res = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body).toEqual({ total: 0 });
+    });
+
+    it('counts messages sent by the other participant as unread', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      // B sends 2 messages to A
+      await server
+        .post(`/conversations/${convId}/messages`)
+        .set('Cookie', userBCookie)
+        .send({ content: 'Hello A!' })
+        .expect(201);
+
+      await server
+        .post(`/conversations/${convId}/messages`)
+        .set('Cookie', userBCookie)
+        .send({ content: 'Are you there?' })
+        .expect(201);
+
+      // A's unread count should be 2
+      const res = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body).toEqual({ total: 2 });
+    });
+
+    it('does not count messages sent by the requesting user as unread', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      // A sends a message — should not appear in A's own unread count
+      await server
+        .post(`/conversations/${convId}/messages`)
+        .set('Cookie', userACookie)
+        .send({ content: 'I sent this' })
+        .expect(201);
+
+      const res = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+
+      expect(res.body).toEqual({ total: 0 });
+    });
+
+    it('returns 401 when not authenticated', async () => {
+      await request(testApp.app.getHttpServer())
+        .get('/conversations/unread-count')
+        .expect(401);
+    });
+  });
+
+  // ─── markConversationRead ─────────────────────────────────────────────────
+
+  describe('POST /conversations/:id/read', () => {
+    it('marks all unread messages as read, bringing unread count to 0', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      // B sends 3 messages to A
+      for (const content of ['Msg 1', 'Msg 2', 'Msg 3']) {
+        await server
+          .post(`/conversations/${convId}/messages`)
+          .set('Cookie', userBCookie)
+          .send({ content })
+          .expect(201);
+      }
+
+      // Verify A has 3 unread before marking
+      const before = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+      expect(before.body.total).toBe(3);
+
+      // A marks the conversation as read
+      await server
+        .post(`/conversations/${convId}/read`)
+        .set('Cookie', userACookie)
+        .send({})
+        .expect(200);
+
+      // Unread count should now be 0
+      const after = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userACookie)
+        .expect(200);
+      expect(after.body.total).toBe(0);
+    });
+
+    it('does not affect messages sent by the user themselves', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      // A sends a message, then calls read — own messages should not be touched
+      await server
+        .post(`/conversations/${convId}/messages`)
+        .set('Cookie', userACookie)
+        .send({ content: 'From A' })
+        .expect(201);
+
+      await server
+        .post(`/conversations/${convId}/read`)
+        .set('Cookie', userACookie)
+        .send({})
+        .expect(200);
+
+      // B's unread count: A sent 1 message, which B hasn't read
+      const res = await server
+        .get('/conversations/unread-count')
+        .set('Cookie', userBCookie)
+        .expect(200);
+      expect(res.body.total).toBe(1);
+    });
+
+    it('is idempotent — calling read twice does not error', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      await server
+        .post(`/conversations/${convId}/messages`)
+        .set('Cookie', userBCookie)
+        .send({ content: 'Hi' })
+        .expect(201);
+
+      await server
+        .post(`/conversations/${convId}/read`)
+        .set('Cookie', userACookie)
+        .send({})
+        .expect(200);
+
+      // Second call must also succeed
+      await server
+        .post(`/conversations/${convId}/read`)
+        .set('Cookie', userACookie)
+        .send({})
+        .expect(200);
+    });
+
+    it('returns 403 when a non-participant calls read', async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post('/conversations')
+        .set('Cookie', userACookie)
+        .send({ recipientId: userBId })
+        .expect(201);
+
+      const convId = created.body.id as string;
+
+      await server
+        .post(`/conversations/${convId}/read`)
+        .set('Cookie', userCCookie)
+        .send({})
+        .expect(403);
+    });
+
+    it('returns 404 when conversation does not exist', async () => {
+      await request(testApp.app.getHttpServer())
+        .post('/conversations/00000000-0000-0000-0000-000000000000/read')
+        .set('Cookie', userACookie)
+        .send({})
+        .expect(404);
+    });
+
+    it('returns 401 when not authenticated', async () => {
+      await request(testApp.app.getHttpServer())
+        .post('/conversations/00000000-0000-0000-0000-000000000000/read')
+        .send({})
+        .expect(401);
+    });
+  });
 });

@@ -25,6 +25,18 @@ export async function startConversation(
   throw new Error('Failed to start conversation');
 }
 
+/**
+ * Returns the total number of unread messages across all of the current
+ * user's conversations.
+ */
+export async function getUnreadCount(): Promise<number> {
+  const response = await client.getUnreadCount();
+  if (response.status === 200) {
+    return response.body.total;
+  }
+  throw new Error('Failed to load unread count');
+}
+
 export async function getConversation(
   conversationId: string,
 ): Promise<ConversationDto> {
@@ -41,6 +53,29 @@ export async function getConversation(
     throw new Error('Conversation not found');
   }
   throw new Error('Failed to load conversation');
+}
+
+/**
+ * Marks all messages in a conversation as read for the current user.
+ * Call this when the user opens (or focuses) a conversation view.
+ */
+export async function markConversationRead(
+  conversationId: string,
+): Promise<void> {
+  const response = await client.markConversationRead({
+    params: { id: conversationId },
+    body: {},
+  });
+  if (response.status === 200) {
+    return;
+  }
+  if (response.status === 403) {
+    throw new Error('Access denied');
+  }
+  if (response.status === 404) {
+    throw new Error('Conversation not found');
+  }
+  throw new Error('Failed to mark conversation as read');
 }
 
 export async function listMessages(
@@ -85,3 +120,4 @@ export async function sendMessageRest(
   }
   throw new Error('Failed to send message');
 }
+

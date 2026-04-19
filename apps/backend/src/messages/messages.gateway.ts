@@ -31,6 +31,14 @@ export const WS_NEW_MESSAGE = 'new-message' as const;
 /** Server → Client: another participant started / stopped typing. */
 export const WS_TYPING_INDICATOR = 'typing-indicator' as const;
 
+/**
+ * Server → Client (per-user room): lightweight notification that a new message
+ * arrived in one of the user's conversations. Sent to `user:{userId}` regardless
+ * of whether the recipient has joined the conversation room, enabling badges and
+ * toasts without an explicit join-conversation handshake.
+ */
+export const WS_NEW_MESSAGE_NOTIFICATION = 'new-message-notification' as const;
+
 // ─── Payload types ──────────────────────────────────────────────────────────
 
 interface JoinConversationPayload {
@@ -48,6 +56,13 @@ interface TypingPayload {
   isTyping: boolean;
 }
 
+interface NewMessageNotificationPayload {
+  conversationId: string;
+  senderId: string;
+  /** First 100 characters of the message content for preview display. */
+  preview: string;
+}
+
 // ─── Gateway ────────────────────────────────────────────────────────────────
 
 /**
@@ -58,8 +73,13 @@ interface TypingPayload {
  *  2. `handleConnection` resolves the session via Better Auth; disconnects
  *     unauthenticated clients immediately.
  *  3. The resolved user ID is stored on `socket.data.userId`.
+ *  4. The socket is automatically joined to `user:{userId}` — a per-user
+ *     notification room that receives `new-message-notification` events for
+ *     all conversations the user participates in, with no explicit join needed.
  *
- * Room naming: `conversation:{conversationId}`
+ * Room naming:
+ *  - Conversation room: `conversation:{conversationId}` (requires join-conversation emit)
+ *  - Per-user notification room: `user:{userId}` (joined automatically on auth)
  */
 @WebSocketGateway({
   cors: {
@@ -100,6 +120,12 @@ export class MessagesGateway
       }
 
       client.data.userId = session.user.id;
+
+      // Auto-join the per-user notification room so the client receives
+      // new-message-notification events for ALL their conversations without
+      // needing to emit join-conversation for each one.
+      await client.join(`user:${session.user.id}`);
+
       // Signal to the client that server-side auth is complete and the socket
       // is ready to accept events. This prevents a race where the client emits
       // events before handleConnection (which is async) has finished setting
@@ -142,7 +168,9 @@ export class MessagesGateway
 
   /**
    * Send a message via WebSocket. Persists via MessagesService, then broadcasts
-   * the saved message to all clients in the conversation room.
+   * the saved message to all clients in the conversation room and emits a
+   * lightweight notification to the recipient's per-user room so they are
+   * notified even without having joined the conversation room.
    */
   @SubscribeMessage(WS_SEND_MESSAGE)
   async onSendMessage(
@@ -163,8 +191,31 @@ export class MessagesGateway
       throw new WsException('Failed to send message');
     }
 
-    // Broadcast to the entire room (including the sender for confirmation)
+    // Broadcast the full message to clients that have joined the conversation room.
     this.server.to(this.roomName(conversationId)).emit(WS_NEW_MESSAGE, message);
+
+    // Emit a lightweight notification to the recipient's per-user room.
+    // This fires regardless of whether the recipient has opened this conversation,
+    // enabling unread badges and toasts anywhere in the app.
+    try {
+      const { userAId, userBId } =
+        await this.messagesService.getConversationParticipantIds(conversationId);
+      const recipientId = userAId === userId ? userBId : userAId;
+
+      const notification: NewMessageNotificationPayload = {
+        conversationId,
+        senderId: userId,
+        preview: content.slice(0, 100),
+      };
+      this.server
+        .to(`user:${recipientId}`)
+        .emit(WS_NEW_MESSAGE_NOTIFICATION, notification);
+    } catch {
+      // Non-fatal: the message was already delivered. Log and continue.
+      console.warn(
+        `[MessagesGateway] Failed to emit notification for conversation ${conversationId}`,
+      );
+    }
   }
 
   /**

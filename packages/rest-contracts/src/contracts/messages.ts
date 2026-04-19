@@ -36,6 +36,19 @@ export const messagesContract = c.router({
     summary: 'Start or retrieve a conversation with another user (idempotent)',
   },
 
+  /**
+   * Placed before getConversation to prevent /conversations/:id matching
+   * the literal segment "unread-count".
+   */
+  getUnreadCount: {
+    method: 'GET',
+    path: '/conversations/unread-count',
+    responses: {
+      200: z.object({ total: z.number().int().nonnegative() }),
+    },
+    summary: 'Get total unread message count for the current user',
+  },
+
   getConversation: {
     method: 'GET',
     path: '/conversations/:id',
@@ -77,6 +90,19 @@ export const messagesContract = c.router({
     },
     summary:
       'Send a message to a conversation (REST fallback; prefer WebSocket)',
+  },
+
+  markConversationRead: {
+    method: 'POST',
+    path: '/conversations/:id/read',
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.object({}),
+    responses: {
+      200: z.null(),
+      403: z.null(),
+      404: z.null(),
+    },
+    summary: 'Mark all messages in a conversation as read for the current user',
   },
 });
 

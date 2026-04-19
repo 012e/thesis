@@ -13,6 +13,8 @@ import {
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
+import { useSession } from "@/hooks/use-session";
+import { useOpenChat } from "@/hooks/use-open-chat";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 
@@ -98,6 +100,17 @@ function PostImages({ images }: PostImagesProps) {
 export function Post({ post, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const { data: session } = useSession();
+  const openChat = useOpenChat();
+
+  const isOwnPost = session?.user?.id === post.authorId;
+
+  const handleAuthorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isOwnPost) {
+      openChat(post.authorId);
+    }
+  };
 
   const userVote = initialReactionSummary?.userReaction ?? null;
   const upvoteCount = initialReactionSummary?.upvotes ?? post.upvoteCount;
@@ -139,16 +152,29 @@ export function Post({ post, initialReactionSummary }: PostProps) {
   return (
     <article className="p-4 transition-colors cursor-pointer hover:bg-accent/50">
       <div className="flex gap-3">
-        <Avatar className="w-10 h-10 shrink-0">
-          <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
-            {authorInitial}
-          </div>
-        </Avatar>
+        <button
+          type="button"
+          onClick={handleAuthorClick}
+          disabled={isOwnPost}
+          className="shrink-0"
+          title={isOwnPost ? undefined : `Message ${post.author.name ?? post.author.username}`}
+        >
+          <Avatar className="w-10 h-10">
+            <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
+              {authorInitial}
+            </div>
+          </Avatar>
+        </button>
         <div className="flex-1 min-w-0">
           <div className="flex gap-2 items-center mb-1">
-            <span className="font-bold truncate">
+            <button
+              type="button"
+              onClick={handleAuthorClick}
+              disabled={isOwnPost}
+              className="font-bold truncate hover:underline disabled:cursor-default disabled:no-underline"
+            >
               {post.author.name || post.author.username || "Anonymous"}
-            </span>
+            </button>
             <span className="text-muted-foreground truncate">
               @{post.author.username || post.author.email.split("@")[0]}
             </span>

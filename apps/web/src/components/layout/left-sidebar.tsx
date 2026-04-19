@@ -16,6 +16,7 @@ import {
   IconRobot,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
+import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
 
 const navigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -64,6 +65,8 @@ const navigationItems = [
 ];
 
 export function LeftSidebar() {
+  const { unreadCount } = useUnreadNotifications();
+
   return (
     <div className="flex sticky top-0 flex-col justify-between p-4 h-screen border-r w-[275px]">
       <div className="flex flex-col gap-2">
@@ -91,9 +94,17 @@ export function LeftSidebar() {
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;
+                const hasUnread = item.href === "/messages" && unreadCount > 0;
                 return (
                   <>
-                    <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
+                    <div className="relative">
+                      <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
+                      {hasUnread && (
+                        <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-primary text-primary-foreground text-[10px] font-bold leading-none rounded-full">
+                          {unreadCount > 99 ? "99+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                     <span>{item.label}</span>
                   </>
                 );
@@ -107,3 +118,4 @@ export function LeftSidebar() {
     </div>
   );
 }
+

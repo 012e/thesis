@@ -1,6 +1,7 @@
 import { LeftSidebar } from "./left-sidebar";
 import { RightSidebar } from "./right-sidebar";
 import { MainContent } from "./main-content";
+import { ChatManager } from "@/components/chat";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -10,6 +11,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <MainContent>{children}</MainContent>
         <RightSidebar />
       </div>
+      <ChatManager />
     </div>
   );
 }

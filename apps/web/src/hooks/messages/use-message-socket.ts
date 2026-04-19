@@ -1,10 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { io, type Socket } from 'socket.io-client';
+import { type Socket } from 'socket.io-client';
 import { useAtomValue } from 'jotai';
 import type { DirectMessageDto } from '@repo/shared-dto';
 import bearerToken from '@/lib/atoms/bearer-token';
 import { env } from '@/env';
+import { getOrCreateMessagesSocket } from '@/lib/socket/messages-socket';
 import { messageKeys } from './use-messages';
 import { conversationKeys } from './use-conversations';
 
@@ -42,29 +43,6 @@ export interface UseMessageSocketReturn {
   setTyping: (isTyping: boolean) => void;
   /** Whether the WebSocket is currently connected. */
   isConnected: boolean;
-}
-
-// ─── Singleton socket per token ──────────────────────────────────────────────
-// We reuse a single socket connection across hook instances and only reconnect
-// when the auth token changes. Sockets are keyed by token.
-
-const socketCache = new Map<string, Socket>();
-
-function getOrCreateSocket(token: string, backendUrl: string): Socket {
-  const existing = socketCache.get(token);
-  if (existing?.connected) return existing;
-
-  // Tear down stale sockets for the same token before creating a new one
-  existing?.disconnect();
-
-  const socket = io(`${backendUrl}/messages`, {
-    auth: { token },
-    transports: ['websocket'],
-    autoConnect: true,
-  });
-
-  socketCache.set(token, socket);
-  return socket;
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
@@ -107,7 +85,7 @@ export function useMessageSocket(
   useEffect(() => {
     if (!token) return;
 
-    const socket = getOrCreateSocket(token, env.VITE_BACKEND_URL);
+    const socket = getOrCreateMessagesSocket(token, env.VITE_BACKEND_URL);
     socketRef.current = socket;
 
     // 'authenticated' fires after the server's async handleConnection completes
