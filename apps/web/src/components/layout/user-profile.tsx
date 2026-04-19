@@ -1,4 +1,4 @@
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +16,12 @@ import {
 import { logout } from "@/lib/auth";
 import { useRouter } from "@tanstack/react-router";
 import { useSession } from "@/hooks/use-session";
+import { useUserProfile } from "@/hooks/use-user-profile";
 
 export function UserProfile() {
   const router = useRouter();
   const { data: session } = useSession();
+  const { data: profile } = useUserProfile(session?.user.id ?? '');
 
   const handleLogout = async () => {
     await logout();
@@ -46,9 +48,10 @@ export function UserProfile() {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex gap-3 items-center p-3 w-full text-left transition-colors hover:bg-accent">
         <Avatar className="w-10 h-10">
-          <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
+          <AvatarImage src={profile?.image ?? undefined} alt={user?.name || undefined} />
+          <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
             {initials}
-          </div>
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold truncate">{displayName}</div>

@@ -5,6 +5,7 @@ export const FollowUser = z.object({
   username: z.string().nullable(),
   email: z.string(),
   name: z.string().nullable(),
+  image: z.string().nullable(),
 });
 
 export const UserFollow = z.object({

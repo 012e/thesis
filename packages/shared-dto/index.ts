@@ -1,3 +1,11 @@
+export interface UserSearchResultDto {
+  id: string;
+  username: string | null;
+  displayUsername: string | null;
+  name: string | null;
+  image: string | null;
+}
+
 export interface UserDto {
   id: string;
   username: string;
@@ -50,6 +58,7 @@ export interface PostAuthorDto {
   username: string | null;
   email: string;
   name: string | null;
+  image: string | null;
 }
 
 export interface PostDto {
@@ -93,6 +102,7 @@ export interface FollowUserDto {
   username: string | null;
   email: string;
   name: string | null;
+  image: string | null;
 }
 
 export interface UserFollowDto {

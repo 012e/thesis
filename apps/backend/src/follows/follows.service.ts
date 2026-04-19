@@ -4,10 +4,14 @@ import type { FollowUserDto, UserFollowDto } from '@repo/shared-dto';
 
 import { DatabaseService } from '@/db/database.service';
 import { userFollows, usersView } from '@/db/schema';
+import { UsersService } from '@/users/users.service';
 
 @Injectable()
 export class FollowsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly usersService: UsersService,
+  ) {}
 
   async follow(
     followerId: string,
@@ -71,6 +75,7 @@ export class FollowsService {
         username: usersView.username,
         email: usersView.email,
         name: usersView.name,
+        image: usersView.image,
       })
       .from(userFollows)
       .innerJoin(usersView, eq(userFollows.followerId, usersView.id))
@@ -82,6 +87,7 @@ export class FollowsService {
       username: row.username ?? null,
       email: row.email,
       name: row.name ?? null,
+      image: this.usersService.resolveAvatarUrl(row.image ?? null),
     }));
   }
 
@@ -97,6 +103,7 @@ export class FollowsService {
         username: usersView.username,
         email: usersView.email,
         name: usersView.name,
+        image: usersView.image,
       })
       .from(userFollows)
       .innerJoin(usersView, eq(userFollows.followeeId, usersView.id))
@@ -108,6 +115,7 @@ export class FollowsService {
       username: row.username ?? null,
       email: row.email,
       name: row.name ?? null,
+      image: this.usersService.resolveAvatarUrl(row.image ?? null),
     }));
   }
 

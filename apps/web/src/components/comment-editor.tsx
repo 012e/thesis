@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useSession } from "@/hooks/use-session";
 
@@ -51,9 +51,10 @@ export function CommentEditor({
   return (
     <div className={`flex gap-2 ${isReply ? "py-2" : "p-4 border-b"}`}>
       <Avatar className={`shrink-0 ${isReply ? "w-8 h-8" : "w-10 h-10"}`}>
-        <div className="flex justify-center items-center w-full h-full text-xs font-semibold rounded-full bg-primary text-primary-foreground">
+        <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+        <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
           {userInitial}
-        </div>
+        </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <Textarea

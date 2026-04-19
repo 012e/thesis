@@ -9,7 +9,7 @@ import {
   codeBlockPlugin,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
-import { Avatar } from "./avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { Button } from "./button";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
@@ -182,12 +182,13 @@ export function PostComposer() {
   if (!isOpen) {
     // Collapsed state
     return (
-      <div className="p-4 border-b cursor-text" onClick={() => setIsOpen(true)}>
+        <div className="p-4 border-b cursor-text" onClick={() => setIsOpen(true)}>
         <div className="flex gap-3">
           <Avatar className="flex-shrink-0 w-10 h-10">
-            <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
+            <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+            <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {userInitial}
-            </div>
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <textarea
@@ -205,12 +206,13 @@ export function PostComposer() {
   // Expanded state with editor
   return (
     <div className="border-b bg-background/50 backdrop-blur-sm">
-      <div className="p-4">
+        <div className="p-4">
         <div className="flex gap-3">
           <Avatar className="flex-shrink-0 w-10 h-10">
-            <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
+            <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+            <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {userInitial}
-            </div>
+            </AvatarFallback>
           </Avatar>
           <div className="flex-1">
             <div className="mb-4">
