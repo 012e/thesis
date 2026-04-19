@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
-import type { PollResultsDto } from '@repo/shared-dto';
+import { Injectable } from "@nestjs/common";
+import { and, eq, sql } from "drizzle-orm";
+import type { PollResultsDto } from "@repo/shared-dto";
 
-import { DatabaseService } from '@/db/database.service';
-import { pollVotes, posts } from '@/db/schema';
-import type { VotePollInput } from './polls.schemas';
+import { DatabaseService } from "@/db/database.service";
+import { pollVotes, posts } from "@/db/schema";
+import type { VotePollInput } from "./polls.schemas";
 
 @Injectable()
 export class PollsService {
@@ -15,7 +15,7 @@ export class PollsService {
     userId: string,
     input: VotePollInput,
   ): Promise<
-    PollResultsDto | { error: string; code: 'NOT_FOUND' | 'INVALID' }
+    PollResultsDto | { error: string; code: "NOT_FOUND" | "INVALID" }
   > {
     // Get the post and verify it has a poll
     const [post] = await this.databaseService.db
@@ -25,11 +25,11 @@ export class PollsService {
       .limit(1);
 
     if (!post) {
-      return { error: 'Post not found', code: 'NOT_FOUND' };
+      return { error: "Post not found", code: "NOT_FOUND" };
     }
 
     if (!post.content.poll) {
-      return { error: 'Post does not contain a poll', code: 'INVALID' };
+      return { error: "Post does not contain a poll", code: "INVALID" };
     }
 
     const poll = post.content.poll;
@@ -38,7 +38,7 @@ export class PollsService {
     if (poll.closesAt) {
       const closesAt = new Date(poll.closesAt);
       if (closesAt < new Date()) {
-        return { error: 'Poll is closed', code: 'INVALID' };
+        return { error: "Poll is closed", code: "INVALID" };
       }
     }
 
@@ -46,15 +46,15 @@ export class PollsService {
     const validOptionIds = new Set(poll.options.map((o) => o.id));
     for (const optionId of input.optionIds) {
       if (!validOptionIds.has(optionId)) {
-        return { error: `Invalid option ID: ${optionId}`, code: 'INVALID' };
+        return { error: `Invalid option ID: ${optionId}`, code: "INVALID" };
       }
     }
 
     // Check if multiple selections are allowed
     if (!poll.allowsMultipleSelections && input.optionIds.length > 1) {
       return {
-        error: 'This poll only allows single selection',
-        code: 'INVALID',
+        error: "This poll only allows single selection",
+        code: "INVALID",
       };
     }
 
@@ -80,7 +80,7 @@ export class PollsService {
   async unvote(
     postId: string,
     userId: string,
-  ): Promise<PollResultsDto | { error: string; code: 'NOT_FOUND' }> {
+  ): Promise<PollResultsDto | { error: string; code: "NOT_FOUND" }> {
     // Verify post exists and has a poll
     const [post] = await this.databaseService.db
       .select({ content: posts.content })
@@ -89,11 +89,11 @@ export class PollsService {
       .limit(1);
 
     if (!post) {
-      return { error: 'Post not found', code: 'NOT_FOUND' };
+      return { error: "Post not found", code: "NOT_FOUND" };
     }
 
     if (!post.content.poll) {
-      return { error: 'Post does not contain a poll', code: 'NOT_FOUND' };
+      return { error: "Post does not contain a poll", code: "NOT_FOUND" };
     }
 
     // Remove all votes for this user on this post
@@ -107,7 +107,7 @@ export class PollsService {
   async getResults(
     postId: string,
     userId?: string,
-  ): Promise<PollResultsDto | { error: string; code: 'NOT_FOUND' }> {
+  ): Promise<PollResultsDto | { error: string; code: "NOT_FOUND" }> {
     // Get the post and verify it has a poll
     const [post] = await this.databaseService.db
       .select({ content: posts.content })
@@ -116,11 +116,11 @@ export class PollsService {
       .limit(1);
 
     if (!post) {
-      return { error: 'Post not found', code: 'NOT_FOUND' };
+      return { error: "Post not found", code: "NOT_FOUND" };
     }
 
     if (!post.content.poll) {
-      return { error: 'Post does not contain a poll', code: 'NOT_FOUND' };
+      return { error: "Post does not contain a poll", code: "NOT_FOUND" };
     }
 
     const poll = post.content.poll;

@@ -11,7 +11,7 @@ import {
   IconRobot,
   IconDownload,
   IconLoader2,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
   AuiIf,
@@ -21,20 +21,20 @@ import {
   MessagePrimitive,
   ThreadPrimitive,
   useAuiState,
-} from '@assistant-ui/react';
-import '@assistant-ui/react-markdown/styles/dot.css';
+} from "@assistant-ui/react";
+import "@assistant-ui/react-markdown/styles/dot.css";
 
-import { Button } from '@/components/ui/button';
-import { MarkdownText } from '@/components/assistant-ui/markdown-text';
-import { ToolFallback } from '@/components/assistant-ui/tool-fallback';
-import { Reasoning, ReasoningGroup } from '@/components/assistant-ui/reasoning';
-import { Sources } from '@/components/assistant-ui/sources';
+import { Button } from "@/components/ui/button";
+import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { Reasoning, ReasoningGroup } from "@/components/assistant-ui/reasoning";
+import { Sources } from "@/components/assistant-ui/sources";
 import {
   ComposerAddAttachment,
   ComposerAttachments,
   UserMessageAttachments,
-} from '@/components/assistant-ui/attachment';
-import { cn } from '@/lib/utils';
+} from "@/components/assistant-ui/attachment";
+import { cn } from "@/lib/utils";
 
 export function Thread() {
   return (
@@ -311,7 +311,7 @@ function BranchPicker({ className }: { className?: string }) {
     <BranchPickerPrimitive.Root
       hideWhenSingleBranch
       className={cn(
-        'inline-flex items-center text-xs text-muted-foreground',
+        "inline-flex items-center text-xs text-muted-foreground",
         className,
       )}
     >

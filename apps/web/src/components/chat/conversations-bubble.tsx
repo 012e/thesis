@@ -1,11 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useSetAtom } from 'jotai';
-import { IconMessageCircle2 } from '@tabler/icons-react';
-import { cn } from '@/lib/utils';
-import { useConversations } from '@/hooks/messages/use-conversations';
-import { useUnreadNotifications } from '@/hooks/messages/use-unread-notifications';
-import { openChatWindowAtom } from '@/lib/atoms/chat-windows';
-import type { ConversationDto } from '@repo/shared-dto';
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { IconMessageCircle2 } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { useConversations } from "@/hooks/messages/use-conversations";
+import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
+import { openChatWindowAtom } from "@/lib/atoms/chat-windows";
+import type { ConversationDto } from "@repo/shared-dto";
 
 // ─── Conversation List Item ───────────────────────────────────────────────────
 
@@ -21,16 +21,16 @@ function ConversationItem({ conversation, onOpen }: ConversationItemProps) {
     otherUser.name ??
     otherUser.displayUsername ??
     otherUser.username ??
-    'Unknown';
-  const initial = displayName[0]?.toUpperCase() ?? '?';
+    "Unknown";
+  const initial = displayName[0]?.toUpperCase() ?? "?";
 
   const preview = lastMessage?.content
     ? lastMessage.content.length > 42
-      ? lastMessage.content.slice(0, 42) + '…'
+      ? lastMessage.content.slice(0, 42) + "…"
       : lastMessage.content
-    : 'No messages yet';
+    : "No messages yet";
 
-  const timeAgo = lastMessage ? getRelativeTime(lastMessage.createdAt) : '';
+  const timeAgo = lastMessage ? getRelativeTime(lastMessage.createdAt) : "";
 
   return (
     <button
@@ -74,7 +74,7 @@ function getRelativeTime(iso: string): string {
   if (days > 0) return `${days}d`;
   if (hours > 0) return `${hours}h`;
   if (mins > 0) return `${mins}m`;
-  return 'now';
+  return "now";
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -103,8 +103,8 @@ export function ConversationsBubble() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleOpenConversation = useCallback(
@@ -180,9 +180,9 @@ export function ConversationsBubble() {
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
         className={cn(
-          'relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-200',
-          'bg-primary text-primary-foreground hover:scale-105 active:scale-95',
-          isOpen && 'scale-105',
+          "relative flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all duration-200",
+          "bg-primary text-primary-foreground hover:scale-105 active:scale-95",
+          isOpen && "scale-105",
         )}
         title="Messenger"
       >
@@ -191,7 +191,7 @@ export function ConversationsBubble() {
         {/* Unread badge */}
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-red-500 text-white text-[11px] font-bold leading-none">
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {unreadCount > 99 ? "99+" : unreadCount}
           </span>
         )}
       </button>

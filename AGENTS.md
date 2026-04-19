@@ -169,7 +169,7 @@ pnpm --filter web exec shadcn add <component>   # add shadcn component to web
 7. Add web API client in `apps/web/src/lib/api/<domain>.ts`.
 8. Web routes use TanStack Router file-based routing — add files under `apps/web/src/routes/`. `routeTree.gen.ts` is auto-generated on `dev`/`build`, never edit it.
 9. Forms: TanStack Form + Zod schema → infer type with `z.infer<>`.
- 10. Verify: `pnpm --filter backend build && just test-<domain> && pnpm --filter web build && just build`.
+10. Verify: `pnpm --filter backend build && just test-<domain> && pnpm --filter web build && just build`.
 
 ---
 

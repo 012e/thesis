@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { HealthIndicatorService } from '@nestjs/terminus';
+import { Injectable } from "@nestjs/common";
+import { HealthIndicatorService } from "@nestjs/terminus";
 
 @Injectable()
 export class NestHealthIndicator {

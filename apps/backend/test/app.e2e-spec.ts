@@ -1,15 +1,15 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import request from 'supertest';
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import request from "supertest";
 
-import { createTestApp, closeTestApp } from './helpers/app.setup';
-import { runBetterAuthMigrations } from './helpers/database.setup';
+import { createTestApp, closeTestApp } from "./helpers/app.setup";
+import { runBetterAuthMigrations } from "./helpers/database.setup";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from './helpers/testcontainers.setup';
+} from "./helpers/testcontainers.setup";
 
-describe('AppController (e2e)', () => {
+describe("AppController (e2e)", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
 
@@ -25,19 +25,19 @@ describe('AppController (e2e)', () => {
     await stopPostgresContainer(containers);
   });
 
-  it('/ (GET)', () => {
+  it("/ (GET)", () => {
     return request(testApp.app.getHttpServer())
-      .get('/')
+      .get("/")
       .expect(200)
-      .expect('Hello World!');
+      .expect("Hello World!");
   });
 
-  it('/openapi (GET)', async () => {
+  it("/openapi (GET)", async () => {
     const response = await request(testApp.app.getHttpServer())
-      .get('/openapi')
+      .get("/openapi")
       .expect(200);
 
-    expect(response.body).toHaveProperty('openapi');
-    expect(response.body.info.title).toBe('Posts API');
+    expect(response.body).toHaveProperty("openapi");
+    expect(response.body.info.title).toBe("Posts API");
   });
 });

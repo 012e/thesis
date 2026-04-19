@@ -1,9 +1,9 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import { commentsContract } from '@repo/rest-contracts';
-import { CommentsService } from './comments.service';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
+import { commentsContract } from "@repo/rest-contracts";
+import { CommentsService } from "./comments.service";
 
 @Controller()
 export class CommentsController {

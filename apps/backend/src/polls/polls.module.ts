@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-import { DatabaseModule } from '@/db/database.module';
+import { DatabaseModule } from "@/db/database.module";
 
-import { PollsController } from './polls.controller';
-import { PollsService } from './polls.service';
+import { PollsController } from "./polls.controller";
+import { PollsService } from "./polls.service";
 
 @Module({
   imports: [DatabaseModule],

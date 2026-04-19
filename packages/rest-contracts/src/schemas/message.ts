@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod";
 
-export const DirectMessageType = z.enum(['text']);
+export const DirectMessageType = z.enum(["text"]);
 
 export const ConversationParticipant = z.object({
   id: z.string(),

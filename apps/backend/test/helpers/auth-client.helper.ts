@@ -1,5 +1,5 @@
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { createCustomAuthClient } from '@repo/auth-client';
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { createCustomAuthClient } from "@repo/auth-client";
 
 /**
  * Creates an auth client configured for testing that points to the test server.
@@ -9,7 +9,7 @@ export function createTestAuthClient(app: NestExpressApplication) {
   const server = app.getHttpServer();
   const address = server.address();
   const baseURL =
-    typeof address === 'string'
+    typeof address === "string"
       ? address
       : `http://localhost:${address?.port || 3000}`;
 

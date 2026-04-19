@@ -1,16 +1,16 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
-import { useSetAtom } from 'jotai';
-import { IconMinus, IconX, IconSend } from '@tabler/icons-react';
-import { cn } from '@/lib/utils';
-import { useSession } from '@/hooks/use-session';
-import { useConversation } from '@/hooks/messages/use-conversations';
-import { useMessages } from '@/hooks/messages/use-messages';
-import { useMessageSocket } from '@/hooks/messages/use-message-socket';
-import { markConversationRead } from '@/lib/api/messages';
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { IconMinus, IconX, IconSend } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
+import { useSession } from "@/hooks/use-session";
+import { useConversation } from "@/hooks/messages/use-conversations";
+import { useMessages } from "@/hooks/messages/use-messages";
+import { useMessageSocket } from "@/hooks/messages/use-message-socket";
+import { markConversationRead } from "@/lib/api/messages";
 import {
   closeChatWindowAtom,
   toggleMinimizeChatWindowAtom,
-} from '@/lib/atoms/chat-windows';
+} from "@/lib/atoms/chat-windows";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -30,21 +30,22 @@ interface ChatWindowProps {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getInitial(
-  name: string | null,
-  username: string | null,
-): string {
-  return (name?.[0] ?? username?.[0] ?? '?').toUpperCase();
+function getInitial(name: string | null, username: string | null): string {
+  return (name?.[0] ?? username?.[0] ?? "?").toUpperCase();
 }
 
 function formatTime(iso: string): string {
   const date = new Date(iso);
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps) {
+export function ChatWindow({
+  conversationId,
+  index,
+  minimized,
+}: ChatWindowProps) {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id;
 
@@ -56,13 +57,8 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
   const otherUser = conversation?.otherUser;
 
   // ── Messages ──────────────────────────────────────────────────────────────
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useMessages(conversationId);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useMessages(conversationId);
 
   const allMessages = useMemo(() => {
     return (data?.pages ?? [])
@@ -81,7 +77,7 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
   // Scroll to bottom on initial load and when new messages arrive
   useEffect(() => {
     if (!minimized && !isUserScrolledUpRef.current) {
-      bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
     }
   }, [allMessages.length, minimized]);
 
@@ -89,7 +85,7 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
   useEffect(() => {
     if (!minimized) {
       setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+        bottomRef.current?.scrollIntoView({ behavior: "auto" });
       }, 50);
     }
   }, [minimized]);
@@ -98,8 +94,7 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
     const el = scrollContainerRef.current;
     if (!el) return;
 
-    const isAtBottom =
-      el.scrollHeight - el.scrollTop - el.clientHeight < 50;
+    const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 50;
     isUserScrolledUpRef.current = !isAtBottom;
 
     // Load more when scrolled near top
@@ -117,20 +112,24 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
 
   // ── Typing indicator ──────────────────────────────────────────────────────
   const [isOtherTyping, setIsOtherTyping] = useState(false);
-  const typingClearRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const typingClearRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   // ── Input state ───────────────────────────────────────────────────────────
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const typingEmittedRef = useRef(false);
-  const stopTypingRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const stopTypingRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   const { sendMessage, setTyping } = useMessageSocket(conversationId, {
     onNewMessage: () => {
       isUserScrolledUpRef.current = false;
       setTimeout(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
       }, 50);
     },
     onTypingIndicator: ({ isTyping, userId }) => {
@@ -139,7 +138,10 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
       setIsOtherTyping(isTyping);
       if (isTyping) {
         clearTimeout(typingClearRef.current);
-        typingClearRef.current = setTimeout(() => setIsOtherTyping(false), 3000);
+        typingClearRef.current = setTimeout(
+          () => setIsOtherTyping(false),
+          3000,
+        );
       }
     },
   });
@@ -165,19 +167,19 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
     if (!text) return;
 
     sendMessage(text);
-    setInputText('');
+    setInputText("");
     setTyping(false);
     typingEmittedRef.current = false;
     clearTimeout(stopTypingRef.current);
 
     isUserScrolledUpRef.current = false;
     setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
   }, [inputText, sendMessage, setTyping]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -188,7 +190,10 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
 
   // ── Render ────────────────────────────────────────────────────────────────
   const displayName =
-    otherUser?.name ?? otherUser?.username ?? otherUser?.displayUsername ?? 'Chat';
+    otherUser?.name ??
+    otherUser?.username ??
+    otherUser?.displayUsername ??
+    "Chat";
   const initial = getInitial(
     otherUser?.name ?? null,
     otherUser?.displayUsername ?? otherUser?.username ?? null,
@@ -210,14 +215,19 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
         </div>
 
         {/* Name */}
-        <span className="flex-1 font-semibold text-sm truncate">{displayName}</span>
+        <span className="flex-1 font-semibold text-sm truncate">
+          {displayName}
+        </span>
 
         {/* Actions */}
-        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="flex items-center gap-1"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors"
             onClick={() => toggleMinimize(conversationId)}
-            title={minimized ? 'Expand' : 'Minimize'}
+            title={minimized ? "Expand" : "Minimize"}
           >
             <IconMinus className="w-3.5 h-3.5" />
           </button>
@@ -267,14 +277,17 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
               return (
                 <div
                   key={msg.id}
-                  className={cn('flex flex-col', isMine ? 'items-end' : 'items-start')}
+                  className={cn(
+                    "flex flex-col",
+                    isMine ? "items-end" : "items-start",
+                  )}
                 >
                   <div
                     className={cn(
-                      'max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words',
+                      "max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words",
                       isMine
-                        ? 'bg-primary text-primary-foreground rounded-br-sm'
-                        : 'bg-muted text-foreground rounded-bl-sm',
+                        ? "bg-primary text-primary-foreground rounded-br-sm"
+                        : "bg-muted text-foreground rounded-bl-sm",
                     )}
                   >
                     {msg.content}
@@ -320,10 +333,10 @@ export function ChatWindow({ conversationId, index, minimized }: ChatWindowProps
               onClick={handleSend}
               disabled={!inputText.trim()}
               className={cn(
-                'p-1.5 rounded-full transition-colors',
+                "p-1.5 rounded-full transition-colors",
                 inputText.trim()
-                  ? 'text-primary hover:bg-primary/10'
-                  : 'text-muted-foreground cursor-not-allowed',
+                  ? "text-primary hover:bg-primary/10"
+                  : "text-muted-foreground cursor-not-allowed",
               )}
               title="Send"
             >

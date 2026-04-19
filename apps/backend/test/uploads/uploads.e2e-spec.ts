@@ -2,19 +2,19 @@ import {
   TestAppContext,
   createTestApp,
   closeTestApp,
-} from '../helpers/app.setup';
+} from "../helpers/app.setup";
 import {
   PostgresContainerContext,
   startPostgresContainer,
   stopPostgresContainer,
-} from '../helpers/testcontainers.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
-import { createE2ETestUser } from '../helpers/auth.helper';
-import request from 'supertest';
-import sharp from 'sharp';
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+} from "../helpers/testcontainers.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { createE2ETestUser } from "../helpers/auth.helper";
+import request from "supertest";
+import sharp from "sharp";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
-describe('Uploads (e2e)', () => {
+describe("Uploads (e2e)", () => {
   let dbContainer: PostgresContainerContext;
   let appCtx: TestAppContext;
   let uploaderUser: any;
@@ -44,7 +44,7 @@ describe('Uploads (e2e)', () => {
 
     // Dynamically import to ensure env vars are used
     // @ts-ignore
-    const { StorageService } = await import('@/storage/storage.service');
+    const { StorageService } = await import("@/storage/storage.service");
 
     appCtx = await createTestApp(dbContainer, (builder) => {
       return builder
@@ -70,25 +70,25 @@ describe('Uploads (e2e)', () => {
     }
   });
 
-  describe('POST /uploads/images', () => {
-    it('should return 401 if not authenticated', async () => {
+  describe("POST /uploads/images", () => {
+    it("should return 401 if not authenticated", async () => {
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .attach('files', Buffer.from('test'), 'test.jpg');
+        .post("/uploads/images")
+        .attach("files", Buffer.from("test"), "test.jpg");
 
       expect(response.status).toBe(401);
     });
 
-    it('should return 400 if no files are uploaded', async () => {
+    it("should return 400 if no files are uploaded", async () => {
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie);
+        .post("/uploads/images")
+        .set("Cookie", authCookie);
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toBe('No files uploaded');
+      expect(response.body.message).toBe("No files uploaded");
     });
 
-    it('should upload and scale images successfully', async () => {
+    it("should upload and scale images successfully", async () => {
       // Create a test image
       const imageBuffer = await sharp({
         create: {
@@ -102,9 +102,9 @@ describe('Uploads (e2e)', () => {
         .toBuffer();
 
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie)
-        .attach('files', imageBuffer, 'test-image.jpg');
+        .post("/uploads/images")
+        .set("Cookie", authCookie)
+        .attach("files", imageBuffer, "test-image.jpg");
 
       expect(response.status).toBe(201);
 
@@ -112,9 +112,9 @@ describe('Uploads (e2e)', () => {
       expect(images).toHaveLength(1);
 
       const uploadedImage = images[0];
-      expect(uploadedImage).toHaveProperty('url');
-      expect(uploadedImage).toHaveProperty('key');
-      expect(uploadedImage.key).toContain('test-image.webp');
+      expect(uploadedImage).toHaveProperty("url");
+      expect(uploadedImage).toHaveProperty("key");
+      expect(uploadedImage.key).toContain("test-image.webp");
 
       // Check if image was resized properly (max dimension 1200)
       expect(uploadedImage.width).toBe(1200);
@@ -124,7 +124,7 @@ describe('Uploads (e2e)', () => {
       expect(mockStorageService.uploadImage).toHaveBeenCalled();
     });
 
-    it('should convert uploaded image to webp', async () => {
+    it("should convert uploaded image to webp", async () => {
       // Create a test png image
       const imageBuffer = await sharp({
         create: {
@@ -138,9 +138,9 @@ describe('Uploads (e2e)', () => {
         .toBuffer();
 
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie)
-        .attach('files', imageBuffer, 'test-png.png');
+        .post("/uploads/images")
+        .set("Cookie", authCookie)
+        .attach("files", imageBuffer, "test-png.png");
 
       expect(response.status).toBe(201);
 
@@ -148,7 +148,7 @@ describe('Uploads (e2e)', () => {
       expect(images).toHaveLength(1);
 
       const uploadedImage = images[0];
-      expect(uploadedImage.key).toContain('test-png.webp');
+      expect(uploadedImage.key).toContain("test-png.webp");
       expect(uploadedImage.width).toBe(800);
       expect(uploadedImage.height).toBe(600);
 
@@ -156,11 +156,11 @@ describe('Uploads (e2e)', () => {
       expect(mockStorageService.uploadImage).toHaveBeenCalledWith(
         expect.any(Buffer),
         expect.any(String),
-        'image/webp',
+        "image/webp",
       );
     });
 
-    it('should accept up to 4 images at once', async () => {
+    it("should accept up to 4 images at once", async () => {
       // Create a tiny test image
       const imageBuffer = await sharp({
         create: {
@@ -174,18 +174,18 @@ describe('Uploads (e2e)', () => {
         .toBuffer();
 
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie)
-        .attach('files', imageBuffer, 'img1.png')
-        .attach('files', imageBuffer, 'img2.png')
-        .attach('files', imageBuffer, 'img3.png')
-        .attach('files', imageBuffer, 'img4.png');
+        .post("/uploads/images")
+        .set("Cookie", authCookie)
+        .attach("files", imageBuffer, "img1.png")
+        .attach("files", imageBuffer, "img2.png")
+        .attach("files", imageBuffer, "img3.png")
+        .attach("files", imageBuffer, "img4.png");
 
       expect(response.status).toBe(201);
       expect(response.body.images).toHaveLength(4);
     });
 
-    it('should reject if more than 4 images are uploaded', async () => {
+    it("should reject if more than 4 images are uploaded", async () => {
       // Create a tiny test image
       const imageBuffer = await sharp({
         create: {
@@ -199,30 +199,30 @@ describe('Uploads (e2e)', () => {
         .toBuffer();
 
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie)
-        .attach('files', imageBuffer, 'img1.png')
-        .attach('files', imageBuffer, 'img2.png')
-        .attach('files', imageBuffer, 'img3.png')
-        .attach('files', imageBuffer, 'img4.png')
-        .attach('files', imageBuffer, 'img5.png');
+        .post("/uploads/images")
+        .set("Cookie", authCookie)
+        .attach("files", imageBuffer, "img1.png")
+        .attach("files", imageBuffer, "img2.png")
+        .attach("files", imageBuffer, "img3.png")
+        .attach("files", imageBuffer, "img4.png")
+        .attach("files", imageBuffer, "img5.png");
 
       expect(response.status).toBe(400); // Multer TooManyFiles, or our custom 400
     });
 
-    it('should reject invalid file types', async () => {
-      const textBuffer = Buffer.from('this is not an image');
+    it("should reject invalid file types", async () => {
+      const textBuffer = Buffer.from("this is not an image");
 
       const response = await request(appCtx.app.getHttpServer())
-        .post('/uploads/images')
-        .set('Cookie', authCookie)
-        .attach('files', textBuffer, {
-          filename: 'test.txt',
-          contentType: 'text/plain',
+        .post("/uploads/images")
+        .set("Cookie", authCookie)
+        .attach("files", textBuffer, {
+          filename: "test.txt",
+          contentType: "text/plain",
         });
 
       expect(response.status).toBe(400);
-      expect(response.body.message).toContain('Invalid file type');
+      expect(response.body.message).toContain("Invalid file type");
     });
   });
 });

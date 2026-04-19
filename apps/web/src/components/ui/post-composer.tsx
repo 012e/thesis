@@ -182,10 +182,13 @@ export function PostComposer() {
   if (!isOpen) {
     // Collapsed state
     return (
-        <div className="p-4 border-b cursor-text" onClick={() => setIsOpen(true)}>
+      <div className="p-4 border-b cursor-text" onClick={() => setIsOpen(true)}>
         <div className="flex gap-3">
           <Avatar className="flex-shrink-0 w-10 h-10">
-            <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+            <AvatarImage
+              src={session?.user?.image ?? undefined}
+              alt={session?.user?.name || undefined}
+            />
             <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {userInitial}
             </AvatarFallback>
@@ -206,10 +209,13 @@ export function PostComposer() {
   // Expanded state with editor
   return (
     <div className="border-b bg-background/50 backdrop-blur-sm">
-        <div className="p-4">
+      <div className="p-4">
         <div className="flex gap-3">
           <Avatar className="flex-shrink-0 w-10 h-10">
-            <AvatarImage src={session?.user?.image ?? undefined} alt={session?.user?.name || undefined} />
+            <AvatarImage
+              src={session?.user?.image ?? undefined}
+              alt={session?.user?.name || undefined}
+            />
             <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {userInitial}
             </AvatarFallback>

@@ -24,7 +24,7 @@ export interface PollPostContentDto {
   closesAt?: string | null;
 }
 
-export type VisualizationTypeDto = 'bar' | 'line' | 'pie' | 'table';
+export type VisualizationTypeDto = "bar" | "line" | "pie" | "table";
 
 export interface VisualizationDataPointDto {
   label: string;
@@ -73,7 +73,7 @@ export interface PostDto {
   currentUserReaction: ReactionTypeDto | null;
 }
 
-export type ReactionTypeDto = 'upvote' | 'downvote';
+export type ReactionTypeDto = "upvote" | "downvote";
 
 export interface PostReactionDto {
   postId: string;
@@ -183,7 +183,7 @@ export interface PollResultsDto {
 // ─── Direct Messaging ────────────────────────────────────────────────────────
 
 /** Supported message content types. Extensible for future types (image, file…). */
-export type DirectMessageTypeDto = 'text';
+export type DirectMessageTypeDto = "text";
 
 export interface DirectMessageDto {
   id: string;

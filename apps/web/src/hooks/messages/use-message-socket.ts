@@ -1,21 +1,21 @@
-import { useEffect, useRef, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { type Socket } from 'socket.io-client';
-import { useAtomValue } from 'jotai';
-import type { DirectMessageDto } from '@repo/shared-dto';
-import bearerToken from '@/lib/atoms/bearer-token';
-import { env } from '@/env';
-import { getOrCreateMessagesSocket } from '@/lib/socket/messages-socket';
-import { messageKeys } from './use-messages';
-import { conversationKeys } from './use-conversations';
+import { useEffect, useRef, useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type Socket } from "socket.io-client";
+import { useAtomValue } from "jotai";
+import type { DirectMessageDto } from "@repo/shared-dto";
+import bearerToken from "@/lib/atoms/bearer-token";
+import { env } from "@/env";
+import { getOrCreateMessagesSocket } from "@/lib/socket/messages-socket";
+import { messageKeys } from "./use-messages";
+import { conversationKeys } from "./use-conversations";
 
 // ─── Event name constants (mirrors messages.gateway.ts) ─────────────────────
 
-const WS_JOIN_CONVERSATION = 'join-conversation';
-const WS_SEND_MESSAGE = 'send-message';
-const WS_TYPING = 'typing';
-const WS_NEW_MESSAGE = 'new-message';
-const WS_TYPING_INDICATOR = 'typing-indicator';
+const WS_JOIN_CONVERSATION = "join-conversation";
+const WS_SEND_MESSAGE = "send-message";
+const WS_TYPING = "typing";
+const WS_NEW_MESSAGE = "new-message";
+const WS_TYPING_INDICATOR = "typing-indicator";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -122,8 +122,8 @@ export function useMessageSocket(
       optionsRef.current.onTypingIndicator?.(payload);
     };
 
-    socket.on('authenticated', onAuthenticated);
-    socket.on('disconnect', onDisconnect);
+    socket.on("authenticated", onAuthenticated);
+    socket.on("disconnect", onDisconnect);
     socket.on(WS_NEW_MESSAGE, onNewMessage);
     socket.on(WS_TYPING_INDICATOR, onTypingIndicator);
 
@@ -134,8 +134,8 @@ export function useMessageSocket(
     }
 
     return () => {
-      socket.off('authenticated', onAuthenticated);
-      socket.off('disconnect', onDisconnect);
+      socket.off("authenticated", onAuthenticated);
+      socket.off("disconnect", onDisconnect);
       socket.off(WS_NEW_MESSAGE, onNewMessage);
       socket.off(WS_TYPING_INDICATOR, onTypingIndicator);
       // Do NOT disconnect — the socket is shared across hook instances
@@ -149,7 +149,7 @@ export function useMessageSocket(
       const socket = socketRef.current;
       if (!socket?.connected || !conversationId) {
         console.warn(
-          '[useMessageSocket] Cannot send message: not connected or no conversation',
+          "[useMessageSocket] Cannot send message: not connected or no conversation",
         );
         return;
       }

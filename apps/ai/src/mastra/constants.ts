@@ -8,10 +8,10 @@
  */
 
 /** Lightweight model used by domain-specialist sub-agents. */
-export const MODEL_SUB_AGENT = 'openai/gpt-4o-mini' as const;
+export const MODEL_SUB_AGENT = "openai/gpt-4o-mini" as const;
 
 /** Stronger model used by the orchestrator for multi-step reasoning. */
-export const MODEL_ORCHESTRATOR = 'openai/gpt-4o' as const;
+export const MODEL_ORCHESTRATOR = "openai/gpt-4o" as const;
 
 /** Model used by the step-judge agent for structured evaluation. */
-export const MODEL_JUDGE = 'openai/gpt-4o' as const;
+export const MODEL_JUDGE = "openai/gpt-4o" as const;

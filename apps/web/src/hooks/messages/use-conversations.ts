@@ -1,16 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   listConversations,
   startConversation,
   getConversation,
-} from '@/lib/api/messages';
+} from "@/lib/api/messages";
 
 // ─── Query keys ──────────────────────────────────────────────────────────────
 
 export const conversationKeys = {
-  all: ['conversations'] as const,
-  detail: (id: string) => ['conversations', id] as const,
+  all: ["conversations"] as const,
+  detail: (id: string) => ["conversations", id] as const,
 };
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ export function useConversations() {
  */
 export function useConversation(conversationId: string | undefined) {
   return useQuery({
-    queryKey: conversationKeys.detail(conversationId ?? ''),
+    queryKey: conversationKeys.detail(conversationId ?? ""),
     queryFn: () => getConversation(conversationId!),
     enabled: !!conversationId,
     staleTime: 60_000,

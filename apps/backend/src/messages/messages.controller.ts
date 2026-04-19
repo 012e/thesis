@@ -2,14 +2,14 @@ import {
   Controller,
   ForbiddenException,
   NotFoundException,
-} from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+} from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { messagesContract } from '@repo/rest-contracts';
+import { messagesContract } from "@repo/rest-contracts";
 
-import { MessagesService } from './messages.service';
+import { MessagesService } from "./messages.service";
 
 @Controller()
 export class MessagesController {

@@ -1,12 +1,12 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { postsContract } from '@repo/rest-contracts';
+import { postsContract } from "@repo/rest-contracts";
 
-import { createPostSchema, updatePostSchema } from './posts.schemas';
-import { PostsService } from './posts.service';
+import { createPostSchema, updatePostSchema } from "./posts.schemas";
+import { PostsService } from "./posts.service";
 
 @Controller()
 export class PostsController {
@@ -152,18 +152,21 @@ export class PostsController {
 
   @TsRestHandler(postsContract.getRecommendations)
   getRecommendations(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.getRecommendations, async ({ query }) => {
-      const limit = query.limit ?? 20;
-      const result = await this.postsService.recommendations(
-        session.user.id,
-        limit,
-        query.cursor,
-      );
-      return {
-        status: 200,
-        body: postsContract.getRecommendations.responses[200].parse(result),
-      };
-    });
+    return tsRestHandler(
+      postsContract.getRecommendations,
+      async ({ query }) => {
+        const limit = query.limit ?? 20;
+        const result = await this.postsService.recommendations(
+          session.user.id,
+          limit,
+          query.cursor,
+        );
+        return {
+          status: 200,
+          body: postsContract.getRecommendations.responses[200].parse(result),
+        };
+      },
+    );
   }
 
   @TsRestHandler(postsContract.listUserPosts)

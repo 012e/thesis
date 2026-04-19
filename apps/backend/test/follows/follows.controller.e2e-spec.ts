@@ -1,17 +1,17 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
-import { Pool } from 'pg';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import request from "supertest";
+import { Pool } from "pg";
 
-import { closeTestApp, createTestApp } from '../helpers/app.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
-import { registerAndGetSessionCookie } from '../helpers/auth.helper';
+import { closeTestApp, createTestApp } from "../helpers/app.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { registerAndGetSessionCookie } from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
-describe('FollowsController integration', () => {
+describe("FollowsController integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let pool: Pool;
@@ -47,16 +47,16 @@ describe('FollowsController integration', () => {
     );
 
     const userASession = await server
-      .get('/api/auth/get-session')
-      .set('Cookie', userACookie)
+      .get("/api/auth/get-session")
+      .set("Cookie", userACookie)
       .expect(200);
     const userBSession = await server
-      .get('/api/auth/get-session')
-      .set('Cookie', userBCookie)
+      .get("/api/auth/get-session")
+      .set("Cookie", userBCookie)
       .expect(200);
     const userCSession = await server
-      .get('/api/auth/get-session')
-      .set('Cookie', userCCookie)
+      .get("/api/auth/get-session")
+      .set("Cookie", userCCookie)
       .expect(200);
 
     userAId = userASession.body.user.id as string;
@@ -71,14 +71,14 @@ describe('FollowsController integration', () => {
   });
 
   beforeEach(async () => {
-    await pool.query('TRUNCATE TABLE user_follows RESTART IDENTITY CASCADE');
+    await pool.query("TRUNCATE TABLE user_follows RESTART IDENTITY CASCADE");
   });
 
-  describe('POST /users/:id/follow', () => {
-    it('follows another user', async () => {
+  describe("POST /users/:id/follow", () => {
+    it("follows another user", async () => {
       const res = await request(testApp.app.getHttpServer())
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
 
       expect(res.body.followerId).toBe(userAId);
@@ -86,104 +86,104 @@ describe('FollowsController integration', () => {
       expect(res.body.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('is idempotent for duplicate follow requests', async () => {
+    it("is idempotent for duplicate follow requests", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
 
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
 
       const followers = await server
         .get(`/users/${userBId}/followers`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(followers.body).toHaveLength(1);
       expect(followers.body[0].id).toBe(userAId);
     });
 
-    it('returns 400 when trying to follow self', async () => {
+    it("returns 400 when trying to follow self", async () => {
       await request(testApp.app.getHttpServer())
         .post(`/users/${userAId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(400);
     });
 
-    it('returns 404 when target user does not exist', async () => {
+    it("returns 404 when target user does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .post('/users/does-not-exist-user/follow')
-        .set('Cookie', userACookie)
+        .post("/users/does-not-exist-user/follow")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .post(`/users/${userBId}/follow`)
         .expect(401);
     });
   });
 
-  describe('DELETE /users/:id/follow', () => {
-    it('unfollows a followed user', async () => {
+  describe("DELETE /users/:id/follow", () => {
+    it("unfollows a followed user", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
 
       const res = await server
         .delete(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body.followerId).toBe(userAId);
       expect(res.body.followeeId).toBe(userBId);
     });
 
-    it('returns 404 when follow relation does not exist', async () => {
+    it("returns 404 when follow relation does not exist", async () => {
       await request(testApp.app.getHttpServer())
         .delete(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 404 when target user does not exist', async () => {
+    it("returns 404 when target user does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .delete('/users/does-not-exist-user/follow')
-        .set('Cookie', userACookie)
+        .delete("/users/does-not-exist-user/follow")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .delete(`/users/${userBId}/follow`)
         .expect(401);
     });
   });
 
-  describe('GET /users/:id/followers', () => {
-    it('lists all followers of a user', async () => {
+  describe("GET /users/:id/followers", () => {
+    it("lists all followers of a user", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userCCookie)
+        .set("Cookie", userCCookie)
         .expect(201);
 
       const res = await server
         .get(`/users/${userBId}/followers`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       const followerIds = (res.body as { id: string }[])
@@ -195,45 +195,45 @@ describe('FollowsController integration', () => {
       expect(followerIds).toEqual(expectedFollowerIds);
     });
 
-    it('returns an empty array when user has no followers', async () => {
+    it("returns an empty array when user has no followers", async () => {
       const res = await request(testApp.app.getHttpServer())
         .get(`/users/${userBId}/followers`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual([]);
     });
 
-    it('returns 404 when user does not exist', async () => {
+    it("returns 404 when user does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/users/does-not-exist-user/followers')
-        .set('Cookie', userACookie)
+        .get("/users/does-not-exist-user/followers")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .get(`/users/${userBId}/followers`)
         .expect(401);
     });
   });
 
-  describe('GET /users/:id/following', () => {
-    it('lists all users followed by a user', async () => {
+  describe("GET /users/:id/following", () => {
+    it("lists all users followed by a user", async () => {
       const server = request(testApp.app.getHttpServer());
 
       await server
         .post(`/users/${userBId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
       await server
         .post(`/users/${userCId}/follow`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(201);
 
       const res = await server
         .get(`/users/${userAId}/following`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       const followingIds = (res.body as { id: string }[])
@@ -245,23 +245,23 @@ describe('FollowsController integration', () => {
       expect(followingIds).toEqual(expectedFollowingIds);
     });
 
-    it('returns an empty array when user follows nobody', async () => {
+    it("returns an empty array when user follows nobody", async () => {
       const res = await request(testApp.app.getHttpServer())
         .get(`/users/${userAId}/following`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       expect(res.body).toEqual([]);
     });
 
-    it('returns 404 when user does not exist', async () => {
+    it("returns 404 when user does not exist", async () => {
       await request(testApp.app.getHttpServer())
-        .get('/users/does-not-exist-user/following')
-        .set('Cookie', userACookie)
+        .get("/users/does-not-exist-user/following")
+        .set("Cookie", userACookie)
         .expect(404);
     });
 
-    it('returns 401 when not authenticated', async () => {
+    it("returns 401 when not authenticated", async () => {
       await request(testApp.app.getHttpServer())
         .get(`/users/${userAId}/following`)
         .expect(401);

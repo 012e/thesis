@@ -1,12 +1,12 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { playgroundContract } from '@repo/rest-contracts';
+import { playgroundContract } from "@repo/rest-contracts";
 
-import { executeCodeSchema } from './playground.schemas';
-import { PlaygroundService } from './playground.service';
+import { executeCodeSchema } from "./playground.schemas";
+import { PlaygroundService } from "./playground.service";
 
 @Controller()
 export class PlaygroundController {
@@ -29,7 +29,7 @@ export class PlaygroundController {
         };
       } catch (error) {
         // Handle validation errors
-        if (error instanceof Error && error.name === 'ZodError') {
+        if (error instanceof Error && error.name === "ZodError") {
           return {
             status: 400,
             body: null,

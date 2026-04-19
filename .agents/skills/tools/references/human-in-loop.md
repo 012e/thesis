@@ -33,7 +33,9 @@ const DeleteToolUI = makeAssistantToolUI({
             <WarningIcon className="text-yellow-600" />
             <span className="font-medium">Confirm deletion</span>
           </div>
-          <p className="mb-4">Are you sure you want to delete <code>{args.path}</code>?</p>
+          <p className="mb-4">
+            Are you sure you want to delete <code>{args.path}</code>?
+          </p>
           <div className="flex gap-2">
             <button
               onClick={() => submitResult({ confirmed: true })}
@@ -100,7 +102,8 @@ const SelectToolUI = makeAssistantToolUI({
 
     return (
       <div className="p-4 bg-gray-50 rounded-lg">
-        Selected: {args.options.find((o: any) => o.id === result?.selected)?.label}
+        Selected:{" "}
+        {args.options.find((o: any) => o.id === result?.selected)?.label}
       </div>
     );
   },
@@ -212,10 +215,7 @@ const WizardToolUI = makeAssistantToolUI({
         </div>
 
         {step > 0 && (
-          <button
-            onClick={() => setStep(step - 1)}
-            className="text-blue-500"
-          >
+          <button onClick={() => setStep(step - 1)} className="text-blue-500">
             ← Back
           </button>
         )}
@@ -247,9 +247,7 @@ const RatingToolUI = makeAssistantToolUI({
             <button
               key={star}
               onClick={() => setRating(star)}
-              className={`text-2xl ${
-                star <= rating ? "text-yellow-400" : "text-gray-300"
-              }`}
+              className={`text-2xl ${star <= rating ? "text-yellow-400" : "text-gray-300"}`}
             >
               ★
             </button>
@@ -307,9 +305,7 @@ const TimedToolUI = makeAssistantToolUI({
     return (
       <div className="p-4 bg-yellow-50 rounded-lg">
         <p>{args.message}</p>
-        <p className="text-sm text-gray-500">
-          Auto-cancelling in {timeLeft}s
-        </p>
+        <p className="text-sm text-gray-500">Auto-cancelling in {timeLeft}s</p>
         <button
           onClick={() => submitResult({ confirmed: true })}
           className="mt-2 px-4 py-2 bg-blue-500 text-white rounded"

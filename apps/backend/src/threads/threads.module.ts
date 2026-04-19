@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-import { DatabaseModule } from '@/db/database.module';
+import { DatabaseModule } from "@/db/database.module";
 
-import { ThreadsController } from './threads.controller';
-import { ThreadsService } from './threads.service';
+import { ThreadsController } from "./threads.controller";
+import { ThreadsService } from "./threads.service";
 
 @Module({
   imports: [DatabaseModule],

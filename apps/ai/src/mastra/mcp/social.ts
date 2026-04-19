@@ -1,13 +1,13 @@
-import { MCPClient } from '@mastra/mcp';
-import { env } from '../../env';
-import { RequestContext } from '@mastra/core/request-context';
+import { MCPClient } from "@mastra/mcp";
+import { env } from "../../env";
+import { RequestContext } from "@mastra/core/request-context";
 
 function createAuthFetch(context: RequestContext) {
   return async (url: URL | RequestInfo, init?: RequestInit) => {
     const headers = new Headers(init?.headers);
-    const authHeader = context?.get('authorization') as string | undefined;
+    const authHeader = context?.get("authorization") as string | undefined;
     if (authHeader) {
-      headers.set('Authorization', authHeader);
+      headers.set("Authorization", authHeader);
     }
     return fetch(url, { ...init, headers });
   };
@@ -16,7 +16,7 @@ function createAuthFetch(context: RequestContext) {
 function createMcpClient(context: RequestContext) {
   const fetchWithAuth = createAuthFetch(context);
   return new MCPClient({
-    id: 'social-mcp-client',
+    id: "social-mcp-client",
     servers: {
       identity: {
         url: new URL(`${env.BACKEND_URL}/mcp/identity/sse`),

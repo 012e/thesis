@@ -58,9 +58,7 @@ function PostImages({ images }: PostImagesProps) {
             <button
               key={image.key}
               type="button"
-              className={`relative overflow-hidden bg-muted ${
-                isFirstOfThree ? "col-span-2" : ""
-              }`}
+              className={`relative overflow-hidden bg-muted ${isFirstOfThree ? "col-span-2" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedImage(image.url);
@@ -69,9 +67,7 @@ function PostImages({ images }: PostImagesProps) {
               <img
                 src={image.url}
                 alt={`Post image ${index + 1}`}
-                className={`w-full object-cover ${
-                  images.length === 1 ? "max-h-[512px]" : "h-40"
-                }`}
+                className={`w-full object-cover ${images.length === 1 ? "max-h-[512px]" : "h-40"}`}
                 loading="lazy"
               />
             </button>
@@ -157,10 +153,17 @@ export function Post({ post, initialReactionSummary }: PostProps) {
           onClick={handleAuthorClick}
           disabled={isOwnPost}
           className="shrink-0"
-          title={isOwnPost ? undefined : `Message ${post.author.name ?? post.author.username}`}
+          title={
+            isOwnPost
+              ? undefined
+              : `Message ${post.author.name ?? post.author.username}`
+          }
         >
           <Avatar className="w-10 h-10">
-            <AvatarImage src={post.author.image ?? undefined} alt={post.author.name || post.author.username || undefined} />
+            <AvatarImage
+              src={post.author.image ?? undefined}
+              alt={post.author.name || post.author.username || undefined}
+            />
             <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {authorInitial}
             </AvatarFallback>

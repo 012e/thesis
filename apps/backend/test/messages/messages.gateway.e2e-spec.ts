@@ -1,31 +1,31 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import request from 'supertest';
-import { Pool } from 'pg';
-import { io as ioClient, type Socket } from 'socket.io-client';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import request from "supertest";
+import { Pool } from "pg";
+import { io as ioClient, type Socket } from "socket.io-client";
 
-import { closeTestApp, createTestApp } from '../helpers/app.setup';
-import { runBetterAuthMigrations } from '../helpers/database.setup';
+import { closeTestApp, createTestApp } from "../helpers/app.setup";
+import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
   registerAndGetSession,
   registerAndGetSessionWithToken,
-} from '../helpers/auth.helper';
+} from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
 // ---------------------------------------------------------------------------
 // Event name constants (kept local to avoid importing server-side modules
 // before process.env.DATABASE_URL is set by createTestApp)
 // ---------------------------------------------------------------------------
 
-const WS_JOIN_CONVERSATION = 'join-conversation';
-const WS_SEND_MESSAGE = 'send-message';
-const WS_TYPING = 'typing';
-const WS_NEW_MESSAGE = 'new-message';
-const WS_TYPING_INDICATOR = 'typing-indicator';
-const WS_NEW_MESSAGE_NOTIFICATION = 'new-message-notification';
+const WS_JOIN_CONVERSATION = "join-conversation";
+const WS_SEND_MESSAGE = "send-message";
+const WS_TYPING = "typing";
+const WS_NEW_MESSAGE = "new-message";
+const WS_TYPING_INDICATOR = "typing-indicator";
+const WS_NEW_MESSAGE_NOTIFICATION = "new-message-notification";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -44,15 +44,15 @@ function connectSocket(baseUrl: string, bearerToken: string): Promise<Socket> {
   return new Promise((resolve, reject) => {
     const socket = ioClient(`${baseUrl}/messages`, {
       auth: { token: bearerToken },
-      transports: ['websocket'],
+      transports: ["websocket"],
       forceNew: true,
     });
 
     const cleanup = () => {
-      socket.off('authenticated', onAuth);
-      socket.off('connect_error', onConnectError);
-      socket.off('error', onError);
-      socket.off('disconnect', onDisconnect);
+      socket.off("authenticated", onAuth);
+      socket.off("connect_error", onConnectError);
+      socket.off("error", onError);
+      socket.off("disconnect", onDisconnect);
     };
 
     const onAuth = () => {
@@ -73,13 +73,13 @@ function connectSocket(baseUrl: string, bearerToken: string): Promise<Socket> {
     // If the socket disconnects without ever authenticating, reject.
     const onDisconnect = () => {
       cleanup();
-      reject(new Error('Disconnected before authentication completed'));
+      reject(new Error("Disconnected before authentication completed"));
     };
 
-    socket.once('authenticated', onAuth);
-    socket.once('connect_error', onConnectError);
-    socket.once('error', onError);
-    socket.once('disconnect', onDisconnect);
+    socket.once("authenticated", onAuth);
+    socket.once("connect_error", onConnectError);
+    socket.once("error", onError);
+    socket.once("disconnect", onDisconnect);
   });
 }
 
@@ -92,7 +92,7 @@ function disconnectSocket(socket: Socket): Promise<void> {
       resolve();
       return;
     }
-    socket.once('disconnect', () => resolve());
+    socket.once("disconnect", () => resolve());
     socket.disconnect();
   });
 }
@@ -148,7 +148,7 @@ function waitForEventOrException(
     const cleanup = () => {
       clearTimeout(timer);
       socket.off(event, onEvent);
-      socket.off('exception', onException);
+      socket.off("exception", onException);
     };
 
     const onEvent = (data: unknown) => {
@@ -157,11 +157,11 @@ function waitForEventOrException(
     };
     const onException = (data: unknown) => {
       cleanup();
-      resolve({ event: 'exception', data });
+      resolve({ event: "exception", data });
     };
 
     socket.on(event, onEvent);
-    socket.on('exception', onException);
+    socket.on("exception", onException);
   });
 }
 
@@ -169,7 +169,7 @@ function waitForEventOrException(
 // Suite
 // ---------------------------------------------------------------------------
 
-describe('MessagesGateway WebSocket integration', () => {
+describe("MessagesGateway WebSocket integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let pool: Pool;
@@ -225,7 +225,7 @@ describe('MessagesGateway WebSocket integration', () => {
     // A follows B so they can open a DM conversation
     await server
       .post(`/users/${userBId}/follow`)
-      .set('Cookie', userACookie)
+      .set("Cookie", userACookie)
       .expect(201);
   }, 120_000);
 
@@ -237,15 +237,15 @@ describe('MessagesGateway WebSocket integration', () => {
 
   beforeEach(async () => {
     await pool.query(
-      'TRUNCATE TABLE direct_messages, conversations RESTART IDENTITY CASCADE',
+      "TRUNCATE TABLE direct_messages, conversations RESTART IDENTITY CASCADE",
     );
   });
 
   // ─── Helper: create a conversation via REST and return its ID ─────────────
   async function createConversation(): Promise<string> {
     const res = await request(testApp.app.getHttpServer())
-      .post('/conversations')
-      .set('Cookie', userACookie)
+      .post("/conversations")
+      .set("Cookie", userACookie)
       .send({ recipientId: userBId })
       .expect(201);
     return res.body.id as string;
@@ -253,20 +253,20 @@ describe('MessagesGateway WebSocket integration', () => {
 
   // ─── Connection ───────────────────────────────────────────────────────────
 
-  describe('connection / authentication', () => {
-    it('accepts a connection from a client with a valid bearer token', async () => {
+  describe("connection / authentication", () => {
+    it("accepts a connection from a client with a valid bearer token", async () => {
       const socket = await connectSocket(testApp.baseUrl, userAToken);
       expect(socket.connected).toBe(true);
       await disconnectSocket(socket);
     });
 
-    it('rejects a connection with no token', async () => {
-      await expect(connectSocket(testApp.baseUrl, '')).rejects.toThrow();
+    it("rejects a connection with no token", async () => {
+      await expect(connectSocket(testApp.baseUrl, "")).rejects.toThrow();
     });
 
-    it('rejects a connection with an invalid token', async () => {
+    it("rejects a connection with an invalid token", async () => {
       await expect(
-        connectSocket(testApp.baseUrl, 'not-a-valid-jwt'),
+        connectSocket(testApp.baseUrl, "not-a-valid-jwt"),
       ).rejects.toThrow();
     });
   });
@@ -274,7 +274,7 @@ describe('MessagesGateway WebSocket integration', () => {
   // ─── join-conversation ────────────────────────────────────────────────────
 
   describe(WS_JOIN_CONVERSATION, () => {
-    it('allows a conversation participant to join the room', async () => {
+    it("allows a conversation participant to join the room", async () => {
       const convId = await createConversation();
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
 
@@ -284,21 +284,21 @@ describe('MessagesGateway WebSocket integration', () => {
       // waitForEvent rejects on timeout, so catch + return 'ok' to avoid
       // that rejection leaking through Promise.race.
       const outcome = await Promise.race([
-        waitForEvent(socketA, 'exception', 800)
-          .then(() => 'exception' as const)
-          .catch(() => 'ok' as const),
-        new Promise<'ok'>((resolve) => setTimeout(() => resolve('ok'), 1000)),
+        waitForEvent(socketA, "exception", 800)
+          .then(() => "exception" as const)
+          .catch(() => "ok" as const),
+        new Promise<"ok">((resolve) => setTimeout(() => resolve("ok"), 1000)),
       ]);
 
-      expect(outcome).toBe('ok');
+      expect(outcome).toBe("ok");
       await disconnectSocket(socketA);
     });
 
-    it('emits an exception when joining a conversation the user is not part of', async () => {
+    it("emits an exception when joining a conversation the user is not part of", async () => {
       const convId = await createConversation(); // A ↔ B
       const socketC = await connectSocket(testApp.baseUrl, userCToken);
 
-      const resultPromise = waitForEvent(socketC, 'exception', 2000);
+      const resultPromise = waitForEvent(socketC, "exception", 2000);
       socketC.emit(WS_JOIN_CONVERSATION, { conversationId: convId });
 
       const result = await resultPromise;
@@ -307,12 +307,12 @@ describe('MessagesGateway WebSocket integration', () => {
       await disconnectSocket(socketC);
     });
 
-    it('emits an exception when conversation does not exist', async () => {
+    it("emits an exception when conversation does not exist", async () => {
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
 
-      const resultPromise = waitForEvent(socketA, 'exception', 2000);
+      const resultPromise = waitForEvent(socketA, "exception", 2000);
       socketA.emit(WS_JOIN_CONVERSATION, {
-        conversationId: '00000000-0000-0000-0000-000000000000',
+        conversationId: "00000000-0000-0000-0000-000000000000",
       });
 
       const result = await resultPromise;
@@ -325,7 +325,7 @@ describe('MessagesGateway WebSocket integration', () => {
   // ─── send-message ─────────────────────────────────────────────────────────
 
   describe(WS_SEND_MESSAGE, () => {
-    it('broadcasts new-message to both participants after send-message', async () => {
+    it("broadcasts new-message to both participants after send-message", async () => {
       const convId = await createConversation();
 
       const [socketA, socketB] = await Promise.all([
@@ -348,7 +348,7 @@ describe('MessagesGateway WebSocket integration', () => {
 
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'Hello via WS!',
+        content: "Hello via WS!",
       });
 
       const [msgOnA, msgOnB] = await Promise.all([
@@ -360,18 +360,18 @@ describe('MessagesGateway WebSocket integration', () => {
         expect(msg).toMatchObject({
           conversationId: convId,
           senderId: userAId,
-          content: 'Hello via WS!',
-          type: 'text',
+          content: "Hello via WS!",
+          type: "text",
           readAt: null,
         });
-        expect(typeof msg.id).toBe('string');
-        expect(typeof msg.createdAt).toBe('string');
+        expect(typeof msg.id).toBe("string");
+        expect(typeof msg.createdAt).toBe("string");
       }
 
       await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
     });
 
-    it('persists the message so it is retrievable via REST', async () => {
+    it("persists the message so it is retrievable via REST", async () => {
       const convId = await createConversation();
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
 
@@ -380,31 +380,31 @@ describe('MessagesGateway WebSocket integration', () => {
       const msgPromise = waitForEvent(socketA, WS_NEW_MESSAGE);
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'Persistent message',
+        content: "Persistent message",
       });
       await msgPromise;
 
       // Confirm via REST
       const res = await request(testApp.app.getHttpServer())
         .get(`/conversations/${convId}/messages`)
-        .set('Cookie', userACookie)
+        .set("Cookie", userACookie)
         .expect(200);
 
       const messages = res.body.messages as { content: string }[];
-      expect(messages.some((m) => m.content === 'Persistent message')).toBe(
+      expect(messages.some((m) => m.content === "Persistent message")).toBe(
         true,
       );
 
       await disconnectSocket(socketA);
     });
 
-    it('emits an exception when the conversation does not exist', async () => {
+    it("emits an exception when the conversation does not exist", async () => {
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
 
-      const exceptionPromise = waitForEvent(socketA, 'exception', 2000);
+      const exceptionPromise = waitForEvent(socketA, "exception", 2000);
       socketA.emit(WS_SEND_MESSAGE, {
-        conversationId: '00000000-0000-0000-0000-000000000000',
-        content: 'Ghost',
+        conversationId: "00000000-0000-0000-0000-000000000000",
+        content: "Ghost",
       });
 
       const result = await exceptionPromise;
@@ -413,7 +413,7 @@ describe('MessagesGateway WebSocket integration', () => {
       await disconnectSocket(socketA);
     });
 
-    it('does not broadcast to clients that have not joined the room', async () => {
+    it("does not broadcast to clients that have not joined the room", async () => {
       const convId = await createConversation();
 
       const [socketA, socketC] = await Promise.all([
@@ -432,7 +432,7 @@ describe('MessagesGateway WebSocket integration', () => {
       const msgPromise = waitForEvent(socketA, WS_NEW_MESSAGE);
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'Private',
+        content: "Private",
       });
       await msgPromise;
 
@@ -447,7 +447,7 @@ describe('MessagesGateway WebSocket integration', () => {
   // ─── typing ───────────────────────────────────────────────────────────────
 
   describe(WS_TYPING, () => {
-    it('forwards typing-indicator to the other participant but not the sender', async () => {
+    it("forwards typing-indicator to the other participant but not the sender", async () => {
       const convId = await createConversation();
 
       const [socketA, socketB] = await Promise.all([
@@ -485,7 +485,7 @@ describe('MessagesGateway WebSocket integration', () => {
       await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
     });
 
-    it('forwards isTyping: false (stopped typing) correctly', async () => {
+    it("forwards isTyping: false (stopped typing) correctly", async () => {
       const convId = await createConversation();
 
       const [socketA, socketB] = await Promise.all([
@@ -511,15 +511,15 @@ describe('MessagesGateway WebSocket integration', () => {
 
   // ─── multiple messages / ordering ─────────────────────────────────────────
 
-  describe('message ordering', () => {
-    it('receives messages in send order when sent sequentially', async () => {
+  describe("message ordering", () => {
+    it("receives messages in send order when sent sequentially", async () => {
       const convId = await createConversation();
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
 
       await joinRoom(socketA, convId);
 
       const received: string[] = [];
-      const messages = ['First', 'Second', 'Third'];
+      const messages = ["First", "Second", "Third"];
 
       // Collect all three messages
       const allReceived = new Promise<void>((resolve) => {
@@ -536,7 +536,7 @@ describe('MessagesGateway WebSocket integration', () => {
       }
 
       await allReceived;
-      expect(received).toEqual(['First', 'Second', 'Third']);
+      expect(received).toEqual(["First", "Second", "Third"]);
 
       await disconnectSocket(socketA);
     });
@@ -545,7 +545,7 @@ describe('MessagesGateway WebSocket integration', () => {
   // ─── new-message-notification (per-user room) ─────────────────────────────
 
   describe(WS_NEW_MESSAGE_NOTIFICATION, () => {
-    it('recipient receives notification without having joined the conversation room', async () => {
+    it("recipient receives notification without having joined the conversation room", async () => {
       const convId = await createConversation();
 
       // A sends; B connects but does NOT emit join-conversation
@@ -565,7 +565,7 @@ describe('MessagesGateway WebSocket integration', () => {
 
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'Notify B!',
+        content: "Notify B!",
       });
 
       const notification = await notificationPromise;
@@ -573,13 +573,13 @@ describe('MessagesGateway WebSocket integration', () => {
       expect(notification).toMatchObject({
         conversationId: convId,
         senderId: userAId,
-        preview: 'Notify B!',
+        preview: "Notify B!",
       });
 
       await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
     });
 
-    it('preview is truncated to 100 characters', async () => {
+    it("preview is truncated to 100 characters", async () => {
       const convId = await createConversation();
 
       const [socketA, socketB] = await Promise.all([
@@ -594,7 +594,7 @@ describe('MessagesGateway WebSocket integration', () => {
         WS_NEW_MESSAGE_NOTIFICATION,
       );
 
-      const longContent = 'x'.repeat(200);
+      const longContent = "x".repeat(200);
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
         content: longContent,
@@ -602,13 +602,13 @@ describe('MessagesGateway WebSocket integration', () => {
 
       const notification = await notificationPromise;
 
-      expect(typeof notification.preview).toBe('string');
+      expect(typeof notification.preview).toBe("string");
       expect((notification.preview as string).length).toBe(100);
 
       await Promise.all([disconnectSocket(socketA), disconnectSocket(socketB)]);
     });
 
-    it('non-participants do not receive new-message-notification', async () => {
+    it("non-participants do not receive new-message-notification", async () => {
       const convId = await createConversation(); // A ↔ B
 
       const [socketA, socketC] = await Promise.all([
@@ -626,7 +626,7 @@ describe('MessagesGateway WebSocket integration', () => {
       const msgOnA = waitForEvent(socketA, WS_NEW_MESSAGE);
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'Private to B only',
+        content: "Private to B only",
       });
       await msgOnA;
 
@@ -637,7 +637,7 @@ describe('MessagesGateway WebSocket integration', () => {
       await Promise.all([disconnectSocket(socketA), disconnectSocket(socketC)]);
     });
 
-    it('sender does not receive notification for their own message', async () => {
+    it("sender does not receive notification for their own message", async () => {
       const convId = await createConversation();
 
       const socketA = await connectSocket(testApp.baseUrl, userAToken);
@@ -651,7 +651,7 @@ describe('MessagesGateway WebSocket integration', () => {
       const msgOnA = waitForEvent(socketA, WS_NEW_MESSAGE);
       socketA.emit(WS_SEND_MESSAGE, {
         conversationId: convId,
-        content: 'My own message',
+        content: "My own message",
       });
       await msgOnA;
 

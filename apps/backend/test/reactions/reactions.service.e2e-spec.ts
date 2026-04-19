@@ -1,21 +1,21 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { Test, TestingModule } from '@nestjs/testing';
-import { Pool } from 'pg';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { Test, TestingModule } from "@nestjs/testing";
+import { Pool } from "pg";
 
-import { DatabaseService } from '@/db/database.service';
-import { posts, postReactions } from '@/db/schema';
-import { user } from '@/db/auth-schema';
-import { DATABASE_POOL } from '@/db/tokens';
-import { ReactionsService } from '@/reactions/reactions.service';
+import { DatabaseService } from "@/db/database.service";
+import { posts, postReactions } from "@/db/schema";
+import { user } from "@/db/auth-schema";
+import { DATABASE_POOL } from "@/db/tokens";
+import { ReactionsService } from "@/reactions/reactions.service";
 
-import { runBetterAuthMigrations } from '../helpers/database.setup';
+import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
   startPostgresContainer,
   stopPostgresContainer,
   type PostgresContainerContext,
-} from '../helpers/testcontainers.setup';
+} from "../helpers/testcontainers.setup";
 
-describe('ReactionsService integration', () => {
+describe("ReactionsService integration", () => {
   let containers: PostgresContainerContext;
   let moduleRef: TestingModule;
   let pool: Pool;
@@ -47,21 +47,21 @@ describe('ReactionsService integration', () => {
       .insert(user)
       .values([
         {
-          id: 'user-1',
-          email: 'user1@example.com',
-          name: 'User One',
+          id: "user-1",
+          email: "user1@example.com",
+          name: "User One",
           emailVerified: false,
         },
         {
-          id: 'user-2',
-          email: 'user2@example.com',
-          name: 'User Two',
+          id: "user-2",
+          email: "user2@example.com",
+          name: "User Two",
           emailVerified: false,
         },
         {
-          id: 'user-3',
-          email: 'user3@example.com',
-          name: 'User Three',
+          id: "user-3",
+          email: "user3@example.com",
+          name: "User Three",
           emailVerified: false,
         },
       ])
@@ -75,7 +75,7 @@ describe('ReactionsService integration', () => {
     // Create a fresh post for each test.
     const [post] = await databaseService.db
       .insert(posts)
-      .values({ authorId: 'user-1', content: { text: 'Test post' } })
+      .values({ authorId: "user-1", content: { text: "Test post" } })
       .returning();
     postId = post.id;
   });
@@ -85,85 +85,85 @@ describe('ReactionsService integration', () => {
     await stopPostgresContainer(containers);
   });
 
-  describe('react()', () => {
-    it('creates an upvote reaction and returns it', async () => {
-      const reaction = await reactionsService.react(postId, 'user-2', 'upvote');
+  describe("react()", () => {
+    it("creates an upvote reaction and returns it", async () => {
+      const reaction = await reactionsService.react(postId, "user-2", "upvote");
 
       expect(reaction).not.toBeNull();
       expect(reaction!.postId).toBe(postId);
-      expect(reaction!.userId).toBe('user-2');
-      expect(reaction!.type).toBe('upvote');
+      expect(reaction!.userId).toBe("user-2");
+      expect(reaction!.type).toBe("upvote");
       expect(reaction!.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('creates a downvote reaction', async () => {
+    it("creates a downvote reaction", async () => {
       const reaction = await reactionsService.react(
         postId,
-        'user-2',
-        'downvote',
+        "user-2",
+        "downvote",
       );
 
-      expect(reaction!.type).toBe('downvote');
+      expect(reaction!.type).toBe("downvote");
     });
 
-    it('replaces an existing reaction when the type changes', async () => {
-      await reactionsService.react(postId, 'user-2', 'upvote');
+    it("replaces an existing reaction when the type changes", async () => {
+      await reactionsService.react(postId, "user-2", "upvote");
       const updated = await reactionsService.react(
         postId,
-        'user-2',
-        'downvote',
+        "user-2",
+        "downvote",
       );
 
-      expect(updated!.type).toBe('downvote');
+      expect(updated!.type).toBe("downvote");
 
       // Only one row should exist for this user on this post.
-      const summary = await reactionsService.getSummary(postId, 'user-2');
+      const summary = await reactionsService.getSummary(postId, "user-2");
       expect(summary!.upvotes).toBe(0);
       expect(summary!.downvotes).toBe(1);
     });
 
-    it('returns null for a non-existent post', async () => {
+    it("returns null for a non-existent post", async () => {
       const reaction = await reactionsService.react(
-        '00000000-0000-0000-0000-000000000000',
-        'user-2',
-        'upvote',
+        "00000000-0000-0000-0000-000000000000",
+        "user-2",
+        "upvote",
       );
 
       expect(reaction).toBeNull();
     });
   });
 
-  describe('unreact()', () => {
-    it('removes an existing reaction and returns it', async () => {
-      await reactionsService.react(postId, 'user-2', 'upvote');
+  describe("unreact()", () => {
+    it("removes an existing reaction and returns it", async () => {
+      await reactionsService.react(postId, "user-2", "upvote");
 
-      const deleted = await reactionsService.unreact(postId, 'user-2');
+      const deleted = await reactionsService.unreact(postId, "user-2");
 
       expect(deleted).not.toBeNull();
-      expect(deleted!.userId).toBe('user-2');
-      expect(deleted!.type).toBe('upvote');
+      expect(deleted!.userId).toBe("user-2");
+      expect(deleted!.type).toBe("upvote");
 
-      const summary = await reactionsService.getSummary(postId, 'user-2');
+      const summary = await reactionsService.getSummary(postId, "user-2");
       expect(summary!.upvotes).toBe(0);
     });
 
-    it('returns null when the user has no reaction', async () => {
-      const result = await reactionsService.unreact(postId, 'user-2');
+    it("returns null when the user has no reaction", async () => {
+      const result = await reactionsService.unreact(postId, "user-2");
       expect(result).toBeNull();
     });
 
-    it('returns null for a non-existent post', async () => {
+    it("returns null for a non-existent post", async () => {
       const result = await reactionsService.unreact(
-        '00000000-0000-0000-0000-000000000000',
-        'user-2',
+        "00000000-0000-0000-0000-000000000000",
+        "user-2",
       );
       expect(result).toBeNull();
     });
   });
 
-  describe('getSummary()', () => {
-    it('returns zeros and null userReaction when there are no reactions', async () => {
-      const summary = await reactionsService.getSummary(postId, 'user-1');
+  describe("getSummary()", () => {
+    it("returns zeros and null userReaction when there are no reactions", async () => {
+      const summary = await reactionsService.getSummary(postId, "user-1");
 
       expect(summary).toEqual({
         upvotes: 0,
@@ -172,45 +172,45 @@ describe('ReactionsService integration', () => {
       });
     });
 
-    it('counts upvotes and downvotes correctly', async () => {
-      await reactionsService.react(postId, 'user-1', 'upvote');
-      await reactionsService.react(postId, 'user-2', 'upvote');
-      await reactionsService.react(postId, 'user-3', 'downvote');
+    it("counts upvotes and downvotes correctly", async () => {
+      await reactionsService.react(postId, "user-1", "upvote");
+      await reactionsService.react(postId, "user-2", "upvote");
+      await reactionsService.react(postId, "user-3", "downvote");
 
-      const summary = await reactionsService.getSummary(postId, 'user-1');
+      const summary = await reactionsService.getSummary(postId, "user-1");
 
       expect(summary!.upvotes).toBe(2);
       expect(summary!.downvotes).toBe(1);
     });
 
     it("returns the requesting user's reaction type in userReaction", async () => {
-      await reactionsService.react(postId, 'user-2', 'downvote');
+      await reactionsService.react(postId, "user-2", "downvote");
 
-      const summary = await reactionsService.getSummary(postId, 'user-2');
-      expect(summary!.userReaction).toBe('downvote');
+      const summary = await reactionsService.getSummary(postId, "user-2");
+      expect(summary!.userReaction).toBe("downvote");
     });
 
-    it('returns null userReaction when the requesting user has not reacted', async () => {
-      await reactionsService.react(postId, 'user-1', 'upvote');
+    it("returns null userReaction when the requesting user has not reacted", async () => {
+      await reactionsService.react(postId, "user-1", "upvote");
 
-      const summary = await reactionsService.getSummary(postId, 'user-2');
+      const summary = await reactionsService.getSummary(postId, "user-2");
       expect(summary!.userReaction).toBeNull();
     });
 
-    it('returns null for a non-existent post', async () => {
+    it("returns null for a non-existent post", async () => {
       const result = await reactionsService.getSummary(
-        '00000000-0000-0000-0000-000000000000',
-        'user-1',
+        "00000000-0000-0000-0000-000000000000",
+        "user-1",
       );
       expect(result).toBeNull();
     });
   });
 
-  describe('listReactors()', () => {
-    it('returns all reactors when no type filter is applied', async () => {
-      await reactionsService.react(postId, 'user-1', 'upvote');
-      await reactionsService.react(postId, 'user-2', 'downvote');
-      await reactionsService.react(postId, 'user-3', 'upvote');
+  describe("listReactors()", () => {
+    it("returns all reactors when no type filter is applied", async () => {
+      await reactionsService.react(postId, "user-1", "upvote");
+      await reactionsService.react(postId, "user-2", "downvote");
+      await reactionsService.react(postId, "user-3", "upvote");
 
       const reactors = await reactionsService.listReactors(postId);
 
@@ -218,49 +218,49 @@ describe('ReactionsService integration', () => {
       expect(reactors!).toHaveLength(3);
     });
 
-    it('filters reactors by upvote type', async () => {
-      await reactionsService.react(postId, 'user-1', 'upvote');
-      await reactionsService.react(postId, 'user-2', 'downvote');
-      await reactionsService.react(postId, 'user-3', 'upvote');
+    it("filters reactors by upvote type", async () => {
+      await reactionsService.react(postId, "user-1", "upvote");
+      await reactionsService.react(postId, "user-2", "downvote");
+      await reactionsService.react(postId, "user-3", "upvote");
 
-      const upvoters = await reactionsService.listReactors(postId, 'upvote');
+      const upvoters = await reactionsService.listReactors(postId, "upvote");
 
       expect(upvoters!).toHaveLength(2);
-      expect(upvoters!.every((r) => r.reactionType === 'upvote')).toBe(true);
+      expect(upvoters!.every((r) => r.reactionType === "upvote")).toBe(true);
     });
 
-    it('filters reactors by downvote type', async () => {
-      await reactionsService.react(postId, 'user-1', 'upvote');
-      await reactionsService.react(postId, 'user-2', 'downvote');
+    it("filters reactors by downvote type", async () => {
+      await reactionsService.react(postId, "user-1", "upvote");
+      await reactionsService.react(postId, "user-2", "downvote");
 
       const downvoters = await reactionsService.listReactors(
         postId,
-        'downvote',
+        "downvote",
       );
 
       expect(downvoters!).toHaveLength(1);
-      expect(downvoters![0].id).toBe('user-2');
-      expect(downvoters![0].reactionType).toBe('downvote');
+      expect(downvoters![0].id).toBe("user-2");
+      expect(downvoters![0].reactionType).toBe("downvote");
     });
 
-    it('returns reactor user details', async () => {
-      await reactionsService.react(postId, 'user-2', 'upvote');
+    it("returns reactor user details", async () => {
+      await reactionsService.react(postId, "user-2", "upvote");
 
-      const reactors = await reactionsService.listReactors(postId, 'upvote');
+      const reactors = await reactionsService.listReactors(postId, "upvote");
 
-      expect(reactors![0].id).toBe('user-2');
-      expect(reactors![0].email).toBe('user2@example.com');
+      expect(reactors![0].id).toBe("user-2");
+      expect(reactors![0].email).toBe("user2@example.com");
       expect(reactors![0].reactedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     });
 
-    it('returns an empty array when no one has reacted', async () => {
+    it("returns an empty array when no one has reacted", async () => {
       const reactors = await reactionsService.listReactors(postId);
       expect(reactors).toEqual([]);
     });
 
-    it('returns null for a non-existent post', async () => {
+    it("returns null for a non-existent post", async () => {
       const result = await reactionsService.listReactors(
-        '00000000-0000-0000-0000-000000000000',
+        "00000000-0000-0000-0000-000000000000",
       );
       expect(result).toBeNull();
     });

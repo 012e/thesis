@@ -2,16 +2,16 @@ import {
   useInfiniteQuery,
   useMutation,
   useQueryClient,
-} from '@tanstack/react-query';
-import { toast } from 'sonner';
-import { listMessages, sendMessageRest } from '@/lib/api/messages';
-import { conversationKeys } from './use-conversations';
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import { listMessages, sendMessageRest } from "@/lib/api/messages";
+import { conversationKeys } from "./use-conversations";
 
 // ─── Query keys ──────────────────────────────────────────────────────────────
 
 export const messageKeys = {
   byConversation: (conversationId: string) =>
-    ['messages', conversationId] as const,
+    ["messages", conversationId] as const,
 };
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
@@ -24,7 +24,7 @@ export const messageKeys = {
  */
 export function useMessages(conversationId: string | undefined) {
   return useInfiniteQuery({
-    queryKey: messageKeys.byConversation(conversationId ?? ''),
+    queryKey: messageKeys.byConversation(conversationId ?? ""),
     queryFn: ({ pageParam }) =>
       listMessages(conversationId!, {
         before: pageParam as string | undefined,

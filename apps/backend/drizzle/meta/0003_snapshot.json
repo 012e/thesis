@@ -60,12 +60,8 @@
           "name": "comments_post_id_posts_id_fk",
           "tableFrom": "comments",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -73,12 +69,8 @@
           "name": "comments_parent_id_fkey",
           "tableFrom": "comments",
           "tableTo": "comments",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -126,12 +118,8 @@
           "name": "post_reactions_post_id_posts_id_fk",
           "tableFrom": "post_reactions",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -139,10 +127,7 @@
       "compositePrimaryKeys": {
         "post_reactions_post_id_user_id_pk": {
           "name": "post_reactions_post_id_user_id_pk",
-          "columns": [
-            "post_id",
-            "user_id"
-          ]
+          "columns": ["post_id", "user_id"]
         }
       },
       "uniqueConstraints": {},
@@ -361,12 +346,8 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -496,12 +477,8 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -511,9 +488,7 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -589,16 +564,12 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         },
         "user_username_unique": {
           "name": "user_username_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "username"
-          ]
+          "columns": ["username"]
         }
       },
       "policies": {},
@@ -677,10 +648,7 @@
     "public.reaction_type": {
       "name": "reaction_type",
       "schema": "public",
-      "values": [
-        "upvote",
-        "downvote"
-      ]
+      "values": ["upvote", "downvote"]
     }
   },
   "schemas": {},

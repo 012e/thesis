@@ -1,8 +1,8 @@
-import { registerApiRoute } from '@mastra/core/server';
-import { toAISdkStream } from '@mastra/ai-sdk';
-import { createUIMessageStreamResponse } from 'ai';
-import { z } from 'zod';
-import { createOrchestratorAgent } from '../agents/orchestrator-agent';
+import { registerApiRoute } from "@mastra/core/server";
+import { toAISdkStream } from "@mastra/ai-sdk";
+import { createUIMessageStreamResponse } from "ai";
+import { z } from "zod";
+import { createOrchestratorAgent } from "../agents/orchestrator-agent";
 
 /**
  * Chat stream route for the assistant agent with authenticated MCP clients.
@@ -32,21 +32,21 @@ import { createOrchestratorAgent } from '../agents/orchestrator-agent';
 // Use permissive schema since parts can be text, file, tool-call, tool-result, etc.
 const UIMessageSchema = z.object({
   id: z.string(),
-  role: z.enum(['user', 'assistant', 'system']),
+  role: z.enum(["user", "assistant", "system"]),
   parts: z.array(z.any()), // Accept any part type
   metadata: z.any().optional(),
 });
 
 const StreamRequestSchema = z.object({
-  messages: z.array(UIMessageSchema).min(1, 'At least one message is required'),
-  trigger: z.enum(['submit-message', 'regenerate-message']).optional(),
+  messages: z.array(UIMessageSchema).min(1, "At least one message is required"),
+  trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messageId: z.string().optional(),
   metadata: z.any().optional(),
   resumeData: z.record(z.string(), z.any()).optional(),
 });
 
-export const streamRoute = registerApiRoute('/chat', {
-  method: 'POST',
+export const streamRoute = registerApiRoute("/chat", {
+  method: "POST",
   handler: async (c) => {
     try {
       const body = await c.req.json();
@@ -55,7 +55,7 @@ export const streamRoute = registerApiRoute('/chat', {
       if (!parseResult.success) {
         return c.json(
           {
-            error: 'Invalid request body',
+            error: "Invalid request body",
             details: parseResult.error.issues,
           },
           400,
@@ -63,7 +63,7 @@ export const streamRoute = registerApiRoute('/chat', {
       }
 
       const { messages } = parseResult.data;
-      const context = c.get('requestContext');
+      const context = c.get("requestContext");
 
       // Build a per-request orchestrator with auth-aware MCP tools baked into
       // each sub-agent at construction time.
@@ -75,13 +75,13 @@ export const streamRoute = registerApiRoute('/chat', {
 
       return createUIMessageStreamResponse({
         // Cast resolves Node.js vs Web Streams API ambient type mismatch; runtime is correct
-        stream: toAISdkStream(agentStream, { from: 'agent' }) as any,
+        stream: toAISdkStream(agentStream, { from: "agent" }) as any,
       });
     } catch (error) {
-      console.error('Stream route error:', error);
+      console.error("Stream route error:", error);
       return c.json(
         {
-          error: 'Internal server error',
+          error: "Internal server error",
           details: error instanceof Error ? error.message : String(error),
         },
         500,

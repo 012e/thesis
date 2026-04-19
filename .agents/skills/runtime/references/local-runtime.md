@@ -96,7 +96,9 @@ interface LocalRuntimeOptions {
 
 ```tsx
 interface ChatModelAdapter {
-  run(options: ChatModelRunOptions): Promise<ChatModelRunResult> | AsyncGenerator<ChatModelRunResult>;
+  run(
+    options: ChatModelRunOptions,
+  ): Promise<ChatModelRunResult> | AsyncGenerator<ChatModelRunResult>;
 }
 
 interface ChatModelRunOptions {
@@ -105,9 +107,7 @@ interface ChatModelRunOptions {
   config?: Record<string, unknown>;
 }
 
-type ChatModelRunResult =
-  | ChatModelRunResultFinal
-  | ChatModelRunResultStream;
+type ChatModelRunResult = ChatModelRunResultFinal | ChatModelRunResultStream;
 
 interface ChatModelRunResultFinal {
   content: MessagePart[];
@@ -135,7 +135,9 @@ const runtime = useLocalRuntime({
         messages: messages.map((m) => ({
           role: m.role,
           content: m.content
-            .filter((p): p is { type: "text"; text: string } => p.type === "text")
+            .filter(
+              (p): p is { type: "text"; text: string } => p.type === "text",
+            )
             .map((p) => p.text)
             .join(""),
         })),

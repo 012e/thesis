@@ -1,7 +1,7 @@
-import { useCallback } from 'react';
-import { useSetAtom } from 'jotai';
-import { useStartConversation } from '@/hooks/messages';
-import { openChatWindowAtom } from '@/lib/atoms/chat-windows';
+import { useCallback } from "react";
+import { useSetAtom } from "jotai";
+import { useStartConversation } from "@/hooks/messages";
+import { openChatWindowAtom } from "@/lib/atoms/chat-windows";
 
 /**
  * Returns a function that starts (or retrieves) a DM conversation with a user

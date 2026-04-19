@@ -1,7 +1,7 @@
-import { Agent } from '@mastra/core/agent';
-import { RequestContext } from '@mastra/core/request-context';
-import { getSocialMcpToolsets } from '../mcp/social';
-import { MODEL_ORCHESTRATOR, MODEL_SUB_AGENT } from '../constants';
+import { Agent } from "@mastra/core/agent";
+import { RequestContext } from "@mastra/core/request-context";
+import { getSocialMcpToolsets } from "../mcp/social";
+import { MODEL_ORCHESTRATOR, MODEL_SUB_AGENT } from "../constants";
 
 /**
  * Creates a fully wired orchestrator agent for a single HTTP request.
@@ -30,10 +30,10 @@ export async function createOrchestratorAgent(
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
   const identityAgent = new Agent({
-    id: 'identity-agent',
-    name: 'Identity Agent',
+    id: "identity-agent",
+    name: "Identity Agent",
     description:
-      'Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task.',
+      "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task.",
     instructions: `You are the identity specialist for a social media platform.
 
 Your responsibilities:
@@ -52,10 +52,10 @@ Guidelines:
   });
 
   const postCreationAgent = new Agent({
-    id: 'post-creation-agent',
-    name: 'Post Creation Agent',
+    id: "post-creation-agent",
+    name: "Post Creation Agent",
     description:
-      'Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content. Does NOT handle comments or reactions.',
+      "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content. Does NOT handle comments or reactions.",
     instructions: `You are the content publishing specialist for a social media platform.
 
 Your responsibilities:
@@ -74,10 +74,10 @@ Guidelines:
   });
 
   const postDiscoveryAgent = new Agent({
-    id: 'post-discovery-agent',
-    name: 'Post Discovery Agent',
+    id: "post-discovery-agent",
+    name: "Post Discovery Agent",
     description:
-      'Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion.',
+      "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion.",
     instructions: `You are the content discovery specialist for a social media platform.
 
 Your responsibilities:
@@ -96,10 +96,10 @@ Guidelines:
   });
 
   const interactionsAgent = new Agent({
-    id: 'interactions-agent',
-    name: 'Interactions Agent',
+    id: "interactions-agent",
+    name: "Interactions Agent",
     description:
-      'Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.',
+      "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.",
     instructions: `You are the engagement specialist for a social media platform.
 
 Your responsibilities:
@@ -121,8 +121,8 @@ Guidelines:
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
 
   const orchestrator = new Agent({
-    id: 'orchestrator',
-    name: 'Orchestrator',
+    id: "orchestrator",
+    name: "Orchestrator",
     instructions: `You are the orchestrator for a social media AI assistant. You coordinate four specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
 
 Available agents:

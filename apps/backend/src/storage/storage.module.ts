@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
+import { Module } from "@nestjs/common";
 
-import { ImageProcessorService } from './image-processor.service';
-import { StorageService } from './storage.service';
+import { ImageProcessorService } from "./image-processor.service";
+import { StorageService } from "./storage.service";
 
 @Module({
   providers: [StorageService, ImageProcessorService],

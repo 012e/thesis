@@ -1,8 +1,8 @@
-import { Global, Module } from '@nestjs/common';
+import { Global, Module } from "@nestjs/common";
 
-import { DatabaseService } from './database.service';
-import { databasePool } from './pool';
-import { DATABASE_POOL } from './tokens';
+import { DatabaseService } from "./database.service";
+import { databasePool } from "./pool";
+import { DATABASE_POOL } from "./tokens";
 
 @Global()
 @Module({

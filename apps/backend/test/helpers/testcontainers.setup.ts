@@ -1,8 +1,8 @@
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { GenericContainer, StartedTestContainer } from 'testcontainers';
+} from "@testcontainers/postgresql";
+import { GenericContainer, StartedTestContainer } from "testcontainers";
 
 export interface PostgresContainerContext {
   postgres: StartedPostgreSqlContainer;
@@ -20,11 +20,11 @@ export interface MinioContainerContext {
 }
 
 export async function startPostgresContainer(): Promise<PostgresContainerContext> {
-  console.log('Starting ParadeDB container...');
-  const postgres = await new PostgreSqlContainer('paradedb/paradedb:latest')
-    .withUsername('testuser')
-    .withPassword('testpass')
-    .withDatabase('testdb')
+  console.log("Starting ParadeDB container...");
+  const postgres = await new PostgreSqlContainer("paradedb/paradedb:latest")
+    .withUsername("testuser")
+    .withPassword("testpass")
+    .withDatabase("testdb")
     .withExposedPorts(5432)
     .start();
 
@@ -40,19 +40,19 @@ export async function startPostgresContainer(): Promise<PostgresContainerContext
 export async function stopPostgresContainer(
   context: PostgresContainerContext,
 ): Promise<void> {
-  console.log('Stopping PostgreSQL container...');
+  console.log("Stopping PostgreSQL container...");
   await context.postgres.stop();
-  console.log('PostgreSQL container stopped');
+  console.log("PostgreSQL container stopped");
 }
 
 export async function startMinioContainer(): Promise<MinioContainerContext> {
-  console.log('Starting MinIO container...');
+  console.log("Starting MinIO container...");
 
-  const accessKey = 'minioadmin';
-  const secretKey = 'minioadmin';
+  const accessKey = "minioadmin";
+  const secretKey = "minioadmin";
 
-  const container = await new GenericContainer('minio/minio:latest')
-    .withCommand(['server', '/data', '--console-address', ':9001'])
+  const container = await new GenericContainer("minio/minio:latest")
+    .withCommand(["server", "/data", "--console-address", ":9001"])
     .withEnvironment({
       MINIO_ROOT_USER: accessKey,
       MINIO_ROOT_PASSWORD: secretKey,
@@ -82,7 +82,7 @@ export async function startMinioContainer(): Promise<MinioContainerContext> {
 export async function stopMinioContainer(
   context: MinioContainerContext,
 ): Promise<void> {
-  console.log('Stopping MinIO container...');
+  console.log("Stopping MinIO container...");
   await context.container.stop();
-  console.log('MinIO container stopped');
+  console.log("MinIO container stopped");
 }

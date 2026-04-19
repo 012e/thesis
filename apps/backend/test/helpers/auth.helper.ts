@@ -1,6 +1,6 @@
-import * as supertest from 'supertest';
-import { INestApplication } from '@nestjs/common';
-import { expect } from 'vitest';
+import * as supertest from "supertest";
+import { INestApplication } from "@nestjs/common";
+import { expect } from "vitest";
 
 export async function createE2ETestUser(
   app: INestApplication,
@@ -10,17 +10,17 @@ export async function createE2ETestUser(
   const request = supertest.default || supertest;
 
   const registerRes = await request(app.getHttpServer())
-    .post('/api/auth/sign-up/email')
+    .post("/api/auth/sign-up/email")
     .send({
       email,
       username,
-      password: 'TestPassword123!',
-      name: 'Test User',
+      password: "TestPassword123!",
+      name: "Test User",
     });
 
   if (registerRes.status !== 200) {
     console.error(
-      'Registration failed:',
+      "Registration failed:",
       registerRes.status,
       registerRes.body,
       registerRes.text,
@@ -31,7 +31,7 @@ export async function createE2ETestUser(
 
   const headers = registerRes.headers;
 
-  const setCookieHeader = headers['set-cookie'];
+  const setCookieHeader = headers["set-cookie"];
 
   const cookies = Array.isArray(setCookieHeader)
     ? setCookieHeader
@@ -40,8 +40,8 @@ export async function createE2ETestUser(
       : [];
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const cookie = cookies
-    .find((c: any) => c.startsWith('better-auth.session_token='))
-    ?.split(';')[0];
+    .find((c: any) => c.startsWith("better-auth.session_token="))
+    ?.split(";")[0];
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
   const user = registerRes.body.user;
@@ -56,19 +56,19 @@ export async function createE2ETestUser(
 export async function registerAndGetSessionCookie(
   server: ReturnType<typeof supertest>,
   email: string,
-  password = 'TestPassword123!',
-  name = 'Test User',
+  password = "TestPassword123!",
+  name = "Test User",
 ): Promise<string> {
   const res = await server
-    .post('/api/auth/sign-up/email')
+    .post("/api/auth/sign-up/email")
     .send({ email, password, name })
     .expect(200);
 
-  const setCookieHeader = res.headers['set-cookie'] as string[] | string;
+  const setCookieHeader = res.headers["set-cookie"] as string[] | string;
   const cookies = Array.isArray(setCookieHeader)
     ? setCookieHeader
     : [setCookieHeader];
-  const entry = cookies.find((c) => c.startsWith('better-auth.session_token='));
+  const entry = cookies.find((c) => c.startsWith("better-auth.session_token="));
 
   if (!entry) {
     throw new Error(
@@ -76,7 +76,7 @@ export async function registerAndGetSessionCookie(
     );
   }
 
-  return entry.split(';')[0]; // "better-auth.session_token=<value>"
+  return entry.split(";")[0]; // "better-auth.session_token=<value>"
 }
 
 /**
@@ -89,15 +89,15 @@ export async function registerAndGetSession(
   username: string,
 ): Promise<{ cookie: string; userId: string }> {
   const res = await server
-    .post('/api/auth/sign-up/email')
-    .send({ email, username, password: 'TestPassword123!', name: 'Test User' })
+    .post("/api/auth/sign-up/email")
+    .send({ email, username, password: "TestPassword123!", name: "Test User" })
     .expect(200);
 
-  const setCookieHeader = res.headers['set-cookie'] as string[] | string;
+  const setCookieHeader = res.headers["set-cookie"] as string[] | string;
   const cookies = Array.isArray(setCookieHeader)
     ? setCookieHeader
     : [setCookieHeader];
-  const entry = cookies.find((c) => c.startsWith('better-auth.session_token='));
+  const entry = cookies.find((c) => c.startsWith("better-auth.session_token="));
 
   if (!entry) {
     throw new Error(
@@ -105,11 +105,11 @@ export async function registerAndGetSession(
     );
   }
 
-  const cookie = entry.split(';')[0];
+  const cookie = entry.split(";")[0];
 
   const sessionRes = await server
-    .get('/api/auth/get-session')
-    .set('Cookie', cookie)
+    .get("/api/auth/get-session")
+    .set("Cookie", cookie)
     .expect(200);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -129,15 +129,15 @@ export async function registerAndGetSessionWithToken(
   username: string,
 ): Promise<{ cookie: string; userId: string; bearerToken: string }> {
   const res = await server
-    .post('/api/auth/sign-up/email')
-    .send({ email, username, password: 'TestPassword123!', name: 'Test User' })
+    .post("/api/auth/sign-up/email")
+    .send({ email, username, password: "TestPassword123!", name: "Test User" })
     .expect(200);
 
-  const setCookieHeader = res.headers['set-cookie'] as string[] | string;
+  const setCookieHeader = res.headers["set-cookie"] as string[] | string;
   const cookies = Array.isArray(setCookieHeader)
     ? setCookieHeader
     : [setCookieHeader];
-  const entry = cookies.find((c) => c.startsWith('better-auth.session_token='));
+  const entry = cookies.find((c) => c.startsWith("better-auth.session_token="));
 
   if (!entry) {
     throw new Error(
@@ -145,19 +145,19 @@ export async function registerAndGetSessionWithToken(
     );
   }
 
-  const cookie = entry.split(';')[0];
+  const cookie = entry.split(";")[0];
 
   // Better Auth bearer plugin returns the JWT in the `set-auth-token` header
-  const bearerToken = res.headers['set-auth-token'] as string | undefined;
+  const bearerToken = res.headers["set-auth-token"] as string | undefined;
   if (!bearerToken) {
     throw new Error(
-      'No bearer token found in set-auth-token response header. Ensure the Better Auth bearer plugin is enabled.',
+      "No bearer token found in set-auth-token response header. Ensure the Better Auth bearer plugin is enabled.",
     );
   }
 
   const sessionRes = await server
-    .get('/api/auth/get-session')
-    .set('Cookie', cookie)
+    .get("/api/auth/get-session")
+    .set("Cookie", cookie)
     .expect(200);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

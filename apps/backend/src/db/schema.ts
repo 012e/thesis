@@ -1,5 +1,5 @@
-import type { PostContentDto } from '@repo/shared-dto';
-import { sql } from 'drizzle-orm';
+import type { PostContentDto } from "@repo/shared-dto";
+import { sql } from "drizzle-orm";
 import {
   boolean,
   foreignKey,
@@ -12,16 +12,16 @@ import {
   timestamp,
   unique,
   uuid,
-} from 'drizzle-orm/pg-core';
+} from "drizzle-orm/pg-core";
 
-export const posts = pgTable('posts', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  authorId: text('author_id').notNull(),
-  content: jsonb('content').$type<PostContentDto>().notNull(),
-  createdAt: timestamp('created_at', { withTimezone: true })
+export const posts = pgTable("posts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  authorId: text("author_id").notNull(),
+  content: jsonb("content").$type<PostContentDto>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
@@ -34,9 +34,9 @@ export type NewPost = typeof posts.$inferInsert;
  * Better Auth does not persist the `image` field to the DB in this project,
  * so we own avatar storage ourselves.
  */
-export const userProfiles = pgTable('user_profiles', {
-  userId: text('user_id').primaryKey(),
-  avatarUrl: text('avatar_url'),
+export const userProfiles = pgTable("user_profiles", {
+  userId: text("user_id").primaryKey(),
+  avatarUrl: text("avatar_url"),
 });
 
 export type UserProfile = typeof userProfiles.$inferSelect;
@@ -47,29 +47,29 @@ export type NewUserProfile = typeof userProfiles.$inferInsert;
  * Exposes only the fields needed by the application features.
  * The underlying `user` table is managed by better-auth migrations.
  */
-export const usersView = pgView('users_view', {
-  id: text('id').notNull(),
-  username: text('username'),
-  email: text('email').notNull(),
-  name: text('name'),
-  image: text('image'),
+export const usersView = pgView("users_view", {
+  id: text("id").notNull(),
+  username: text("username"),
+  email: text("email").notNull(),
+  name: text("name"),
+  image: text("image"),
 }).as(
   sql`SELECT u.id, u.username, u.email, u.name, up.avatar_url AS image FROM "user" u LEFT JOIN user_profiles up ON up.user_id = u.id`,
 );
 
 export type UserView = typeof usersView.$inferSelect;
 
-export const reactionTypeEnum = pgEnum('reaction_type', ['upvote', 'downvote']);
+export const reactionTypeEnum = pgEnum("reaction_type", ["upvote", "downvote"]);
 
 export const postReactions = pgTable(
-  'post_reactions',
+  "post_reactions",
   {
-    postId: uuid('post_id')
+    postId: uuid("post_id")
       .notNull()
-      .references(() => posts.id, { onDelete: 'cascade' }),
-    userId: text('user_id').notNull(),
-    type: reactionTypeEnum('type').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+      .references(() => posts.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    type: reactionTypeEnum("type").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
@@ -80,19 +80,19 @@ export type PostReaction = typeof postReactions.$inferSelect;
 export type NewPostReaction = typeof postReactions.$inferInsert;
 
 export const comments = pgTable(
-  'comments',
+  "comments",
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    postId: uuid('post_id')
+    id: uuid("id").defaultRandom().primaryKey(),
+    postId: uuid("post_id")
       .notNull()
-      .references(() => posts.id, { onDelete: 'cascade' }),
-    parentId: uuid('parent_id'),
-    authorId: text('author_id').notNull(),
-    content: text('content').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+      .references(() => posts.id, { onDelete: "cascade" }),
+    parentId: uuid("parent_id"),
+    authorId: text("author_id").notNull(),
+    content: text("content").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
@@ -100,8 +100,8 @@ export const comments = pgTable(
     foreignKey({
       columns: [table.parentId],
       foreignColumns: [table.id],
-      name: 'comments_parent_id_fkey',
-    }).onDelete('cascade'),
+      name: "comments_parent_id_fkey",
+    }).onDelete("cascade"),
   ],
 );
 
@@ -109,14 +109,14 @@ export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
 
 export const commentReactions = pgTable(
-  'comment_reactions',
+  "comment_reactions",
   {
-    commentId: uuid('comment_id')
+    commentId: uuid("comment_id")
       .notNull()
-      .references(() => comments.id, { onDelete: 'cascade' }),
-    userId: text('user_id').notNull(),
-    type: reactionTypeEnum('type').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+      .references(() => comments.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    type: reactionTypeEnum("type").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
@@ -127,11 +127,11 @@ export type CommentReaction = typeof commentReactions.$inferSelect;
 export type NewCommentReaction = typeof commentReactions.$inferInsert;
 
 export const userFollows = pgTable(
-  'user_follows',
+  "user_follows",
   {
-    followerId: text('follower_id').notNull(),
-    followeeId: text('followee_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+    followerId: text("follower_id").notNull(),
+    followeeId: text("followee_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
@@ -142,14 +142,14 @@ export type UserFollow = typeof userFollows.$inferSelect;
 export type NewUserFollow = typeof userFollows.$inferInsert;
 
 export const pollVotes = pgTable(
-  'poll_votes',
+  "poll_votes",
   {
-    postId: uuid('post_id')
+    postId: uuid("post_id")
       .notNull()
-      .references(() => posts.id, { onDelete: 'cascade' }),
-    optionId: text('option_id').notNull(),
-    userId: text('user_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+      .references(() => posts.id, { onDelete: "cascade" }),
+    optionId: text("option_id").notNull(),
+    userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
@@ -161,16 +161,16 @@ export const pollVotes = pgTable(
 export type PollVote = typeof pollVotes.$inferSelect;
 export type NewPollVote = typeof pollVotes.$inferInsert;
 
-export const threads = pgTable('threads', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  userId: text('user_id').notNull(),
-  title: text('title'),
-  isArchived: boolean('is_archived').default(false).notNull(),
-  externalId: text('external_id'),
-  createdAt: timestamp('created_at', { withTimezone: true })
+export const threads = pgTable("threads", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title"),
+  isArchived: boolean("is_archived").default(false).notNull(),
+  externalId: text("external_id"),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });
@@ -181,27 +181,27 @@ export type NewThread = typeof threads.$inferInsert;
 /**
  * Direct message type enum — extensible for future types (image, file, etc.)
  */
-export const directMessageTypeEnum = pgEnum('direct_message_type', ['text']);
+export const directMessageTypeEnum = pgEnum("direct_message_type", ["text"]);
 
 /**
  * Represents a 1-on-1 conversation between two users.
  * user_a_id is always the lexicographically smaller user ID to ensure uniqueness.
  */
 export const conversations = pgTable(
-  'conversations',
+  "conversations",
   {
-    id: uuid('id').defaultRandom().primaryKey(),
-    userAId: text('user_a_id').notNull(),
-    userBId: text('user_b_id').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true })
+    id: uuid("id").defaultRandom().primaryKey(),
+    userAId: text("user_a_id").notNull(),
+    userBId: text("user_b_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
   },
   (table) => [
-    unique('conversations_user_pair_unique').on(table.userAId, table.userBId),
+    unique("conversations_user_pair_unique").on(table.userAId, table.userBId),
   ],
 );
 
@@ -212,22 +212,22 @@ export type NewConversation = typeof conversations.$inferInsert;
  * Individual direct messages within a conversation.
  * Includes nullable columns for future features (read receipts, soft delete, attachments).
  */
-export const directMessages = pgTable('direct_messages', {
-  id: uuid('id').defaultRandom().primaryKey(),
-  conversationId: uuid('conversation_id')
+export const directMessages = pgTable("direct_messages", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  conversationId: uuid("conversation_id")
     .notNull()
-    .references(() => conversations.id, { onDelete: 'cascade' }),
-  senderId: text('sender_id').notNull(),
-  content: text('content').notNull(),
-  type: directMessageTypeEnum('type').default('text').notNull(),
+    .references(() => conversations.id, { onDelete: "cascade" }),
+  senderId: text("sender_id").notNull(),
+  content: text("content").notNull(),
+  type: directMessageTypeEnum("type").default("text").notNull(),
   /** Reserved for future read receipt support — null means unread */
-  readAt: timestamp('read_at', { withTimezone: true }),
+  readAt: timestamp("read_at", { withTimezone: true }),
   /** Reserved for future soft-delete / message editing support */
-  deletedAt: timestamp('deleted_at', { withTimezone: true }),
-  createdAt: timestamp('created_at', { withTimezone: true })
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
+  updatedAt: timestamp("updated_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
 });

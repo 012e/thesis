@@ -15,7 +15,8 @@ export const pollsContract = c.router({
       400: z.object({ message: z.string() }),
       404: z.object({ message: z.string() }),
     },
-    summary: "Vote on a poll (supports single or multiple selections based on poll settings)",
+    summary:
+      "Vote on a poll (supports single or multiple selections based on poll settings)",
   },
   unvotePoll: {
     method: "DELETE",

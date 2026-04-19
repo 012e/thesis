@@ -1,12 +1,12 @@
-import { Controller } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { pollsContract } from '@repo/rest-contracts';
+import { pollsContract } from "@repo/rest-contracts";
 
-import { PollsService } from './polls.service';
-import { votePollSchema } from './polls.schemas';
+import { PollsService } from "./polls.service";
+import { votePollSchema } from "./polls.schemas";
 
 @Controller()
 export class PollsController {
@@ -22,8 +22,8 @@ export class PollsController {
         input,
       );
 
-      if ('error' in result) {
-        if (result.code === 'NOT_FOUND') {
+      if ("error" in result) {
+        if (result.code === "NOT_FOUND") {
           return {
             status: 404,
             body: { message: result.error },
@@ -47,7 +47,7 @@ export class PollsController {
     return tsRestHandler(pollsContract.unvotePoll, async ({ params }) => {
       const result = await this.pollsService.unvote(params.id, session.user.id);
 
-      if ('error' in result) {
+      if ("error" in result) {
         return {
           status: 404,
           body: { message: result.error },
@@ -69,7 +69,7 @@ export class PollsController {
         session.user.id,
       );
 
-      if ('error' in result) {
+      if ("error" in result) {
         return {
           status: 404,
           body: { message: result.error },

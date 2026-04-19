@@ -1,18 +1,18 @@
-import { and, desc, eq, isNull, lt, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, lt, ne, or, sql } from "drizzle-orm";
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import type {
   ConversationDto,
   ConversationParticipantDto,
   DirectMessageDto,
-} from '@repo/shared-dto';
+} from "@repo/shared-dto";
 
-import { DatabaseService } from '@/db/database.service';
-import { conversations, directMessages, userFollows } from '@/db/schema';
-import { user } from '@/db/auth-schema';
+import { DatabaseService } from "@/db/database.service";
+import { conversations, directMessages, userFollows } from "@/db/schema";
+import { user } from "@/db/auth-schema";
 
 const DEFAULT_PAGE_SIZE = 50;
 
@@ -54,7 +54,7 @@ export class MessagesService {
     recipientId: string,
   ): Promise<{ conversation: ConversationDto; created: boolean }> {
     if (requesterId === recipientId) {
-      throw new ForbiddenException('Cannot start a conversation with yourself');
+      throw new ForbiddenException("Cannot start a conversation with yourself");
     }
 
     // Verify the recipient exists
@@ -65,7 +65,7 @@ export class MessagesService {
       .limit(1);
 
     if (!recipient) {
-      throw new NotFoundException('Recipient not found');
+      throw new NotFoundException("Recipient not found");
     }
 
     // Enforce follow relationship: requester must follow recipient
@@ -82,7 +82,7 @@ export class MessagesService {
 
     if (!followRow) {
       throw new NotFoundException(
-        'You must follow this user to send them a message',
+        "You must follow this user to send them a message",
       );
     }
 
@@ -135,7 +135,7 @@ export class MessagesService {
       .where(eq(conversations.id, conversationId))
       .limit(1);
 
-    if (!row) throw new NotFoundException('Conversation not found');
+    if (!row) throw new NotFoundException("Conversation not found");
     this.assertParticipant(row, userId);
 
     return this.enrichConversation(row, userId);
@@ -160,7 +160,7 @@ export class MessagesService {
       .where(eq(conversations.id, conversationId))
       .limit(1);
 
-    if (!conv) throw new NotFoundException('Conversation not found');
+    if (!conv) throw new NotFoundException("Conversation not found");
     this.assertParticipant(conv, userId);
 
     const effectiveLimit = Math.min(limit, 100);
@@ -208,12 +208,12 @@ export class MessagesService {
       .where(eq(conversations.id, conversationId))
       .limit(1);
 
-    if (!conv) throw new NotFoundException('Conversation not found');
+    if (!conv) throw new NotFoundException("Conversation not found");
     this.assertParticipant(conv, senderId);
 
     const [message] = await this.databaseService.db
       .insert(directMessages)
-      .values({ conversationId, senderId, content, type: 'text' })
+      .values({ conversationId, senderId, content, type: "text" })
       .returning();
 
     // Bump conversation's updatedAt so it rises in the sorted list
@@ -244,7 +244,7 @@ export class MessagesService {
       .where(eq(conversations.id, conversationId))
       .limit(1);
 
-    if (!row) throw new NotFoundException('Conversation not found');
+    if (!row) throw new NotFoundException("Conversation not found");
     return row;
   }
 
@@ -288,7 +288,7 @@ export class MessagesService {
       .where(eq(conversations.id, conversationId))
       .limit(1);
 
-    if (!conv) throw new NotFoundException('Conversation not found');
+    if (!conv) throw new NotFoundException("Conversation not found");
     this.assertParticipant(conv, userId);
 
     await this.databaseService.db
@@ -309,7 +309,7 @@ export class MessagesService {
   ): void {
     if (conversation.userAId !== userId && conversation.userBId !== userId) {
       throw new ForbiddenException(
-        'You are not a participant in this conversation',
+        "You are not a participant in this conversation",
       );
     }
   }

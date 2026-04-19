@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
-import { and, desc, eq } from 'drizzle-orm';
+import { Injectable } from "@nestjs/common";
+import { and, desc, eq } from "drizzle-orm";
 
-import { DatabaseService } from '@/db/database.service';
-import { threads } from '@/db/schema';
+import { DatabaseService } from "@/db/database.service";
+import { threads } from "@/db/schema";
 
 @Injectable()
 export class ThreadsService {
@@ -23,7 +23,7 @@ export class ThreadsService {
       .values({
         userId,
         externalId,
-        title: 'New Thread',
+        title: "New Thread",
       })
       .returning();
     return row;

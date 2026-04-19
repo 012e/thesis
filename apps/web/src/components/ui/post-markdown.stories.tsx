@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { PostMarkdown } from './post-markdown';
+import type { Meta, StoryObj } from "@storybook/react";
+import { PostMarkdown } from "./post-markdown";
 
 const meta = {
-  title: 'Components/UI/PostMarkdown',
+  title: "Components/UI/PostMarkdown",
   component: PostMarkdown,
   parameters: {
-    layout: 'centered',
+    layout: "centered",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   decorators: [
     (Story) => (
       <div className="w-[700px] bg-background text-foreground p-6 border rounded-lg">
@@ -23,7 +23,7 @@ type Story = StoryObj<typeof meta>;
 export const BasicText: Story = {
   args: {
     content:
-      'This is a simple post with **bold text**, *italic text*, and some `inline code`.',
+      "This is a simple post with **bold text**, *italic text*, and some `inline code`.",
   },
 };
 
@@ -222,7 +222,7 @@ export const StrikethroughAndTaskLists: Story = {
     docs: {
       description: {
         story:
-          'GitHub Flavored Markdown (GFM) features like strikethrough and task lists.',
+          "GitHub Flavored Markdown (GFM) features like strikethrough and task lists.",
       },
     },
   },

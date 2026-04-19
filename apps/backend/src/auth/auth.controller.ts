@@ -1,8 +1,8 @@
-import { Controller } from '@nestjs/common';
-import { AllowAnonymous, Session } from '@thallesp/nestjs-better-auth';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
-import { authContract } from '@repo/rest-contracts';
+import { Controller } from "@nestjs/common";
+import { AllowAnonymous, Session } from "@thallesp/nestjs-better-auth";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
+import { authContract } from "@repo/rest-contracts";
 
 @Controller()
 export class AuthController {

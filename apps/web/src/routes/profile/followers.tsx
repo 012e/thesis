@@ -1,12 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
-import { Suspense } from 'react';
-import { useSession } from '@/hooks/use-session';
-import { useFollowersSuspense } from '@/hooks/use-followers';
-import { PageSpinner } from '@/components/ui/spinner';
-import { IconArrowLeft, IconUsers } from '@tabler/icons-react';
-import { UsersList } from './-users-list';
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Suspense } from "react";
+import { useSession } from "@/hooks/use-session";
+import { useFollowersSuspense } from "@/hooks/use-followers";
+import { PageSpinner } from "@/components/ui/spinner";
+import { IconArrowLeft, IconUsers } from "@tabler/icons-react";
+import { UsersList } from "./-users-list";
 
-export const Route = createFileRoute('/profile/followers')({
+export const Route = createFileRoute("/profile/followers")({
   component: FollowersPage,
 });
 

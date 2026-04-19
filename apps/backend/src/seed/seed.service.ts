@@ -1,15 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { AuthService } from '@thallesp/nestjs-better-auth';
-import { faker } from '@faker-js/faker';
-import { sql } from 'drizzle-orm';
+import { Injectable, Logger } from "@nestjs/common";
+import { AuthService } from "@thallesp/nestjs-better-auth";
+import { faker } from "@faker-js/faker";
+import { sql } from "drizzle-orm";
 
-import { auth } from '@/auth';
-import { CommentsService } from '@/comments/comments.service';
-import { DatabaseService } from '@/db/database.service';
-import { FollowsService } from '@/follows/follows.service';
-import { PostsService } from '@/posts/posts.service';
-import { ReactionsService } from '@/reactions/reactions.service';
-import { ThreadsService } from '@/threads/threads.service';
+import { auth } from "@/auth";
+import { CommentsService } from "@/comments/comments.service";
+import { DatabaseService } from "@/db/database.service";
+import { FollowsService } from "@/follows/follows.service";
+import { PostsService } from "@/posts/posts.service";
+import { ReactionsService } from "@/reactions/reactions.service";
+import { ThreadsService } from "@/threads/threads.service";
 
 // ── seed volume constants ─────────────────────────────────────────────────────
 const EXTRA_USERS = 4; // additional users alongside demo@gmail.com
@@ -36,12 +36,12 @@ export class SeedService {
   ) {}
 
   async reseed() {
-    this.logger.log('Starting demo seed flow (cleanup + seed)');
+    this.logger.log("Starting demo seed flow (cleanup + seed)");
 
     await this.clearAllData();
 
     const users = await this.createSeedUsers();
-    const demoUser = users.find((u) => u.email === 'demo@gmail.com')!;
+    const demoUser = users.find((u) => u.email === "demo@gmail.com")!;
 
     const allPostIds: string[] = [];
     const allCommentIds: string[] = [];
@@ -60,14 +60,14 @@ export class SeedService {
     // Give demo user reactions on everyone else's posts for visible activity
     await this.seedReactionsForUser(demoUser, allPostIds, allCommentIds);
 
-    this.logger.log('Demo seed flow completed');
+    this.logger.log("Demo seed flow completed");
 
     return {
       success: true,
       users: users.map((u) => ({ id: u.id, email: u.email })),
       postCount: allPostIds.length,
       commentCount: allCommentIds.length,
-      credentials: { email: 'demo@gmail.com', password: 'Demo@123' },
+      credentials: { email: "demo@gmail.com", password: "Demo@123" },
     };
   }
 
@@ -152,7 +152,7 @@ export class SeedService {
     postIds: string[],
     commentIds: string[],
   ): Promise<void> {
-    const reactionTypes = ['upvote', 'downvote'] as const;
+    const reactionTypes = ["upvote", "downvote"] as const;
 
     const targetPosts = faker.helpers.arrayElements(
       postIds,
@@ -192,20 +192,20 @@ export class SeedService {
     const bullets = Array.from(
       { length: bulletCount },
       () => `- ${faker.lorem.sentence()}`,
-    ).join('\n');
+    ).join("\n");
 
     const codeLanguage = faker.helpers.arrayElement([
-      'ts',
-      'js',
-      'json',
-      'bash',
+      "ts",
+      "js",
+      "json",
+      "bash",
     ]);
     const codeSnippet = [
-      '```' + codeLanguage,
+      "```" + codeLanguage,
       `// ${faker.hacker.phrase()}`,
-      `const ${faker.hacker.noun().replace(/ /g, '_')} = ${faker.number.int({ min: 1, max: 99 })};`,
-      '```',
-    ].join('\n');
+      `const ${faker.hacker.noun().replace(/ /g, "_")} = ${faker.number.int({ min: 1, max: 99 })};`,
+      "```",
+    ].join("\n");
 
     const closing = faker.lorem.paragraph();
 
@@ -219,7 +219,7 @@ export class SeedService {
       codeSnippet,
       blockquote,
       closing,
-    ].join('\n\n');
+    ].join("\n\n");
   }
 
   private randomPostContent() {
@@ -235,7 +235,7 @@ export class SeedService {
       const optionCount = faker.number.int({ min: 2, max: 4 });
       return {
         poll: {
-          question: faker.lorem.sentence({ min: 5, max: 10 }) + '?',
+          question: faker.lorem.sentence({ min: 5, max: 10 }) + "?",
           options: Array.from({ length: optionCount }, (_, idx) => ({
             id: `opt-${idx + 1}`,
             label: faker.lorem.words({ min: 1, max: 3 }),
@@ -253,10 +253,10 @@ export class SeedService {
       visualization: {
         title: faker.lorem.sentence({ min: 3, max: 6 }),
         visualizationType: faker.helpers.arrayElement([
-          'bar',
-          'line',
-          'pie',
-          'table',
+          "bar",
+          "line",
+          "pie",
+          "table",
         ] as const),
         data: Array.from(
           { length: faker.number.int({ min: 3, max: 6 }) },
@@ -267,11 +267,11 @@ export class SeedService {
         ),
         description: faker.lorem.sentence(),
         unit: faker.helpers.arrayElement([
-          'users',
-          'items',
-          'views',
-          'clicks',
-          'sales',
+          "users",
+          "items",
+          "views",
+          "clicks",
+          "sales",
         ]),
       },
     };
@@ -301,22 +301,22 @@ export class SeedService {
   private async createSeedUsers(): Promise<SeededUser[]> {
     const candidates = [
       {
-        email: 'demo@gmail.com',
-        password: 'Demo@123',
-        name: 'Demo User',
-        username: 'demo',
+        email: "demo@gmail.com",
+        password: "Demo@123",
+        name: "Demo User",
+        username: "demo",
       },
       ...Array.from({ length: EXTRA_USERS }, () => {
         const firstName = faker.person.firstName();
         const lastName = faker.person.lastName();
         return {
           email: faker.internet.email({ firstName, lastName }).toLowerCase(),
-          password: 'Seed@123',
+          password: "Seed@123",
           name: `${firstName} ${lastName}`,
           username: faker.internet
             .username({ firstName, lastName })
             .toLowerCase()
-            .replace(/[^a-z0-9_]/g, '_')
+            .replace(/[^a-z0-9_]/g, "_")
             .slice(0, 20),
         };
       }),

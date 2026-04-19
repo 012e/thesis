@@ -1,15 +1,15 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { and, count, eq, sql } from 'drizzle-orm';
-import { DatabaseService } from '@/db/database.service';
-import { user } from '@/db/auth-schema';
-import { userFollows, posts, userProfiles } from '@/db/schema';
-import { ImageProcessorService } from '@/storage/image-processor.service';
-import { StorageService } from '@/storage/storage.service';
-import type { UserProfileDto, UserSearchResultDto } from '@repo/shared-dto';
+import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { and, count, eq, sql } from "drizzle-orm";
+import { DatabaseService } from "@/db/database.service";
+import { user } from "@/db/auth-schema";
+import { userFollows, posts, userProfiles } from "@/db/schema";
+import { ImageProcessorService } from "@/storage/image-processor.service";
+import { StorageService } from "@/storage/storage.service";
+import type { UserProfileDto, UserSearchResultDto } from "@repo/shared-dto";
 
-const DEFAULT_AVATAR_KEY = 'defaults/default-avatar.webp';
+const DEFAULT_AVATAR_KEY = "defaults/default-avatar.webp";
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -24,12 +24,12 @@ export class UsersService implements OnApplicationBootstrap {
 
   async onApplicationBootstrap() {
     try {
-      const imagePath = join(__dirname, 'default-profile-image.jpg');
+      const imagePath = join(__dirname, "default-profile-image.jpg");
       const buffer = await readFile(imagePath);
 
       const processed = await this.imageProcessorService.processImage(
         buffer,
-        'image/jpeg',
+        "image/jpeg",
       );
 
       this.defaultAvatarUrl = await this.storageService.uploadImage(
@@ -43,7 +43,7 @@ export class UsersService implements OnApplicationBootstrap {
       );
     } catch (error) {
       this.logger.warn(
-        'Could not upload default avatar (storage may be unavailable)',
+        "Could not upload default avatar (storage may be unavailable)",
         error,
       );
     }
@@ -91,11 +91,11 @@ export class UsersService implements OnApplicationBootstrap {
     return result.rows.map((row) => {
       const r = row as Record<string, unknown>;
       return {
-        id: r['id'] as string,
-        username: (r['username'] as string | null) ?? null,
-        displayUsername: (r['display_username'] as string | null) ?? null,
-        name: (r['name'] as string | null) ?? null,
-        image: (r['image'] as string | null) ?? this.defaultAvatarUrl,
+        id: r["id"] as string,
+        username: (r["username"] as string | null) ?? null,
+        displayUsername: (r["display_username"] as string | null) ?? null,
+        name: (r["name"] as string | null) ?? null,
+        image: (r["image"] as string | null) ?? this.defaultAvatarUrl,
       } satisfies UserSearchResultDto;
     });
   }

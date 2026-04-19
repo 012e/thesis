@@ -1,5 +1,5 @@
-import { and, count, eq, sql } from 'drizzle-orm';
-import { Injectable } from '@nestjs/common';
+import { and, count, eq, sql } from "drizzle-orm";
+import { Injectable } from "@nestjs/common";
 import type {
   PostReactionDto,
   PostReactionSummaryDto,
@@ -7,16 +7,16 @@ import type {
   CommentReactionSummaryDto,
   ReactorDto,
   ReactionTypeDto,
-} from '@repo/shared-dto';
+} from "@repo/shared-dto";
 
-import { DatabaseService } from '@/db/database.service';
+import { DatabaseService } from "@/db/database.service";
 import {
   postReactions,
   commentReactions,
   posts,
   comments,
   usersView,
-} from '@/db/schema';
+} from "@/db/schema";
 
 @Injectable()
 export class ReactionsService {
@@ -135,7 +135,7 @@ export class ReactionsService {
       .select({ cnt: count() })
       .from(postReactions)
       .where(
-        and(eq(postReactions.postId, postId), eq(postReactions.type, 'upvote')),
+        and(eq(postReactions.postId, postId), eq(postReactions.type, "upvote")),
       );
 
     const [downvoteRow] = await this.databaseService.db
@@ -144,7 +144,7 @@ export class ReactionsService {
       .where(
         and(
           eq(postReactions.postId, postId),
-          eq(postReactions.type, 'downvote'),
+          eq(postReactions.type, "downvote"),
         ),
       );
 
@@ -182,7 +182,7 @@ export class ReactionsService {
       .where(
         and(
           eq(commentReactions.commentId, commentId),
-          eq(commentReactions.type, 'upvote'),
+          eq(commentReactions.type, "upvote"),
         ),
       );
 
@@ -192,7 +192,7 @@ export class ReactionsService {
       .where(
         and(
           eq(commentReactions.commentId, commentId),
-          eq(commentReactions.type, 'downvote'),
+          eq(commentReactions.type, "downvote"),
         ),
       );
 

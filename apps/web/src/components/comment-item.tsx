@@ -56,7 +56,10 @@ export function CommentItem({
   return (
     <div className="flex gap-2" style={{ marginLeft: `${indentLevel * 16}px` }}>
       <Avatar className="w-8 h-8 shrink-0">
-        <AvatarImage src={comment.author.image ?? undefined} alt={comment.author.name || comment.author.username || undefined} />
+        <AvatarImage
+          src={comment.author.image ?? undefined}
+          alt={comment.author.name || comment.author.username || undefined}
+        />
         <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
           {authorInitial}
         </AvatarFallback>

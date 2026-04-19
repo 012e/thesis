@@ -7,29 +7,29 @@ import {
   WebSocketGateway,
   WebSocketServer,
   WsException,
-} from '@nestjs/websockets';
-import type { Server, Socket } from 'socket.io';
+} from "@nestjs/websockets";
+import type { Server, Socket } from "socket.io";
 
-import { auth } from '@/auth';
-import { MessagesService } from './messages.service';
-import type { DirectMessageDto } from '@repo/shared-dto';
+import { auth } from "@/auth";
+import { MessagesService } from "./messages.service";
+import type { DirectMessageDto } from "@repo/shared-dto";
 
 // ─── Event name constants (single source of truth) ──────────────────────────
 
 /** Client → Server: join a conversation room to receive real-time messages. */
-export const WS_JOIN_CONVERSATION = 'join-conversation' as const;
+export const WS_JOIN_CONVERSATION = "join-conversation" as const;
 
 /** Client → Server: send a message in a conversation. */
-export const WS_SEND_MESSAGE = 'send-message' as const;
+export const WS_SEND_MESSAGE = "send-message" as const;
 
 /** Client → Server: notify the other participant that the user is typing. */
-export const WS_TYPING = 'typing' as const;
+export const WS_TYPING = "typing" as const;
 
 /** Server → Client: a new message was delivered to the room. */
-export const WS_NEW_MESSAGE = 'new-message' as const;
+export const WS_NEW_MESSAGE = "new-message" as const;
 
 /** Server → Client: another participant started / stopped typing. */
-export const WS_TYPING_INDICATOR = 'typing-indicator' as const;
+export const WS_TYPING_INDICATOR = "typing-indicator" as const;
 
 /**
  * Server → Client (per-user room): lightweight notification that a new message
@@ -37,7 +37,7 @@ export const WS_TYPING_INDICATOR = 'typing-indicator' as const;
  * of whether the recipient has joined the conversation room, enabling badges and
  * toasts without an explicit join-conversation handshake.
  */
-export const WS_NEW_MESSAGE_NOTIFICATION = 'new-message-notification' as const;
+export const WS_NEW_MESSAGE_NOTIFICATION = "new-message-notification" as const;
 
 // ─── Payload types ──────────────────────────────────────────────────────────
 
@@ -83,10 +83,10 @@ interface NewMessageNotificationPayload {
  */
 @WebSocketGateway({
   cors: {
-    origin: '*', // Tightened at the HTTP layer via ALLOWED_ORIGINS; WS auth is token-based.
+    origin: "*", // Tightened at the HTTP layer via ALLOWED_ORIGINS; WS auth is token-based.
     credentials: true,
   },
-  namespace: '/messages',
+  namespace: "/messages",
 })
 export class MessagesGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -102,10 +102,10 @@ export class MessagesGateway
     try {
       const token =
         (client.handshake.auth as Record<string, unknown>)?.token ??
-        client.handshake.headers?.authorization?.replace(/^Bearer\s+/i, '');
+        client.handshake.headers?.authorization?.replace(/^Bearer\s+/i, "");
 
-      if (!token || typeof token !== 'string') {
-        this.disconnect(client, 'Missing auth token');
+      if (!token || typeof token !== "string") {
+        this.disconnect(client, "Missing auth token");
         return;
       }
 
@@ -115,7 +115,7 @@ export class MessagesGateway
       });
 
       if (!session?.user) {
-        this.disconnect(client, 'Invalid or expired token');
+        this.disconnect(client, "Invalid or expired token");
         return;
       }
 
@@ -130,9 +130,9 @@ export class MessagesGateway
       // is ready to accept events. This prevents a race where the client emits
       // events before handleConnection (which is async) has finished setting
       // client.data.userId.
-      client.emit('authenticated');
+      client.emit("authenticated");
     } catch {
-      this.disconnect(client, 'Authentication error');
+      this.disconnect(client, "Authentication error");
     }
   }
 
@@ -159,7 +159,7 @@ export class MessagesGateway
     try {
       await this.messagesService.getConversation(conversationId, userId);
     } catch {
-      throw new WsException('Access denied or conversation not found');
+      throw new WsException("Access denied or conversation not found");
     }
 
     const room = this.roomName(conversationId);
@@ -188,7 +188,7 @@ export class MessagesGateway
         content,
       );
     } catch {
-      throw new WsException('Failed to send message');
+      throw new WsException("Failed to send message");
     }
 
     // Broadcast the full message to clients that have joined the conversation room.
@@ -199,7 +199,9 @@ export class MessagesGateway
     // enabling unread badges and toasts anywhere in the app.
     try {
       const { userAId, userBId } =
-        await this.messagesService.getConversationParticipantIds(conversationId);
+        await this.messagesService.getConversationParticipantIds(
+          conversationId,
+        );
       const recipientId = userAId === userId ? userBId : userAId;
 
       const notification: NewMessageNotificationPayload = {
@@ -246,12 +248,12 @@ export class MessagesGateway
 
   private requireAuth(client: Socket): string {
     const userId = client.data.userId as string | undefined;
-    if (!userId) throw new WsException('Unauthenticated');
+    if (!userId) throw new WsException("Unauthenticated");
     return userId;
   }
 
   private disconnect(client: Socket, reason: string): void {
-    client.emit('error', { message: reason });
+    client.emit("error", { message: reason });
     client.disconnect(true);
   }
 }

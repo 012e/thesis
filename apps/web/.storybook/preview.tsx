@@ -1,8 +1,8 @@
-import type { Preview } from '@storybook/react';
-import { initialize, mswLoader } from 'msw-storybook-addon';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
-import '../src/index.css';
+import type { Preview } from "@storybook/react";
+import { initialize, mswLoader } from "msw-storybook-addon";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import "../src/index.css";
 
 // Initialize MSW
 initialize();
