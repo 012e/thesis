@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: oxc-project/oxlint-action@v2.0.1
+      - uses: oxc-project/oxlint-action@latest
         with:
           deny: correctness
           warn: suspicious
