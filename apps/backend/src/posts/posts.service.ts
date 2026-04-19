@@ -6,6 +6,7 @@ import type { z } from 'zod';
 import { DatabaseService } from '@/db/database.service';
 import { postReactions, posts, usersView } from '@/db/schema';
 import { StorageService } from '@/storage/storage.service';
+import { UsersService } from '@/users/users.service';
 
 const upvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
@@ -36,6 +37,7 @@ export class PostsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly storageService: StorageService,
+    private readonly usersService: UsersService,
   ) {}
 
   async listByUser(authorId: string, requestingUserId: string): Promise<PostDto[]> {
@@ -51,6 +53,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -66,6 +69,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .orderBy(desc(posts.createdAt));
 
@@ -87,6 +91,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -101,6 +106,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .orderBy(desc(posts.createdAt));
 
@@ -130,6 +136,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -145,6 +152,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -164,6 +172,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -181,6 +190,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -217,6 +227,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -232,6 +243,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -262,6 +274,7 @@ export class PostsService {
         u.username     AS author_username,
         u.email        AS author_email,
         u.name         AS author_name,
+        u.image        AS author_image,
         COUNT(CASE WHEN pr.type = 'upvote'   THEN 1 END) AS upvote_count,
         COUNT(CASE WHEN pr.type = 'downvote' THEN 1 END) AS downvote_count,
         MAX(CASE WHEN pr.user_id = ${userId} THEN pr.type END) AS user_reaction_type,
@@ -271,7 +284,7 @@ export class PostsService {
       INNER JOIN users_view u ON u.id = p.author_id
       LEFT JOIN post_reactions pr ON pr.post_id = p.id
       GROUP BY p.id, p.author_id, p.content, p.created_at, p.updated_at,
-               u.id, u.username, u.email, u.name, bm25.bm25_score
+               u.id, u.username, u.email, u.name, u.image, bm25.bm25_score
       ORDER BY bm25.bm25_score DESC
     `);
 
@@ -285,6 +298,9 @@ export class PostsService {
           username: (r['author_username'] as string | null) ?? null,
           email: r['author_email'] as string,
           name: (r['author_name'] as string | null) ?? null,
+          image: this.usersService.resolveAvatarUrl(
+            (r['author_image'] as string | null) ?? null,
+          ),
         },
         content: r['content'] as PostDto['content'],
         createdAt: new Date(r['created_at'] as string).toISOString(),
@@ -319,6 +335,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         reactionCount,
         upvoteCount,
@@ -334,6 +351,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .$dynamic();
 
@@ -418,6 +436,7 @@ export class PostsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -433,6 +452,7 @@ export class PostsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -467,6 +487,7 @@ export class PostsService {
         username: row.author.username ?? null,
         email: row.author.email,
         name: row.author.name ?? null,
+        image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
       },
       content: row.content,
       createdAt: row.createdAt.toISOString(),

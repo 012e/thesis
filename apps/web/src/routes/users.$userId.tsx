@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -61,17 +61,14 @@ function UserProfilePage() {
         <div className="relative">
           <div className="absolute -top-20">
             <Avatar className="w-32 h-32 rounded-full border-4 border-background">
-              {profile.image ? (
-                <img
-                  src={profile.image}
-                  alt={profile.name || "Profile"}
-                  className="w-full h-full rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex justify-center items-center w-full h-full text-4xl font-bold rounded-full border-none bg-primary text-primary-foreground">
-                  {initials}
-                </div>
-              )}
+              <AvatarImage
+                src={profile.image ?? undefined}
+                alt={profile.name || "Profile"}
+                className="object-cover w-full h-full rounded-full"
+              />
+              <AvatarFallback className="text-4xl font-bold bg-primary text-primary-foreground">
+                {initials}
+              </AvatarFallback>
             </Avatar>
           </div>
           <div className="flex justify-end pt-3">

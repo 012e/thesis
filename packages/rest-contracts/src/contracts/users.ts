@@ -19,6 +19,20 @@ export const usersContract = c.router({
     summary:
       "Full-text search users by name, email, or username using ParadeDB BM25. Results ordered by relevance score descending.",
   },
+  // updateAvatar MUST be declared before getUserProfile so the static segment
+  // "/users/me/avatar" is not swallowed by the dynamic ":id" path parameter.
+  updateAvatar: {
+    method: "PATCH",
+    path: "/users/me/avatar",
+    body: z.object({
+      avatarUrl: z.string().url(),
+    }),
+    responses: {
+      200: z.object({ image: z.string().nullable() }),
+      401: z.null(),
+    },
+    summary: "Update the authenticated user's avatar URL in user_profiles.",
+  },
   getUserProfile: {
     method: "GET",
     path: "/users/:id/profile",

@@ -58,6 +58,7 @@ export interface PostAuthorDto {
   username: string | null;
   email: string;
   name: string | null;
+  image: string | null;
 }
 
 export interface PostDto {
@@ -101,6 +102,7 @@ export interface FollowUserDto {
   username: string | null;
   email: string;
   name: string | null;
+  image: string | null;
 }
 
 export interface UserFollowDto {

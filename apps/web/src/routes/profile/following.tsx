@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { useSession } from "@/hooks/use-session";
 import { useFollowingSuspense } from "@/hooks/use-following";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { PageSpinner } from "@/components/ui/spinner";
 import { IconArrowLeft, IconUserCheck } from "@tabler/icons-react";
@@ -72,6 +72,7 @@ function FollowingContent({ userId }: { userId: string }) {
                 className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
               >
                 <Avatar className="w-10 h-10 shrink-0">
+                  <AvatarImage src={user.image ?? undefined} alt={user.name || user.username || undefined} />
                   <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
                     {initials}
                   </AvatarFallback>

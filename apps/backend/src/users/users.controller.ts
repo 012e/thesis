@@ -20,6 +20,17 @@ export class UsersController {
     });
   }
 
+  @TsRestHandler(usersContract.updateAvatar)
+  updateAvatar(@Session() session: UserSession) {
+    return tsRestHandler(usersContract.updateAvatar, async ({ body }) => {
+      await this.usersService.updateAvatar(session.user.id, body.avatarUrl);
+      return {
+        status: 200,
+        body: { image: body.avatarUrl },
+      };
+    });
+  }
+
   @TsRestHandler(usersContract.getUserProfile)
   getUserProfile(@Session() session: UserSession) {
     return tsRestHandler(usersContract.getUserProfile, async ({ params }) => {

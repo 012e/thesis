@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import Cropper from 'react-easy-crop';
 import type { Area, Point } from 'react-easy-crop';
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,19 +13,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field';
+import { Field, FieldGroup, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
-import {
-  Avatar,
-  AvatarImage,
-  AvatarFallback,
-} from '@/components/ui/avatar';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { updateProfile } from '@/lib/auth';
 import { uploadImages } from '@/lib/api/uploads';
+import { updateAvatar } from '@/lib/api/users';
 
 const editProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name is too long'),
@@ -62,19 +56,24 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<File> {
   );
 
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        reject(new Error('Failed to create image blob'));
-        return;
-      }
-      resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
-    }, 'image/jpeg', 0.92);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('Failed to create image blob'));
+          return;
+        }
+        resolve(new File([blob], 'avatar.jpg', { type: 'image/jpeg' }));
+      },
+      'image/jpeg',
+      0.92,
+    );
   });
 }
 
 interface EditProfileDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  userId: string;
   defaultValues: {
     name: string;
     image?: string;
@@ -85,9 +84,11 @@ interface EditProfileDialogProps {
 export function EditProfileDialog({
   open,
   onOpenChange,
+  userId,
   defaultValues,
   onSuccess,
 }: EditProfileDialogProps) {
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Current avatar URL (set after a successful upload)
@@ -165,15 +166,23 @@ export function EditProfileDialog({
       name: defaultValues.name,
     },
     onSubmit: async ({ value }) => {
-      const success = await updateProfile({
-        name: value.name,
-        image: avatarUrl || undefined,
-      });
+      // Update name via Better Auth (image field intentionally omitted —
+      // Better Auth does not persist it to the DB in this project).
+      const success = await updateProfile({ name: value.name });
 
-      if (success) {
-        onOpenChange(false);
-        onSuccess?.();
+      if (!success) return;
+
+      // Persist avatar separately in our own user_profiles table.
+      if (avatarUrl && avatarUrl !== (defaultValues.image ?? '')) {
+        await updateAvatar(avatarUrl);
+        // Invalidate the profile query so all avatar consumers refresh.
+        await queryClient.invalidateQueries({
+          queryKey: ['users', userId, 'profile'],
+        });
       }
+
+      onOpenChange(false);
+      onSuccess?.();
     },
   });
 
@@ -202,7 +211,7 @@ export function EditProfileDialog({
         {isCropping ? (
           <div className="flex flex-col gap-4">
             {/* Crop area */}
-            <div className="relative h-72 w-full overflow-hidden rounded-lg bg-black">
+            <div className="overflow-hidden relative w-full h-72 bg-black rounded-lg">
               <Cropper
                 image={rawImageSrc}
                 crop={crop}
@@ -217,8 +226,8 @@ export function EditProfileDialog({
             </div>
 
             {/* Zoom slider */}
-            <div className="flex items-center gap-3 px-1">
-              <span className="text-muted-foreground min-w-[36px] text-sm">
+            <div className="flex gap-3 items-center px-1">
+              <span className="text-sm text-muted-foreground min-w-[36px]">
                 Zoom
               </span>
               <input
@@ -265,11 +274,11 @@ export function EditProfileDialog({
           >
             <FieldGroup>
               {/* Avatar preview + upload trigger */}
-              <div className="flex flex-col items-center gap-3 pb-2">
+              <div className="flex flex-col gap-3 items-center pb-2">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="group relative cursor-pointer"
+                  className="relative cursor-pointer group"
                   aria-label="Change profile photo"
                 >
                   <Avatar className="size-28">
@@ -279,7 +288,7 @@ export function EditProfileDialog({
                     </AvatarFallback>
                   </Avatar>
                   {/* Hover overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+                  <div className="flex absolute inset-0 justify-center items-center rounded-full opacity-0 transition-opacity group-hover:opacity-100 bg-black/40">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="20"
@@ -319,7 +328,8 @@ export function EditProfileDialog({
                 name="name"
                 validators={{
                   onChange: ({ value }) => {
-                    const result = editProfileSchema.shape.name.safeParse(value);
+                    const result =
+                      editProfileSchema.shape.name.safeParse(value);
                     if (!result.success) {
                       return result.error.issues[0]?.message;
                     }
@@ -334,13 +344,12 @@ export function EditProfileDialog({
                       id={field.name}
                       name={field.name}
                       type="text"
-                      placeholder="John Doe"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                     />
                     {field.state.meta.errors.length > 0 && (
-                      <span className="text-sm text-red-500">
+                      <span className="text-red-500 text-xm">
                         {field.state.meta.errors.join(', ')}
                       </span>
                     )}

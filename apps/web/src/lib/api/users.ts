@@ -22,3 +22,22 @@ export async function getUserProfile(userId: string): Promise<UserProfileDto> {
 
   throw new Error("Failed to load user profile");
 }
+
+export async function updateAvatar(
+  avatarUrl: string,
+): Promise<{ image: string | null }> {
+  const response = await client.updateAvatar({
+    body: { avatarUrl },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to update avatar");
+}

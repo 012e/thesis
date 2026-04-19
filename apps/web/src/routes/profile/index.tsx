@@ -2,7 +2,6 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { Suspense, useState } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useUserProfileSuspense } from '@/hooks/use-user-profile';
-import { useFollowersSuspense } from '@/hooks/use-followers';
 import { useUserPostsSuspense } from '@/hooks/use-user-posts';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,6 @@ function ProfileContent({
 
   const userId = session.user.id;
   const { data: profile } = useUserProfileSuspense(userId);
-  const { data: followers } = useFollowersSuspense(userId);
   const { data: userPosts } = useUserPostsSuspense(userId);
 
   const user = session.user;
@@ -73,9 +71,9 @@ function ProfileContent({
         <div className="relative">
           <div className="absolute -top-20">
             <Avatar className="w-32 h-32 rounded-full border-4 border-background">
-              {user.image ? (
+              {profile?.image ? (
                 <AvatarImage
-                  src={user.image}
+                  src={profile.image}
                   alt={user.name || 'Profile'}
                   className="object-cover w-full h-full rounded-full"
                 />
@@ -162,9 +160,10 @@ function ProfileContent({
       <EditProfileDialog
         open={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
+        userId={userId}
         defaultValues={{
           name: user.name || '',
-          image: user.image || '',
+          image: profile?.image || '',
         }}
         onSuccess={() => {
           refetch();

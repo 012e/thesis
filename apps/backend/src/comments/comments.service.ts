@@ -3,6 +3,7 @@ import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
 import { DatabaseService } from '@/db/database.service';
 import { comments, commentReactions, usersView } from '@/db/schema';
 import { eq, desc, and, count, sql } from 'drizzle-orm';
+import { UsersService } from '@/users/users.service';
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
@@ -23,7 +24,10 @@ type CommentRow = typeof comments.$inferSelect & {
 
 @Injectable()
 export class CommentsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly usersService: UsersService,
+  ) {}
 
   async list(postId: string, userId?: string): Promise<CommentDto[]> {
     const rows = await this.databaseService.db
@@ -40,6 +44,7 @@ export class CommentsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -57,6 +62,7 @@ export class CommentsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .orderBy(desc(comments.createdAt));
 
@@ -95,6 +101,7 @@ export class CommentsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -110,6 +117,7 @@ export class CommentsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -131,6 +139,7 @@ export class CommentsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -148,6 +157,7 @@ export class CommentsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .limit(1);
 
@@ -180,6 +190,7 @@ export class CommentsService {
           username: usersView.username,
           email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
         upvoteCount,
         downvoteCount,
@@ -197,6 +208,7 @@ export class CommentsService {
         usersView.username,
         usersView.email,
         usersView.name,
+        usersView.image,
       )
       .orderBy(desc(comments.createdAt));
 
@@ -222,6 +234,7 @@ export class CommentsService {
         username: row.author.username ?? null,
         email: row.author.email,
         name: row.author.name ?? null,
+        image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
       },
       upvoteCount: row.upvoteCount,
       downvoteCount: row.downvoteCount,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
 import {
@@ -160,9 +160,10 @@ export function Post({ post, initialReactionSummary }: PostProps) {
           title={isOwnPost ? undefined : `Message ${post.author.name ?? post.author.username}`}
         >
           <Avatar className="w-10 h-10">
-            <div className="flex justify-center items-center w-full h-full font-semibold rounded-full bg-primary text-primary-foreground">
+            <AvatarImage src={post.author.image ?? undefined} alt={post.author.name || post.author.username || undefined} />
+            <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
               {authorInitial}
-            </div>
+            </AvatarFallback>
           </Avatar>
         </button>
         <div className="flex-1 min-w-0">
