@@ -11,6 +11,9 @@ jobs:
   lint:
     name: Lint (${{ matrix.project }})
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ matrix.working-directory }}
 
     strategy:
       fail-fast: false
@@ -34,7 +37,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oxc-project/oxlint-action@v2.0.1
-        working-directory: ${{ matrix.working-directory }}
         with:
           deny: correctness
           warn: suspicious
