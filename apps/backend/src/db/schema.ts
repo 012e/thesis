@@ -30,16 +30,32 @@ export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
 
 /**
- * A read-only view over the better-auth `user` table.
- * Exposes only the fields needed by the posts feature.
- * The underlying table is managed by better-auth migrations.
+ * Stores user avatar URLs separately from Better Auth's `user` table.
+ * Better Auth does not persist the `image` field to the DB in this project,
+ * so we own avatar storage ourselves.
+ */
+export const userProfiles = pgTable('user_profiles', {
+  userId: text('user_id').primaryKey(),
+  avatarUrl: text('avatar_url'),
+});
+
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type NewUserProfile = typeof userProfiles.$inferInsert;
+
+/**
+ * A read-only view over the better-auth `user` table joined with `user_profiles`.
+ * Exposes only the fields needed by the application features.
+ * The underlying `user` table is managed by better-auth migrations.
  */
 export const usersView = pgView('users_view', {
   id: text('id').notNull(),
   username: text('username'),
   email: text('email').notNull(),
   name: text('name'),
-}).as(sql`SELECT id, username, email, name FROM "user"`);
+  image: text('image'),
+}).as(
+  sql`SELECT u.id, u.username, u.email, u.name, up.avatar_url AS image FROM "user" u LEFT JOIN user_profiles up ON up.user_id = u.id`,
+);
 
 export type UserView = typeof usersView.$inferSelect;
 

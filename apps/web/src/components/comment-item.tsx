@@ -1,4 +1,4 @@
-import { Avatar } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { IconTrash } from "@tabler/icons-react";
 import type { CommentType } from "@repo/rest-contracts";
@@ -56,9 +56,10 @@ export function CommentItem({
   return (
     <div className="flex gap-2" style={{ marginLeft: `${indentLevel * 16}px` }}>
       <Avatar className="w-8 h-8 shrink-0">
-        <div className="flex justify-center items-center w-full h-full text-xs font-semibold rounded-full bg-primary text-primary-foreground">
+        <AvatarImage src={comment.author.image ?? undefined} alt={comment.author.name || comment.author.username || undefined} />
+        <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
           {authorInitial}
-        </div>
+        </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex gap-2 items-center mb-1">

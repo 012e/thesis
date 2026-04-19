@@ -12,6 +12,7 @@ export const PostAuthor = z.object({
   username: z.string().nullable(),
   email: z.string(),
   name: z.string().nullable(),
+  image: z.string().nullable(),
 });
 
 export type UserType = z.infer<typeof User>;

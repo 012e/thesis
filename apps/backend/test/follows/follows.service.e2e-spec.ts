@@ -7,6 +7,7 @@ import { DatabaseService } from '@/db/database.service';
 import { userFollows } from '@/db/schema';
 import { DATABASE_POOL } from '@/db/tokens';
 import { FollowsService } from '@/follows/follows.service';
+import { UsersService } from '@/users/users.service';
 
 import { runBetterAuthMigrations } from '../helpers/database.setup';
 import {
@@ -35,6 +36,12 @@ describe('FollowsService integration', () => {
         },
         DatabaseService,
         FollowsService,
+        {
+          provide: UsersService,
+          useValue: {
+            resolveAvatarUrl: (image: string | null) => image,
+          },
+        },
       ],
     }).compile();
 

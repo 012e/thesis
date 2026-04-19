@@ -40,49 +40,58 @@ export class StorageService implements OnModuleInit {
    */
   async ensureBucket(): Promise<void> {
     try {
-      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-      this.logger.log(`Bucket "${this.bucket}" already exists`);
-    } catch (error: unknown) {
-      if (
-        error &&
-        typeof error === 'object' &&
-        'name' in error &&
-        (error.name === 'NotFound' || error.name === 'NoSuchBucket')
-      ) {
-        this.logger.log(`Creating bucket "${this.bucket}"...`);
-        await this.client.send(
-          new CreateBucketCommand({ Bucket: this.bucket }),
-        );
+      let bucketCreated = false;
 
-        // Set public read policy for the bucket
-        const policy = {
-          Version: '2012-10-17',
-          Statement: [
-            {
-              Effect: 'Allow',
-              Principal: '*',
-              Action: ['s3:GetObject'],
-              Resource: [`arn:aws:s3:::${this.bucket}/*`],
-            },
-          ],
-        };
-
-        await this.client.send(
-          new PutBucketPolicyCommand({
-            Bucket: this.bucket,
-            Policy: JSON.stringify(policy),
-          }),
-        );
-
-        this.logger.log(
-          `Bucket "${this.bucket}" created with public read policy`,
-        );
-      } else {
-        this.logger.error('Failed to check/create bucket', error);
-        // Do not crash the application in test environment if Minio is not available
-        if (env.NODE_ENV !== 'test') {
+      try {
+        await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+        this.logger.log(`Bucket "${this.bucket}" already exists`);
+      } catch (error: unknown) {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'name' in error &&
+          (error.name === 'NotFound' || error.name === 'NoSuchBucket')
+        ) {
+          this.logger.log(`Creating bucket "${this.bucket}"...`);
+          await this.client.send(
+            new CreateBucketCommand({ Bucket: this.bucket }),
+          );
+          bucketCreated = true;
+        } else {
           throw error;
         }
+      }
+
+      // Always apply public read policy (covers pre-existing buckets that may lack it)
+      const policy = {
+        Version: '2012-10-17',
+        Statement: [
+          {
+            Effect: 'Allow',
+            Principal: '*',
+            Action: ['s3:GetObject'],
+            Resource: [`arn:aws:s3:::${this.bucket}/*`],
+          },
+        ],
+      };
+
+      await this.client.send(
+        new PutBucketPolicyCommand({
+          Bucket: this.bucket,
+          Policy: JSON.stringify(policy),
+        }),
+      );
+
+      this.logger.log(
+        bucketCreated
+          ? `Bucket "${this.bucket}" created with public read policy`
+          : `Public read policy ensured on bucket "${this.bucket}"`,
+      );
+    } catch (error: unknown) {
+      this.logger.error('Failed to check/create bucket', error);
+      // Do not crash the application in test environment if Minio is not available
+      if (env.NODE_ENV !== 'test') {
+        throw error;
       }
     }
   }

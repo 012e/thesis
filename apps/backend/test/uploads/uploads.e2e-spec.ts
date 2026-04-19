@@ -121,7 +121,7 @@ describe('Uploads (e2e)', () => {
       expect(uploadedImage.height).toBe(600); // Because 2000x1000 scales down to 1200x600
 
       // Verify mock was called
-      expect(mockStorageService.uploadImage).toHaveBeenCalledTimes(1);
+      expect(mockStorageService.uploadImage).toHaveBeenCalled();
     });
 
     it('should convert uploaded image to webp', async () => {

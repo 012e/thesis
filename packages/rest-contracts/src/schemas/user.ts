@@ -1,5 +1,15 @@
 import { z } from "zod";
 
+export const UserSearchResult = z.object({
+  id: z.string(),
+  username: z.string().nullable(),
+  displayUsername: z.string().nullable(),
+  name: z.string().nullable(),
+  image: z.string().nullable(),
+});
+
+export type UserSearchResultType = z.infer<typeof UserSearchResult>;
+
 export const UserProfile = z.object({
   id: z.string(),
   username: z.string().nullable(),
