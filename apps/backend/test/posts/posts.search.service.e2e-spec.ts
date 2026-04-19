@@ -8,6 +8,7 @@ import { user } from '@/db/auth-schema';
 import { DATABASE_POOL } from '@/db/tokens';
 import { PostsService } from '@/posts/posts.service';
 import { StorageService } from '@/storage/storage.service';
+import { UsersService } from '@/users/users.service';
 
 import { runBetterAuthMigrations } from '../helpers/database.setup';
 import {
@@ -36,6 +37,12 @@ describe('PostsService.search integration', () => {
         {
           provide: StorageService,
           useValue: { deleteImages: async () => {} },
+        },
+        {
+          provide: UsersService,
+          useValue: {
+            resolveAvatarUrl: (image: string | null) => image,
+          },
         },
       ],
     }).compile();

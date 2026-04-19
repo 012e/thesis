@@ -16,6 +16,7 @@ import {
 } from '../helpers/testcontainers.setup';
 
 import { StorageService } from '@/storage/storage.service';
+import { UsersService } from '@/users/users.service';
 
 describe('PostsService integration', () => {
   let containers: PostgresContainerContext;
@@ -41,6 +42,12 @@ describe('PostsService integration', () => {
           provide: StorageService,
           useValue: {
             deleteImages: async () => {},
+          },
+        },
+        {
+          provide: UsersService,
+          useValue: {
+            resolveAvatarUrl: (image: string | null) => image,
           },
         },
       ],
