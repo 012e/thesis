@@ -10,9 +10,10 @@ import {
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
 
-import { auth } from "@/auth";
-import { MessagesService } from "./messages.service";
-import type { DirectMessageDto } from "@repo/shared-dto";
+import { auth } from '@/auth';
+import { MessagesService } from './messages.service';
+import { NotificationsService } from '@/notifications/notifications.service';
+import type { DirectMessageDto } from '@repo/shared-dto';
 
 // ─── Event name constants (single source of truth) ──────────────────────────
 
@@ -30,15 +31,6 @@ export const WS_NEW_MESSAGE = "new-message" as const;
 
 /** Server → Client: another participant started / stopped typing. */
 export const WS_TYPING_INDICATOR = "typing-indicator" as const;
-
-/**
- * Server → Client (per-user room): lightweight notification that a new message
- * arrived in one of the user's conversations. Sent to `user:{userId}` regardless
- * of whether the recipient has joined the conversation room, enabling badges and
- * toasts without an explicit join-conversation handshake.
- */
-export const WS_NEW_MESSAGE_NOTIFICATION = "new-message-notification" as const;
-
 // ─── Payload types ──────────────────────────────────────────────────────────
 
 interface JoinConversationPayload {
@@ -56,13 +48,6 @@ interface TypingPayload {
   isTyping: boolean;
 }
 
-interface NewMessageNotificationPayload {
-  conversationId: string;
-  senderId: string;
-  /** First 100 characters of the message content for preview display. */
-  preview: string;
-}
-
 // ─── Gateway ────────────────────────────────────────────────────────────────
 
 /**
@@ -74,12 +59,14 @@ interface NewMessageNotificationPayload {
  *     unauthenticated clients immediately.
  *  3. The resolved user ID is stored on `socket.data.userId`.
  *  4. The socket is automatically joined to `user:{userId}` — a per-user
- *     notification room that receives `new-message-notification` events for
- *     all conversations the user participates in, with no explicit join needed.
+ *     room used for conversation-specific notifications.
  *
  * Room naming:
  *  - Conversation room: `conversation:{conversationId}` (requires join-conversation emit)
- *  - Per-user notification room: `user:{userId}` (joined automatically on auth)
+ *  - Per-user room: `user:{userId}` (joined automatically on auth)
+ *
+ * DM notifications are now routed through NotificationsService so they are
+ * persisted and delivered on the unified /notifications WebSocket namespace.
  */
 @WebSocketGateway({
   cors: {
@@ -94,7 +81,10 @@ export class MessagesGateway
   @WebSocketServer()
   private readonly server!: Server;
 
-  constructor(private readonly messagesService: MessagesService) {}
+  constructor(
+    private readonly messagesService: MessagesService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   // ─── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -121,16 +111,10 @@ export class MessagesGateway
 
       client.data.userId = session.user.id;
 
-      // Auto-join the per-user notification room so the client receives
-      // new-message-notification events for ALL their conversations without
-      // needing to emit join-conversation for each one.
+      // Auto-join the per-user room for conversation-specific events.
       await client.join(`user:${session.user.id}`);
 
-      // Signal to the client that server-side auth is complete and the socket
-      // is ready to accept events. This prevents a race where the client emits
-      // events before handleConnection (which is async) has finished setting
-      // client.data.userId.
-      client.emit("authenticated");
+      client.emit('authenticated');
     } catch {
       this.disconnect(client, "Authentication error");
     }
@@ -168,9 +152,8 @@ export class MessagesGateway
 
   /**
    * Send a message via WebSocket. Persists via MessagesService, then broadcasts
-   * the saved message to all clients in the conversation room and emits a
-   * lightweight notification to the recipient's per-user room so they are
-   * notified even without having joined the conversation room.
+   * the saved message to all clients in the conversation room and delivers a
+   * unified notification to the recipient via NotificationsService.
    */
   @SubscribeMessage(WS_SEND_MESSAGE)
   async onSendMessage(
@@ -194,9 +177,7 @@ export class MessagesGateway
     // Broadcast the full message to clients that have joined the conversation room.
     this.server.to(this.roomName(conversationId)).emit(WS_NEW_MESSAGE, message);
 
-    // Emit a lightweight notification to the recipient's per-user room.
-    // This fires regardless of whether the recipient has opened this conversation,
-    // enabling unread badges and toasts anywhere in the app.
+    // Deliver a persisted DM notification via the unified notification system.
     try {
       const { userAId, userBId } =
         await this.messagesService.getConversationParticipantIds(
@@ -204,18 +185,22 @@ export class MessagesGateway
         );
       const recipientId = userAId === userId ? userBId : userAId;
 
-      const notification: NewMessageNotificationPayload = {
-        conversationId,
-        senderId: userId,
-        preview: content.slice(0, 100),
-      };
-      this.server
-        .to(`user:${recipientId}`)
-        .emit(WS_NEW_MESSAGE_NOTIFICATION, notification);
+      void this.notificationsService.deliver(
+        {
+          userId: recipientId,
+          actorId: userId,
+          type: 'direct_message',
+          payload: {
+            conversationId,
+            preview: content.slice(0, 100),
+          },
+        },
+        ['websocket'],
+      );
     } catch {
-      // Non-fatal: the message was already delivered. Log and continue.
+      // Non-fatal: the message was already delivered.
       console.warn(
-        `[MessagesGateway] Failed to emit notification for conversation ${conversationId}`,
+        `[MessagesGateway] Failed to deliver DM notification for conversation ${conversationId}`,
       );
     }
   }

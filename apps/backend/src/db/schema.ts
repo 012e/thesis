@@ -1,5 +1,5 @@
-import type { PostContentDto } from "@repo/shared-dto";
-import { sql } from "drizzle-orm";
+import type { NotificationPayloadDto, PostContentDto } from '@repo/shared-dto';
+import { sql } from 'drizzle-orm';
 import {
   boolean,
   foreignKey,
@@ -234,3 +234,41 @@ export const directMessages = pgTable("direct_messages", {
 
 export type DirectMessage = typeof directMessages.$inferSelect;
 export type NewDirectMessage = typeof directMessages.$inferInsert;
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+/**
+ * Notification type enum — covers all social interaction events.
+ */
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'follow',
+  'comment',
+  'reply',
+  'post_reaction',
+  'comment_reaction',
+  'direct_message',
+]);
+
+/**
+ * Persisted notifications for each recipient user.
+ * actorId is the user who triggered the event (null for system notifications).
+ * payload is a JSONB blob whose shape is determined by `type`.
+ */
+export const notifications = pgTable('notifications', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  /** The user who should receive this notification. */
+  userId: text('user_id').notNull(),
+  /** The user who triggered the event (follower, commenter, reactor, sender). */
+  actorId: text('actor_id'),
+  type: notificationTypeEnum('type').notNull(),
+  /** Type-specific context data — see NotificationPayloadDto in shared-dto. */
+  payload: jsonb('payload').$type<NotificationPayloadDto>().notNull(),
+  /** null = unread */
+  readAt: timestamp('read_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;

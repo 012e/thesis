@@ -1,9 +1,10 @@
-import { Injectable } from "@nestjs/common";
-import type { CommentDto, ReactionTypeDto } from "@repo/shared-dto";
-import { DatabaseService } from "@/db/database.service";
-import { comments, commentReactions, usersView } from "@/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
-import { UsersService } from "@/users/users.service";
+import { Injectable } from '@nestjs/common';
+import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
+import { DatabaseService } from '@/db/database.service';
+import { comments, commentReactions, posts, usersView } from '@/db/schema';
+import { eq, desc, and, count, sql } from 'drizzle-orm';
+import { UsersService } from '@/users/users.service';
+import { NotificationsService } from '@/notifications/notifications.service';
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
@@ -27,6 +28,7 @@ export class CommentsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async list(postId: string, userId?: string): Promise<CommentDto[]> {
@@ -121,7 +123,72 @@ export class CommentsService {
       )
       .limit(1);
 
-    return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+    const dto = this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+
+    // Fire-and-forget notifications
+    void this.deliverCommentNotification({
+      authorId,
+      postId,
+      commentId: dto.id,
+      content,
+      parentId,
+    }).catch((err) =>
+      console.warn('[CommentsService] Failed to deliver comment notification:', err),
+    );
+
+    return dto;
+  }
+
+  /** Resolve and deliver the appropriate notification (comment on post or reply). */
+  private async deliverCommentNotification(opts: {
+    authorId: string;
+    postId: string;
+    commentId: string;
+    content: string;
+    parentId?: string;
+  }): Promise<void> {
+    const { authorId, postId, commentId, content, parentId } = opts;
+    const preview = content.slice(0, 100);
+
+    if (parentId) {
+      // Reply to a comment — notify the parent comment author
+      const [parentComment] = await this.databaseService.db
+        .select({ authorId: comments.authorId })
+        .from(comments)
+        .where(eq(comments.id, parentId))
+        .limit(1);
+
+      if (parentComment && parentComment.authorId !== authorId) {
+        await this.notificationsService.deliver(
+          {
+            userId: parentComment.authorId,
+            actorId: authorId,
+            type: 'reply',
+            payload: { postId, parentCommentId: parentId, commentId, preview },
+          },
+          ['websocket'],
+        );
+      }
+    } else {
+      // Top-level comment — notify the post author
+      const [post] = await this.databaseService.db
+        .select({ authorId: posts.authorId })
+        .from(posts)
+        .where(eq(posts.id, postId))
+        .limit(1);
+
+      if (post && post.authorId !== authorId) {
+        await this.notificationsService.deliver(
+          {
+            userId: post.authorId,
+            actorId: authorId,
+            type: 'comment',
+            payload: { postId, commentId, preview },
+          },
+          ['websocket'],
+        );
+      }
+    }
   }
 
   async getById(id: string, userId?: string): Promise<CommentDto | null> {
