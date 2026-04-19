@@ -27,6 +27,9 @@ test:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm nx run-many --target=test
 
+migrate-db:
+    pnpm --filter backend run db:migrate
+
 build-backend:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts
 
