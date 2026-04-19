@@ -176,9 +176,7 @@ export function EditProfileDialog({
       if (avatarUrl && avatarUrl !== (defaultValues.image ?? '')) {
         await updateAvatar(avatarUrl);
         // Invalidate the profile query so all avatar consumers refresh.
-        await queryClient.invalidateQueries({
-          queryKey: ['users', userId, 'profile'],
-        });
+        await queryClient.invalidateQueries();
       }
 
       onOpenChange(false);

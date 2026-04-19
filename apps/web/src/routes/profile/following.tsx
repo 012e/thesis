@@ -2,10 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { useSession } from "@/hooks/use-session";
 import { useFollowingSuspense } from "@/hooks/use-following";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
 import { PageSpinner } from "@/components/ui/spinner";
 import { IconArrowLeft, IconUserCheck } from "@tabler/icons-react";
+import { UsersList } from "./-users-list";
 
 export const Route = createFileRoute("/profile/following")({
   component: FollowingPage,
@@ -48,48 +47,7 @@ function FollowingContent({ userId }: { userId: string }) {
         </h1>
       </div>
 
-      {following.length === 0 ? (
-        <Card className="p-8 text-center">
-          <div className="text-muted-foreground">Not following anyone yet</div>
-        </Card>
-      ) : (
-        <Card className="divide-y divide-border overflow-hidden">
-          {following.map((user) => {
-            const initials = user.name
-              ? user.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)
-              : user.email.charAt(0).toUpperCase();
-
-            return (
-              <Link
-                key={user.id}
-                to="/users/$userId"
-                params={{ userId: user.id }}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors"
-              >
-                <Avatar className="w-10 h-10 shrink-0">
-                  <AvatarImage src={user.image ?? undefined} alt={user.name || user.username || undefined} />
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-medium text-sm truncate">
-                    {user.name || user.username || "User"}
-                  </span>
-                  <span className="text-xs text-muted-foreground truncate">
-                    {user.username ? `@${user.username}` : user.email}
-                  </span>
-                </div>
-              </Link>
-            );
-          })}
-        </Card>
-      )}
+      <UsersList users={following} emptyMessage="Not following anyone yet" />
     </div>
   );
 }
