@@ -50,7 +50,11 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex gap-3 items-center p-3 w-full text-left transition-colors hover:bg-accent" title={isCollapsed ? displayName : undefined}>
+      <DropdownMenuTrigger
+        className="flex gap-3 items-center p-3 w-full text-left transition-colors hover:bg-accent"
+        title={isCollapsed ? displayName : undefined}
+        aria-label={isCollapsed ? displayName : undefined}
+      >
         <Avatar className="w-10 h-10 flex-shrink-0">
           <AvatarImage
             src={profile?.image ?? undefined}

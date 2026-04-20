@@ -93,6 +93,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
               to={item.href}
               className="flex items-center gap-4 px-3 py-3 hover:bg-accent text-xl font-normal transition-colors [&.active]:font-bold"
               title={isCollapsed ? item.label : undefined}
+              aria-label={isCollapsed ? item.label : undefined}
             >
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
