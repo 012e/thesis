@@ -18,7 +18,11 @@ import { useRouter } from "@tanstack/react-router";
 import { useSession } from "@/hooks/use-session";
 import { useUserProfile } from "@/hooks/use-user-profile";
 
-export function UserProfile() {
+interface UserProfileProps {
+  isCollapsed?: boolean;
+}
+
+export function UserProfile({ isCollapsed = false }: UserProfileProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const { data: profile } = useUserProfile(session?.user.id ?? "");
@@ -46,8 +50,12 @@ export function UserProfile() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="flex gap-3 items-center p-3 w-full text-left transition-colors hover:bg-accent">
-        <Avatar className="w-10 h-10">
+      <DropdownMenuTrigger
+        className={`flex gap-3 items-center w-full text-left transition-colors hover:bg-accent ${isCollapsed ? "justify-center py-3" : "p-3"}`}
+        title={isCollapsed ? displayName : undefined}
+        aria-label={isCollapsed ? displayName : undefined}
+      >
+        <Avatar className="w-10 h-10 flex-shrink-0">
           <AvatarImage
             src={profile?.image ?? undefined}
             alt={user?.name || undefined}
@@ -56,13 +64,17 @@ export function UserProfile() {
             {initials}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1 min-w-0">
-          <div className="text-sm font-semibold truncate">{displayName}</div>
-          <div className="text-sm text-muted-foreground truncate">
-            {displayEmail}
-          </div>
-        </div>
-        <IconDotsCircleHorizontal className="w-5 h-5" />
+        {!isCollapsed && (
+          <>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold truncate">{displayName}</div>
+              <div className="text-sm text-muted-foreground truncate">
+                {displayEmail}
+              </div>
+            </div>
+            <IconDotsCircleHorizontal className="w-5 h-5" />
+          </>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuItem onClick={handleViewProfile}>
