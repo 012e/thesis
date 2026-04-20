@@ -214,3 +214,86 @@ export interface ConversationDto {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+/** All possible notification trigger types. */
+export type NotificationTypeDto =
+  | 'follow'
+  | 'comment'
+  | 'reply'
+  | 'post_reaction'
+  | 'comment_reaction'
+  | 'direct_message';
+
+/** Someone followed the recipient. */
+export interface FollowNotificationPayload {
+  followerId: string;
+  followerUsername: string | null;
+  followerName: string | null;
+}
+
+/** Someone commented on the recipient's post. */
+export interface CommentNotificationPayload {
+  postId: string;
+  commentId: string;
+  /** First 100 characters of the comment content. */
+  preview: string;
+}
+
+/** Someone replied to the recipient's comment. */
+export interface ReplyNotificationPayload {
+  postId: string;
+  parentCommentId: string;
+  commentId: string;
+  /** First 100 characters of the reply content. */
+  preview: string;
+}
+
+/** Someone reacted to the recipient's post. */
+export interface PostReactionNotificationPayload {
+  postId: string;
+  reactionType: ReactionTypeDto;
+}
+
+/** Someone reacted to the recipient's comment. */
+export interface CommentReactionNotificationPayload {
+  postId: string;
+  commentId: string;
+  reactionType: ReactionTypeDto;
+}
+
+/** Someone sent the recipient a direct message. */
+export interface DirectMessageNotificationPayload {
+  conversationId: string;
+  /** First 100 characters of the message content. */
+  preview: string;
+}
+
+/** Discriminated union of all possible notification payloads. */
+export type NotificationPayloadDto =
+  | FollowNotificationPayload
+  | CommentNotificationPayload
+  | ReplyNotificationPayload
+  | PostReactionNotificationPayload
+  | CommentReactionNotificationPayload
+  | DirectMessageNotificationPayload;
+
+export interface NotificationDto {
+  id: string;
+  /** The recipient of this notification. */
+  userId: string;
+  /** The user who triggered the notification (follower, commenter, reactor, sender). */
+  actorId: string | null;
+  /** Display info for the actor — resolved server-side for convenience. */
+  actor: {
+    id: string;
+    username: string | null;
+    name: string | null;
+  } | null;
+  type: NotificationTypeDto;
+  payload: NotificationPayloadDto;
+  /** ISO datetime when the notification was read. null = unread. */
+  readAt: string | null;
+  createdAt: string;
+}

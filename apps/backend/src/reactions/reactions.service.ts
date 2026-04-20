@@ -16,11 +16,15 @@ import {
   posts,
   comments,
   usersView,
-} from "@/db/schema";
+} from '@/db/schema';
+import { NotificationsService } from '@/notifications/notifications.service';
 
 @Injectable()
 export class ReactionsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Upsert a reaction (upvote or downvote) for a post by a user.
@@ -32,8 +36,12 @@ export class ReactionsService {
     userId: string,
     type: ReactionTypeDto,
   ): Promise<PostReactionDto | null> {
-    const postExists = await this.postExists(postId);
-    if (!postExists) return null;
+    const [post] = await this.databaseService.db
+      .select({ id: posts.id, authorId: posts.authorId })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+    if (!post) return null;
 
     const [row] = await this.databaseService.db
       .insert(postReactions)
@@ -47,6 +55,23 @@ export class ReactionsService {
       })
       .returning();
 
+    // Notify post author — skip self-reactions
+    if (post.authorId !== userId) {
+      void this.notificationsService
+        .deliver(
+          {
+            userId: post.authorId,
+            actorId: userId,
+            type: 'post_reaction',
+            payload: { postId, reactionType: type },
+          },
+          ['websocket'],
+        )
+        .catch((err) =>
+          console.warn('[ReactionsService] Failed to deliver post reaction notification:', err),
+        );
+    }
+
     return this.toReactionDto(row);
   }
 
@@ -58,8 +83,12 @@ export class ReactionsService {
     userId: string,
     type: ReactionTypeDto,
   ): Promise<CommentReactionDto | null> {
-    const commentExists = await this.commentExists(commentId);
-    if (!commentExists) return null;
+    const [comment] = await this.databaseService.db
+      .select({ id: comments.id, authorId: comments.authorId, postId: comments.postId })
+      .from(comments)
+      .where(eq(comments.id, commentId))
+      .limit(1);
+    if (!comment) return null;
 
     const [row] = await this.databaseService.db
       .insert(commentReactions)
@@ -72,6 +101,23 @@ export class ReactionsService {
         },
       })
       .returning();
+
+    // Notify comment author — skip self-reactions
+    if (comment.authorId !== userId) {
+      void this.notificationsService
+        .deliver(
+          {
+            userId: comment.authorId,
+            actorId: userId,
+            type: 'comment_reaction',
+            payload: { commentId, postId: comment.postId, reactionType: type },
+          },
+          ['websocket'],
+        )
+        .catch((err) =>
+          console.warn('[ReactionsService] Failed to deliver comment reaction notification:', err),
+        );
+    }
 
     return this.toCommentReactionDto(row);
   }

@@ -2,15 +2,17 @@ import { and, desc, eq } from "drizzle-orm";
 import { Injectable } from "@nestjs/common";
 import type { FollowUserDto, UserFollowDto } from "@repo/shared-dto";
 
-import { DatabaseService } from "@/db/database.service";
-import { userFollows, usersView } from "@/db/schema";
-import { UsersService } from "@/users/users.service";
+import { DatabaseService } from '@/db/database.service';
+import { userFollows, usersView } from '@/db/schema';
+import { UsersService } from '@/users/users.service';
+import { NotificationsService } from '@/notifications/notifications.service';
 
 @Injectable()
 export class FollowsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async follow(
@@ -38,7 +40,28 @@ export class FollowsService {
       )
       .limit(1);
 
-    return row ? this.toFollowDto(row) : null;
+    if (!row) return null;
+
+    // Notify the followee — non-blocking, fire-and-forget.
+    void this.notificationsService
+      .deliver(
+        {
+          userId: followeeId,
+          actorId: followerId,
+          type: 'follow',
+          payload: {
+            followerId,
+            followerUsername: null, // resolved by NotificationsService via actorId
+            followerName: null,
+          },
+        },
+        ['websocket'],
+      )
+      .catch((err) =>
+        console.warn('[FollowsService] Failed to deliver follow notification:', err),
+      );
+
+    return this.toFollowDto(row);
   }
 
   async unfollow(
