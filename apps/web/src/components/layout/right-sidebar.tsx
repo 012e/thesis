@@ -1,4 +1,5 @@
-import { IconSearch, IconX } from "@tabler/icons-react";
+import { useState } from "react";
+import { IconSearch, IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,17 +41,48 @@ const trendingItems = [
   },
 ];
 
-export function RightSidebar() {
+interface RightSidebarProps {
+  defaultCollapsed?: boolean;
+}
+
+export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+
+  if (isCollapsed) {
+    return (
+      <div className="flex sticky top-0 flex-col items-center py-2 px-1 h-screen border-l w-[48px] transition-all duration-300">
+        <button
+          onClick={() => setIsCollapsed(false)}
+          className="p-2 mt-2 hover:bg-accent rounded-full transition-colors"
+          aria-label="Expand sidebar"
+          title="Expand sidebar"
+        >
+          <IconChevronLeft className="w-5 h-5" />
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className="overflow-hidden sticky top-0 py-2 px-4 h-screen w-[350px]">
+    <div className="overflow-hidden sticky top-0 py-2 px-4 h-screen w-[350px] transition-all duration-300">
       <div className="flex flex-col gap-4">
-        {/* Search */}
-        <div className="relative">
-          <IconSearch className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search"
-            className="pl-12 h-11 rounded-full border-0 bg-muted"
-          />
+        {/* Search row with collapse toggle */}
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1">
+            <IconSearch className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search"
+              className="pl-12 h-11 rounded-full border-0 bg-muted"
+            />
+          </div>
+          <button
+            onClick={() => setIsCollapsed(true)}
+            className="p-2 hover:bg-accent rounded-full transition-colors flex-shrink-0"
+            aria-label="Collapse sidebar"
+            title="Collapse sidebar"
+          >
+            <IconChevronRight className="w-5 h-5" />
+          </button>
         </div>
 
         {/* Subscribe to Premium */}
