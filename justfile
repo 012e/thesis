@@ -87,6 +87,10 @@ test-app: build-backend
 test-messages: build-backend
     pnpm --filter backend test:messages
 
+build-storybook:
+    pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
+    pnpm --filter web build-storybook
+
 # --- E2E Tests ---
 
 # Run e2e tests for web (requires web server to be running)
