@@ -60,6 +60,7 @@
     "@faker-js/faker": "^10.3.0",
     "@storybook/addon-essentials": "^8.6.18",
     "@storybook/addon-interactions": "^8.6.18",
+    "@storybook/addon-themes": "^10.3.5",
     "@storybook/blocks": "^8.6.18",
     "@storybook/test": "^8.6.18",
     "@tailwindcss/typography": "^0.5.19",

@@ -1,4 +1,5 @@
 import type { Preview } from "@storybook/react";
+import { withThemeByClassName } from "@storybook/addon-themes";
 import { initialize, mswLoader } from "msw-storybook-addon";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { faker } from "@faker-js/faker";
@@ -39,6 +40,13 @@ const preview: Preview = {
   },
   loaders: [mswLoader],
   decorators: [
+    withThemeByClassName({
+      themes: {
+        light: "",
+        dark: "dark",
+      },
+      defaultTheme: "dark",
+    }),
     (Story) => (
       <QueryClientProvider client={queryClient}>
         <Story />
