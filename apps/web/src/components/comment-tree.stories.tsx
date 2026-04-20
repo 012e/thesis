@@ -141,7 +141,7 @@ const sessionHandler = http.get("*/api/auth/session", () =>
 );
 
 const makeCommentsHandler = (comments: CommentType[]) =>
-  http.get("*/api/posts/:postId/comments", () => HttpResponse.json(comments));
+  http.get("*/posts/:postId/comments", () => HttpResponse.json(comments));
 
 // Mock the reply creation endpoint
 const replyHandler = http.post("*/api/comments/:commentId/replies", async ({ request }) => {
