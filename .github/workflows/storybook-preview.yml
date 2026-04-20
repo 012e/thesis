@@ -36,6 +36,7 @@ jobs:
         run: |
           pnpm --filter @repo/shared-dto build
           pnpm --filter @repo/rest-contracts build
+          pnpm --filter @repo/auth-client build
 
       - name: Build Storybook
         run: pnpm --filter web build-storybook
