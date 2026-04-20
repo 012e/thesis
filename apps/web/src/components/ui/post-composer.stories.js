@@ -1,0 +1,62 @@
+import { PostComposer } from "./post-composer";
+import { http, HttpResponse } from "msw";
+import { faker } from "@faker-js/faker";
+import { postsContract } from "@repo/rest-contracts";
+import { createMockHandlers } from "../../../.storybook/create-mock-handlers";
+const meta = {
+    title: "Components/PostComposer",
+    component: PostComposer,
+    parameters: {
+        layout: "centered",
+    },
+    tags: ["autodocs"],
+    decorators: [
+        (Story) => (<div className="w-[600px] border rounded-lg bg-background text-foreground">
+        <Story />
+      </div>),
+    ],
+};
+export default meta;
+// Better Auth session endpoint — not part of the ts-rest contract, so mocked manually.
+const sessionHandler = http.get("*/api/auth/session", () => HttpResponse.json({
+    session: {
+        id: "sess-1",
+        userId: "user-1",
+        expiresAt: new Date(Date.now() + 86400000).toISOString(),
+        ipAddress: "127.0.0.1",
+        userAgent: "Storybook",
+    },
+    user: {
+        id: "user-1",
+        email: "test@example.com",
+        emailVerified: true,
+        name: "Test User",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        username: "testuser",
+    },
+}));
+// All posts routes are auto-mocked from the ts-rest contract.
+// Responses are generated from the Zod schemas via zod-schema-faker.
+const postHandlers = createMockHandlers(postsContract);
+export const Default = {
+    parameters: {
+        msw: {
+            handlers: [sessionHandler, ...postHandlers],
+        },
+    },
+};
+export const WithImagesAndPolls = {
+    parameters: {
+        msw: {
+            handlers: [
+                sessionHandler,
+                ...postHandlers,
+                // /posts/images is an upload endpoint outside the ts-rest contract
+                http.post("*/api/posts/images", async () => HttpResponse.json({
+                    images: [{ key: "img1", url: faker.image.urlPicsumPhotos() }],
+                })),
+            ],
+        },
+    },
+};

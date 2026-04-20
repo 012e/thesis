@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   IconHome,
@@ -12,6 +13,8 @@ import {
   IconZoomFilled,
   IconStarFilled,
   IconRobot,
+  IconChevronLeft,
+  IconChevronRight,
 } from '@tabler/icons-react';
 import { UserProfile } from './user-profile';
 import { useNotifications } from '@/hooks/notifications';
@@ -56,11 +59,18 @@ const navigationItems = [
   },
 ];
 
-export function LeftSidebar() {
+interface LeftSidebarProps {
+  defaultCollapsed?: boolean;
+}
+
+export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const { unreadCount } = useNotifications();
 
   return (
-    <div className="flex sticky top-0 flex-col justify-between p-4 h-screen border-r w-[275px]">
+    <div
+      className={`flex sticky top-0 flex-col justify-between p-4 h-screen border-r transition-all duration-300 ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
+    >
       <div className="flex flex-col gap-2">
         {/* Logo */}
         <Link to="/" className="p-3 w-fit hover:bg-accent">
@@ -82,6 +92,7 @@ export function LeftSidebar() {
               key={item.href}
               to={item.href}
               className="flex items-center gap-4 px-3 py-3 hover:bg-accent text-xl font-normal transition-colors [&.active]:font-bold"
+              title={isCollapsed ? item.label : undefined}
             >
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
@@ -89,7 +100,7 @@ export function LeftSidebar() {
                 const hasUnread = item.href === '/notifications' && unreadCount > 0;
                 return (
                   <>
-                    <div className="relative">
+                    <div className="relative flex-shrink-0">
                       <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
                       {hasUnread && (
                         <span className="flex absolute -top-1.5 -right-1.5 justify-center items-center px-1 font-bold leading-none rounded-full min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px]">
@@ -97,7 +108,7 @@ export function LeftSidebar() {
                         </span>
                       )}
                     </div>
-                    <span>{item.label}</span>
+                    {!isCollapsed && <span>{item.label}</span>}
                   </>
                 );
               }}
@@ -106,7 +117,26 @@ export function LeftSidebar() {
         </nav>
       </div>
 
-      <UserProfile />
+      <div className="flex flex-col gap-2">
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setIsCollapsed((prev) => !prev)}
+          className="flex items-center gap-2 px-3 py-3 w-full hover:bg-accent transition-colors rounded-full"
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <IconChevronRight className="w-6 h-6 flex-shrink-0" />
+          ) : (
+            <>
+              <IconChevronLeft className="w-6 h-6 flex-shrink-0" />
+              <span className="text-sm font-medium">Collapse</span>
+            </>
+          )}
+        </button>
+
+        <UserProfile isCollapsed={isCollapsed} />
+      </div>
     </div>
   );
 }
