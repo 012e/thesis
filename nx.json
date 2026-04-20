@@ -13,6 +13,11 @@
       "cache": true,
       "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"]
     },
+    "build-storybook": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^production"]
+    },
     "lint": {
       "cache": true,
       "inputs": [

@@ -271,5 +271,6 @@ export {
   ReasoningContent,
   ReasoningText,
   ReasoningFade,
-  reasoningVariants,
 };
+// eslint-disable-next-line react-refresh/only-export-components
+export { reasoningVariants };

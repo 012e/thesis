@@ -7,8 +7,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CommentEditor } from "./comment-editor";
 import { CommentTree } from "./comment-tree";
-import { useComments, useCreateComment } from "@/hooks/use-comments";
-import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { useCreateComment } from "@/hooks/use-comments";
 import type { PostDto } from "@repo/shared-dto";
 
 export interface CommentsDialogProps {
@@ -22,7 +21,6 @@ export function CommentsDialog({
   open,
   onOpenChange,
 }: CommentsDialogProps) {
-  const { data: comments, isLoading, error } = useComments(post.id);
   const { mutate: createComment, isPending } = useCreateComment(post.id);
 
   const handleCommentSubmit = (content: string) => {
@@ -44,26 +42,11 @@ export function CommentsDialog({
             placeholder="Write a comment..."
           />
 
-          {/* Comments list */}
+          {/* Comments list — loaded lazily when dialog opens */}
           <ScrollArea className="flex-1 px-4">
-            {isLoading && (
-              <div className="flex justify-center items-center py-8">
-                <IconLoader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            )}
-
-            {error && (
-              <div className="flex gap-2 items-center py-8 text-destructive">
-                <IconAlertCircle className="w-5 h-5" />
-                <p>Failed to load comments. Please try again.</p>
-              </div>
-            )}
-
-            {comments && !isLoading && !error && (
-              <div className="pb-4">
-                <CommentTree comments={comments} postId={post.id} />
-              </div>
-            )}
+            <div className="pb-4">
+              <CommentTree postId={post.id} isRoot />
+            </div>
           </ScrollArea>
         </div>
       </DialogContent>

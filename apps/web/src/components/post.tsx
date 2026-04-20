@@ -147,7 +147,7 @@ export function Post({ post, initialReactionSummary }: PostProps) {
 
   return (
     <article className="p-4 transition-colors cursor-pointer hover:bg-accent/50">
-      <div className="flex gap-3">
+      <div className="flex gap-3 items-start">
         <button
           type="button"
           onClick={handleAuthorClick}

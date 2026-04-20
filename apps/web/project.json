@@ -1,0 +1,11 @@
+{
+  "name": "web",
+  "targets": {
+    "build-storybook": {
+      "command": "storybook build",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
+    }
+  }
+}
