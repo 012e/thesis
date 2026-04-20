@@ -25,7 +25,7 @@ export function createTestAuthClient(app: NestExpressApplication) {
       email,
       password,
       name,
-      username,
+      _username,
     }: {
       email: string;
       password: string;

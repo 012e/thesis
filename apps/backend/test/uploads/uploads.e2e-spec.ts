@@ -17,14 +17,14 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 describe("Uploads (e2e)", () => {
   let dbContainer: PostgresContainerContext;
   let appCtx: TestAppContext;
-  let uploaderUser: any;
+  let _uploaderUser: unknown;
   let authCookie: string;
 
   // Mock Storage Service
   const mockStorageService = {
     uploadImage: vi
       .fn()
-      .mockImplementation(async (buffer, key, contentType) => {
+      .mockImplementation(async (buffer, key, _contentType) => {
         return `http://localhost:9000/test-bucket/${key}`;
       }),
     deleteImage: vi.fn().mockResolvedValue(undefined),
@@ -43,7 +43,7 @@ describe("Uploads (e2e)", () => {
     await runBetterAuthMigrations(dbContainer.databaseUrl);
 
     // Dynamically import to ensure env vars are used
-    // @ts-expect-error
+    // @ts-expect-error: dynamic import path alias not recognized by TS in test context
     const { StorageService } = await import("@/storage/storage.service");
 
     appCtx = await createTestApp(dbContainer, (builder) => {
@@ -57,7 +57,7 @@ describe("Uploads (e2e)", () => {
       `uploader@example.com`,
       `uploader`,
     );
-    uploaderUser = result.user;
+    _uploaderUser = result.user;
     authCookie = result.cookie as string;
   }, 120000);
 

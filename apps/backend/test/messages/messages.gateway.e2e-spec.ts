@@ -133,7 +133,7 @@ function waitForEvent<T>(
  * Wait for a specific event OR an `exception` event from the server,
  * resolving with { event, data }.
  */
-function waitForEventOrException(
+function _waitForEventOrException(
   socket: Socket,
   event: string,
   timeoutMs = 4000,
@@ -175,8 +175,8 @@ describe("MessagesGateway WebSocket integration", () => {
 
   // Three users: A follows B, C is unrelated
   let userACookie: string;
-  let userBCookie: string;
-  let userCCookie: string;
+  let _userBCookie: string;
+  let _userCCookie: string;
 
   let userAId: string;
   let userBId: string;
@@ -205,7 +205,7 @@ describe("MessagesGateway WebSocket integration", () => {
     ));
 
     ({
-      cookie: userBCookie,
+      cookie: _userBCookie,
       userId: userBId,
       bearerToken: userBToken,
     } = await registerAndGetSessionWithToken(
@@ -214,7 +214,7 @@ describe("MessagesGateway WebSocket integration", () => {
       `ws_b_${Date.now()}`,
     ));
 
-    ({ cookie: userCCookie, bearerToken: userCToken } =
+    ({ cookie: _userCCookie, bearerToken: userCToken } =
       await registerAndGetSessionWithToken(
         server,
         `ws-c-${Date.now()}@example.com`,

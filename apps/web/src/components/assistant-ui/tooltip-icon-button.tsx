@@ -20,7 +20,7 @@ export const TooltipIconButton = forwardRef<
   HTMLButtonElement,
   TooltipIconButtonProps
 >(({ children, tooltip, side = "bottom", className, ...props }, ref) => {
-  const { class: _class, ...rest } = props as any;
+  const { class: _class, ...rest } = props as typeof props & { class?: string };
 
   return (
     <Tooltip>
