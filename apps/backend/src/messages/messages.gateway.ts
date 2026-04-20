@@ -29,6 +29,9 @@ export const WS_TYPING = "typing" as const;
 /** Server → Client: a new message was delivered to the room. */
 export const WS_NEW_MESSAGE = "new-message" as const;
 
+/** Server → Client: a new DM notification for the recipient (per-user room). */
+export const WS_NEW_MESSAGE_NOTIFICATION = "new-message-notification" as const;
+
 /** Server → Client: another participant started / stopped typing. */
 export const WS_TYPING_INDICATOR = "typing-indicator" as const;
 // ─── Payload types ──────────────────────────────────────────────────────────
@@ -177,7 +180,9 @@ export class MessagesGateway
     // Broadcast the full message to clients that have joined the conversation room.
     this.server.to(this.roomName(conversationId)).emit(WS_NEW_MESSAGE, message);
 
-    // Deliver a persisted DM notification via the unified notification system.
+    // Deliver a persisted DM notification via the unified notification system,
+    // and also emit new-message-notification to the recipient's per-user room
+    // on this namespace so clients on the messages screen are notified instantly.
     try {
       const { userAId, userBId } =
         await this.messagesService.getConversationParticipantIds(
@@ -185,6 +190,14 @@ export class MessagesGateway
         );
       const recipientId = userAId === userId ? userBId : userAId;
 
+      // Real-time notification on the /messages namespace.
+      this.server.to(`user:${recipientId}`).emit(WS_NEW_MESSAGE_NOTIFICATION, {
+        conversationId,
+        senderId: userId,
+        preview: content.slice(0, 100),
+      });
+
+      // Persist via the unified notification system.
       void this.notificationsService.deliver(
         {
           userId: recipientId,

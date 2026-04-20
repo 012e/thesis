@@ -7,6 +7,7 @@ import { posts, postReactions } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { ReactionsService } from "@/reactions/reactions.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -37,6 +38,10 @@ describe("ReactionsService integration", () => {
         },
         DatabaseService,
         ReactionsService,
+        {
+          provide: NotificationsService,
+          useValue: { deliver: () => Promise.resolve() },
+        },
       ],
     }).compile();
 

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
 import { DatabaseService } from '@/db/database.service';
 import { comments, commentReactions, posts, usersView } from '@/db/schema';
-import { eq, desc, and, count, sql } from 'drizzle-orm';
+import { eq, desc, count, sql } from 'drizzle-orm';
 import { UsersService } from '@/users/users.service';
 import { NotificationsService } from '@/notifications/notifications.service';
 
