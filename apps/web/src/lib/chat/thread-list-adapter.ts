@@ -81,7 +81,7 @@ export const threadListAdapter: RemoteThreadListAdapter = {
     return createAssistantStream(async (controller) => {
       const { body, status } = await client.generateThreadTitle({
         params: { id: remoteId },
-        body: { messages: unstable_messages as any[] }, // Type assertion might be needed if TS complains
+        body: { messages: unstable_messages as unknown[] }, // Type assertion might be needed if TS complains
       });
       if (status === 200) {
         controller.appendText(body.title);

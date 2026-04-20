@@ -84,7 +84,7 @@ interface EditProfileDialogProps {
 export function EditProfileDialog({
   open,
   onOpenChange,
-  userId,
+  userId: _userId,
   defaultValues,
   onSuccess,
 }: EditProfileDialogProps) {
@@ -189,7 +189,7 @@ export function EditProfileDialog({
     if (open) {
       form.setFieldValue("name", defaultValues.name);
     }
-  }, [open, defaultValues.name]);
+  }, [open, defaultValues.name, form]);
 
   const isCropping = rawImageSrc !== null;
   const initials = (defaultValues.name || "?").charAt(0).toUpperCase();

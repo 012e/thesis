@@ -72,7 +72,7 @@ function Source({
   className,
   variant,
   size,
-  asChild = false,
+  asChild: _asChild = false,
   target = "_blank",
   rel = "noopener noreferrer",
   ...props
@@ -126,10 +126,6 @@ Sources.Root = Source;
 Sources.Icon = SourceIcon;
 Sources.Title = SourceTitle;
 
-export {
-  Sources,
-  Source,
-  SourceIcon,
-  SourceTitle,
-  badgeVariants as sourceVariants,
-};
+export { Sources, Source, SourceIcon, SourceTitle };
+// eslint-disable-next-line react-refresh/only-export-components
+export { badgeVariants as sourceVariants };

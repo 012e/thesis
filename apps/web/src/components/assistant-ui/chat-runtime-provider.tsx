@@ -18,15 +18,16 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
   const token = useAtomValue(bearerToken);
   const runtime = useRemoteThreadListRuntime({
     adapter: threadListAdapter,
-    runtimeHook: () =>
-      useChatRuntime({
+    runtimeHook: function useRuntimeHook() {
+      return useChatRuntime({
         transport: new AssistantChatTransport({
           api: env.VITE_MASTRA_CHAT_URL,
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }),
-      }),
+      });
+    },
   });
 
   return (

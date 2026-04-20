@@ -10,7 +10,7 @@ const config: StorybookConfig = {
     getAbsolutePath("@storybook/addon-themes"),
   ],
   framework: {
-    name: getAbsolutePath("@storybook/react-vite") as any,
+    name: getAbsolutePath("@storybook/react-vite") as StorybookConfig["framework"] extends { name: infer N } ? N : never,
     options: {
       builder: {
         viteConfigPath: "vite.config.ts",

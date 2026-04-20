@@ -2,11 +2,15 @@ import { useState } from "react";
 import { CommentItem } from "./comment-item";
 import { CommentEditor } from "./comment-editor";
 import type { CommentType } from "@repo/rest-contracts";
-import { useCreateReply } from "@/hooks/use-comments";
+import { useComments, useCreateReply } from "@/hooks/use-comments";
+import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
 
 export interface CommentTreeProps {
-  comments: CommentType[];
   postId: string;
+  /** When true, fetches comments internally. Pass for the root render (e.g. inside CommentsDialog). */
+  isRoot?: boolean;
+  /** Supply comments directly (used when isRoot is false, or in Storybook). */
+  comments?: CommentType[];
 }
 
 interface CommentNode extends CommentType {
@@ -127,7 +131,12 @@ function CommentNodeRenderer({
   );
 }
 
-export function CommentTree({ comments, postId }: CommentTreeProps) {
+interface CommentTreeInnerProps {
+  comments: CommentType[];
+  postId: string;
+}
+
+function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   const tree = buildCommentTree(comments);
@@ -163,4 +172,31 @@ export function CommentTree({ comments, postId }: CommentTreeProps) {
       ))}
     </div>
   );
+}
+
+export function CommentTree({ postId, isRoot = false, comments }: CommentTreeProps) {
+  const query = useComments(postId, { enabled: isRoot });
+
+  if (isRoot) {
+    if (query.isLoading) {
+      return (
+        <div className="flex justify-center items-center py-8">
+          <IconLoader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (query.error) {
+      return (
+        <div className="flex gap-2 items-center py-8 text-destructive">
+          <IconAlertCircle className="w-5 h-5" />
+          <p>Failed to load comments. Please try again.</p>
+        </div>
+      );
+    }
+
+    return <CommentTreeInner comments={query.data ?? []} postId={postId} />;
+  }
+
+  return <CommentTreeInner comments={comments ?? []} postId={postId} />;
 }

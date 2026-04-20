@@ -8,11 +8,12 @@ import {
 import type { CreateCommentBodyType } from "@repo/rest-contracts";
 import { toast } from "sonner";
 
-export function useComments(postId: string) {
+export function useComments(postId: string, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["comments", postId],
     queryFn: () => listComments(postId),
     staleTime: 30000, // 30 seconds
+    enabled,
   });
 }
 

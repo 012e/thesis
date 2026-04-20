@@ -140,6 +140,9 @@ const sessionHandler = http.get("*/api/auth/session", () =>
   }),
 );
 
+const makeCommentsHandler = (comments: CommentType[]) =>
+  http.get("*/api/posts/:postId/comments", () => HttpResponse.json(comments));
+
 // Mock the reply creation endpoint
 const replyHandler = http.post("*/api/comments/:commentId/replies", async ({ request }) => {
   const body = (await request.json()) as { content: string };
@@ -160,7 +163,7 @@ const deleteHandler = http.delete("*/api/comments/:commentId", () =>
   new HttpResponse(null, { status: 204 }),
 );
 
-const handlers = [sessionHandler, replyHandler, deleteHandler];
+const baseHandlers = [sessionHandler, replyHandler, deleteHandler];
 
 // --- Story config ---
 
@@ -185,40 +188,40 @@ type Story = StoryObj<typeof meta>;
 
 export const Flat: Story = {
   args: {
-    comments: flatComments,
     postId,
+    isRoot: true,
   },
   parameters: {
-    msw: { handlers },
+    msw: { handlers: [makeCommentsHandler(flatComments), ...baseHandlers] },
   },
 };
 
 export const Nested: Story = {
   args: {
-    comments: nestedComments,
     postId,
+    isRoot: true,
   },
   parameters: {
-    msw: { handlers },
+    msw: { handlers: [makeCommentsHandler(nestedComments), ...baseHandlers] },
   },
 };
 
 export const SingleComment: Story = {
   args: {
-    comments: singleComment,
     postId,
+    isRoot: true,
   },
   parameters: {
-    msw: { handlers },
+    msw: { handlers: [makeCommentsHandler(singleComment), ...baseHandlers] },
   },
 };
 
 export const Empty: Story = {
   args: {
-    comments: [],
     postId,
+    isRoot: true,
   },
   parameters: {
-    msw: { handlers },
+    msw: { handlers: [makeCommentsHandler([]), ...baseHandlers] },
   },
 };

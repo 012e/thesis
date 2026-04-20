@@ -26,7 +26,7 @@ export async function login(params: LoginParams): Promise<boolean> {
       password: params.password,
     },
     {
-      onSuccess: (ctx: any) => {
+      onSuccess: (ctx: { response: Response }) => {
         const authToken = ctx.response.headers.get("set-auth-token"); // get the token from the response headers
         if (authToken) {
           store.set(bearerToken, authToken);
@@ -55,7 +55,7 @@ export async function login(params: LoginParams): Promise<boolean> {
  */
 export async function register(params: RegisterParams): Promise<boolean> {
   const result = await authClient.signUp.email(params, {
-    onSuccess: (ctx: any) => {
+    onSuccess: (ctx: { response: Response }) => {
       const authToken = ctx.response.headers.get("set-auth-token"); // get the token from the response headers
       if (authToken) {
         store.set(bearerToken, authToken);
