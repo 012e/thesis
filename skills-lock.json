@@ -31,6 +31,11 @@
       "sourceType": "github",
       "computedHash": "7aac755d83b8396ef149320fb5a8ad4073a828fafbbc6a759de0da4b78bb99c2"
     },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "computedHash": "873c67922d80775a9fdf596db7964b579f0408c30ec6e3d11989f6055bbec89f"
+    },
     "streaming": {
       "source": "assistant-ui/skills",
       "sourceType": "github",
