@@ -1,12 +1,13 @@
 import { Module } from "@nestjs/common";
 
-import { DatabaseModule } from "@/db/database.module";
+import { DatabaseModule } from '@/db/database.module';
+import { NotificationsModule } from '@/notifications/notifications.module';
 
 import { ReactionsController } from "./reactions.controller";
 import { ReactionsService } from "./reactions.service";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, NotificationsModule],
   controllers: [ReactionsController],
   providers: [ReactionsService],
   exports: [ReactionsService],

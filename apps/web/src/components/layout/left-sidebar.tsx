@@ -12,9 +12,9 @@ import {
   IconZoomFilled,
   IconStarFilled,
   IconRobot,
-} from "@tabler/icons-react";
-import { UserProfile } from "./user-profile";
-import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
+} from '@tabler/icons-react';
+import { UserProfile } from './user-profile';
+import { useNotifications } from '@/hooks/notifications';
 
 const navigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -57,7 +57,7 @@ const navigationItems = [
 ];
 
 export function LeftSidebar() {
-  const { unreadCount } = useUnreadNotifications();
+  const { unreadCount } = useNotifications();
 
   return (
     <div className="flex sticky top-0 flex-col justify-between p-4 h-screen border-r w-[275px]">
@@ -86,7 +86,7 @@ export function LeftSidebar() {
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;
-                const hasUnread = item.href === "/messages" && unreadCount > 0;
+                const hasUnread = item.href === '/notifications' && unreadCount > 0;
                 return (
                   <>
                     <div className="relative">
