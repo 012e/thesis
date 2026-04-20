@@ -1,8 +1,21 @@
 import type { Preview } from "@storybook/react";
 import { initialize, mswLoader } from "msw-storybook-addon";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { faker } from "@faker-js/faker";
+import { setFaker, custom } from "zod-schema-faker/v4";
+import { PostContent } from "@repo/rest-contracts";
 import React from "react";
 import "../src/index.css";
+
+// Initialize zod-schema-faker with @faker-js/faker
+setFaker(faker);
+
+// PostContent uses .refine() to require at least one content field, which
+// zod-schema-faker cannot satisfy automatically. Register a custom faker that
+// always produces a valid text post so generated Post objects render correctly.
+custom(PostContent, () => ({
+  text: faker.lorem.paragraph(),
+}));
 
 // Initialize MSW
 initialize();

@@ -434,6 +434,9 @@ importers:
       msw-storybook-addon:
         specifier: ^2.0.7
         version: 2.0.7(msw@2.13.2(@types/node@24.10.13)(typescript@5.9.3))
+      randexp:
+        specifier: ^0.5.3
+        version: 0.5.3
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
@@ -443,6 +446,9 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.1(@types/node@24.10.13)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.3)
+      zod-schema-faker:
+        specifier: ^2.1.1
+        version: 2.1.1(@faker-js/faker@10.3.0)(randexp@0.5.3)(zod@4.3.6)
 
   packages/auth-client:
     dependencies:
@@ -8144,6 +8150,10 @@ packages:
     peerDependencies:
       react: '>=16.12.0'
 
+  drange@1.1.1:
+    resolution: {integrity: sha512-pYxfDYpued//QpnLIm4Avk7rsNtAtQkUES2cwAYSvD/wd2pKD71gN2Ebj3e7klzXwjocvE8c5vx/1fxwpqmSxA==}
+    engines: {node: '>=4'}
+
   drizzle-kit@0.31.9:
     resolution: {integrity: sha512-GViD3IgsXn7trFyBUUHyTFBpH/FsHTxYJ66qdbVggxef4UBPHRYxQaRzYLTuekYnk9i5FIEL9pbBIwMqX/Uwrg==}
     hasBin: true
@@ -10904,6 +10914,10 @@ packages:
     peerDependencies:
       vue: '>= 3.2.0'
 
+  randexp@0.5.3:
+    resolution: {integrity: sha512-U+5l2KrcMNOUPYvazA3h5ekF80FHTUG+87SEAmHZmolh1M+i/WyTCxVzmi+tidIa1tM4BSe8g2Y/D3loWDjj+w==}
+    engines: {node: '>=4'}
+
   randombytes@2.1.0:
     resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
 
@@ -11182,6 +11196,10 @@ packages:
   restore-cursor@5.1.0:
     resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
     engines: {node: '>=18'}
+
+  ret@0.2.2:
+    resolution: {integrity: sha512-M0b3YWQs7R3Z917WRQy1HHA7Ba7D8hvZg6UE5mLykJxQVE2ju0IXbGlaHPPlkY+WN7wFP+wUMXmBFA0aV6vYGQ==}
+    engines: {node: '>=4'}
 
   retry@0.12.0:
     resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
@@ -12645,6 +12663,14 @@ packages:
 
   zod-from-json-schema@0.5.2:
     resolution: {integrity: sha512-/dNaicfdhJTOuUd4RImbLUE2g5yrSzzDjI/S6C2vO2ecAGZzn9UcRVgtyLSnENSmAOBRiSpUdzDS6fDWX3Z35g==}
+
+  zod-schema-faker@2.1.1:
+    resolution: {integrity: sha512-KQ+MvSXLk8cZcdUgEHXwszK2fqDZgiCz+apHmXBEgTWUL1WbmiDKmgKIZCUf29OMYCN8eX3DPrrrnKDQ1IMWYQ==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@faker-js/faker': ^10.0.0
+      randexp: ^0.5.3
+      zod: ^3.25.0 || ^4.0.0
 
   zod-to-json-schema@3.25.1:
     resolution: {integrity: sha512-pM/SU9d3YAggzi6MtR4h7ruuQlqKtad8e9S0fmxcMi+ueAK5Korys/aWcV9LIIHTVbj01NdzxcnXSN+O74ZIVA==}
@@ -21269,6 +21295,8 @@ snapshots:
       react-is: 17.0.2
       tslib: 2.8.1
 
+  drange@1.1.1: {}
+
   drizzle-kit@0.31.9:
     dependencies:
       '@drizzle-team/brocli': 0.10.2
@@ -24723,6 +24751,11 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
+  randexp@0.5.3:
+    dependencies:
+      drange: 1.1.1
+      ret: 0.2.2
+
   randombytes@2.1.0:
     dependencies:
       safe-buffer: 5.2.1
@@ -25077,6 +25110,8 @@ snapshots:
     dependencies:
       onetime: 7.0.0
       signal-exit: 4.1.0
+
+  ret@0.2.2: {}
 
   retry@0.12.0: {}
 
@@ -26860,6 +26895,12 @@ snapshots:
 
   zod-from-json-schema@0.5.2:
     dependencies:
+      zod: 4.3.6
+
+  zod-schema-faker@2.1.1(@faker-js/faker@10.3.0)(randexp@0.5.3)(zod@4.3.6):
+    dependencies:
+      '@faker-js/faker': 10.3.0
+      randexp: 0.5.3
       zod: 4.3.6
 
   zod-to-json-schema@3.25.1(zod@3.25.76):

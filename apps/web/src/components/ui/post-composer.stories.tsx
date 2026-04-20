@@ -2,6 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { PostComposer } from "./post-composer";
 import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
+import { postsContract } from "@repo/rest-contracts";
+import { createMockHandlers } from "../../../.storybook/create-mock-handlers";
 
 const meta = {
   title: "Components/PostComposer",
@@ -22,37 +24,36 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Mock better-auth session endpoint
-const mockSession = {
-  session: {
-    id: "sess-1",
-    userId: "user-1",
-    expiresAt: new Date(Date.now() + 86400000).toISOString(),
-    ipAddress: "127.0.0.1",
-    userAgent: "Storybook",
-  },
-  user: {
-    id: "user-1",
-    email: "test@example.com",
-    emailVerified: true,
-    name: "Test User",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    username: "testuser",
-  },
-};
+// Better Auth session endpoint — not part of the ts-rest contract, so mocked manually.
+const sessionHandler = http.get("*/api/auth/session", () =>
+  HttpResponse.json({
+    session: {
+      id: "sess-1",
+      userId: "user-1",
+      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      ipAddress: "127.0.0.1",
+      userAgent: "Storybook",
+    },
+    user: {
+      id: "user-1",
+      email: "test@example.com",
+      emailVerified: true,
+      name: "Test User",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      username: "testuser",
+    },
+  }),
+);
+
+// All posts routes are auto-mocked from the ts-rest contract.
+// Responses are generated from the Zod schemas via zod-schema-faker.
+const postHandlers = createMockHandlers(postsContract);
 
 export const Default: Story = {
   parameters: {
     msw: {
-      handlers: [
-        http.get("*/api/auth/session", () => {
-          return HttpResponse.json(mockSession);
-        }),
-        http.post("*/api/posts", async ({ request }) => {
-          return HttpResponse.json({ success: true });
-        }),
-      ],
+      handlers: [sessionHandler, ...postHandlers],
     },
   },
 };
@@ -61,22 +62,14 @@ export const WithImagesAndPolls: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get("*/api/auth/session", () => {
-          return HttpResponse.json(mockSession);
-        }),
-        http.post("*/api/posts", async () => {
-          return HttpResponse.json({ success: true });
-        }),
-        http.post("*/api/posts/images", async () => {
-          return HttpResponse.json({
-            images: [
-              {
-                key: "img1",
-                url: faker.image.urlPicsumPhotos(),
-              },
-            ],
-          });
-        }),
+        sessionHandler,
+        ...postHandlers,
+        // /posts/images is an upload endpoint outside the ts-rest contract
+        http.post("*/api/posts/images", async () =>
+          HttpResponse.json({
+            images: [{ key: "img1", url: faker.image.urlPicsumPhotos() }],
+          }),
+        ),
       ],
     },
   },

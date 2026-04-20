@@ -10,6 +10,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "seed": "tsx scripts/seed.ts",
+    "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
   "dependencies": {
@@ -72,8 +73,10 @@
     "globals": "^16.5.0",
     "msw": "^2.13.2",
     "msw-storybook-addon": "^2.0.7",
+    "randexp": "^0.5.3",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
-    "vite": "^7.3.1"
+    "vite": "^7.3.1",
+    "zod-schema-faker": "^2.1.1"
   }
 }
