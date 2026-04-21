@@ -4,7 +4,7 @@ import {
   useLocalRuntime,
   type ChatModelAdapter,
 } from "@assistant-ui/react";
-import { Thread } from "./thread";
+import { Thread } from "../components/assistant-ui/thread";
 
 // --- Mock chat model adapter ---
 
@@ -48,18 +48,14 @@ function createMockAdapter(): ChatModelAdapter {
       let accumulated = "";
 
       for (let i = 0; i < words.length; i++) {
-        if (abortSignal.aborted) break;
+        if (abortSignal?.aborted) break;
         accumulated += (i === 0 ? "" : " ") + words[i];
         yield {
-          content: [{ type: "text" as const, text: accumulated }],
+          content: [{ type: "text", text: accumulated }],
         };
         // Small delay to simulate streaming
         await new Promise((resolve) => setTimeout(resolve, 20));
       }
-
-      return {
-        content: [{ type: "text" as const, text: responseText }],
-      };
     },
   };
 }
@@ -67,11 +63,7 @@ function createMockAdapter(): ChatModelAdapter {
 // --- Wrapper component that sets up the local runtime ---
 
 function ThreadWithRuntime() {
-  const runtime = useLocalRuntime({
-    adapters: {
-      chatModel: createMockAdapter(),
-    },
-  });
+  const runtime = useLocalRuntime(createMockAdapter());
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>

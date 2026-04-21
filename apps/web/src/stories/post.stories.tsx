@@ -1,29 +1,31 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { Post } from "./post";
+import { Post } from "../components/post";
 import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
-import {
-  reactionsContract,
-  commentsContract,
-  pollsContract,
-} from "@repo/rest-contracts";
+import { reactionsContract, pollsContract } from "@repo/rest-contracts";
 import { createMockHandlers } from "../../.storybook/create-mock-handlers";
 import type { PostDto } from "@repo/shared-dto";
+import {
+  STORY_UUIDS,
+  makeAuthor,
+  twoComments,
+  makeCommentsHandler,
+  makeReplyHandler,
+  deleteCommentHandler,
+} from "./msw/comments";
 
 const now = new Date().toISOString();
-const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
+const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
 
-const mockAuthor: PostDto["author"] = {
-  id: "user-1",
-  username: "janedoe",
-  email: "jane@example.com",
-  name: "Jane Doe",
-  image: null,
-};
+const mockAuthor: PostDto["author"] = makeAuthor(
+  STORY_UUIDS.USER_1,
+  "Jane Doe",
+  "janedoe",
+);
 
 const basePost: PostDto = {
-  id: "post-1",
-  authorId: "user-1",
+  id: STORY_UUIDS.POST_1,
+  authorId: STORY_UUIDS.USER_1,
   author: mockAuthor,
   content: {
     text: "Just shipped a new feature! **Dark mode** is finally here. Check it out and let me know what you think.\n\n> The best code is the code you never have to write.",
@@ -37,14 +39,14 @@ const basePost: PostDto = {
 
 const postWithImages: PostDto = {
   ...basePost,
-  id: "post-2",
+  id: STORY_UUIDS.POST_2,
   content: {
     text: "Here are some shots from the team offsite!",
-    images: [
-      { key: "img1", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-      { key: "img2", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-      { key: "img3", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-    ],
+            images: [
+              { key: "1", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c", width: 800, height: 600 },
+              { key: "2", url: "https://images.unsplash.com/photo-1542831371-29b0f74f9713", width: 800, height: 600 },
+              { key: "3", url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97", width: 800, height: 600 },
+            ],
   },
   upvoteCount: 128,
   downvoteCount: 5,
@@ -52,19 +54,19 @@ const postWithImages: PostDto = {
 
 const postWithPoll: PostDto = {
   ...basePost,
-  id: "post-3",
+  id: STORY_UUIDS.POST_3,
   content: {
     text: "Which framework do you prefer for building web apps?",
     poll: {
       question: "Favorite web framework?",
-      options: [
-        { id: "opt-1", text: "React" },
-        { id: "opt-2", text: "Vue" },
-        { id: "opt-3", text: "Svelte" },
-        { id: "opt-4", text: "Angular" },
-      ],
+              options: [
+                { id: "1", label: "React" },
+                { id: "2", label: "Vue" },
+                { id: "3", label: "Angular" },
+                { id: "4", label: "Svelte" },
+              ],
       allowsMultipleSelections: false,
-      endsAt: new Date(Date.now() + 86400000 * 3).toISOString(),
+      closesAt: new Date(Date.now() + 86_400_000 * 3).toISOString(),
     },
   },
   upvoteCount: 87,
@@ -73,7 +75,7 @@ const postWithPoll: PostDto = {
 
 const postUpvoted: PostDto = {
   ...basePost,
-  id: "post-4",
+  id: STORY_UUIDS.POST_4,
   content: {
     text: "This is a post the current user has already upvoted. Notice the orange highlight on the upvote button.",
   },
@@ -87,14 +89,14 @@ const postUpvoted: PostDto = {
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "sess-1",
-      userId: "user-viewer",
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      id: faker.string.uuid(),
+      userId: STORY_UUIDS.USER_VIEWER,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "user-viewer",
+      id: STORY_UUIDS.USER_VIEWER,
       email: "viewer@example.com",
       emailVerified: true,
       name: "Viewer User",
@@ -106,46 +108,6 @@ const sessionHandler = http.get("*/api/auth/session", () =>
 );
 
 const reactionHandlers = createMockHandlers(reactionsContract);
-const commentHandlers = createMockHandlers(commentsContract, {
-  overrides: {
-    "/comments/:postId": () => ({
-      comments: [
-        {
-          id: "c-1",
-          postId: "post-1",
-          parentId: null,
-          authorId: "user-2",
-          author: {
-            id: "user-2",
-            username: "bobsmith",
-            email: "bob@example.com",
-            name: "Bob Smith",
-            image: null,
-          },
-          content: "Great feature! I've been waiting for this.",
-          createdAt: oneHourAgo,
-          updatedAt: oneHourAgo,
-        },
-        {
-          id: "c-2",
-          postId: "post-1",
-          parentId: "c-1",
-          authorId: "user-3",
-          author: {
-            id: "user-3",
-            username: "alicew",
-            email: "alice@example.com",
-            name: "Alice W",
-            image: null,
-          },
-          content: "Same here! Works perfectly on mobile too.",
-          createdAt: now,
-          updatedAt: now,
-        },
-      ],
-    }),
-  },
-});
 const pollHandlers = createMockHandlers(pollsContract, {
   overrides: {
     "/polls/:postId/results": () => ({
@@ -161,10 +123,12 @@ const pollHandlers = createMockHandlers(pollsContract, {
   },
 });
 
-const allHandlers = [
+const allHandlers = (postId: string) => [
   sessionHandler,
   ...reactionHandlers,
-  ...commentHandlers,
+  makeCommentsHandler(twoComments(postId)),
+  makeReplyHandler(postId),
+  deleteCommentHandler,
   ...pollHandlers,
 ];
 
@@ -206,7 +170,7 @@ export const Default: Story = {
     },
   },
   parameters: {
-    msw: { handlers: allHandlers },
+    msw: { handlers: allHandlers(STORY_UUIDS.POST_1) },
   },
 };
 
@@ -221,7 +185,7 @@ export const OwnPost: Story = {
     },
   },
   parameters: {
-    msw: { handlers: allHandlers },
+    msw: { handlers: allHandlers(STORY_UUIDS.POST_1) },
   },
 };
 
@@ -235,7 +199,7 @@ export const WithImages: Story = {
     },
   },
   parameters: {
-    msw: { handlers: allHandlers },
+    msw: { handlers: allHandlers(STORY_UUIDS.POST_2) },
   },
 };
 
@@ -249,7 +213,7 @@ export const WithPoll: Story = {
     },
   },
   parameters: {
-    msw: { handlers: allHandlers },
+    msw: { handlers: allHandlers(STORY_UUIDS.POST_3) },
   },
 };
 
@@ -263,6 +227,6 @@ export const Upvoted: Story = {
     },
   },
   parameters: {
-    msw: { handlers: allHandlers },
+    msw: { handlers: allHandlers(STORY_UUIDS.POST_4) },
   },
 };

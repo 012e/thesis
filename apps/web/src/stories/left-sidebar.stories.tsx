@@ -1,21 +1,23 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { http, HttpResponse } from "msw";
-import { LeftSidebar } from "./left-sidebar";
-import { withRouter } from "../../../.storybook/create-router-decorator";
+import { faker } from "@faker-js/faker";
+import { LeftSidebar } from "../components/layout/left-sidebar";
+import { withRouter } from "../../.storybook/create-router-decorator";
 
 const now = new Date().toISOString();
+const sessionUserId = faker.string.uuid();
 
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "sess-1",
-      userId: "user-1",
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      id: faker.string.uuid(),
+      userId: sessionUserId,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "user-1",
+      id: sessionUserId,
       email: "jane@example.com",
       emailVerified: true,
       name: "Jane Doe",
@@ -28,7 +30,7 @@ const sessionHandler = http.get("*/api/auth/session", () =>
 
 const userProfileHandler = http.get("*/api/users/*/profile", () =>
   HttpResponse.json({
-    id: "user-1",
+    id: sessionUserId,
     username: "janedoe",
     name: "Jane Doe",
     email: "jane@example.com",
