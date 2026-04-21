@@ -1,12 +1,19 @@
 import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
+import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
 import { postReactions, posts, usersView } from "@/db/schema";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import {
+  EMBEDDING_SERVICE,
+  type IEmbeddingService,
+} from "@/embedding/embedding.interface";
+
+import { createPostSchema, updatePostSchema } from "./posts.schemas";
 
 const upvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
@@ -21,12 +28,10 @@ const getUserReactionType = (userId: string) => {
   >`MAX(CASE WHEN ${postReactions.userId} = ${sql.raw(`'${userId}'`)} THEN ${postReactions.type} END)`;
 };
 
-import { createPostSchema, updatePostSchema } from "./posts.schemas";
-
 type CreatePostInput = z.infer<typeof createPostSchema>;
 type UpdatePostInput = z.infer<typeof updatePostSchema>;
 
-type PostRow = typeof posts.$inferSelect & {
+export type PostRow = typeof posts.$inferSelect & {
   author: typeof usersView.$inferSelect;
 };
 
@@ -38,6 +43,8 @@ export class PostsService {
     private readonly databaseService: DatabaseService,
     private readonly storageService: StorageService,
     private readonly usersService: UsersService,
+    @Inject(EMBEDDING_SERVICE)
+    private readonly embeddingService: IEmbeddingService,
   ) {}
 
   async listByUser(
@@ -119,11 +126,18 @@ export class PostsService {
   }
 
   async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
+    // Embed the post text before inserting — hard-fail if embedding fails.
+    const textToEmbed = input.content.text ?? "";
+    const embedding = textToEmbed.trim()
+      ? await this.embeddingService.embed(textToEmbed)
+      : null;
+
     const [createdPost] = await this.databaseService.db
       .insert(posts)
       .values({
         authorId,
         content: input.content,
+        embedding: embedding ? toSql(embedding) : null,
       })
       .returning();
 
@@ -255,67 +269,6 @@ export class PostsService {
       : null;
   }
 
-  async search(query: string, userId: string): Promise<PostDto[]> {
-    // ParadeDB's @@@ operator cannot be used inside queries that also have JOINs
-    // because the BM25 scan context does not propagate through join planner nodes.
-    // Solution: run a standalone BM25 search first (with score), then JOIN on the
-    // resulting IDs using plain SQL in a CTE, executed as a single raw statement.
-    const result = await this.databaseService.db.execute(sql`
-      WITH bm25 AS (
-        SELECT id, paradedb.score(id) AS bm25_score
-        FROM posts
-        WHERE id @@@ paradedb.match('content.text', ${query})
-        LIMIT 50
-      )
-      SELECT
-        p.id,
-        p.author_id,
-        p.content,
-        p.created_at,
-        p.updated_at,
-        u.id           AS author_id_u,
-        u.username     AS author_username,
-        u.email        AS author_email,
-        u.name         AS author_name,
-        u.image        AS author_image,
-        COUNT(CASE WHEN pr.type = 'upvote'   THEN 1 END) AS upvote_count,
-        COUNT(CASE WHEN pr.type = 'downvote' THEN 1 END) AS downvote_count,
-        MAX(CASE WHEN pr.user_id = ${userId} THEN pr.type END) AS user_reaction_type,
-        bm25.bm25_score
-      FROM bm25
-      INNER JOIN posts p ON p.id = bm25.id
-      INNER JOIN users_view u ON u.id = p.author_id
-      LEFT JOIN post_reactions pr ON pr.post_id = p.id
-      GROUP BY p.id, p.author_id, p.content, p.created_at, p.updated_at,
-               u.id, u.username, u.email, u.name, u.image, bm25.bm25_score
-      ORDER BY bm25.bm25_score DESC
-    `);
-
-    return result.rows.map((row) => {
-      const r = row as Record<string, unknown>;
-      return {
-        id: r["id"] as string,
-        authorId: r["author_id"] as string,
-        author: {
-          id: r["author_id_u"] as string,
-          username: (r["author_username"] as string | null) ?? null,
-          email: r["author_email"] as string,
-          name: (r["author_name"] as string | null) ?? null,
-          image: this.usersService.resolveAvatarUrl(
-            (r["author_image"] as string | null) ?? null,
-          ),
-        },
-        content: r["content"] as PostDto["content"],
-        createdAt: new Date(r["created_at"] as string).toISOString(),
-        updatedAt: new Date(r["updated_at"] as string).toISOString(),
-        upvoteCount: Number(r["upvote_count"]),
-        downvoteCount: Number(r["downvote_count"]),
-        currentUserReaction:
-          (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
-      } satisfies PostDto;
-    });
-  }
-
   async recommendations(
     userId: string,
     limit: number = 20,
@@ -325,7 +278,6 @@ export class PostsService {
 
     const reactionCount = count(postReactions.postId).as("reaction_count");
 
-    // Build the query without cursor filtering first
     let query = this.databaseService.db
       .select({
         id: posts.id,
@@ -358,7 +310,6 @@ export class PostsService {
       )
       .$dynamic();
 
-    // Apply cursor filtering using HAVING clause
     if (parsed) {
       query = query.having(
         or(
@@ -392,38 +343,6 @@ export class PostsService {
       ),
       nextCursor,
     };
-  }
-
-  private encodeCursor(cursor: {
-    reactionCount: number;
-    postId: string;
-  }): string {
-    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
-  }
-
-  private decodeCursor(cursor: string): {
-    reactionCount: number;
-    postId: string;
-  } | null {
-    try {
-      const decoded = JSON.parse(
-        Buffer.from(cursor, "base64url").toString("utf8"),
-      ) as unknown;
-      if (
-        typeof decoded === "object" &&
-        decoded !== null &&
-        "reactionCount" in decoded &&
-        "postId" in decoded &&
-        typeof (decoded as { reactionCount: unknown }).reactionCount ===
-          "number" &&
-        typeof (decoded as { postId: unknown }).postId === "string"
-      ) {
-        return decoded as { reactionCount: number; postId: string };
-      }
-      return null;
-    } catch {
-      return null;
-    }
   }
 
   async delete(id: string, authorId: string): Promise<PostDto | null> {
@@ -461,12 +380,10 @@ export class PostsService {
 
     if (!row || row.authorId !== authorId) return null;
 
-    // Delete the post from database
     await this.databaseService.db
       .delete(posts)
       .where(and(eq(posts.id, id), eq(posts.authorId, authorId)));
 
-    // Clean up images from storage (fire and forget, don't block the response)
     const images = row.content.images;
     if (images && images.length > 0) {
       const imageKeys = images.map((img) => img.key);
@@ -478,7 +395,7 @@ export class PostsService {
     return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
   }
 
-  private readonly toDto = (
+  readonly toDto = (
     row: PostRow & { upvoteCount: number; downvoteCount: number },
     userReactionType?: ReactionTypeDto | null,
   ): PostDto => {
@@ -500,4 +417,36 @@ export class PostsService {
       currentUserReaction: userReactionType ?? null,
     };
   };
+
+  private encodeCursor(cursor: {
+    reactionCount: number;
+    postId: string;
+  }): string {
+    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+  }
+
+  private decodeCursor(cursor: string): {
+    reactionCount: number;
+    postId: string;
+  } | null {
+    try {
+      const decoded = JSON.parse(
+        Buffer.from(cursor, "base64url").toString("utf8"),
+      ) as unknown;
+      if (
+        typeof decoded === "object" &&
+        decoded !== null &&
+        "reactionCount" in decoded &&
+        "postId" in decoded &&
+        typeof (decoded as { reactionCount: unknown }).reactionCount ===
+          "number" &&
+        typeof (decoded as { postId: unknown }).postId === "string"
+      ) {
+        return decoded as { reactionCount: number; postId: string };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 }

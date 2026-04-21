@@ -99,6 +99,13 @@
       "when": 1745222885927,
       "tag": "0012_app_config",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1745504400000,
+      "tag": "0013_post_vector_embedding",
+      "breakpoints": true
     }
   ]
 }
