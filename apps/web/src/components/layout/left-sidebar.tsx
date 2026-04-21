@@ -15,6 +15,8 @@ import {
   IconRobot,
   IconChevronLeft,
   IconChevronRight,
+  IconCode,
+  IconCodeDots,
 } from '@tabler/icons-react';
 import { UserProfile } from './user-profile';
 import { useNotifications } from '@/hooks/notifications';
@@ -38,6 +40,12 @@ const navigationItems = [
     selectedIcon: IconRobot,
     label: "AI Chat",
     href: "/chat",
+  },
+  {
+    icon: IconCode,
+    selectedIcon: IconCodeDots,
+    label: "Playground",
+    href: "/playground",
   },
   {
     icon: IconUsers,

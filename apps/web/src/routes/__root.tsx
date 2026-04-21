@@ -16,11 +16,12 @@ function RootComponent() {
   const isAuthRoute = router.location.pathname.startsWith("/auth");
   const isChatRoute = router.location.pathname.startsWith("/chat");
   const isApiRoute = router.location.pathname.startsWith("/api");
+  const isPlaygroundRoute = router.location.pathname.startsWith("/playground");
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <AuthGuard>
-        {isAuthRoute || isChatRoute || isApiRoute ? (
+        {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />
         ) : (
           <AppLayout>
