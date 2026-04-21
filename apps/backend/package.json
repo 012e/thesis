@@ -38,6 +38,7 @@
     "test:uploads": "vitest run --silent=true test/uploads/",
     "test:messages": "vitest run --silent=true test/messages/",
     "test:users": "vitest run --silent=true test/users/",
+    "test:config": "vitest run --silent=true test/config/",
     "seed": "tsx seed.ts",
     "seed:watch": "tsx watch seed.ts"
   },
