@@ -69,7 +69,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
 
   return (
     <div
-      className={`flex sticky top-0 flex-col justify-between p-4 h-screen border-r transition-all duration-300 overflow-hidden ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
+      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
     >
       <div className="flex flex-col gap-2">
         {/* Logo */}
@@ -91,7 +91,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-colors [&.active]:font-bold ${isCollapsed ? "justify-center" : "px-3"}`}
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-[26px]" : "px-3"}`}
               title={isCollapsed ? item.label : undefined}
               aria-label={isCollapsed ? item.label : undefined}
             >
@@ -109,7 +109,9 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
                         </span>
                       )}
                     </div>
-                    {!isCollapsed && <span>{item.label}</span>}
+                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}>
+                      {item.label}
+                    </span>
                   </>
                 );
               }}
@@ -122,18 +124,18 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
         {/* Collapse toggle */}
         <button
           onClick={() => setIsCollapsed((prev) => !prev)}
-          className={`flex items-center gap-2 px-3 py-3 w-full hover:bg-accent transition-colors rounded-full ${isCollapsed ? "justify-center" : ""}`}
+          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 rounded-full ${isCollapsed ? "pl-[28px]" : "px-3"}`}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
             <IconChevronRight className="w-6 h-6 flex-shrink-0" />
           ) : (
-            <>
-              <IconChevronLeft className="w-6 h-6 flex-shrink-0" />
-              <span className="text-sm font-medium">Collapse</span>
-            </>
+            <IconChevronLeft className="w-6 h-6 flex-shrink-0" />
           )}
+          <span className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}>
+            Collapse
+          </span>
         </button>
 
         <UserProfile isCollapsed={isCollapsed} />
