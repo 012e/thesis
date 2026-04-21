@@ -71,6 +71,60 @@ export async function reactToPost(
   }
 }
 
+export async function deletePost(postId: string): Promise<PostDto> {
+  const response = await client.deletePost({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 403) {
+    throw new Error("You are not allowed to delete this post");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to delete post");
+}
+
+export async function updatePost(
+  postId: string,
+  content: PostContentDto,
+): Promise<PostDto> {
+  const response = await client.updatePost({
+    params: { id: postId },
+    body: { content },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 403) {
+    throw new Error("You are not allowed to edit this post");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to update post");
+}
+
 export async function unreactToPost(postId: string): Promise<void> {
   const response = await client.unreactToPost({
     params: { id: postId },

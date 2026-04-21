@@ -177,6 +177,12 @@ const meta = {
     layout: "centered",
   },
   tags: ["autodocs"],
+  argTypes: {
+    isOwner: {
+      control: "boolean",
+      description: "Override whether the current user is the post owner",
+    },
+  },
   decorators: [
     (Story) => (
       <div className="w-[600px] border rounded-lg bg-background text-foreground">
@@ -192,6 +198,22 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     post: basePost,
+    isOwner: false,
+    initialReactionSummary: {
+      upvotes: basePost.upvoteCount,
+      downvotes: basePost.downvoteCount,
+      userReaction: null,
+    },
+  },
+  parameters: {
+    msw: { handlers: allHandlers },
+  },
+};
+
+export const OwnPost: Story = {
+  args: {
+    post: basePost,
+    isOwner: true,
     initialReactionSummary: {
       upvotes: basePost.upvoteCount,
       downvotes: basePost.downvoteCount,

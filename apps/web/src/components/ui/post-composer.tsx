@@ -27,6 +27,7 @@ import {
   IconChartBar,
 } from "@tabler/icons-react";
 import { PollCreator } from "@/components/poll-creator";
+import { POST_MAX_LENGTH } from "@/lib/constants";
 
 const MAX_IMAGES = 4;
 
@@ -50,7 +51,7 @@ export function PostComposer() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const characterCount = content.length;
-  const maxCharacters = 280;
+  const maxCharacters = POST_MAX_LENGTH;
   const isExceeded = characterCount > maxCharacters;
   const isPending = isCreating || isUploading;
 
