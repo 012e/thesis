@@ -61,7 +61,7 @@
     "@ts-rest/open-api": "3.53.0-rc.1",
     "@wavezync/nestjs-pgboss": "^6.0.0",
     "axios": "^1.15.1",
-    "better-auth": "^1.6.6",
+    "better-auth": "^1.4.18",
     "drizzle-orm": "^0.45.2",
     "jose": "^6.2.2",
     "microsandbox": "^0.3.14",
