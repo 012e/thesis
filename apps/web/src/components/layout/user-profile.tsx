@@ -51,7 +51,7 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex gap-3 items-center w-full text-left transition-colors hover:bg-accent px-3 py-3"
+        className={`flex gap-3 items-center w-full text-left transition-all duration-300 hover:bg-accent py-3 ${isCollapsed ? "pl-[20px]" : "px-3"}`}
         title={isCollapsed ? displayName : undefined}
         aria-label={isCollapsed ? displayName : undefined}
       >
