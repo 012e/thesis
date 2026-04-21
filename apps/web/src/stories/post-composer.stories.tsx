@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { PostComposer } from "./post-composer";
+import { PostComposer } from "../components/ui/post-composer";
 import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
 import { postsContract } from "@repo/rest-contracts";
-import { createMockHandlers } from "../../../.storybook/create-mock-handlers";
+import { createMockHandlers } from "../../.storybook/create-mock-handlers";
 
 const meta = {
   title: "Components/PostComposer",
@@ -24,18 +24,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const sessionUserId = faker.string.uuid();
+
 // Better Auth session endpoint — not part of the ts-rest contract, so mocked manually.
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "sess-1",
-      userId: "user-1",
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      id: faker.string.uuid(),
+      userId: sessionUserId,
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "user-1",
+      id: sessionUserId,
       email: "test@example.com",
       emailVerified: true,
       name: "Test User",
