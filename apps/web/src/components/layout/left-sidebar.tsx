@@ -124,7 +124,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
         {/* Collapse toggle */}
         <button
           onClick={() => setIsCollapsed((prev) => !prev)}
-          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 rounded-full ${isCollapsed ? "pl-[28px]" : "px-3"}`}
+          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 ${isCollapsed ? "pl-[28px]" : "px-3"}`}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
