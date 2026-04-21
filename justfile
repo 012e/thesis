@@ -87,6 +87,9 @@ test-app: build-backend
 test-messages: build-backend
     pnpm --filter backend test:messages
 
+test-config: build-backend
+    pnpm --filter backend test:config
+
 build-storybook:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm --filter web build-storybook

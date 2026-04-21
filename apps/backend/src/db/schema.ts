@@ -272,3 +272,22 @@ export const notifications = pgTable('notifications', {
 
 export type Notification = typeof notifications.$inferSelect;
 export type NewNotification = typeof notifications.$inferInsert;
+
+// ─── App Config ───────────────────────────────────────────────────────────────
+
+/**
+ * Persisted application configuration, stored per namespace.
+ * Each row holds a JSONB blob for one top-level config namespace
+ * (e.g. 'feed', 'ai', 'uploads'). Missing namespaces fall back to
+ * schema defaults defined in AppConfigSchema.
+ */
+export const appConfig = pgTable("app_config", {
+  namespace: text("namespace").primaryKey(),
+  value: jsonb("value").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type AppConfigRow = typeof appConfig.$inferSelect;
+export type NewAppConfigRow = typeof appConfig.$inferInsert;
