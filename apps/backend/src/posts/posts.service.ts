@@ -2,7 +2,6 @@ import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
-import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
 import { postReactions, posts, usersView } from "@/db/schema";
@@ -137,7 +136,7 @@ export class PostsService {
       .values({
         authorId,
         content: input.content,
-        embedding: embedding ? toSql(embedding) : null,
+        embedding: embedding ?? null,
       })
       .returning();
 
