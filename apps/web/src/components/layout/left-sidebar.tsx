@@ -69,7 +69,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
 
   return (
     <div
-      className={`flex sticky top-0 flex-col justify-between p-4 h-screen border-r transition-all duration-300 ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
+      className={`flex sticky top-0 flex-col justify-between p-4 h-screen border-r transition-all duration-300 overflow-hidden ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
     >
       <div className="flex flex-col gap-2">
         {/* Logo */}
@@ -91,7 +91,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
             <Link
               key={item.href}
               to={item.href}
-              className="flex items-center gap-4 px-3 py-3 hover:bg-accent text-xl font-normal transition-colors [&.active]:font-bold"
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-colors [&.active]:font-bold ${isCollapsed ? "justify-center" : "px-3"}`}
               title={isCollapsed ? item.label : undefined}
               aria-label={isCollapsed ? item.label : undefined}
             >
