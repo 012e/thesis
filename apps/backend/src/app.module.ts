@@ -1,6 +1,8 @@
 import { Module } from "@nestjs/common";
+import { PgBossModule } from "@wavezync/nestjs-pgboss";
 
 import { auth } from '@/auth';
+import { env } from '@/env';
 import { DatabaseModule } from '@/db/database.module';
 import { PostsModule } from '@/posts/posts.module';
 import { ReactionsModule } from '@/reactions/reactions.module';
@@ -29,6 +31,7 @@ import { AuthController } from "./auth/auth.controller";
   controllers: [AppController, AuthController],
   imports: [
     AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
+    PgBossModule.forRoot({ connectionString: env.DATABASE_URL }),
     DatabaseModule,
     NotificationsModule,
     PostsModule,
