@@ -6,7 +6,6 @@ export type AuthClient = ReturnType<typeof createAuthClient>;
 export function createCustomAuthClient(
   config?: Parameters<typeof createAuthClient>[0],
 ): AuthClient {
-  // 2. Annotate the function return
   return createAuthClient({
     baseURL: "http://localhost:3000",
     plugins: [usernameClient(), jwtClient()],
