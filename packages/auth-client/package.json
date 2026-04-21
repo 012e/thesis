@@ -19,9 +19,9 @@
     "test": "echo 'No tests configured for auth-client' && exit 0"
   },
   "dependencies": {
-    "better-auth": "^1.4.18"
+    "better-auth": "^1.6.6"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.9.3"
   }
 }

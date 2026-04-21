@@ -172,14 +172,14 @@ export const twoComments = (postId: string): CommentType[] => [
  * the provided comments array regardless of the postId in the URL.
  */
 export const makeCommentsHandler = (comments: CommentType[]) =>
-  http.get("*/api/posts/:postId/comments", () => HttpResponse.json(comments));
+  http.get("*/posts/:postId/comments", () => HttpResponse.json(comments));
 
 /**
  * Creates an MSW POST handler for `POST /comments/:commentId/replies` that
  * echoes back a new reply authored by the viewer user.
  */
 export const makeReplyHandler = (postId: string) =>
-  http.post("*/api/comments/:commentId/replies", async ({ request }) => {
+  http.post("*/comments/:commentId/replies", async ({ request }) => {
     const body = (await request.json()) as { content: string };
     return HttpResponse.json({
       id: crypto.randomUUID(),
@@ -195,6 +195,6 @@ export const makeReplyHandler = (postId: string) =>
 
 /** MSW DELETE handler for `DELETE /comments/:commentId` — returns 204. */
 export const deleteCommentHandler = http.delete(
-  "*/api/comments/:commentId",
+  "*/comments/:commentId",
   () => new HttpResponse(null, { status: 204 }),
 );

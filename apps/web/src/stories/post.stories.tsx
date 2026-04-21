@@ -42,11 +42,11 @@ const postWithImages: PostDto = {
   id: STORY_UUIDS.POST_2,
   content: {
     text: "Here are some shots from the team offsite!",
-    images: [
-      { key: "img1", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-      { key: "img2", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-      { key: "img3", url: faker.image.urlPicsumPhotos({ width: 600, height: 400 }) },
-    ],
+            images: [
+              { key: "1", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c", width: 800, height: 600 },
+              { key: "2", url: "https://images.unsplash.com/photo-1542831371-29b0f74f9713", width: 800, height: 600 },
+              { key: "3", url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97", width: 800, height: 600 },
+            ],
   },
   upvoteCount: 128,
   downvoteCount: 5,
@@ -59,14 +59,14 @@ const postWithPoll: PostDto = {
     text: "Which framework do you prefer for building web apps?",
     poll: {
       question: "Favorite web framework?",
-      options: [
-        { id: "opt-1", text: "React" },
-        { id: "opt-2", text: "Vue" },
-        { id: "opt-3", text: "Svelte" },
-        { id: "opt-4", text: "Angular" },
-      ],
+              options: [
+                { id: "1", label: "React" },
+                { id: "2", label: "Vue" },
+                { id: "3", label: "Angular" },
+                { id: "4", label: "Svelte" },
+              ],
       allowsMultipleSelections: false,
-      endsAt: new Date(Date.now() + 86_400_000 * 3).toISOString(),
+      closesAt: new Date(Date.now() + 86_400_000 * 3).toISOString(),
     },
   },
   upvoteCount: 87,
