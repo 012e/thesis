@@ -3,6 +3,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   IconMessageCircle,
   IconRepeat,
   IconShare,
@@ -10,13 +23,19 @@ import {
   IconDots,
   IconArrowUp,
   IconArrowDown,
+  IconTrash,
+  IconEdit,
+  IconBell,
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
 import { useSession } from "@/hooks/use-session";
 import { useOpenChat } from "@/hooks/use-open-chat";
+import { useDeletePost } from "@/hooks/use-delete-post";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
+import { EditPostDialog } from "./edit-post-dialog";
+import { toast } from "sonner";
 
 export interface PostProps {
   post: PostDto;
@@ -95,7 +114,10 @@ function PostImages({ images }: PostImagesProps) {
 
 export function Post({ post, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
+  const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const { data: session } = useSession();
   const openChat = useOpenChat();
 
@@ -186,13 +208,49 @@ export function Post({ post, initialReactionSummary }: PostProps) {
             <span className="text-muted-foreground">
               {getRelativeTime(post.createdAt)}
             </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-auto w-8 h-8 rounded-full"
-            >
-              <IconDots className="w-4 h-4" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                className="ml-auto flex items-center justify-center w-8 h-8 rounded-full hover:bg-accent transition-colors text-muted-foreground"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <IconDots className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="bottom" align="end">
+                {isOwnPost ? (
+                  <>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditOpen(true);
+                      }}
+                    >
+                      <IconEdit className="w-4 h-4" />
+                      Edit
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteConfirmOpen(true);
+                      }}
+                    >
+                      <IconTrash className="w-4 h-4" />
+                      Delete
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toast.info("Post notifications coming soon!");
+                    }}
+                  >
+                    <IconBell className="w-4 h-4" />
+                    Subscribe to post notifications
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           {post.content.text && (
             <div className="mb-3 leading-normal text-[15px]">
@@ -276,6 +334,47 @@ export function Post({ post, initialReactionSummary }: PostProps) {
         open={commentsOpen}
         onOpenChange={setCommentsOpen}
       />
+
+      {/* Edit Post Dialog */}
+      <EditPostDialog
+        post={post}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete post?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This action cannot be undone. The post will be permanently deleted.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              className="rounded-full"
+              disabled={isDeleting}
+              onClick={() => {
+                deletePost(post.id, {
+                  onSuccess: () => setDeleteConfirmOpen(false),
+                });
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+            <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={isDeleting}
+              onClick={() => setDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </article>
   );
 }
