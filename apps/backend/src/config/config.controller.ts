@@ -1,5 +1,6 @@
 import { Controller } from "@nestjs/common";
 import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
+import { ZodError } from "zod";
 import { configContract } from "@repo/rest-contracts";
 import { AppConfigSchema } from "./config.registry";
 import type { AppConfigNamespace } from "./config.registry";
@@ -45,18 +46,19 @@ export class ConfigController {
         return { status: 404, body: null };
       }
 
-      const namespaceSchema = AppConfigSchema.shape[namespace as AppConfigNamespace];
-      const result = namespaceSchema.safeParse(body);
-
-      if (!result.success) {
-        return {
-          status: 400,
-          body: { message: result.error.message },
-        };
+      try {
+        await this.configService.set(namespace as AppConfigNamespace, body as never);
+        const updated = await this.configService.get(namespace as AppConfigNamespace);
+        return { status: 200, body: updated };
+      } catch (error) {
+        if (error instanceof ZodError) {
+          return {
+            status: 400,
+            body: { message: error.message },
+          };
+        }
+        throw error;
       }
-
-      await this.configService.set(namespace as AppConfigNamespace, result.data);
-      return { status: 200, body: result.data };
     });
   }
 }
