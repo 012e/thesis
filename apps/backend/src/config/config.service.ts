@@ -14,7 +14,12 @@ export class ConfigService {
       .select()
       .from(appConfig);
 
+    // Seed every known namespace with an empty object so Zod can apply field
+    // defaults even for namespaces that have no row in the database yet.
     const partial: Record<string, unknown> = {};
+    for (const ns of Object.keys(AppConfigSchema.shape)) {
+      partial[ns] = {};
+    }
     for (const row of rows) {
       partial[row.namespace] = row.value;
     }
