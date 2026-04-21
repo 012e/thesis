@@ -39,6 +39,7 @@ import { toast } from "sonner";
 
 export interface PostProps {
   post: PostDto;
+  isOwner?: boolean;
   initialReactionSummary?: {
     upvotes: number;
     downvotes: number;
@@ -112,7 +113,7 @@ function PostImages({ images }: PostImagesProps) {
   );
 }
 
-export function Post({ post, initialReactionSummary }: PostProps) {
+export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
   const [commentsOpen, setCommentsOpen] = useState(false);
@@ -121,7 +122,7 @@ export function Post({ post, initialReactionSummary }: PostProps) {
   const { data: session } = useSession();
   const openChat = useOpenChat();
 
-  const isOwnPost = session?.user?.id === post.authorId;
+  const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
 
   const handleAuthorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -219,34 +220,60 @@ export function Post({ post, initialReactionSummary }: PostProps) {
                 {isOwnPost ? (
                   <>
                     <DropdownMenuItem
+                      className="gap-3 px-3 py-3 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setEditOpen(true);
                       }}
                     >
-                      <IconEdit className="w-4 h-4" />
-                      Edit
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                        <IconEdit className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium leading-tight">Edit</span>
+                        <span className="text-xs text-muted-foreground leading-tight mt-0.5">
+                          Make changes to your post
+                        </span>
+                      </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       variant="destructive"
+                      className="gap-3 px-3 py-3 cursor-pointer"
                       onClick={(e) => {
                         e.stopPropagation();
                         setDeleteConfirmOpen(true);
                       }}
                     >
-                      <IconTrash className="w-4 h-4" />
-                      Delete
+                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-destructive/10 shrink-0">
+                        <IconTrash className="w-4 h-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium leading-tight">Delete</span>
+                        <span className="text-xs leading-tight mt-0.5 opacity-70">
+                          Permanently remove this post
+                        </span>
+                      </div>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <DropdownMenuItem
+                    className="gap-3 px-3 py-3 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
                       toast.info("Post notifications coming soon!");
                     }}
                   >
-                    <IconBell className="w-4 h-4" />
-                    Subscribe to post notifications
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
+                      <IconBell className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium leading-tight">
+                        Subscribe
+                      </span>
+                      <span className="text-xs text-muted-foreground leading-tight mt-0.5">
+                        Get notified about replies and reactions
+                      </span>
+                    </div>
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
