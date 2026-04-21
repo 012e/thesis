@@ -4,7 +4,7 @@ import {
   useLocalRuntime,
   type ChatModelAdapter,
 } from "@assistant-ui/react";
-import { Thread } from "./thread";
+import { Thread } from "../components/assistant-ui/thread";
 
 // --- Mock chat model adapter ---
 

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import { PostComposer } from "./post-composer";
+import { PostComposer } from "../components/ui/post-composer";
 import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
 import { postsContract } from "@repo/rest-contracts";
-import { createMockHandlers } from "../../../.storybook/create-mock-handlers";
+import { createMockHandlers } from "../../.storybook/create-mock-handlers";
 
 const meta = {
   title: "Components/PostComposer",
@@ -28,14 +28,14 @@ type Story = StoryObj<typeof meta>;
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "sess-1",
-      userId: "user-1",
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      id: "55555555-5555-4555-8555-555555555555",
+      userId: "11111111-1111-4111-8111-111111111111",
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "user-1",
+      id: "11111111-1111-4111-8111-111111111111",
       email: "test@example.com",
       emailVerified: true,
       name: "Test User",

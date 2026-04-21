@@ -1,21 +1,21 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { http, HttpResponse } from "msw";
-import { LeftSidebar } from "./left-sidebar";
-import { withRouter } from "../../../.storybook/create-router-decorator";
+import { LeftSidebar } from "../components/layout/left-sidebar";
+import { withRouter } from "../../.storybook/create-router-decorator";
 
 const now = new Date().toISOString();
 
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "sess-1",
-      userId: "user-1",
-      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      id: "55555555-5555-4555-8555-555555555555",
+      userId: "11111111-1111-4111-8111-111111111111",
+      expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "user-1",
+      id: "11111111-1111-4111-8111-111111111111",
       email: "jane@example.com",
       emailVerified: true,
       name: "Jane Doe",
@@ -28,7 +28,7 @@ const sessionHandler = http.get("*/api/auth/session", () =>
 
 const userProfileHandler = http.get("*/api/users/*/profile", () =>
   HttpResponse.json({
-    id: "user-1",
+    id: "11111111-1111-4111-8111-111111111111",
     username: "janedoe",
     name: "Jane Doe",
     email: "jane@example.com",
