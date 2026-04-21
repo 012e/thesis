@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { PgBossService } from '@wavezync/nestjs-pgboss';
 import { and, count, desc, eq, isNull, lt } from 'drizzle-orm';
 
 import type {
@@ -13,6 +14,10 @@ import {
   NOTIFICATION_TRANSPORTS,
   type NotificationTransport,
 } from './transports/notification-transport.interface';
+import {
+  DELIVER_NOTIFICATION_JOB,
+  type DeliverNotificationJobData,
+} from './notification-jobs.service';
 
 // ─── Input type for creating a notification ───────────────────────────────────
 
@@ -29,8 +34,11 @@ export interface CreateNotificationData {
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     private readonly databaseService: DatabaseService,
+    private readonly pgBossService: PgBossService,
     @Inject(NOTIFICATION_TRANSPORTS)
     private readonly transports: NotificationTransport[],
   ) {}
@@ -49,13 +57,17 @@ export class NotificationsService {
   ): Promise<NotificationDto> {
     const notification = await this.persist(data);
 
-    // Dispatch only to the explicitly requested channels — non-blocking.
-    const selectedTransports = this.transports.filter((t) =>
-      channels.includes(t.name),
-    );
-    void Promise.allSettled(
-      selectedTransports.map((t) => t.send(notification)),
-    );
+    // Enqueue background job for transport delivery — non-blocking.
+    this.pgBossService
+      .scheduleJob<DeliverNotificationJobData>(DELIVER_NOTIFICATION_JOB, {
+        notification,
+        channels,
+      })
+      .catch((err: unknown) => {
+        this.logger.warn(
+          `Failed to enqueue deliver-notification job for ${notification.id}: ${(err as Error)?.message ?? err}`,
+        );
+      });
 
     return notification;
   }

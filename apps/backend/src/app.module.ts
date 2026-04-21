@@ -1,6 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module } from '@nestjs/common';
+import { PgBossModule } from '@wavezync/nestjs-pgboss';
 
 import { auth } from '@/auth';
+import { env } from '@/env';
 import { DatabaseModule } from '@/db/database.module';
 import { PostsModule } from '@/posts/posts.module';
 import { ReactionsModule } from '@/reactions/reactions.module';
@@ -21,14 +23,19 @@ import { PostsMcpModule } from './mcp/posts/posts-mcp.module';
 import { InteractionsMcpModule } from './mcp/interactions/interactions-mcp.module';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 
-import { AppController } from "./app.controller";
-import { AppService } from "./app.service";
-import { AuthController } from "./auth/auth.controller";
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { AuthController } from './auth/auth.controller';
 
 @Module({
   controllers: [AppController, AuthController],
   imports: [
     AuthModule.forRoot({ auth, disableTrustedOriginsCors: true }),
+    PgBossModule.forRootAsync({
+      useFactory: () => ({
+        connectionString: env.DATABASE_URL,
+      }),
+    }),
     DatabaseModule,
     NotificationsModule,
     PostsModule,
