@@ -9,6 +9,11 @@ export default defineConfig({
     include: ["test/**/*.e2e-spec.ts"],
     maxWorkers: 1,
     fileParallelism: false,
+    server: {
+      deps: {
+        inline: ["@wavezync/nestjs-pgboss"],
+      },
+    },
   },
   plugins: [
     // This is required to build the test files with SWC
