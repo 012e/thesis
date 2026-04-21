@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { ReactNode, MouseEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
@@ -113,6 +114,36 @@ function PostImages({ images }: PostImagesProps) {
   );
 }
 
+interface MenuItemCardProps {
+  icon: ReactNode;
+  iconClassName?: string;
+  label: string;
+  description: string;
+}
+
+function MenuItemCard({
+  icon,
+  iconClassName = "bg-muted",
+  label,
+  description,
+}: MenuItemCardProps) {
+  return (
+    <>
+      <div
+        className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${iconClassName}`}
+      >
+        {icon}
+      </div>
+      <div className="flex flex-col">
+        <span className="text-sm font-medium leading-tight">{label}</span>
+        <p className="text-xs text-muted-foreground leading-tight mt-0.5">
+          {description}
+        </p>
+      </div>
+    </>
+  );
+}
+
 export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
@@ -124,7 +155,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
 
-  const handleAuthorClick = (e: React.MouseEvent) => {
+  const handleAuthorClick = (e: MouseEvent) => {
     e.stopPropagation();
     if (!isOwnPost) {
       openChat(post.authorId);
@@ -226,15 +257,11 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                         setEditOpen(true);
                       }}
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
-                        <IconEdit className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium leading-tight">Edit</span>
-                        <span className="text-xs text-muted-foreground leading-tight mt-0.5">
-                          Make changes to your post
-                        </span>
-                      </div>
+                      <MenuItemCard
+                        icon={<IconEdit className="w-4 h-4" />}
+                        label="Edit"
+                        description="Make changes to your post"
+                      />
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       variant="destructive"
@@ -244,15 +271,12 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                         setDeleteConfirmOpen(true);
                       }}
                     >
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-destructive/10 shrink-0">
-                        <IconTrash className="w-4 h-4" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium leading-tight">Delete</span>
-                        <span className="text-xs leading-tight mt-0.5 opacity-70">
-                          Permanently remove this post
-                        </span>
-                      </div>
+                      <MenuItemCard
+                        icon={<IconTrash className="w-4 h-4" />}
+                        iconClassName="bg-destructive/10"
+                        label="Delete"
+                        description="Permanently remove this post"
+                      />
                     </DropdownMenuItem>
                   </>
                 ) : (
@@ -263,17 +287,11 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                       toast.info("Post notifications coming soon!");
                     }}
                   >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted shrink-0">
-                      <IconBell className="w-4 h-4" />
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium leading-tight">
-                        Subscribe
-                      </span>
-                      <span className="text-xs text-muted-foreground leading-tight mt-0.5">
-                        Get notified about replies and reactions
-                      </span>
-                    </div>
+                    <MenuItemCard
+                      icon={<IconBell className="w-4 h-4" />}
+                      label="Subscribe"
+                      description="Get notified about replies and reactions"
+                    />
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
