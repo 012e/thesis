@@ -28,6 +28,7 @@ jobs:
           - test-uploads
           - test-users
           - test-messages
+          - test-config
 
     steps:
       - name: Checkout code
