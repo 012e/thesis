@@ -20,6 +20,7 @@ import {
 import { useUpdatePost } from "@/hooks/use-update-post";
 import type { PostDto } from "@repo/shared-dto";
 import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
+import { POST_MAX_LENGTH } from "@/lib/constants";
 
 interface EditPostDialogProps {
   post: PostDto;
@@ -36,7 +37,7 @@ export function EditPostDialog({
   const { mutate: updatePost, isPending } = useUpdatePost();
   const editorRef = useRef(null);
 
-  const maxCharacters = 280;
+  const maxCharacters = POST_MAX_LENGTH;
   const isExceeded = content.length > maxCharacters;
   const canSave = content.trim().length > 0 && !isExceeded;
 

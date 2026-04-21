@@ -353,6 +353,14 @@ export function Post({ post, initialReactionSummary }: PostProps) {
           </p>
           <DialogFooter>
             <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={isDeleting}
+              onClick={() => setDeleteConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
               variant="destructive"
               className="rounded-full"
               disabled={isDeleting}
@@ -363,14 +371,6 @@ export function Post({ post, initialReactionSummary }: PostProps) {
               }}
             >
               {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-full"
-              disabled={isDeleting}
-              onClick={() => setDeleteConfirmOpen(false)}
-            >
-              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>
