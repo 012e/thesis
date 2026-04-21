@@ -247,7 +247,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
               >
                 <IconDots className="w-4 h-4" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuContent side="bottom" align="end" className="min-w-64">
                 {isOwnPost ? (
                   <>
                     <DropdownMenuItem
