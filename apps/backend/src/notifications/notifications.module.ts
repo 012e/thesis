@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PgBossModule } from '@wavezync/nestjs-pgboss';
 
 import { DatabaseModule } from '@/db/database.module';
 
@@ -7,9 +8,10 @@ import { NotificationsService } from './notifications.service';
 import { NotificationsGateway } from './notifications.gateway';
 import { WebSocketTransport } from './transports/websocket.transport';
 import { NOTIFICATION_TRANSPORTS } from './transports/notification-transport.interface';
+import { NotificationJobsService } from './notification-jobs.service';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, PgBossModule],
   controllers: [NotificationsController],
   providers: [
     NotificationsGateway,
@@ -20,6 +22,7 @@ import { NOTIFICATION_TRANSPORTS } from './transports/notification-transport.int
       inject: [WebSocketTransport],
     },
     NotificationsService,
+    NotificationJobsService,
   ],
   exports: [NotificationsService],
 })
