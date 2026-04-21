@@ -54,7 +54,7 @@ console.log("Timestamp:", result.timestamp);
 `,
 };
 
-function PlaygroundPage() {
+export function PlaygroundPage() {
   const { resolvedTheme } = useTheme();
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
