@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { CommentTree } from "../components/comment-tree";
 import { http, HttpResponse } from "msw";
+import { faker } from "@faker-js/faker";
 import {
   STORY_UUIDS,
   flatComments,
@@ -16,7 +17,7 @@ const now = new Date().toISOString();
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "55555555-5555-5555-5555-555555555555",
+      id: faker.string.uuid(),
       userId: STORY_UUIDS.USER_VIEWER,
       expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",

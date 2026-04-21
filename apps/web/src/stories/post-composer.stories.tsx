@@ -24,18 +24,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const sessionUserId = faker.string.uuid();
+
 // Better Auth session endpoint — not part of the ts-rest contract, so mocked manually.
 const sessionHandler = http.get("*/api/auth/session", () =>
   HttpResponse.json({
     session: {
-      id: "55555555-5555-4555-8555-555555555555",
-      userId: "11111111-1111-4111-8111-111111111111",
+      id: faker.string.uuid(),
+      userId: sessionUserId,
       expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
       ipAddress: "127.0.0.1",
       userAgent: "Storybook",
     },
     user: {
-      id: "11111111-1111-4111-8111-111111111111",
+      id: sessionUserId,
       email: "test@example.com",
       emailVerified: true,
       name: "Test User",

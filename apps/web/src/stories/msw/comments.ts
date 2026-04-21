@@ -1,27 +1,28 @@
 import { http, HttpResponse } from "msw";
+import { faker } from "@faker-js/faker";
 import type { CommentType } from "@repo/rest-contracts";
 
-// --- Stable UUIDs for deterministic story data ---
+// --- Faker-generated UUIDs (evaluated once at module load) ---
 
 export const STORY_UUIDS = {
-  // Users (version 4, variant 8)
-  USER_1: "11111111-1111-4111-8111-111111111111",
-  USER_2: "22222222-2222-4222-8222-222222222222",
-  USER_3: "33333333-3333-4333-8333-333333333333",
-  USER_4: "44444444-4444-4444-8444-444444444444",
-  USER_VIEWER: "00000000-0000-4000-8000-000000000001",
-  // Posts (version 4, variant 8)
-  POST_1: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-  POST_2: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-  POST_3: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-  POST_4: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-  // Comments (version 4, variant 8)
-  COMMENT_1: "c1000001-0000-4000-8001-000000000001",
-  COMMENT_2: "c2000002-0000-4000-8002-000000000002",
-  COMMENT_3: "c3000003-0000-4000-8003-000000000003",
-  COMMENT_4: "c4000004-0000-4000-8004-000000000004",
-  COMMENT_5: "c5000005-0000-4000-8005-000000000005",
-} as const;
+  // Users
+  USER_1: faker.string.uuid(),
+  USER_2: faker.string.uuid(),
+  USER_3: faker.string.uuid(),
+  USER_4: faker.string.uuid(),
+  USER_VIEWER: faker.string.uuid(),
+  // Posts
+  POST_1: faker.string.uuid(),
+  POST_2: faker.string.uuid(),
+  POST_3: faker.string.uuid(),
+  POST_4: faker.string.uuid(),
+  // Comments
+  COMMENT_1: faker.string.uuid(),
+  COMMENT_2: faker.string.uuid(),
+  COMMENT_3: faker.string.uuid(),
+  COMMENT_4: faker.string.uuid(),
+  COMMENT_5: faker.string.uuid(),
+};
 
 // --- Helpers ---
 
