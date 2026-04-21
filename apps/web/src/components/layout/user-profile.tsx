@@ -51,7 +51,7 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`flex gap-3 items-center w-full text-left transition-colors hover:bg-accent ${isCollapsed ? "justify-center py-3" : "p-3"}`}
+        className={`flex gap-3 items-center w-full text-left transition-all duration-300 hover:bg-accent py-3 ${isCollapsed ? "pl-[20px]" : "px-3"}`}
         title={isCollapsed ? displayName : undefined}
         aria-label={isCollapsed ? displayName : undefined}
       >
@@ -64,17 +64,15 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
             {initials}
           </AvatarFallback>
         </Avatar>
-        {!isCollapsed && (
-          <>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-semibold truncate">{displayName}</div>
-              <div className="text-sm text-muted-foreground truncate">
-                {displayEmail}
-              </div>
+        <div className={`flex items-center gap-3 flex-1 min-w-0 overflow-hidden transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-full opacity-100"}`}>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold truncate">{displayName}</div>
+            <div className="text-sm text-muted-foreground truncate">
+              {displayEmail}
             </div>
-            <IconDotsCircleHorizontal className="w-5 h-5" />
-          </>
-        )}
+          </div>
+          <IconDotsCircleHorizontal className="w-5 h-5 flex-shrink-0" />
+        </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
         <DropdownMenuItem onClick={handleViewProfile}>
