@@ -166,47 +166,57 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
           li: ({ className: cls, ...props }) => (
             <li className={cn("leading-normal", cls)} {...props} />
           ),
-          pre: ({ className: cls, children, ...props }) => (
-            <pre
+          pre: ({ children, ...props }) => {
+            // Extract language and code text from the child <code> element
+            const codeChild = Array.isArray(children) ? children[0] : children;
+            if (
+              codeChild &&
+              typeof codeChild === "object" &&
+              "props" in codeChild
+            ) {
+              const { className: codeClass, children: codeText } =
+                codeChild.props as { className?: string; children?: unknown };
+              const match = /language-([\w-]+)/.exec(codeClass || "");
+              if (match) {
+                return (
+                  <div className="my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 text-xs leading-relaxed">
+                    <SyntaxHighlighter
+                      language={match[1]}
+                      style={isDark ? oneDark : oneLight}
+                      customStyle={{
+                        margin: 0,
+                        padding: "0.625rem",
+                        background: "transparent",
+                        fontSize: "0.75rem",
+                        lineHeight: "1.5",
+                      }}
+                      codeTagProps={{ style: {} }}
+                      {...props}
+                    >
+                      {String(codeText).replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  </div>
+                );
+              }
+            }
+            return (
+              <pre
+                className="my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 p-2.5 text-xs leading-relaxed"
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          },
+          code: ({ className: cls, ...props }) => (
+            <code
               className={cn(
-                "my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 text-xs leading-relaxed",
+                "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
                 cls,
               )}
               {...props}
-            >
-              {children}
-            </pre>
+            />
           ),
-          code: ({ className: cls, children, ...props }) => {
-            const match = /language-(\w+)/.exec(cls || "");
-            if (match) {
-              return (
-                <SyntaxHighlighter
-                  language={match[1]}
-                  style={isDark ? oneDark : oneLight}
-                  customStyle={{
-                    margin: 0,
-                    padding: "0.625rem",
-                    background: "transparent",
-                    fontSize: "0.75rem",
-                    lineHeight: "1.5",
-                  }}
-                  codeTagProps={{ style: {} }}
-                >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
-              );
-            }
-            return (
-              <code
-                className={cn(
-                  "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
-                  cls,
-                )}
-                {...props}
-              />
-            );
-          },
           strong: ({ className: cls, ...props }) => (
             <strong className={cn("font-semibold", cls)} {...props} />
           ),
