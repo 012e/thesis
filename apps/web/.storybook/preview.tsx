@@ -25,7 +25,6 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      cacheTime: 0,
       staleTime: 0,
     },
   },
@@ -52,11 +51,13 @@ const preview: Preview = {
       },
       defaultTheme: "dark",
     }),
-    (Story) => (
-      <QueryClientProvider client={queryClient}>
+    (Story) => {
+      queryClient.clear();
+
+      return <QueryClientProvider client={queryClient}>
         <Story />
       </QueryClientProvider>
-    ),
+    }
   ],
 };
 
