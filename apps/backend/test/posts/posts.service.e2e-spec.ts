@@ -17,6 +17,8 @@ import {
 
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
+import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 
 describe("PostsService integration", () => {
   let containers: PostgresContainerContext;
@@ -49,6 +51,10 @@ describe("PostsService integration", () => {
           useValue: {
             resolveAvatarUrl: (image: string | null) => image,
           },
+        },
+        {
+          provide: EMBEDDING_SERVICE,
+          useClass: StubEmbeddingService,
         },
       ],
     }).compile();
