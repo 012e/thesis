@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import {
   IconMessageCircle,
-  IconRepeat,
   IconShare,
   IconBookmark,
   IconDots,
@@ -134,9 +133,9 @@ function MenuItemCard({
       >
         {icon}
       </div>
-      <div className="flex flex-col">
-        <span className="text-sm font-medium leading-tight">{label}</span>
-        <p className="text-xs text-muted-foreground leading-tight mt-0.5">
+      <div className="flex flex-col min-w-0">
+        <span className="text-sm font-medium leading-tight truncate">{label}</span>
+        <p className="text-xs text-muted-foreground leading-tight mt-0.5 truncate">
           {description}
         </p>
       </div>
@@ -194,7 +193,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   };
 
   return (
-    <article className="p-4 transition-colors cursor-pointer hover:bg-accent/50">
+    <article className="p-4 transition-colors hover:bg-accent/50">
       <div className="flex gap-3 items-start">
         <UserAvatar
           userId={post.author.id}
@@ -301,12 +300,6 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
               </div>
               <span className="text-sm">{post.commentCount}</span>
             </button>
-            <button className="flex gap-1 items-center transition-colors hover:text-green-600 group text-muted-foreground">
-              <div className="p-2 rounded-full transition-colors group-hover:bg-green-600/10">
-                <IconRepeat className="w-[18px] h-[18px]" />
-              </div>
-              <span className="text-sm">0</span>
-            </button>
             <div className="flex gap-1 items-center py-1 px-2 rounded-full bg-muted/50">
               <button
                 onClick={() => handleVote("upvote")}
@@ -343,7 +336,17 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                 <IconBookmark className="w-[18px] h-[18px]" />
               </div>
             </button>
-            <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
+            <button
+              className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary"
+              onClick={(e) => {
+                e.stopPropagation();
+                const url = `${window.location.origin}/posts/${post.id}`;
+                navigator.clipboard.writeText(url).then(() => {
+                  toast.success("Link copied to clipboard!");
+                });
+              }}
+              title="Share via link"
+            >
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
                 <IconShare className="w-[18px] h-[18px]" />
               </div>

@@ -7,6 +7,14 @@ import {
   thematicBreakPlugin,
   markdownShortcutPlugin,
   codeBlockPlugin,
+  toolbarPlugin,
+  InsertCodeBlock,
+  BlockTypeSelect,
+  BoldItalicUnderlineToggles,
+  CreateLink,
+  InsertTable,
+  ListsToggle,
+  UndoRedo,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { Button } from "./button";

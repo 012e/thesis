@@ -73,32 +73,56 @@ function ThreadWelcome() {
       <div>
         <h2 className="text-xl font-semibold">How can I help you?</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Start a conversation with your AI assistant
+          Ask me anything — I can read posts, search content, and help you explore
         </p>
       </div>
       <div className="grid gap-2 mt-4 w-full max-w-2xl md:grid-cols-2">
         <ThreadPrimitive.Suggestion
-          prompt="What's the weather in San Francisco?"
+          prompt="What are the most upvoted posts right now?"
           asChild
         >
           <Button
             variant="outline"
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left rounded-2xl hover:bg-accent"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
-            <span className="font-medium">What's the weather</span>
-            <span className="text-muted-foreground">in San Francisco?</span>
+            <span className="font-medium">What's trending?</span>
+            <span className="text-muted-foreground">Show me the most upvoted posts</span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
-          prompt="Explain React hooks like useState"
+          prompt="Summarize the latest posts from people I follow"
           asChild
         >
           <Button
             variant="outline"
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left rounded-2xl hover:bg-accent"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
-            <span className="font-medium">Explain React hooks</span>
-            <span className="text-muted-foreground">like useState</span>
+            <span className="font-medium">My feed summary</span>
+            <span className="text-muted-foreground">Summarize recent posts I follow</span>
+          </Button>
+        </ThreadPrimitive.Suggestion>
+        <ThreadPrimitive.Suggestion
+          prompt="Find posts about programming or software development"
+          asChild
+        >
+          <Button
+            variant="outline"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+          >
+            <span className="font-medium">Search posts</span>
+            <span className="text-muted-foreground">Find posts about a topic</span>
+          </Button>
+        </ThreadPrimitive.Suggestion>
+        <ThreadPrimitive.Suggestion
+          prompt="Who are the most active users? What have they been posting about?"
+          asChild
+        >
+          <Button
+            variant="outline"
+            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+          >
+            <span className="font-medium">Active users</span>
+            <span className="text-muted-foreground">See who's been most active</span>
           </Button>
         </ThreadPrimitive.Suggestion>
       </div>

@@ -1,6 +1,10 @@
 import { memo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTheme } from "next-themes";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 
 interface PostMarkdownProps {
@@ -8,7 +12,15 @@ interface PostMarkdownProps {
   className?: string;
 }
 
-const markdownComponents: Components = {
+const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <div className={cn("post-markdown", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
           h1: ({ className: cls, ...props }) => (
             <h1
               className={cn(
@@ -154,23 +166,41 @@ const markdownComponents: Components = {
           li: ({ className: cls, ...props }) => (
             <li className={cn("leading-normal", cls)} {...props} />
           ),
-          pre: ({ className: cls, ...props }) => (
+          pre: ({ className: cls, children, ...props }) => (
             <pre
               className={cn(
-                "my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 p-2.5 text-xs leading-relaxed",
+                "my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 text-xs leading-relaxed",
                 cls,
               )}
               {...props}
-            />
+            >
+              {children}
+            </pre>
           ),
-          code: ({ className: cls, ...props }) => {
-            // Check if this is an inline code (not inside a pre tag)
-            const isInline = !cls?.includes("language-");
+          code: ({ className: cls, children, ...props }) => {
+            const match = /language-(\w+)/.exec(cls || "");
+            if (match) {
+              return (
+                <SyntaxHighlighter
+                  language={match[1]}
+                  style={isDark ? oneDark : oneLight}
+                  customStyle={{
+                    margin: 0,
+                    padding: "0.625rem",
+                    background: "transparent",
+                    fontSize: "0.75rem",
+                    lineHeight: "1.5",
+                  }}
+                  codeTagProps={{ style: {} }}
+                >
+                  {String(children).replace(/\n$/, "")}
+                </SyntaxHighlighter>
+              );
+            }
             return (
               <code
                 className={cn(
-                  isInline &&
-                    "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
+                  "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
                   cls,
                 )}
                 {...props}
@@ -183,14 +213,7 @@ const markdownComponents: Components = {
           em: ({ className: cls, ...props }) => (
             <em className={cn("italic", cls)} {...props} />
           ),
-        };
-
-const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
-  return (
-    <div className={cn("post-markdown", className)}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={markdownComponents}
+        }}
       >
         {content}
       </ReactMarkdown>
