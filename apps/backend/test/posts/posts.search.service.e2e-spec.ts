@@ -6,6 +6,9 @@ import { DatabaseService } from "@/db/database.service";
 import { posts } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
+import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
+import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
+import { PostsSearchService } from "@/posts/posts-search.service";
 import { PostsService } from "@/posts/posts.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
@@ -17,12 +20,13 @@ import {
   type PostgresContainerContext,
 } from "../helpers/testcontainers.setup";
 
-describe("PostsService.search integration", () => {
+describe("PostsSearchService.search integration", () => {
   let containers: PostgresContainerContext;
   let moduleRef: TestingModule;
   let pool: Pool;
   let databaseService: DatabaseService;
   let postsService: PostsService;
+  let postsSearchService: PostsSearchService;
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -32,8 +36,10 @@ describe("PostsService.search integration", () => {
     moduleRef = await Test.createTestingModule({
       providers: [
         { provide: DATABASE_POOL, useValue: pool },
+        { provide: EMBEDDING_SERVICE, useClass: StubEmbeddingService },
         DatabaseService,
         PostsService,
+        PostsSearchService,
         {
           provide: StorageService,
           useValue: { deleteImages: async () => {} },
@@ -49,6 +55,7 @@ describe("PostsService.search integration", () => {
 
     databaseService = moduleRef.get(DatabaseService);
     postsService = moduleRef.get(PostsService);
+    postsSearchService = moduleRef.get(PostsSearchService);
 
     await databaseService.db
       .insert(user)
@@ -83,7 +90,7 @@ describe("PostsService.search integration", () => {
       content: { text: "Learning JavaScript fundamentals" },
     });
 
-    const results = await postsService.search("TypeScript", "search-author-1");
+    const results = await postsSearchService.search("TypeScript", "search-author-1");
 
     expect(results.length).toBeGreaterThan(0);
     const texts = results.map((p) => p.content.text?.toLowerCase() ?? "");
@@ -101,7 +108,7 @@ describe("PostsService.search integration", () => {
       content: { text: "Completely unrelated post about cooking recipes" },
     });
 
-    const results = await postsService.search(
+    const results = await postsSearchService.search(
       "state management",
       "search-author-1",
     );
@@ -122,13 +129,13 @@ describe("PostsService.search integration", () => {
       content: { text: "Go concurrency with goroutines and channels" },
     });
 
-    const results = await postsService.search("kubernetes", "search-author-1");
+    const results = await postsSearchService.search("kubernetes", "search-author-1");
 
     expect(results).toHaveLength(0);
   });
 
   it("returns an empty array when no posts exist", async () => {
-    const results = await postsService.search("anything", "search-author-1");
+    const results = await postsSearchService.search("anything", "search-author-1");
     expect(results).toHaveLength(0);
   });
 
@@ -137,7 +144,7 @@ describe("PostsService.search integration", () => {
       content: { text: "NestJS dependency injection patterns" },
     });
 
-    const results = await postsService.search("NestJS", "search-author-1");
+    const results = await postsSearchService.search("NestJS", "search-author-1");
 
     expect(results.length).toBeGreaterThan(0);
     const post = results[0];
@@ -156,9 +163,9 @@ describe("PostsService.search integration", () => {
       content: { text: "Docker containerization best practices" },
     });
 
-    const resultsLower = await postsService.search("docker", "search-author-1");
-    const resultsUpper = await postsService.search("DOCKER", "search-author-1");
-    const resultsMixed = await postsService.search("Docker", "search-author-1");
+    const resultsLower = await postsSearchService.search("docker", "search-author-1");
+    const resultsUpper = await postsSearchService.search("DOCKER", "search-author-1");
+    const resultsMixed = await postsSearchService.search("Docker", "search-author-1");
 
     expect(resultsLower.length).toBeGreaterThan(0);
     expect(resultsUpper.length).toBeGreaterThan(0);
@@ -181,7 +188,7 @@ describe("PostsService.search integration", () => {
 
     // The poll question lives in content.poll.question, not content.text,
     // so the BM25 index (which indexes content->>'text') should not match it.
-    const results = await postsService.search("favourite", "search-author-1");
+    const results = await postsSearchService.search("favourite", "search-author-1");
 
     expect(results).toHaveLength(0);
   });
@@ -197,7 +204,7 @@ describe("PostsService.search integration", () => {
       content: { text: "Use a database for persistent storage" },
     });
 
-    const results = await postsService.search("database", "search-author-1");
+    const results = await postsSearchService.search("database", "search-author-1");
 
     expect(results.length).toBeGreaterThanOrEqual(2);
     // The post mentioning "database" more frequently should rank first (higher BM25 score)
