@@ -1,8 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import type { FC } from "react";
 import Editor from "@monaco-editor/react";
 import { useMutation } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
 import {
   IconPlayerPlay,
   IconLoader2,
@@ -11,7 +11,15 @@ import {
   IconClock,
   IconTerminal2,
   IconTrash,
+  IconChevronDown,
+  IconCheck,
 } from "@tabler/icons-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
@@ -21,6 +29,72 @@ export const Route = createFileRoute("/playground")({
 });
 
 type Language = "javascript" | "typescript";
+
+// Watch the `dark` class on <html> directly so this works both in the app
+// (next-themes sets the class) and in Storybook (addon-themes sets the class).
+function useIsDark() {
+  const [isDark, setIsDark] = useState(
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark"),
+  );
+  useEffect(() => {
+    const update = () =>
+      setIsDark(document.documentElement.classList.contains("dark"));
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
+// Inline brand icons for JS and TS
+function JavaScriptIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" fill="#F7DF1E" rx="2" />
+      <text
+        x="4"
+        y="26"
+        fontFamily="Arial, sans-serif"
+        fontWeight="bold"
+        fontSize="16"
+        fill="#000"
+      >
+        JS
+      </text>
+    </svg>
+  );
+}
+
+function TypeScriptIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" fill="#3178C6" rx="2" />
+      <text
+        x="3"
+        y="26"
+        fontFamily="Arial, sans-serif"
+        fontWeight="bold"
+        fontSize="16"
+        fill="#fff"
+      >
+        TS
+      </text>
+    </svg>
+  );
+}
+
+const LANGUAGE_CONFIG: Record<
+  Language,
+  { label: string; Icon: FC<{ size?: number }> }
+> = {
+  javascript: { label: "JavaScript", Icon: JavaScriptIcon },
+  typescript: { label: "TypeScript", Icon: TypeScriptIcon },
+};
 
 const DEFAULT_CODE: Record<Language, string> = {
   javascript: `// JavaScript Playground
@@ -55,7 +129,7 @@ console.log("Timestamp:", result.timestamp);
 };
 
 export function PlaygroundPage() {
-  const { resolvedTheme } = useTheme();
+  const isDark = useIsDark();
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
   const [result, setResult] = useState<ExecutionResult | null>(null);
@@ -95,7 +169,9 @@ export function PlaygroundPage() {
     setResult(null);
   }, []);
 
-  const editorTheme = resolvedTheme === "dark" ? "vs-dark" : "vs";
+  const editorTheme = isDark ? "vs-dark" : "vs";
+  const { Icon: CurrentLanguageIcon, label: currentLanguageLabel } =
+    LANGUAGE_CONFIG[language];
 
   const hasOutput = result !== null;
   const isSuccess = hasOutput && result.exitCode === 0;
@@ -115,31 +191,35 @@ export function PlaygroundPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Language toggle */}
-            <div className="flex rounded-md border overflow-hidden text-sm">
-              <button
-                onClick={() => handleLanguageChange("javascript")}
+            {/* Language dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
                 disabled={isPending}
-                className={`px-3 py-1.5 transition-colors ${
-                  language === "javascript"
-                    ? "bg-primary text-primary-foreground font-medium"
-                    : "hover:bg-accent text-muted-foreground"
-                }`}
+                className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                JavaScript
-              </button>
-              <button
-                onClick={() => handleLanguageChange("typescript")}
-                disabled={isPending}
-                className={`px-3 py-1.5 border-l transition-colors ${
-                  language === "typescript"
-                    ? "bg-primary text-primary-foreground font-medium"
-                    : "hover:bg-accent text-muted-foreground"
-                }`}
-              >
-                TypeScript
-              </button>
-            </div>
+                <CurrentLanguageIcon size={16} />
+                <span>{currentLanguageLabel}</span>
+                <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent side="bottom" align="start" className="min-w-40">
+                {(Object.keys(LANGUAGE_CONFIG) as Language[]).map((lang) => {
+                  const { Icon, label } = LANGUAGE_CONFIG[lang];
+                  return (
+                    <DropdownMenuItem
+                      key={lang}
+                      className="gap-2 px-3 py-2 cursor-pointer"
+                      onClick={() => handleLanguageChange(lang)}
+                    >
+                      <Icon size={16} />
+                      <span>{label}</span>
+                      {language === lang && (
+                        <IconCheck className="w-3.5 h-3.5 ml-auto text-primary" />
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* Run button */}
             <button
