@@ -15,9 +15,11 @@ import {
   IconRobot,
   IconChevronLeft,
   IconChevronRight,
-} from '@tabler/icons-react';
-import { UserProfile } from './user-profile';
-import { useNotifications } from '@/hooks/notifications';
+  IconCodeCircle2,
+  IconCodeCircle2Filled,
+} from "@tabler/icons-react";
+import { UserProfile } from "./user-profile";
+import { useNotifications } from "@/hooks/notifications";
 
 const navigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -38,6 +40,12 @@ const navigationItems = [
     selectedIcon: IconRobot,
     label: "AI Chat",
     href: "/chat",
+  },
+  {
+    icon: IconCodeCircle2,
+    selectedIcon: IconCodeCircle2Filled,
+    label: "Playground",
+    href: "/playground",
   },
   {
     icon: IconUsers,
@@ -98,7 +106,8 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;
-                const hasUnread = item.href === '/notifications' && unreadCount > 0;
+                const hasUnread =
+                  item.href === "/notifications" && unreadCount > 0;
                 return (
                   <>
                     <div className="relative flex-shrink-0">
@@ -109,7 +118,9 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
                         </span>
                       )}
                     </div>
-                    <span className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}>
+                    <span
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+                    >
                       {item.label}
                     </span>
                   </>
@@ -129,11 +140,13 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <IconChevronRight className="w-6 h-6 flex-shrink-0" />
+            <IconChevronRight className="flex-shrink-0 w-6 h-6" />
           ) : (
-            <IconChevronLeft className="w-6 h-6 flex-shrink-0" />
+            <IconChevronLeft className="flex-shrink-0 w-6 h-6" />
           )}
-          <span className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}>
+          <span
+            className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+          >
             Collapse
           </span>
         </button>

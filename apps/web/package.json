@@ -21,6 +21,7 @@
     "@base-ui/react": "^1.4.1",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@mdxeditor/editor": "^3.55.0",
+    "@monaco-editor/react": "^4.7.0",
     "@repo/auth-client": "workspace:*",
     "@repo/rest-contracts": "workspace:*",
     "@repo/shared-dto": "workspace:*",
