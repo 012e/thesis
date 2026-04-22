@@ -360,6 +360,5 @@ export function PostComposer() {
           <IconX className="w-4 h-4" />
         </Button>
       </div>
-    </div>
   );
 }
