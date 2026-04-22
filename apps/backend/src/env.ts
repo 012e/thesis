@@ -30,6 +30,8 @@ export const env = createEnv({
     MINIO_SECRET_KEY: z.string().default("minioadmin"),
     MINIO_BUCKET: z.string().default("posts-images"),
     MINIO_PUBLIC_URL: z.url().default("http://localhost:9000"),
+    // OpenAI — optional; when absent the stub (zero-vector) embedding service is used
+    OPENAI_API_KEY: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,

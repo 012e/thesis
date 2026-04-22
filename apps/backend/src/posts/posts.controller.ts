@@ -5,12 +5,16 @@ import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
 import { postsContract } from "@repo/rest-contracts";
 
+import { PostsSearchService } from "./posts-search.service";
 import { createPostSchema, updatePostSchema } from "./posts.schemas";
 import { PostsService } from "./posts.service";
 
 @Controller()
 export class PostsController {
-  constructor(private readonly postsService: PostsService) {}
+  constructor(
+    private readonly postsService: PostsService,
+    private readonly postsSearchService: PostsSearchService,
+  ) {}
 
   @TsRestHandler(postsContract.listPosts)
   listPosts(@Session() session: UserSession) {
@@ -40,7 +44,10 @@ export class PostsController {
   @TsRestHandler(postsContract.searchPosts)
   searchPosts(@Session() session: UserSession) {
     return tsRestHandler(postsContract.searchPosts, async ({ query }) => {
-      const results = await this.postsService.search(query.q, session.user.id);
+      const results = await this.postsSearchService.search(
+        query.q,
+        session.user.id,
+      );
 
       return {
         status: 200,
@@ -55,15 +62,12 @@ export class PostsController {
       const post = await this.postsService.getById(params.id, session.user.id);
 
       if (!post) {
-        return {
-          status: 404,
-          body: null,
-        };
+        return { status: 404, body: null };
       }
 
       return {
         status: 200,
-        body: post as any, // Temporarily bypass zod parse to test
+        body: post as any,
       };
     });
   }
@@ -79,17 +83,11 @@ export class PostsController {
       );
 
       if (!existingPost) {
-        return {
-          status: 404,
-          body: null,
-        };
+        return { status: 404, body: null };
       }
 
       if (existingPost.authorId !== session.user.id) {
-        return {
-          status: 403,
-          body: null,
-        };
+        return { status: 403, body: null };
       }
 
       const post = await this.postsService.update(
@@ -99,15 +97,12 @@ export class PostsController {
       );
 
       if (!post) {
-        return {
-          status: 404,
-          body: null,
-        };
+        return { status: 404, body: null };
       }
 
       return {
         status: 200,
-        body: post as any, // Temporarily bypass zod parse to test
+        body: post as any,
       };
     });
   }
@@ -121,31 +116,22 @@ export class PostsController {
       );
 
       if (!existingPost) {
-        return {
-          status: 404,
-          body: null,
-        };
+        return { status: 404, body: null };
       }
 
       if (existingPost.authorId !== session.user.id) {
-        return {
-          status: 403,
-          body: null,
-        };
+        return { status: 403, body: null };
       }
 
       const post = await this.postsService.delete(params.id, session.user.id);
 
       if (!post) {
-        return {
-          status: 404,
-          body: null,
-        };
+        return { status: 404, body: null };
       }
 
       return {
         status: 200,
-        body: post as any, // Temporarily bypass zod parse to test
+        body: post as any,
       };
     });
   }
