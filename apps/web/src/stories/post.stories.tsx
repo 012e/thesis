@@ -28,7 +28,20 @@ const basePost: PostDto = {
   authorId: STORY_UUIDS.USER_1,
   author: mockAuthor,
   content: {
-    text: "Just shipped a new feature! **Dark mode** is finally here. Check it out and let me know what you think.\n\n> The best code is the code you never have to write.",
+    text: `
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+Just shipped a new feature! **Dark mode** is \`finally\` here. Check it out and let me know what you think.
+> The best code is the code you never have to write.
+This is a multiline post with _Markdown_ formatting. It includes a blockquote, bold and italic text, and even a code snippet:
+\`\`\`javascript
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
+\`\`\`
+    `,
   },
   createdAt: oneHourAgo,
   updatedAt: oneHourAgo,
