@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ApiRouteImport } from './routes/api'
@@ -22,6 +23,11 @@ import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 
+const PlaygroundRoute = PlaygroundRouteImport.update({
+  id: '/playground',
+  path: '/playground',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
+  '/playground': typeof PlaygroundRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
+  '/playground': typeof PlaygroundRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
+  '/playground': typeof PlaygroundRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/chat'
     | '/notifications'
+    | '/playground'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/chat'
     | '/notifications'
+    | '/playground'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/chat'
     | '/notifications'
+    | '/playground'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   ApiRoute: typeof ApiRoute
   ChatRoute: typeof ChatRoute
   NotificationsRoute: typeof NotificationsRoute
+  PlaygroundRoute: typeof PlaygroundRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -188,6 +201,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/playground': {
+      id: '/playground'
+      path: '/playground'
+      fullPath: '/playground'
+      preLoaderRoute: typeof PlaygroundRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notifications': {
       id: '/notifications'
       path: '/notifications'
@@ -280,6 +300,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRoute: ApiRoute,
   ChatRoute: ChatRoute,
   NotificationsRoute: NotificationsRoute,
+  PlaygroundRoute: PlaygroundRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
