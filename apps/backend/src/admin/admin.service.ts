@@ -1,5 +1,5 @@
-import { Injectable } from "@nestjs/common";
-import { count, desc } from "drizzle-orm";
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { count, desc, eq } from "drizzle-orm";
 import { DatabaseService } from "@/db/database.service";
 import { user } from "@/db/auth-schema";
 import type { AdminUserType } from "@repo/rest-contracts";
@@ -42,5 +42,27 @@ export class AdminService {
       })),
       total: Number(total),
     };
+  }
+
+  /**
+   * Promote a user to the "admin" role.
+   *
+   * Throws NotFoundException if the user does not exist.
+   * Better Auth reads the role from the DB on every request, so the change
+   * takes effect immediately — no re-authentication required.
+   */
+  async promoteToAdmin(userId: string): Promise<void> {
+    const db = this.databaseService.db;
+
+    const [existing] = await db
+      .select({ id: user.id })
+      .from(user)
+      .where(eq(user.id, userId));
+
+    if (!existing) {
+      throw new NotFoundException(`User ${userId} not found`);
+    }
+
+    await db.update(user).set({ role: "admin" }).where(eq(user.id, userId));
   }
 }
