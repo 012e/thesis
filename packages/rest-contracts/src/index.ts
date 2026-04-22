@@ -12,6 +12,7 @@ import { playgroundContract } from './contracts/playground';
 import { messagesContract } from './contracts/messages';
 import { notificationsContract } from './contracts/notifications';
 import { configContract } from './contracts/config';
+import { adminContract } from './contracts/admin';
 
 const c = initContract();
 
@@ -28,6 +29,7 @@ export const appContract = c.router({
   ...messagesContract,
   ...notificationsContract,
   ...configContract,
+  ...adminContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -85,3 +87,7 @@ export * from "./schemas/config";
 
 export { configContract } from "./contracts/config";
 export type { ConfigContract } from "./contracts/config";
+
+export { adminContract } from "./contracts/admin";
+export type { AdminContract } from "./contracts/admin";
+export * from "./schemas/admin";
