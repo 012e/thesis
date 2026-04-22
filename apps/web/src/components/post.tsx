@@ -22,6 +22,8 @@ import {
   IconDots,
   IconArrowUp,
   IconArrowDown,
+  IconArrowLeft,
+  IconArrowRight,
   IconTrash,
   IconEdit,
   IconBell,
@@ -52,22 +54,32 @@ interface PostImagesProps {
 }
 
 function PostImages({ images }: PostImagesProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const selectedImage =
+    selectedIndex !== null ? (images[selectedIndex]?.url ?? null) : null;
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedIndex === null) return;
       if (e.key === "Escape") {
-        setSelectedImage(null);
+        setSelectedIndex(null);
+      } else if (e.key === "ArrowLeft") {
+        setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i));
+      } else if (e.key === "ArrowRight") {
+        setSelectedIndex((i) =>
+          i !== null && i < images.length - 1 ? i + 1 : i,
+        );
       }
     };
 
-    if (selectedImage) {
+    if (selectedIndex !== null) {
       window.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedImage]);
+  }, [selectedIndex, images.length]);
 
   if (images.length === 0) return null;
 
@@ -96,7 +108,7 @@ function PostImages({ images }: PostImagesProps) {
               className={`relative overflow-hidden bg-muted ${isFirstOfThree ? "col-span-2" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
-                setSelectedImage(image.url);
+                setSelectedIndex(index);
               }}
             >
               <img
@@ -114,14 +126,40 @@ function PostImages({ images }: PostImagesProps) {
       {selectedImage && (
         <div
           className="flex fixed inset-0 z-50 justify-center items-center bg-black/80"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setSelectedIndex(null)}
         >
+          {selectedIndex !== null && selectedIndex > 0 && (
+            <button
+              type="button"
+              className="absolute left-4 p-2 text-white rounded-full transition-colors bg-black/50 hover:bg-black/70"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIndex((i) => (i !== null && i > 0 ? i - 1 : i));
+              }}
+            >
+              <IconArrowLeft className="w-6 h-6" />
+            </button>
+          )}
           <img
             src={selectedImage}
             alt="Full size"
             className="object-contain max-w-[90vw] max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           />
+          {selectedIndex !== null && selectedIndex < images.length - 1 && (
+            <button
+              type="button"
+              className="absolute right-4 p-2 text-white rounded-full transition-colors bg-black/50 hover:bg-black/70"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedIndex((i) =>
+                  i !== null && i < images.length - 1 ? i + 1 : i,
+                );
+              }}
+            >
+              <IconArrowRight className="w-6 h-6" />
+            </button>
+          )}
         </div>
       )}
     </>
@@ -144,15 +182,13 @@ function MenuItemCard({
   return (
     <>
       <div
-        className={`flex items-center justify-center w-8 h-8 rounded-full shrink-0 ${iconClassName}`}
+        className={`flex items-center justify-center w-8 rounded-full shrink-0 ${iconClassName} h-8`}
       >
         {icon}
       </div>
       <div className="flex flex-col min-w-0">
-        <span className="text-sm font-medium leading-tight truncate">
-          {label}
-        </span>
-        <p className="mt-0.5 text-xs leading-tight text-muted-foreground truncate">
+        <span className="text-sm font-medium leading-tight">{label}</span>
+        <p className="mt-0.5 text-xs leading-tight text-muted-foreground">
           {description}
         </p>
       </div>
@@ -245,7 +281,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
               <DropdownMenuContent
                 side="bottom"
                 align="end"
-                className="min-w-64"
+                className="h-full min-w-64 min-h-[3lh]"
               >
                 {isOwnPost ? (
                   <>
@@ -274,7 +310,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                         icon={<IconTrash className="w-4 h-4" />}
                         iconClassName="bg-destructive/10"
                         label="Delete"
-                        description="Permanently remove this post"
+                        description="Remove this post"
                       />
                     </DropdownMenuItem>
                   </>
