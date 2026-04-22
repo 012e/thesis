@@ -15,8 +15,6 @@ import {
   IconRobot,
   IconChevronLeft,
   IconChevronRight,
-  IconCode,
-  IconCodeDots,
   IconCodeCircle2,
   IconCodeCircle2Filled,
 } from "@tabler/icons-react";
