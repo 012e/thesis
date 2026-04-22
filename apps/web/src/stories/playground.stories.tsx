@@ -44,12 +44,12 @@ const userProfileHandler = http.get("*/api/users/*/profile", () =>
 );
 
 const unreadCountHandler = http.get(
-  "*/api/notifications/unread-count",
+  "*/notifications/unread-count",
   () => HttpResponse.json({ count: 0 }),
 );
 
 const executeSuccessHandler = http.post(
-  "*/api/playground/execute",
+  "*/playground/execute",
   () =>
     HttpResponse.json({
       stdout: "Hello, World!\nCurrent time: " + now,
@@ -60,7 +60,7 @@ const executeSuccessHandler = http.post(
 );
 
 const executeErrorHandler = http.post(
-  "*/api/playground/execute",
+  "*/playground/execute",
   () =>
     HttpResponse.json({
       stdout: "",
@@ -71,7 +71,7 @@ const executeErrorHandler = http.post(
 );
 
 const executePendingHandler = http.post(
-  "*/api/playground/execute",
+  "*/playground/execute",
   async () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 30_000));
     return HttpResponse.json({
