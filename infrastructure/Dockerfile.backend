@@ -78,4 +78,4 @@ ENV NODE_ENV=production
 EXPOSE 3000
 
 # Run migrations via the package.json script, then start the server
-CMD ["sh", "-c", "pnpm --filter backend run db:migrate && node apps/backend/dist/main.js"]
+CMD ["node", "apps/backend/dist/main.js"]
