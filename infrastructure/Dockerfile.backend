@@ -49,14 +49,14 @@ RUN pnpm --filter backend build
 FROM base AS runner
 WORKDIR /app
 
-# Re-install prod deps only (workspace symlinks are recreated)
+# Install all deps (drizzle-kit is a devDependency and is needed for migrations)
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/backend/package.json            apps/backend/
 COPY packages/rest-contracts/package.json packages/rest-contracts/
 COPY packages/shared-dto/package.json     packages/shared-dto/
 COPY packages/auth-client/package.json    packages/auth-client/
 
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 
 # Copy compiled backend
 COPY --from=builder /app/apps/backend/dist apps/backend/dist
@@ -66,8 +66,8 @@ COPY --from=builder /app/packages/rest-contracts/dist packages/rest-contracts/di
 COPY --from=builder /app/packages/shared-dto/dist     packages/shared-dto/dist
 COPY --from=builder /app/packages/auth-client/dist    packages/auth-client/dist
 
-# Copy DB migrations so drizzle-kit can apply them
-COPY --from=builder /app/apps/backend/src/db/migrations apps/backend/src/db/migrations
+# Copy DB migrations
+COPY --from=builder /app/apps/backend/drizzle apps/backend/drizzle
 COPY --from=builder /app/apps/backend/drizzle.config.ts apps/backend/drizzle.config.ts
 
 # Copy static assets bundled by nest-cli (e.g. default-profile-image.jpg)
@@ -77,6 +77,5 @@ ENV NODE_ENV=production
 
 EXPOSE 3000
 
-# Run migrations then start the server
-CMD ["sh", "-c", \
-  "cd apps/backend && npx drizzle-kit migrate --config=drizzle.config.ts; cd /app && node apps/backend/dist/main.js"]
+# Run migrations via the package.json script, then start the server
+CMD ["sh", "-c", "pnpm --filter backend run db:migrate && node apps/backend/dist/main.js"]
