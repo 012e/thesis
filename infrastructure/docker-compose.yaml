@@ -1,0 +1,173 @@
+# =============================================================================
+# docker-compose.yaml — Full-stack deployment for Dokploy / testing
+#
+# Usage:
+#   1. Copy .env.example → .env and fill in required values
+#   2. docker compose -f infrastructure/docker-compose.yaml up --build -d
+#
+# Public URLs (set these to your actual domain / Dokploy-assigned URLs):
+#   BACKEND_PUBLIC_URL  e.g. https://api.yourdomain.com
+#   WEB_PUBLIC_URL      e.g. https://yourdomain.com
+#   AI_PUBLIC_URL       e.g. https://ai.yourdomain.com
+#   MINIO_PUBLIC_URL    e.g. https://minio.yourdomain.com:9000
+#
+# VITE_ vars are baked into the web JS bundle at build time — rebuild the web
+# image whenever VITE_BACKEND_URL or VITE_MASTRA_CHAT_URL changes.
+# =============================================================================
+
+name: thesis
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+
+  postgres:
+    image: paradedb/paradedb:latest
+    container_name: thesis_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-username}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-database}
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  minio:
+    image: minio/minio:latest
+    container_name: thesis_minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"   # S3 API (also reachable by backend internally)
+      - "9001:9001"   # MinIO console
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  # Create the uploads bucket on first run
+  minio-init:
+    image: minio/mc:latest
+    container_name: thesis_minio_init
+    restart: no
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        mc alias set local http://minio:9000 ${MINIO_ACCESS_KEY:-minioadmin} ${MINIO_SECRET_KEY:-minioadmin} &&
+        mc mb --ignore-existing local/${MINIO_BUCKET:-posts-images} &&
+        mc anonymous set public local/${MINIO_BUCKET:-posts-images}
+      "
+    networks:
+      - internal
+
+  # ---------------------------------------------------------------------------
+  # Application services
+  # ---------------------------------------------------------------------------
+
+  backend:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile.backend
+    container_name: thesis_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-database}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+      # BETTER_AUTH_URL must match the public URL the browser uses to reach the backend
+      BETTER_AUTH_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+      ALLOWED_ORIGINS: ${WEB_PUBLIC_URL:-http://localhost:80}
+      AI_SERVICE_URL: http://ai:4111
+      # MinIO — internal endpoint for SDK calls
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-posts-images}
+      # Public URL used to build image URLs returned to clients
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    networks:
+      - internal
+
+  ai:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile.ai
+    container_name: thesis_ai
+    restart: unless-stopped
+    ports:
+      - "4111:4111"
+    environment:
+      NODE_ENV: production
+      PORT: 4111
+      OPENAI_API_KEY: ${OPENAI_API_KEY:?OPENAI_API_KEY is required}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-database}
+      BACKEND_URL: http://backend:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    networks:
+      - internal
+
+  web:
+    build:
+      context: ..
+      dockerfile: infrastructure/Dockerfile.web
+      args:
+        # These are baked into the JS bundle — set to public-facing URLs
+        VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+        VITE_MASTRA_CHAT_URL: ${AI_PUBLIC_URL:-http://localhost:4111}/chat
+    container_name: thesis_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - ai
+    networks:
+      - internal
+
+# =============================================================================
+# Volumes & Networks
+# =============================================================================
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  internal:
+    driver: bridge
