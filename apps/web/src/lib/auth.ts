@@ -11,7 +11,9 @@ import store from "@/lib/atoms/store";
 import bearerToken from "@/lib/atoms/bearer-token";
 import { env } from "@/env";
 
-const authClient = createCustomAuthClient({ baseURL: env.VITE_BACKEND_URL });
+export const authClient = createCustomAuthClient({
+  baseURL: env.VITE_BACKEND_URL,
+});
 
 /**
  * Login wrapper that handles token storage and UI feedback
