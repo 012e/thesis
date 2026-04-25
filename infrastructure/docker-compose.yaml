@@ -1,15 +1,19 @@
 # =============================================================================
-# docker-compose.yaml — Full-stack deployment for Dokploy / testing
+# docker-compose.yaml — Full-stack deployment for Dokploy
 #
 # Usage:
 #   1. Copy .env.example → .env and fill in required values
-#   2. docker compose -f infrastructure/docker-compose.yaml up --build -d
+#   2. Upload to Dokploy as a Docker Compose application
 #
-# Public URLs (set these to your actual domain / Dokploy-assigned URLs):
-#   BACKEND_PUBLIC_URL  e.g. https://api.yourdomain.com
-#   WEB_PUBLIC_URL      e.g. https://yourdomain.com
-#   AI_PUBLIC_URL       e.g. https://ai.yourdomain.com
-#   MINIO_PUBLIC_URL    e.g. https://minio.yourdomain.com:9000
+# Domain assignments (toin.dev):
+#   toin.dev              → web (nginx, port 80)
+#   api.toin.dev          → backend (NestJS, port 3000)
+#   ai.toin.dev           → ai / Mastra (port 4111)
+#   minio.toin.dev        → MinIO S3 API (port 9000) — browser image CDN
+#   minio-console.toin.dev → MinIO Console (port 9001) — admin UI
+#
+# Routing: Traefik (managed by Dokploy) terminates TLS via Let's Encrypt and
+# reverse-proxies to each service over the shared dokploy-network.
 #
 # VITE_ vars are baked into the web JS bundle at build time — rebuild the web
 # image whenever VITE_BACKEND_URL or VITE_MASTRA_CHAT_URL changes.
@@ -52,9 +56,9 @@ services:
     volumes:
       - minio_data:/data
     command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"   # S3 API (also reachable by backend internally)
-      - "9001:9001"   # MinIO console
+    expose:
+      - "9000"
+      - "9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 10s
@@ -62,6 +66,23 @@ services:
       retries: 5
     networks:
       - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      # ── S3 API — minio.toin.dev ────────────────────────────────────────────
+      - traefik.http.routers.thesis-minio-api.rule=Host(`minio.toin.dev`)
+      - traefik.http.routers.thesis-minio-api.entrypoints=websecure
+      - traefik.http.routers.thesis-minio-api.tls=true
+      - traefik.http.routers.thesis-minio-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.thesis-minio-api.service=thesis-minio-api
+      - traefik.http.services.thesis-minio-api.loadbalancer.server.port=9000
+      # ── Console — minio-console.toin.dev ──────────────────────────────────
+      - traefik.http.routers.thesis-minio-console.rule=Host(`minio-console.toin.dev`)
+      - traefik.http.routers.thesis-minio-console.entrypoints=websecure
+      - traefik.http.routers.thesis-minio-console.tls=true
+      - traefik.http.routers.thesis-minio-console.tls.certresolver=letsencrypt
+      - traefik.http.routers.thesis-minio-console.service=thesis-minio-console
+      - traefik.http.services.thesis-minio-console.loadbalancer.server.port=9001
 
   # Create the uploads bucket on first run
   minio-init:
@@ -90,16 +111,16 @@ services:
       dockerfile: infrastructure/Dockerfile.backend
     container_name: thesis_backend
     restart: unless-stopped
-    ports:
-      - "3001:3000"
+    expose:
+      - "3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-database}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       # BETTER_AUTH_URL must match the public URL the browser uses to reach the backend
-      BETTER_AUTH_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3001}
-      ALLOWED_ORIGINS: ${WEB_PUBLIC_URL:-http://localhost:80}
+      BETTER_AUTH_URL: ${BACKEND_PUBLIC_URL:-https://api.toin.dev}
+      ALLOWED_ORIGINS: ${WEB_PUBLIC_URL:-https://toin.dev}
       AI_SERVICE_URL: http://ai:4111
       # MinIO — internal endpoint for SDK calls
       MINIO_ENDPOINT: minio
@@ -109,7 +130,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin}
       MINIO_BUCKET: ${MINIO_BUCKET:-posts-images}
       # Public URL used to build image URLs returned to clients
-      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-http://localhost:9000}
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-https://minio.toin.dev}
     depends_on:
       postgres:
         condition: service_healthy
@@ -119,6 +140,15 @@ services:
         condition: service_completed_successfully
     networks:
       - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      # ── API — api.toin.dev ─────────────────────────────────────────────────
+      - traefik.http.routers.thesis-backend.rule=Host(`api.toin.dev`)
+      - traefik.http.routers.thesis-backend.entrypoints=websecure
+      - traefik.http.routers.thesis-backend.tls=true
+      - traefik.http.routers.thesis-backend.tls.certresolver=letsencrypt
+      - traefik.http.services.thesis-backend.loadbalancer.server.port=3000
 
   ai:
     build:
@@ -126,8 +156,8 @@ services:
       dockerfile: infrastructure/Dockerfile.ai
     container_name: thesis_ai
     restart: unless-stopped
-    ports:
-      - "4111:4111"
+    expose:
+      - "4111"
     environment:
       NODE_ENV: production
       PORT: 4111
@@ -141,6 +171,15 @@ services:
         condition: service_started
     networks:
       - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      # ── AI / Mastra — ai.toin.dev ──────────────────────────────────────────
+      - traefik.http.routers.thesis-ai.rule=Host(`ai.toin.dev`)
+      - traefik.http.routers.thesis-ai.entrypoints=websecure
+      - traefik.http.routers.thesis-ai.tls=true
+      - traefik.http.routers.thesis-ai.tls.certresolver=letsencrypt
+      - traefik.http.services.thesis-ai.loadbalancer.server.port=4111
 
   web:
     build:
@@ -148,17 +187,26 @@ services:
       dockerfile: infrastructure/Dockerfile.web
       args:
         # These are baked into the JS bundle — set to public-facing URLs
-        VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3001}
-        VITE_MASTRA_CHAT_URL: ${AI_PUBLIC_URL:-http://localhost:4111}/chat
+        VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-https://api.toin.dev}
+        VITE_MASTRA_CHAT_URL: ${AI_PUBLIC_URL:-https://ai.toin.dev}/chat
     container_name: thesis_web
     restart: unless-stopped
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
       - ai
     networks:
       - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      # ── SPA — toin.dev ────────────────────────────────────────────────────
+      - traefik.http.routers.thesis-web.rule=Host(`toin.dev`)
+      - traefik.http.routers.thesis-web.entrypoints=websecure
+      - traefik.http.routers.thesis-web.tls=true
+      - traefik.http.routers.thesis-web.tls.certresolver=letsencrypt
+      - traefik.http.services.thesis-web.loadbalancer.server.port=80
 
 # =============================================================================
 # Volumes & Networks
@@ -169,5 +217,9 @@ volumes:
   minio_data:
 
 networks:
+  # Service-to-service traffic (not reachable from outside)
   internal:
     driver: bridge
+  # Shared Traefik network — must already exist on the Dokploy host
+  dokploy-network:
+    external: true
