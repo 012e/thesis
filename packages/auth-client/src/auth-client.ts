@@ -1,7 +1,12 @@
 import { createAuthClient } from "better-auth/react";
 import { usernameClient, jwtClient } from "better-auth/client/plugins";
 
-export type AuthClient = ReturnType<typeof createAuthClient>;
+export const authClient = createAuthClient({
+  baseURL: "http://localhost:3000",
+  plugins: [usernameClient(), jwtClient()],
+});
+
+export type AuthClient = typeof authClient;
 
 export function createCustomAuthClient(
   config?: Parameters<typeof createAuthClient>[0],
@@ -10,7 +15,5 @@ export function createCustomAuthClient(
     baseURL: "http://localhost:3000",
     plugins: [usernameClient(), jwtClient()],
     ...config,
-  });
+  }) as AuthClient;
 }
-
-export const authClient = createCustomAuthClient();

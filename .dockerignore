@@ -1,0 +1,33 @@
+# Dependencies
+**/node_modules
+
+# Build outputs
+**/dist
+**/.tsbuildinfo
+**/*.tsbuildinfo
+apps/web/tsconfig.tsbuildinfo
+
+# Logs
+**/*.log
+
+# Test artifacts
+**/coverage
+**/.nyc_output
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+
+# Misc
+**/.env
+**/.env.*
+!**/.env.example
