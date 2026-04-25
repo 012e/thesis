@@ -9,7 +9,7 @@
     "skipLibCheck": true,
     "noEmit": true,
     "outDir": "dist",
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": false
   },
   "include": ["src/**/*"]
 }
