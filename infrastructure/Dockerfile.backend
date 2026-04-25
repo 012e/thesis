@@ -13,7 +13,7 @@ FROM base AS deps
 WORKDIR /app
 
 # Copy manifests only first so the layer is cached until they change
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 
 # Workspace package manifests
 COPY apps/backend/package.json            apps/backend/
@@ -50,7 +50,7 @@ FROM base AS runner
 WORKDIR /app
 
 # Re-install prod deps only (workspace symlinks are recreated)
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/backend/package.json            apps/backend/
 COPY packages/rest-contracts/package.json packages/rest-contracts/
 COPY packages/shared-dto/package.json     packages/shared-dto/
