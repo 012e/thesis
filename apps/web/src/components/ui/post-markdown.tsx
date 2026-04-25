@@ -1,5 +1,5 @@
 import { memo } from "react";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
 
@@ -8,12 +8,7 @@ interface PostMarkdownProps {
   className?: string;
 }
 
-const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
-  return (
-    <div className={cn("post-markdown", className)}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
+const markdownComponents: Components = {
           h1: ({ className: cls, ...props }) => (
             <h1
               className={cn(
@@ -188,7 +183,14 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
           em: ({ className: cls, ...props }) => (
             <em className={cn("italic", cls)} {...props} />
           ),
-        }}
+        };
+
+const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
+  return (
+    <div className={cn("post-markdown", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={markdownComponents}
       >
         {content}
       </ReactMarkdown>
