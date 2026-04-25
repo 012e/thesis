@@ -1,8 +1,5 @@
 import {
-  requestPasswordReset as authRequestPasswordReset,
-  resetPassword as authResetPassword,
-  updateProfile as authUpdateProfile,
-  authClient,
+  createCustomAuthClient,
   type LoginParams,
   type RegisterParams,
   type RequestPasswordResetParams,
@@ -12,6 +9,9 @@ import {
 import { toast } from "sonner";
 import store from "@/lib/atoms/store";
 import bearerToken from "@/lib/atoms/bearer-token";
+import { env } from "@/env";
+
+const authClient = createCustomAuthClient({ baseURL: env.VITE_BACKEND_URL });
 
 /**
  * Login wrapper that handles token storage and UI feedback
@@ -83,11 +83,14 @@ export async function register(params: RegisterParams): Promise<boolean> {
 export async function requestPasswordReset(
   params: RequestPasswordResetParams,
 ): Promise<boolean> {
-  const result = await authRequestPasswordReset(params);
+  const result = await authClient.requestPasswordReset({
+    email: params.email,
+    redirectTo: `${window.location.origin}/auth/reset-password`,
+  });
 
-  if (!result.success) {
+  if (result.error) {
     toast.error("Failed to send reset email", {
-      description: result.error || "Please try again later",
+      description: result.error.message || "Please try again later",
     });
     return false;
   }
@@ -105,11 +108,14 @@ export async function requestPasswordReset(
 export async function resetPassword(
   params: ResetPasswordParams,
 ): Promise<boolean> {
-  const result = await authResetPassword(params);
+  const result = await authClient.resetPassword({
+    newPassword: params.newPassword,
+    token: params.token,
+  });
 
-  if (!result.success) {
+  if (result.error) {
     toast.error("Failed to reset password", {
-      description: result.error || "Invalid or expired token",
+      description: result.error.message || "Invalid or expired token",
     });
     return false;
   }
@@ -127,11 +133,14 @@ export async function resetPassword(
 export async function updateProfile(
   params: UpdateProfileParams,
 ): Promise<boolean> {
-  const result = await authUpdateProfile(params);
+  const result = await authClient.updateUser({
+    name: params.name,
+    image: params.image,
+  });
 
-  if (!result.success) {
+  if (result.error) {
     toast.error("Update failed", {
-      description: result.error || "Failed to update profile",
+      description: result.error.message || "Failed to update profile",
     });
     return false;
   }
