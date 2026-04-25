@@ -1,0 +1,82 @@
+# =============================================================================
+# Dockerfile.backend — NestJS API
+# Build context: repo root  (docker build -f infrastructure/Dockerfile.backend .)
+# =============================================================================
+
+FROM node:22-alpine AS base
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
+# -----------------------------------------------------------------------------
+# Stage: deps — install all workspace dependencies
+# -----------------------------------------------------------------------------
+FROM base AS deps
+WORKDIR /app
+
+# Copy manifests only first so the layer is cached until they change
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Workspace package manifests
+COPY apps/backend/package.json            apps/backend/
+COPY packages/rest-contracts/package.json packages/rest-contracts/
+COPY packages/shared-dto/package.json     packages/shared-dto/
+COPY packages/auth-client/package.json    packages/auth-client/
+
+RUN pnpm install --frozen-lockfile
+
+# -----------------------------------------------------------------------------
+# Stage: builder — compile all packages then the backend
+# -----------------------------------------------------------------------------
+FROM deps AS builder
+WORKDIR /app
+
+# Copy source
+COPY apps/backend   apps/backend
+COPY packages/rest-contracts packages/rest-contracts
+COPY packages/shared-dto     packages/shared-dto
+COPY packages/auth-client    packages/auth-client
+
+# Build shared packages in dependency order
+RUN pnpm --filter @repo/shared-dto     build
+RUN pnpm --filter @repo/auth-client    build
+RUN pnpm --filter @repo/rest-contracts build
+
+# Build NestJS backend
+RUN pnpm --filter backend build
+
+# -----------------------------------------------------------------------------
+# Stage: runner — lean production image
+# -----------------------------------------------------------------------------
+FROM base AS runner
+WORKDIR /app
+
+# Re-install prod deps only (workspace symlinks are recreated)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/backend/package.json            apps/backend/
+COPY packages/rest-contracts/package.json packages/rest-contracts/
+COPY packages/shared-dto/package.json     packages/shared-dto/
+COPY packages/auth-client/package.json    packages/auth-client/
+
+RUN pnpm install --frozen-lockfile --prod
+
+# Copy compiled backend
+COPY --from=builder /app/apps/backend/dist apps/backend/dist
+
+# Copy compiled workspace packages needed at runtime
+COPY --from=builder /app/packages/rest-contracts/dist packages/rest-contracts/dist
+COPY --from=builder /app/packages/shared-dto/dist     packages/shared-dto/dist
+COPY --from=builder /app/packages/auth-client/dist    packages/auth-client/dist
+
+# Copy DB migrations so drizzle-kit can apply them
+COPY --from=builder /app/apps/backend/src/db/migrations apps/backend/src/db/migrations
+COPY --from=builder /app/apps/backend/drizzle.config.ts apps/backend/drizzle.config.ts
+
+# Copy static assets bundled by nest-cli (e.g. default-profile-image.jpg)
+COPY --from=builder /app/apps/backend/dist/users apps/backend/dist/users
+
+ENV NODE_ENV=production
+
+EXPOSE 3000
+
+# Run migrations then start the server
+CMD ["sh", "-c", \
+  "cd apps/backend && npx drizzle-kit migrate --config=drizzle.config.ts; cd /app && node apps/backend/dist/main.js"]
