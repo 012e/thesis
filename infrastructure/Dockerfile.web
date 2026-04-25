@@ -31,7 +31,7 @@ FROM deps AS builder
 WORKDIR /app
 
 # Build-time env vars (VITE_ prefix — baked into the bundle)
-ARG VITE_BACKEND_URL=http://localhost:3000
+ARG VITE_BACKEND_URL=http://localhost:3001
 ARG VITE_MASTRA_CHAT_URL=http://localhost:4111/chat
 
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL

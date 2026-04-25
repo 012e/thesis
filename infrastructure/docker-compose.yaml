@@ -91,14 +91,14 @@ services:
     container_name: thesis_backend
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-database}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
       # BETTER_AUTH_URL must match the public URL the browser uses to reach the backend
-      BETTER_AUTH_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3001}
       ALLOWED_ORIGINS: ${WEB_PUBLIC_URL:-http://localhost:80}
       AI_SERVICE_URL: http://ai:4111
       # MinIO — internal endpoint for SDK calls
@@ -148,7 +148,7 @@ services:
       dockerfile: infrastructure/Dockerfile.web
       args:
         # These are baked into the JS bundle — set to public-facing URLs
-        VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+        VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3001}
         VITE_MASTRA_CHAT_URL: ${AI_PUBLIC_URL:-http://localhost:4111}/chat
     container_name: thesis_web
     restart: unless-stopped
