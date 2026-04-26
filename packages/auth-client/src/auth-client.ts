@@ -1,9 +1,13 @@
 import { createAuthClient } from "better-auth/react";
-import { usernameClient, jwtClient } from "better-auth/client/plugins";
+import {
+  usernameClient,
+  jwtClient,
+  adminClient,
+} from "better-auth/client/plugins";
 
 export const authClient = createAuthClient({
   baseURL: "http://localhost:3000",
-  plugins: [usernameClient(), jwtClient()],
+  plugins: [usernameClient(), jwtClient(), adminClient()],
 });
 
 export type AuthClient = typeof authClient;
@@ -13,7 +17,7 @@ export function createCustomAuthClient(
 ): AuthClient {
   return createAuthClient({
     baseURL: "http://localhost:3000",
-    plugins: [usernameClient(), jwtClient()],
+    plugins: [usernameClient(), jwtClient(), adminClient()],
     ...config,
   }) as AuthClient;
 }

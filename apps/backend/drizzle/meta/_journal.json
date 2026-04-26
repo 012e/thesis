@@ -106,6 +106,13 @@
       "when": 1745504400000,
       "tag": "0013_post_vector_embedding",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1777215214455,
+      "tag": "0015_admin_fields",
+      "breakpoints": true
     }
   ]
 }

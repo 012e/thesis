@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconSearch, IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import { IconSearch, IconX, IconChevronLeft } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
 
   if (isCollapsed) {
     return (
-      <div className="flex sticky top-0 flex-col items-center py-2 px-1 h-screen border-l w-[48px] transition-all duration-300">
+      <div className="flex sticky top-0 flex-col items-center py-2 px-1 h-screen border-l w-12 transition-all duration-300">
         <button
           onClick={() => setIsCollapsed(false)}
           className="p-2 mt-2 hover:bg-accent rounded-full transition-colors"
@@ -64,7 +64,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
   }
 
   return (
-    <div className="overflow-hidden sticky top-0 py-2 px-4 h-screen w-[350px] transition-all duration-300">
+    <div className="overflow-hidden sticky top-0 py-2 px-4 h-screen w-87.5 transition-all duration-300">
       <div className="flex flex-col gap-4">
         {/* Search row with collapse toggle */}
         <div className="flex items-center gap-2">
@@ -75,14 +75,6 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
               className="pl-12 h-11 rounded-full border-0 bg-muted"
             />
           </div>
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-2 hover:bg-accent rounded-full transition-colors flex-shrink-0"
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-          >
-            <IconChevronRight className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Subscribe to Premium */}
@@ -123,8 +115,8 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
                 className="py-3 px-4 w-full text-left transition-colors hover:bg-accent"
               >
                 <div className="flex gap-2 items-start mb-1">
-                  <Avatar className="flex-shrink-0 w-5 h-5">
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 rounded-full" />
+                  <Avatar className="shrink-0 w-5 h-5">
+                    <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-500 rounded-full" />
                   </Avatar>
                   <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground">
                     <span>{item.time}</span>
@@ -169,7 +161,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="flex-shrink-0 w-8 h-8 rounded-full"
+                  className="shrink-0 w-8 h-8 rounded-full"
                 >
                   <IconDotsCircleHorizontal className="w-4 h-4" />
                 </Button>

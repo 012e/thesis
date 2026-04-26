@@ -1,6 +1,6 @@
 {
   "id": "49ee5fc5-fe53-4945-b069-4ac476f5db82",
-  "prevId": "6b35892b-93e0-46af-8490-cf7e0db78a82",
+  "prevId": "c4700c03-cd38-4b14-925c-d50a27c4095b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -41,8 +41,12 @@
           "name": "comment_reactions_comment_id_comments_id_fk",
           "tableFrom": "comment_reactions",
           "tableTo": "comments",
-          "columnsFrom": ["comment_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "comment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -50,7 +54,10 @@
       "compositePrimaryKeys": {
         "comment_reactions_comment_id_user_id_pk": {
           "name": "comment_reactions_comment_id_user_id_pk",
-          "columns": ["comment_id", "user_id"]
+          "columns": [
+            "comment_id",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -114,8 +121,12 @@
           "name": "comments_post_id_posts_id_fk",
           "tableFrom": "comments",
           "tableTo": "posts",
-          "columnsFrom": ["post_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -123,8 +134,12 @@
           "name": "comments_parent_id_fkey",
           "tableFrom": "comments",
           "tableTo": "comments",
-          "columnsFrom": ["parent_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -180,7 +195,10 @@
         "conversations_user_pair_unique": {
           "name": "conversations_user_pair_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_a_id", "user_b_id"]
+          "columns": [
+            "user_a_id",
+            "user_b_id"
+          ]
         }
       },
       "policies": {},
@@ -257,8 +275,12 @@
           "name": "direct_messages_conversation_id_conversations_id_fk",
           "tableFrom": "direct_messages",
           "tableTo": "conversations",
-          "columnsFrom": ["conversation_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "conversation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -305,8 +327,12 @@
           "name": "poll_votes_post_id_posts_id_fk",
           "tableFrom": "poll_votes",
           "tableTo": "posts",
-          "columnsFrom": ["post_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -314,7 +340,11 @@
       "compositePrimaryKeys": {
         "poll_votes_post_id_option_id_user_id_pk": {
           "name": "poll_votes_post_id_option_id_user_id_pk",
-          "columns": ["post_id", "option_id", "user_id"]
+          "columns": [
+            "post_id",
+            "option_id",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -359,8 +389,12 @@
           "name": "post_reactions_post_id_posts_id_fk",
           "tableFrom": "post_reactions",
           "tableTo": "posts",
-          "columnsFrom": ["post_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "post_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -368,7 +402,10 @@
       "compositePrimaryKeys": {
         "post_reactions_post_id_user_id_pk": {
           "name": "post_reactions_post_id_user_id_pk",
-          "columns": ["post_id", "user_id"]
+          "columns": [
+            "post_id",
+            "user_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -510,7 +547,10 @@
       "compositePrimaryKeys": {
         "user_follows_follower_id_followee_id_pk": {
           "name": "user_follows_follower_id_followee_id_pk",
-          "columns": ["follower_id", "followee_id"]
+          "columns": [
+            "follower_id",
+            "followee_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -624,8 +664,12 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -755,8 +799,12 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -766,7 +814,9 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       },
       "policies": {},
@@ -842,12 +892,16 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         },
         "user_username_unique": {
           "name": "user_username_unique",
           "nullsNotDistinct": false,
-          "columns": ["username"]
+          "columns": [
+            "username"
+          ]
         }
       },
       "policies": {},
@@ -926,12 +980,17 @@
     "public.direct_message_type": {
       "name": "direct_message_type",
       "schema": "public",
-      "values": ["text"]
+      "values": [
+        "text"
+      ]
     },
     "public.reaction_type": {
       "name": "reaction_type",
       "schema": "public",
-      "values": ["upvote", "downvote"]
+      "values": [
+        "upvote",
+        "downvote"
+      ]
     }
   },
   "schemas": {},

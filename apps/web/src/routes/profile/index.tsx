@@ -11,6 +11,7 @@ import { PageSpinner } from "@/components/ui/spinner";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { Post } from "@/components/post";
 import { IconCalendar, IconMail, IconEdit } from "@tabler/icons-react";
+import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 type SessionData = NonNullable<ReturnType<typeof useSession>["data"]>;
 
 export const Route = createFileRoute("/profile/")({
@@ -44,6 +45,11 @@ function ProfileContent({
   const { data: profile } = useUserProfileSuspense(userId);
   const { data: userPosts } = useUserPostsSuspense(userId);
 
+  const sessionRaw = session as
+    | { session?: { impersonatedBy?: string | null } }
+    | undefined;
+  const impersonatedBy = sessionRaw?.session?.impersonatedBy;
+
   const user = session.user;
   const initials = user.name
     ? user.name
@@ -63,12 +69,14 @@ function ProfileContent({
 
   return (
     <div className="min-h-screen">
-      {/* Cover Photo */}
-      <div className="h-48 bg-gradient-to-r from-primary/20 to-primary/10" />
+      {impersonatedBy && <ImpersonationBanner adminName={impersonatedBy} />}
 
-      <div className="px-4 mx-auto max-w-2xl">
+      {/* Cover Photo */}
+      <div className="h-48 bg-linear-to-r from-primary/20 to-primary/10" />
+
+      <div className="mx-auto max-w-2xl">
         {/* Profile Header */}
-        <div className="relative">
+        <div className="relative px-4">
           <div className="absolute -top-20">
             <Avatar className="w-32 h-32 rounded-full border-4 border-background">
               {profile?.image ? (
@@ -97,7 +105,7 @@ function ProfileContent({
         </div>
 
         {/* Profile Info */}
-        <div className="mt-4">
+        <div className="mt-4 px-4">
           <h1 className="text-2xl font-bold">{user.name || "User"}</h1>
           {user.email && (
             <div className="flex gap-2 items-center mt-2 text-muted-foreground">
@@ -114,7 +122,7 @@ function ProfileContent({
         <div className="my-6" />
 
         {/* Profile Stats */}
-        <div className="grid grid-cols-3 gap-6 text-center">
+        <div className="grid grid-cols-3 gap-6 text-center px-4">
           <Card className="p-4">
             <div className="text-2xl font-bold">{profile?.postCount ?? 0}</div>
             <div className="text-sm text-muted-foreground">Posts</div>
@@ -141,7 +149,7 @@ function ProfileContent({
 
         {/* Posts Section */}
         <div className="pb-8 mt-6">
-          <h2 className="mb-4 text-xl font-semibold">Posts</h2>
+          <h2 className="mb-4 text-xl font-semibold px-4">Posts</h2>
           {userPosts.length === 0 ? (
             <Card className="p-8 text-center">
               <div className="text-muted-foreground">No posts yet</div>
