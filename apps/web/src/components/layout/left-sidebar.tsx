@@ -80,7 +80,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
 
   return (
     <div
-      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden ${isCollapsed ? "w-[80px]" : "w-[275px]"}`}
+      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden ${isCollapsed ? "w-20" : "w-68.75"}`}
     >
       <div className="flex flex-col gap-2">
         {/* Logo */}
@@ -102,7 +102,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-[26px]" : "px-3"}`}
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-6.5" : "px-3"}`}
               title={isCollapsed ? item.label : undefined}
               aria-label={isCollapsed ? item.label : undefined}
             >
@@ -113,16 +113,16 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
                   item.href === "/notifications" && unreadCount > 0;
                 return (
                   <>
-                    <div className="relative flex-shrink-0">
+                    <div className="relative shrink-0">
                       <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
                       {hasUnread && (
-                        <span className="flex absolute -top-1.5 -right-1.5 justify-center items-center px-1 font-bold leading-none rounded-full min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px]">
+                        <span className="flex absolute -top-1.5 -right-1.5 justify-center items-center px-1 font-bold leading-none rounded-full min-w-4.5 h-4.5 bg-primary text-primary-foreground text-[10px]">
                           {unreadCount > 99 ? "99+" : unreadCount}
                         </span>
                       )}
                     </div>
                     <span
-                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
                     >
                       {item.label}
                     </span>
@@ -136,20 +136,20 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
           {isAdmin && (
             <Link
               to="/admin/users"
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-[26px]" : "px-3"}`}
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-6.5" : "px-3"}`}
               title={isCollapsed ? "User Management" : undefined}
               aria-label={isCollapsed ? "User Management" : undefined}
             >
               {({ isActive }) => (
                 <>
-                  <div className="relative flex-shrink-0">
+                  <div className="relative shrink-0">
                     <IconShield
                       className="w-7 h-7"
                       stroke={isActive ? 2 : 1.5}
                     />
                   </div>
                   <span
-                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
                   >
                     User Management
                   </span>
@@ -164,17 +164,17 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
         {/* Collapse toggle */}
         <button
           onClick={() => setIsCollapsed((prev) => !prev)}
-          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 ${isCollapsed ? "pl-[28px]" : "px-3"}`}
+          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 ${isCollapsed ? "pl-7" : "px-3"}`}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <IconChevronRight className="flex-shrink-0 w-6 h-6" />
+            <IconChevronRight className="shrink-0 w-6 h-6" />
           ) : (
-            <IconChevronLeft className="flex-shrink-0 w-6 h-6" />
+            <IconChevronLeft className="shrink-0 w-6 h-6" />
           )}
           <span
-            className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+            className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
           >
             Collapse
           </span>
