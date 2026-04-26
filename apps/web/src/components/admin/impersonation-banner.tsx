@@ -8,7 +8,6 @@ import { authClient } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 
 export function ImpersonationBanner({ adminName }: { adminName: string }) {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [stopping, setStopping] = useState(false);
 
@@ -18,7 +17,7 @@ export function ImpersonationBanner({ adminName }: { adminName: string }) {
       await (
         authClient.admin as Record<string, CallableFunction>
       ).stopImpersonating?.();
-      await queryClient.invalidateQueries({ queryKey: ["session"] });
+      window.location.reload();
       toast.success("Stopped impersonating");
       navigate({ to: "/" });
     } catch {

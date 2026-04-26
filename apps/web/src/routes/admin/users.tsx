@@ -44,7 +44,6 @@ import {
   getInitials,
   isUserAdmin,
 } from "@/components/admin/types";
-import { ImpersonationBanner } from "@/components/admin/impersonation-banner";
 import { BanDialog } from "@/components/admin/ban-dialog";
 import { SetRoleDialog } from "@/components/admin/set-role-dialog";
 import { SessionsDialog } from "@/components/admin/sessions-dialog";
@@ -60,7 +59,7 @@ const columnHelper = createColumnHelper<AdminUser>();
 
 function AdminUsersPage() {
   const navigate = useNavigate();
-  const { data: session, isPending: sessionPending } = useSession();
+  const { isPending: sessionPending } = useSession();
   const isAdmin = useIsAdmin();
 
   const [search, setSearch] = useState("");
@@ -229,21 +228,21 @@ function AdminUsersPage() {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onSelect={() => setDialog({ type: "set-role", user: u })}
+                  onClick={() => setDialog({ type: "set-role", user: u })}
                 >
                   <IconKey className="size-3.5" />
                   Set Role
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onSelect={() => setDialog({ type: "sessions", user: u })}
+                  onClick={() => setDialog({ type: "sessions", user: u })}
                 >
                   <IconEye className="size-3.5" />
                   View Sessions
                 </DropdownMenuItem>
 
                 <DropdownMenuItem
-                  onSelect={() => setDialog({ type: "impersonate", user: u })}
+                  onClick={() => setDialog({ type: "impersonate", user: u })}
                 >
                   <IconUserCheck className="size-3.5" />
                   Impersonate
@@ -252,13 +251,13 @@ function AdminUsersPage() {
                 <DropdownMenuSeparator />
 
                 {u.banned ? (
-                  <DropdownMenuItem onSelect={() => unbanMutation.mutate(u.id)}>
+                  <DropdownMenuItem onClick={() => unbanMutation.mutate(u.id)}>
                     <IconUserX className="size-3.5" />
                     Unban User
                   </DropdownMenuItem>
                 ) : (
                   <DropdownMenuItem
-                    onSelect={() => setDialog({ type: "ban", user: u })}
+                    onClick={() => setDialog({ type: "ban", user: u })}
                   >
                     <IconBan className="size-3.5" />
                     Ban User
@@ -268,7 +267,7 @@ function AdminUsersPage() {
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem
-                  onSelect={() => setDialog({ type: "delete", user: u })}
+                  onClick={() => setDialog({ type: "delete", user: u })}
                   className="text-destructive focus:text-destructive"
                 >
                   <IconTrash className="size-3.5" />
@@ -294,11 +293,6 @@ function AdminUsersPage() {
     onPaginationChange: setPagination,
   });
 
-  const sessionRaw = session as
-    | { session?: { impersonatedBy?: string | null }; user?: { name?: string } }
-    | undefined;
-  const impersonatedBy = sessionRaw?.session?.impersonatedBy;
-
   if (sessionPending) {
     return (
       <div className="flex min-h-100 items-center justify-center">
@@ -309,8 +303,6 @@ function AdminUsersPage() {
 
   return (
     <div className="flex flex-col">
-      {impersonatedBy && <ImpersonationBanner adminName={impersonatedBy} />}
-
       <div className="flex flex-col gap-4 p-6">
         <div className="flex items-center gap-3">
           <IconShield className="size-6 text-muted-foreground" />
@@ -369,8 +361,10 @@ function AdminUsersPage() {
         <ImpersonateDialog
           user={dialog.user}
           onClose={closeDialog}
-          onSuccess={() => {
+          onSuccess={async () => {
             closeDialog();
+            window.location.reload();
+
             navigate({ to: "/" });
           }}
         />
