@@ -152,25 +152,6 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        {/* Collapse toggle */}
-        <button
-          onClick={() => setIsCollapsed((prev) => !prev)}
-          className={`flex items-center gap-2 py-3 w-full hover:bg-accent transition-all duration-300 ${isCollapsed ? "pl-7" : "px-3"}`}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? (
-            <IconChevronRight className="shrink-0 w-6 h-6" />
-          ) : (
-            <IconChevronLeft className="shrink-0 w-6 h-6" />
-          )}
-          <span
-            className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
-          >
-            Collapse
-          </span>
-        </button>
-
         <UserProfile isCollapsed={isCollapsed} />
       </div>
     </div>

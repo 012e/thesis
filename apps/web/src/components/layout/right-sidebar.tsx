@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { IconSearch, IconX, IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
+import {
+  IconSearch,
+  IconX,
+  IconChevronLeft,
+  IconChevronRight,
+} from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -75,14 +80,6 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
               className="pl-12 h-11 rounded-full border-0 bg-muted"
             />
           </div>
-          <button
-            onClick={() => setIsCollapsed(true)}
-            className="p-2 hover:bg-accent rounded-full transition-colors flex-shrink-0"
-            aria-label="Collapse sidebar"
-            title="Collapse sidebar"
-          >
-            <IconChevronRight className="w-5 h-5" />
-          </button>
         </div>
 
         {/* Subscribe to Premium */}
