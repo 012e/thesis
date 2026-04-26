@@ -16,10 +16,12 @@ import {
   IconCodeCircle2,
   IconCodeCircle2Filled,
   IconShield,
+  IconShieldFilled,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { cn } from "@/lib/utils";
 
 const baseNavigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -78,7 +80,7 @@ export function LeftSidebar() {
         ? [
             {
               icon: IconShield,
-              selectedIcon: IconShield,
+              selectedIcon: IconShieldFilled,
               label: "User Management",
               href: "/admin/users",
             },
@@ -121,11 +123,12 @@ export function LeftSidebar() {
                   item.href === "/notifications" && unreadCount > 0;
                 return (
                   <div
-                    className={`flex items-center gap-4 py-3 px-3 text-xl transition-all duration-300 ${
+                    className={cn(
+                      "flex items-center gap-4 py-3 px-3 text-xl",
                       isActive
-                        ? "bg-primary/10 text-primary font-bold"
-                        : "hover:bg-foreground/8 font-normal"
-                    }`}
+                        ? "bg-accent/20 text-primary font-bold "
+                        : "hover:bg-foreground/8 font-normal",
+                    )}
                   >
                     <div className="relative shrink-0">
                       <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
