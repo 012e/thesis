@@ -17,9 +17,11 @@ import {
   IconChevronRight,
   IconCodeCircle2,
   IconCodeCircle2Filled,
+  IconShield,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 const navigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -74,6 +76,7 @@ interface LeftSidebarProps {
 export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
   const { unreadCount } = useNotifications();
+  const isAdmin = useIsAdmin();
 
   return (
     <div
@@ -128,6 +131,32 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
               }}
             </Link>
           ))}
+
+          {/* Admin-only: User Management */}
+          {isAdmin && (
+            <Link
+              to="/admin/users"
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-[26px]" : "px-3"}`}
+              title={isCollapsed ? "User Management" : undefined}
+              aria-label={isCollapsed ? "User Management" : undefined}
+            >
+              {({ isActive }) => (
+                <>
+                  <div className="relative flex-shrink-0">
+                    <IconShield
+                      className="w-7 h-7"
+                      stroke={isActive ? 2 : 1.5}
+                    />
+                  </div>
+                  <span
+                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[200px] opacity-100"}`}
+                  >
+                    User Management
+                  </span>
+                </>
+              )}
+            </Link>
+          )}
         </nav>
       </div>
 

@@ -22,6 +22,7 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 
 const PlaygroundRoute = PlaygroundRouteImport.update({
   id: '/playground',
@@ -88,6 +89,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/chat': typeof ChatRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/notifications'
     | '/playground'
+    | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/notifications'
     | '/playground'
+    | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/notifications'
     | '/playground'
+    | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -189,6 +201,7 @@ export interface RootRouteChildren {
   ChatRoute: typeof ChatRoute
   NotificationsRoute: typeof NotificationsRoute
   PlaygroundRoute: typeof PlaygroundRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -301,6 +321,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatRoute: ChatRoute,
   NotificationsRoute: NotificationsRoute,
   PlaygroundRoute: PlaygroundRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
