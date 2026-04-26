@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   IconHome,
@@ -13,8 +13,6 @@ import {
   IconZoomFilled,
   IconStarFilled,
   IconRobot,
-  IconChevronLeft,
-  IconChevronRight,
   IconCodeCircle2,
   IconCodeCircle2Filled,
   IconShield,
@@ -69,12 +67,7 @@ const baseNavigationItems = [
   },
 ];
 
-interface LeftSidebarProps {
-  defaultCollapsed?: boolean;
-}
-
-export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+export function LeftSidebar() {
   const { unreadCount } = useNotifications();
   const isAdmin = useIsAdmin();
 
@@ -97,7 +90,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
 
   return (
     <div
-      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden ${isCollapsed ? "w-20" : "w-68.75"}`}
+      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden w-68.75}`}
     >
       <div className="flex flex-col gap-2">
         {/* Logo */}
@@ -119,9 +112,9 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-6.5" : "px-3"}`}
-              title={isCollapsed ? item.label : undefined}
-              aria-label={isCollapsed ? item.label : undefined}
+              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold px-3`}
+              title={item.label}
+              aria-label={item.label}
             >
               {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
@@ -139,7 +132,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
                       )}
                     </div>
                     <span
-                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
+                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 max-w-50 opacity-100"}`}
                     >
                       {item.label}
                     </span>
@@ -152,7 +145,7 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <UserProfile isCollapsed={isCollapsed} />
+        <UserProfile />
       </div>
     </div>
   );

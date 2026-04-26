@@ -70,12 +70,6 @@ function AdminUsersPage() {
   });
   const [dialog, setDialog] = useState<DialogState>({ type: "none" });
 
-  // Redirect non-admins
-  if (!sessionPending && !isAdmin) {
-    navigate({ to: "/" });
-    return null;
-  }
-
   const offset = pagination.pageIndex * PAGE_SIZE;
 
   const {
@@ -122,6 +116,12 @@ function AdminUsersPage() {
       toast.error("Failed to unban user", { description: err.message });
     },
   });
+
+  // Redirect non-admins
+  if (!sessionPending && !isAdmin) {
+    navigate({ to: "/" });
+    return null;
+  }
 
   function handleSearchChange(value: string) {
     setSearch(value);

@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  IconSearch,
-  IconX,
-  IconChevronLeft,
-  IconChevronRight,
-} from "@tabler/icons-react";
+import { IconSearch, IconX, IconChevronLeft } from "@tabler/icons-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -120,8 +115,8 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
                 className="py-3 px-4 w-full text-left transition-colors hover:bg-accent"
               >
                 <div className="flex gap-2 items-start mb-1">
-                  <Avatar className="flex-shrink-0 w-5 h-5">
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-500 rounded-full" />
+                  <Avatar className="shrink-0 w-5 h-5">
+                    <div className="w-full h-full bg-linear-to-br from-blue-500 to-purple-500 rounded-full" />
                   </Avatar>
                   <div className="flex flex-wrap gap-2 items-center text-xs text-muted-foreground">
                     <span>{item.time}</span>
@@ -166,7 +161,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="flex-shrink-0 w-8 h-8 rounded-full"
+                  className="shrink-0 w-8 h-8 rounded-full"
                 >
                   <IconDotsCircleHorizontal className="w-4 h-4" />
                 </Button>
