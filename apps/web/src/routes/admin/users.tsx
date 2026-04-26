@@ -117,12 +117,6 @@ function AdminUsersPage() {
     },
   });
 
-  // Redirect non-admins
-  if (!sessionPending && !isAdmin) {
-    navigate({ to: "/" });
-    return null;
-  }
-
   function handleSearchChange(value: string) {
     setSearch(value);
     setPagination((p) => ({ ...p, pageIndex: 0 }));
@@ -292,6 +286,12 @@ function AdminUsersPage() {
     state: { pagination },
     onPaginationChange: setPagination,
   });
+
+  // Redirect non-admins
+  if (!sessionPending && !isAdmin) {
+    navigate({ to: "/" });
+    return null;
+  }
 
   if (sessionPending) {
     return (
