@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   IconHome,
@@ -23,7 +23,7 @@ import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
-const navigationItems = [
+const baseNavigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
   {
     icon: IconZoom,
@@ -78,6 +78,23 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
   const { unreadCount } = useNotifications();
   const isAdmin = useIsAdmin();
 
+  const navigationItems = useMemo(
+    () => [
+      ...baseNavigationItems,
+      ...(isAdmin
+        ? [
+            {
+              icon: IconShield,
+              selectedIcon: IconShield,
+              label: "User Management",
+              href: "/admin/users",
+            },
+          ]
+        : []),
+    ],
+    [isAdmin],
+  );
+
   return (
     <div
       className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden ${isCollapsed ? "w-20" : "w-68.75"}`}
@@ -131,32 +148,6 @@ export function LeftSidebar({ defaultCollapsed = false }: LeftSidebarProps) {
               }}
             </Link>
           ))}
-
-          {/* Admin-only: User Management */}
-          {isAdmin && (
-            <Link
-              to="/admin/users"
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold ${isCollapsed ? "pl-6.5" : "px-3"}`}
-              title={isCollapsed ? "User Management" : undefined}
-              aria-label={isCollapsed ? "User Management" : undefined}
-            >
-              {({ isActive }) => (
-                <>
-                  <div className="relative shrink-0">
-                    <IconShield
-                      className="w-7 h-7"
-                      stroke={isActive ? 2 : 1.5}
-                    />
-                  </div>
-                  <span
-                    className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-50 opacity-100"}`}
-                  >
-                    User Management
-                  </span>
-                </>
-              )}
-            </Link>
-          )}
         </nav>
       </div>
 
