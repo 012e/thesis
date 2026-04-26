@@ -299,32 +299,38 @@ export class SeedService {
   }
 
   private async createSeedUsers(): Promise<SeededUser[]> {
-    const candidates = [
-      {
+    const users: SeededUser[] = [];
+
+    // Create demo user as admin via the admin createUser API (server-side call
+    // skips the auth check when invoked without request/headers context).
+    const demo = await this.authService.api.createUser({
+      body: {
         email: "demo@gmail.com",
         password: "Demo@123",
         name: "Demo User",
-        username: "demo",
+        role: "admin",
+        data: { username: "demo" },
       },
-      ...Array.from({ length: EXTRA_USERS }, () => {
-        const firstName = faker.person.firstName();
-        const lastName = faker.person.lastName();
-        return {
-          email: faker.internet.email({ firstName, lastName }).toLowerCase(),
-          password: "Seed@123",
-          name: `${firstName} ${lastName}`,
-          username: faker.internet
-            .username({ firstName, lastName })
-            .toLowerCase()
-            .replace(/[^a-z0-9_]/g, "_")
-            .slice(0, 20),
-        };
-      }),
-    ];
+    });
+    users.push({ id: demo.user.id, email: demo.user.email });
 
-    const users: SeededUser[] = [];
+    // Create extra users via the standard sign-up flow.
+    const extraCandidates = Array.from({ length: EXTRA_USERS }, () => {
+      const firstName = faker.person.firstName();
+      const lastName = faker.person.lastName();
+      return {
+        email: faker.internet.email({ firstName, lastName }).toLowerCase(),
+        password: "Seed@123",
+        name: `${firstName} ${lastName}`,
+        username: faker.internet
+          .username({ firstName, lastName })
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, "_")
+          .slice(0, 20),
+      };
+    });
 
-    for (const candidate of candidates) {
+    for (const candidate of extraCandidates) {
       const created = await this.authService.api.signUpEmail({
         body: {
           email: candidate.email,
@@ -333,7 +339,6 @@ export class SeedService {
           username: candidate.username,
         },
       });
-
       users.push({ id: created.user.id, email: created.user.email });
     }
 
