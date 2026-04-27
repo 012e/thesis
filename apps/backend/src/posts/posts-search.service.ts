@@ -73,6 +73,7 @@ export class PostsSearchService {
         COUNT(CASE WHEN pr.type = 'upvote'   THEN 1 END) AS upvote_count,
         COUNT(CASE WHEN pr.type = 'downvote' THEN 1 END) AS downvote_count,
         MAX(CASE WHEN pr.user_id = ${userId} THEN pr.type END) AS user_reaction_type,
+        (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = p.id) AS comment_count,
         rrf.rrf_score
       FROM rrf
       INNER JOIN posts p ON p.id = rrf.id
@@ -102,6 +103,7 @@ export class PostsSearchService {
         updatedAt: new Date(r["updated_at"] as string).toISOString(),
         upvoteCount: Number(r["upvote_count"]),
         downvoteCount: Number(r["downvote_count"]),
+        commentCount: Number(r["comment_count"]),
         currentUserReaction:
           (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
       } satisfies PostDto;
