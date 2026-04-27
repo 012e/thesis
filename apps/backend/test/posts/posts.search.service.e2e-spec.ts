@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Pool } from "pg";
 
 import { DatabaseService } from "@/db/database.service";
-import { posts } from "@/db/schema";
+import { posts, comments } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
@@ -155,6 +155,7 @@ describe("PostsSearchService.search integration", () => {
     expect(post.content.text).toBeDefined();
     expect(post.upvoteCount).toBe(0);
     expect(post.downvoteCount).toBe(0);
+    expect(post.commentCount).toBe(0);
     expect(post.currentUserReaction).toBeNull();
   });
 
@@ -209,5 +210,35 @@ describe("PostsSearchService.search integration", () => {
     expect(results.length).toBeGreaterThanOrEqual(2);
     // The post mentioning "database" more frequently should rank first (higher BM25 score)
     expect(results[0].content.text).toMatch(/database.*database/i);
+  });
+
+  it("returns commentCount=0 when a post has no comments", async () => {
+    await postsService.create("search-author-1", {
+      content: { text: "Vitest is a fast unit testing framework" },
+    });
+
+    const results = await postsSearchService.search("Vitest", "search-author-1");
+
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].commentCount).toBe(0);
+  });
+
+  it("returns correct commentCount when comments exist on a post", async () => {
+    const post = await postsService.create("search-author-1", {
+      content: { text: "Drizzle ORM is a TypeScript-first database toolkit" },
+    });
+
+    // Insert two comments directly via the DB to avoid needing CommentsService
+    await databaseService.db.insert(comments).values([
+      { postId: post.id, authorId: "search-author-1", content: "Great post!" },
+      { postId: post.id, authorId: "search-author-1", content: "Very helpful." },
+    ]);
+
+    const results = await postsSearchService.search("Drizzle", "search-author-1");
+
+    expect(results.length).toBeGreaterThan(0);
+    const found = results.find((p) => p.id === post.id);
+    expect(found).toBeDefined();
+    expect(found!.commentCount).toBe(2);
   });
 });

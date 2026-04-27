@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { IconSearch, IconX, IconChevronLeft } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,23 @@ interface RightSidebarProps {
 
 export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const [searchValue, setSearchValue] = useState("");
+  const navigate = useNavigate();
+
+  function submitSearch(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return;
+    void navigate({ to: "/explore", search: { q: trimmed, tab: "posts" } });
+  }
+
+  function handleSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter") submitSearch(searchValue);
+  }
+
+  function handleSearchSubmit(e: FormEvent) {
+    e.preventDefault();
+    submitSearch(searchValue);
+  }
 
   if (isCollapsed) {
     return (
@@ -68,13 +86,16 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
       <div className="flex flex-col gap-4">
         {/* Search row with collapse toggle */}
         <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <IconSearch className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground" />
+          <form onSubmit={handleSearchSubmit} className="relative flex-1">
+            <IconSearch className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               placeholder="Search"
               className="pl-12 h-11 rounded-full border-0 bg-muted"
             />
-          </div>
+          </form>
         </div>
 
         {/* Subscribe to Premium */}
