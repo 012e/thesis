@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { PgBossModule } from '@wavezync/nestjs-pgboss';
 
 import { auth } from '@/auth';
@@ -27,6 +27,7 @@ import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthController } from './auth/auth.controller';
+import { LoggingMiddleware } from '@/common/middleware/logging.middleware';
 
 @Module({
   controllers: [AppController, AuthController],
@@ -59,4 +60,10 @@ import { AuthController } from './auth/auth.controller';
   ],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    if (env.NODE_ENV === 'development') {
+      consumer.apply(LoggingMiddleware).forRoutes('*');
+    }
+  }
+}

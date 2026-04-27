@@ -7,7 +7,7 @@ function createAuthFetch(context: RequestContext) {
     const headers = new Headers(init?.headers);
     const authHeader = context?.get("authorization") as string | undefined;
     if (authHeader) {
-      headers.set("Authorization", authHeader);
+      headers.set("Authorization", `Bearer ${authHeader}`);
     }
     return fetch(url, { ...init, headers });
   };
