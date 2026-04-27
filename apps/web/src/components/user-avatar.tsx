@@ -1,10 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   HoverCard,
   HoverCardContent,
@@ -86,14 +82,11 @@ function ProfileCardContent({
     : profile.email;
 
   return (
-    <div className="flex flex-col gap-3 w-72">
+    <div className="flex flex-col gap-3 w-90">
       {/* Header row: avatar + name + follow button */}
       <div className="flex gap-3 items-start">
         <Avatar className="size-12 shrink-0">
-          <AvatarImage
-            src={profile.image ?? undefined}
-            alt={displayName}
-          />
+          <AvatarImage src={profile.image ?? undefined} alt={displayName} />
           <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
             {initials}
           </AvatarFallback>
@@ -205,7 +198,12 @@ export function UserAvatar({
       >
         {trigger}
       </HoverCardTrigger>
-      <HoverCardContent side="bottom" align="start" sideOffset={8}>
+      <HoverCardContent
+        side="bottom"
+        align="start"
+        sideOffset={8}
+        className="w-full"
+      >
         <ProfileCardContent userId={userId} currentUserId={currentUserId} />
       </HoverCardContent>
     </HoverCard>

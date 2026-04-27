@@ -19,6 +19,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { updateProfile } from "@/lib/auth";
 import { uploadImages } from "@/lib/api/uploads";
 import { updateAvatar, updateUserProfile } from "@/lib/api/users";
+import { Textarea } from "./ui/textarea";
 
 const editProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
@@ -388,7 +389,7 @@ export function EditProfileDialog({
                           {bioLength}/500
                         </span>
                       </div>
-                      <textarea
+                      <Textarea
                         id={field.name}
                         name={field.name}
                         rows={3}
@@ -401,7 +402,6 @@ export function EditProfileDialog({
                           )
                         }
                         placeholder="Tell people a little about yourself…"
-                        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                       />
                       {field.state.meta.errors.length > 0 && (
                         <span className="text-red-500 text-xs">
