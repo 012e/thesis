@@ -1,6 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { useRef, useState, useEffect, type FormEvent, type KeyboardEvent } from "react";
+import {
+  useRef,
+  useState,
+  useEffect,
+  type FormEvent,
+  type KeyboardEvent,
+} from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -105,7 +111,11 @@ function UserCard({
 
   return (
     <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent">
-      <Link to="/users/$userId" params={{ userId: user.id }} className="shrink-0">
+      <Link
+        to="/users/$userId"
+        params={{ userId: user.id }}
+        className="shrink-0"
+      >
         <Avatar className="w-11 h-11">
           <AvatarImage
             src={user.image ?? undefined}
@@ -287,15 +297,29 @@ function PostsResults({ q }: { q: string }) {
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// ─── Exported content component (used by Storybook) ──────────────────────────
 
-function ExplorePage() {
-  const { q = "", tab = "posts" } = Route.useSearch();
-  const navigate = useNavigate({ from: "/explore" });
+export interface ExplorePageContentProps {
+  /** Active query string. Empty string = show the empty prompt. */
+  q: string;
+  /** Active tab. */
+  tab: "posts" | "people";
+  /** Called when the user submits a new search query. */
+  onSearch: (q: string) => void;
+  /** Called when the user switches tabs. */
+  onTabChange: (tab: "posts" | "people") => void;
+}
+
+export function ExplorePageContent({
+  q,
+  tab,
+  onSearch,
+  onTabChange,
+}: ExplorePageContentProps) {
   const [inputValue, setInputValue] = useState(q);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Sync input when URL param changes externally (e.g., from the sidebar)
+  // Sync input when prop changes externally
   useEffect(() => {
     setInputValue(q);
   }, [q]);
@@ -305,32 +329,19 @@ function ExplorePage() {
     inputRef.current?.focus();
   }, []);
 
-  function submitSearch(value: string) {
-    const trimmed = value.trim();
-    void navigate({
-      search: (prev) => ({ ...prev, q: trimmed || undefined, tab }),
-    });
-  }
-
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      submitSearch(inputValue);
-    }
+    if (e.key === "Enter") onSearch(inputValue.trim());
   }
 
   function handleFormSubmit(e: FormEvent) {
     e.preventDefault();
-    submitSearch(inputValue);
+    onSearch(inputValue.trim());
   }
 
   function clearSearch() {
     setInputValue("");
-    void navigate({ search: (prev) => ({ ...prev, q: undefined }) });
+    onSearch("");
     inputRef.current?.focus();
-  }
-
-  function setTab(newTab: "posts" | "people") {
-    void navigate({ search: (prev) => ({ ...prev, tab: newTab }) });
   }
 
   const activeQ = q.trim();
@@ -367,7 +378,7 @@ function ExplorePage() {
         <div className="sticky top-[67px] z-10 flex border-b bg-background/80 backdrop-blur-md">
           <button
             type="button"
-            onClick={() => setTab("posts")}
+            onClick={() => onTabChange("posts")}
             className={`flex-1 py-4 text-center font-semibold text-sm transition-colors hover:bg-accent relative ${
               tab === "posts"
                 ? "font-bold text-foreground"
@@ -381,7 +392,7 @@ function ExplorePage() {
           </button>
           <button
             type="button"
-            onClick={() => setTab("people")}
+            onClick={() => onTabChange("people")}
             className={`flex-1 py-4 text-center font-semibold text-sm transition-colors hover:bg-accent relative ${
               tab === "people"
                 ? "font-bold text-foreground"
@@ -411,5 +422,35 @@ function ExplorePage() {
         <PeopleResults q={activeQ} />
       )}
     </>
+  );
+}
+
+// ─── Route-connected wrapper ──────────────────────────────────────────────────
+
+type ExploreSearch = { q?: string; tab?: "posts" | "people" };
+
+function ExplorePage() {
+  const { q = "", tab = "posts" } = Route.useSearch();
+  const navigate = useNavigate({ from: "/explore" });
+
+  function handleSearch(newQ: string) {
+    void navigate({
+      search: (prev: ExploreSearch) => ({ ...prev, q: newQ || undefined }),
+    });
+  }
+
+  function handleTabChange(newTab: "posts" | "people") {
+    void navigate({
+      search: (prev: ExploreSearch) => ({ ...prev, tab: newTab }),
+    });
+  }
+
+  return (
+    <ExplorePageContent
+      q={q}
+      tab={tab}
+      onSearch={handleSearch}
+      onTabChange={handleTabChange}
+    />
   );
 }
