@@ -70,6 +70,7 @@ export interface PostDto {
   updatedAt: string;
   upvoteCount: number;
   downvoteCount: number;
+  commentCount: number;
   currentUserReaction: ReactionTypeDto | null;
 }
 
