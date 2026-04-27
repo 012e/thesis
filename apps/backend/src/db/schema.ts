@@ -173,6 +173,8 @@ export const threads = pgTable('threads', {
   title: text('title'),
   isArchived: boolean('is_archived').default(false).notNull(),
   externalId: text('external_id'),
+  /** Persisted chat messages for this thread, stored as an ordered JSONB array. */
+  messages: jsonb('messages').$type<unknown[]>().default([]).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true })
     .defaultNow()
     .notNull(),

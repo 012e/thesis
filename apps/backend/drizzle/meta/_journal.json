@@ -113,6 +113,13 @@
       "when": 1777215214455,
       "tag": "0015_admin_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1777291284341,
+      "tag": "0016_fat_exodus",
+      "breakpoints": true
     }
   ]
 }

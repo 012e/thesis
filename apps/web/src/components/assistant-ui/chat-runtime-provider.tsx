@@ -9,6 +9,7 @@ import {
 import type { FC, ReactNode } from "react";
 import { env } from "@/env";
 import { threadListAdapter } from "@/lib/chat/thread-list-adapter";
+import { HistoryAdapterProvider } from "@/lib/chat/history-adapter";
 import { useAtomValue } from "jotai";
 import bearerToken from "@/lib/atoms/bearer-token";
 
@@ -17,7 +18,10 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const token = useAtomValue(bearerToken);
   const runtime = useRemoteThreadListRuntime({
-    adapter: threadListAdapter,
+    adapter: {
+      ...threadListAdapter,
+      unstable_Provider: HistoryAdapterProvider,
+    },
     runtimeHook: function useRuntimeHook() {
       return useChatRuntime({
         transport: new AssistantChatTransport({
