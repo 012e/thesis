@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { followUser, unfollowUser } from "@/lib/api/follows";
 
@@ -30,6 +30,14 @@ export function useFollow({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isPending, setIsPending] = useState(false);
 
+  // Sync with fresh server data whenever initialIsFollowing changes,
+  // but don't override an in-flight optimistic update.
+  useEffect(() => {
+    if (!isPending) {
+      setIsFollowing(initialIsFollowing);
+    }
+  }, [initialIsFollowing, isPending]);
+
   const follow = async () => {
     if (isPending || isFollowing) return;
     setIsPending(true);
@@ -37,7 +45,7 @@ export function useFollow({
     try {
       await followUser(userId);
       await queryClient.invalidateQueries({
-        queryKey: ["users", userId, "profile"],
+        queryKey: ["users"],
       });
     } catch {
       setIsFollowing(false); // rollback
@@ -53,7 +61,7 @@ export function useFollow({
     try {
       await unfollowUser(userId);
       await queryClient.invalidateQueries({
-        queryKey: ["users", userId, "profile"],
+        queryKey: ["users"],
       });
     } catch {
       setIsFollowing(true); // rollback
