@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { Pool } from "pg";
 
 import { DatabaseService } from "@/db/database.service";
-import { posts, postReactions } from "@/db/schema";
+import { posts, postReactions, comments } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { PostsService } from "@/posts/posts.service";
@@ -206,6 +206,47 @@ describe("PostsService integration", () => {
     expect(unauthorizedDelete).toBeNull();
     expect(deleted?.id).toBe(created.id);
     expect(fetchedAfterDelete).toBeNull();
+  });
+
+  describe("commentCount", () => {
+    it("returns 0 commentCount when no comments exist", async () => {
+      const post = await postsService.create("author-1", {
+        content: { text: "Post with no comments" },
+      });
+
+      const fetched = await postsService.getById(post.id);
+      expect(fetched?.commentCount).toBe(0);
+    });
+
+    it("returns the correct commentCount after comments are added", async () => {
+      const post = await postsService.create("author-1", {
+        content: { text: "Post with comments" },
+      });
+
+      await databaseService.db.insert(comments).values([
+        { postId: post.id, authorId: "author-1", content: "First comment" },
+        { postId: post.id, authorId: "author-2", content: "Second comment" },
+      ]);
+
+      const fetched = await postsService.getById(post.id);
+      expect(fetched?.commentCount).toBe(2);
+    });
+
+    it("commentCount is reflected in list results", async () => {
+      const post = await postsService.create("author-1", {
+        content: { text: "Listed post with comments" },
+      });
+
+      await databaseService.db.insert(comments).values([
+        { postId: post.id, authorId: "author-1", content: "Comment A" },
+        { postId: post.id, authorId: "author-2", content: "Comment B" },
+        { postId: post.id, authorId: "author-1", content: "Comment C" },
+      ]);
+
+      const listed = await postsService.list("author-1");
+      const found = listed.find((p) => p.id === post.id);
+      expect(found?.commentCount).toBe(3);
+    });
   });
 
   describe("recommendations", () => {

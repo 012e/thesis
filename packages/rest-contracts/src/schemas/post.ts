@@ -61,6 +61,7 @@ export const Post = z.object({
   updatedAt: z.string().datetime(),
   upvoteCount: z.number().int().nonnegative(),
   downvoteCount: z.number().int().nonnegative(),
+  commentCount: z.number().int().nonnegative(),
   currentUserReaction: ReactionType.nullable(),
 });
 

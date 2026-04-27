@@ -4,7 +4,7 @@ import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
 
 import { DatabaseService } from "@/db/database.service";
-import { postReactions, posts, usersView } from "@/db/schema";
+import { postReactions, posts, usersView, comments } from "@/db/schema";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
 import {
@@ -20,6 +20,10 @@ const upvoteCount = count(
 const downvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
 ).as("downvoteCount");
+
+const commentCount = sql<number>`(SELECT count(*)::int FROM ${comments} WHERE ${comments.postId} = ${posts.id})`.as(
+  "commentCount",
+);
 
 const getUserReactionType = (userId: string) => {
   return sql<
@@ -66,6 +70,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(requestingUserId),
       })
       .from(posts)
@@ -104,6 +109,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(userId),
       })
       .from(posts)
@@ -156,6 +162,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
@@ -192,6 +199,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: userId
           ? getUserReactionType(userId)
           : sql<string | null>`NULL`,
@@ -247,6 +255,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
@@ -294,6 +303,7 @@ export class PostsService {
         reactionCount,
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(userId),
       })
       .from(posts)
@@ -361,6 +371,7 @@ export class PostsService {
         },
         upvoteCount,
         downvoteCount,
+        commentCount,
         userReactionType: getUserReactionType(authorId),
       })
       .from(posts)
@@ -395,7 +406,7 @@ export class PostsService {
   }
 
   readonly toDto = (
-    row: PostRow & { upvoteCount: number; downvoteCount: number },
+    row: PostRow & { upvoteCount: number; downvoteCount: number; commentCount: number },
     userReactionType?: ReactionTypeDto | null,
   ): PostDto => {
     return {
@@ -413,6 +424,7 @@ export class PostsService {
       updatedAt: row.updatedAt.toISOString(),
       upvoteCount: row.upvoteCount,
       downvoteCount: row.downvoteCount,
+      commentCount: row.commentCount,
       currentUserReaction: userReactionType ?? null,
     };
   };
