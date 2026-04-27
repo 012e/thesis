@@ -167,4 +167,39 @@ export class ThreadsController {
       },
     );
   }
+
+  @TsRestHandler(threadsContract.listThreadMessages)
+  listMessages(@Session() session: UserSession) {
+    return tsRestHandler(
+      threadsContract.listThreadMessages,
+      async ({ params }) => {
+        const messages = await this.threadsService.getMessages(
+          params.id,
+          session.user.id,
+        );
+        if (messages === null) {
+          return { status: 404, body: null };
+        }
+        return { status: 200, body: messages };
+      },
+    );
+  }
+
+  @TsRestHandler(threadsContract.appendThreadMessage)
+  appendMessage(@Session() session: UserSession) {
+    return tsRestHandler(
+      threadsContract.appendThreadMessage,
+      async ({ params, body }) => {
+        const ok = await this.threadsService.appendMessage(
+          params.id,
+          session.user.id,
+          body.entry,
+        );
+        if (!ok) {
+          return { status: 404, body: null };
+        }
+        return { status: 200, body: { success: true } };
+      },
+    );
+  }
 }
