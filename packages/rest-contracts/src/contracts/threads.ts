@@ -87,6 +87,30 @@ export const threadsContract = c.router({
     },
     summary: "Generate a title for a thread based on messages",
   },
+  listThreadMessages: {
+    method: "GET",
+    path: "/threads/:id/messages",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: z.object({
+        headId: z.string().nullable(),
+        messages: z.array(z.unknown()),
+      }),
+      404: z.null(),
+    },
+    summary: "Get all persisted messages for a thread",
+  },
+  appendThreadMessage: {
+    method: "POST",
+    path: "/threads/:id/messages",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.object({ entry: z.unknown() }),
+    responses: {
+      200: z.object({ success: z.boolean() }),
+      404: z.null(),
+    },
+    summary: "Append a message entry to a thread's history",
+  },
 });
 
 export type ThreadsContract = typeof threadsContract;

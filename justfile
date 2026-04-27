@@ -87,6 +87,9 @@ test-app: build-backend
 test-messages: build-backend
     pnpm --filter backend test:messages
 
+test-threads: build-backend
+    pnpm --filter backend test:threads
+
 test-config: build-backend
     pnpm --filter backend test:config
 

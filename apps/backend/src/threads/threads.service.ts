@@ -72,4 +72,31 @@ export class ThreadsService {
       .returning();
     return row || null;
   }
+
+  async getMessages(
+    id: string,
+    userId: string,
+  ): Promise<{ headId: string | null; messages: unknown[] } | null> {
+    const thread = await this.getById(id, userId);
+    if (!thread) return null;
+    const messages = (thread.messages ?? []) as unknown[];
+    const lastEntry = messages.at(-1) as { id?: string } | undefined;
+    const headId = lastEntry?.id ?? null;
+    return { headId, messages };
+  }
+
+  async appendMessage(
+    id: string,
+    userId: string,
+    entry: unknown,
+  ): Promise<boolean> {
+    const thread = await this.getById(id, userId);
+    if (!thread) return false;
+    const updated = [...((thread.messages ?? []) as unknown[]), entry];
+    await this.databaseService.db
+      .update(threads)
+      .set({ messages: updated, updatedAt: new Date() })
+      .where(and(eq(threads.id, id), eq(threads.userId, userId)));
+    return true;
+  }
 }
