@@ -320,7 +320,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
                 <IconMessageCircle className="w-[18px] h-[18px]" />
               </div>
-              <span className="text-sm">0</span>
+              <span className="text-sm">{post.commentCount}</span>
             </button>
             <button className="flex gap-1 items-center transition-colors hover:text-green-600 group text-muted-foreground">
               <div className="p-2 rounded-full transition-colors group-hover:bg-green-600/10">
