@@ -31,6 +31,26 @@ export class UsersController {
     });
   }
 
+  @TsRestHandler(usersContract.updateProfile)
+  updateProfile(@Session() session: UserSession) {
+    return tsRestHandler(usersContract.updateProfile, async ({ body }) => {
+      await this.usersService.updateProfile(session.user.id, { bio: body.bio });
+      const profile = await this.usersService.getProfile(
+        session.user.id,
+        session.user.id,
+      );
+
+      if (!profile) {
+        return { status: 401, body: null };
+      }
+
+      return {
+        status: 200,
+        body: usersContract.updateProfile.responses[200].parse(profile),
+      };
+    });
+  }
+
   @TsRestHandler(usersContract.getUserProfile)
   getUserProfile(@Session() session: UserSession) {
     return tsRestHandler(usersContract.getUserProfile, async ({ params }) => {

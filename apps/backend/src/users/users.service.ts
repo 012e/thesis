@@ -147,6 +147,7 @@ export class UsersService implements OnApplicationBootstrap {
         email: user.email,
         name: user.name,
         image: userProfiles.avatarUrl,
+        bio: userProfiles.bio,
         createdAt: user.createdAt,
         followersCount: sql<number>`COALESCE((${followersCountSq}), 0)::int`,
         followingCount: sql<number>`COALESCE((${followingCountSq}), 0)::int`,
@@ -169,11 +170,25 @@ export class UsersService implements OnApplicationBootstrap {
       email: row.email,
       name: row.name,
       image: row.image ?? this.defaultAvatarUrl,
+      bio: row.bio ?? null,
       createdAt: row.createdAt.toISOString(),
       followersCount: row.followersCount,
       followingCount: row.followingCount,
       postCount: row.postCount,
       isFollowing: row.isFollowingCount > 0,
     };
+  }
+
+  async updateProfile(
+    userId: string,
+    data: { bio: string | null },
+  ): Promise<void> {
+    await this.databaseService.db
+      .insert(userProfiles)
+      .values({ userId, bio: data.bio })
+      .onConflictDoUpdate({
+        target: userProfiles.userId,
+        set: { bio: data.bio },
+      });
   }
 }

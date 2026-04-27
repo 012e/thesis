@@ -151,6 +151,7 @@ export interface UserProfileDto {
   email: string;
   name: string | null;
   image: string | null;
+  bio: string | null;
   createdAt: string;
   followersCount: number;
   followingCount: number;

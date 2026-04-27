@@ -120,6 +120,13 @@
       "when": 1777291284341,
       "tag": "0016_fat_exodus",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1777294314058,
+      "tag": "0017_furry_lester",
+      "breakpoints": true
     }
   ]
 }

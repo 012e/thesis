@@ -172,6 +172,7 @@ function ProfileContent({
         defaultValues={{
           name: user.name || "",
           image: profile?.image || "",
+          bio: profile?.bio ?? null,
         }}
         onSuccess={() => {
           refetch();
