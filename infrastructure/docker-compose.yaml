@@ -139,7 +139,15 @@ services:
       JUDGE0_DB_PASSWORD: ${JUDGE0_POSTGRES_PASSWORD:?JUDGE0_POSTGRES_PASSWORD is required}
     entrypoint: >
       sh -c "
-        psql -c \"CREATE USER judge0 WITH PASSWORD '$$JUDGE0_DB_PASSWORD'\" || true &&
+        psql -c \"DO \\\$\\\$
+          BEGIN
+            IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'judge0') THEN
+              CREATE USER judge0 WITH PASSWORD '$$JUDGE0_DB_PASSWORD' CREATEDB;
+            ELSE
+              ALTER USER judge0 WITH PASSWORD '$$JUDGE0_DB_PASSWORD' CREATEDB;
+            END IF;
+          END
+        \\\$\\\$\" &&
         psql -c \"CREATE DATABASE judge0 OWNER judge0\" || true
       "
     networks:
