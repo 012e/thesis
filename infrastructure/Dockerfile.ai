@@ -17,7 +17,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/ai/package.json            apps/ai/
 COPY packages/shared-dto/package.json packages/shared-dto/
 
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # -----------------------------------------------------------------------------
 # Stage: builder — mastra build produces .mastra/output/index.mjs
@@ -44,7 +45,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/ai/package.json             apps/ai/
 COPY packages/shared-dto/package.json packages/shared-dto/
 
-RUN pnpm install --frozen-lockfile --prod
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile --prod
 
 # Copy the bundled Mastra output and shared-dto dist
 COPY --from=builder /app/apps/ai/.mastra    apps/ai/.mastra
