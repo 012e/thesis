@@ -1,0 +1,6 @@
+FROM ghcr.io/engineer-man/piston
+
+# Install curl so Docker healthchecks work
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
