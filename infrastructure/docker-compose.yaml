@@ -131,6 +131,12 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET:-posts-images}
       # Public URL used to build image URLs returned to clients
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-https://minio.toin.dev}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/health/live || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -164,11 +170,17 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:?OPENAI_API_KEY is required}
       DATABASE_URL: postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-database}
       BACKEND_URL: http://backend:8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:4111/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres:
         condition: service_healthy
       backend:
-        condition: service_started
+        condition: service_healthy
     networks:
       - internal
       - dokploy-network
@@ -193,9 +205,17 @@ services:
     restart: unless-stopped
     expose:
       - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     depends_on:
-      - backend
-      - ai
+      backend:
+        condition: service_healthy
+      ai:
+        condition: service_healthy
     networks:
       - internal
       - dokploy-network
