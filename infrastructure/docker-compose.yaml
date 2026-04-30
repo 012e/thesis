@@ -102,6 +102,68 @@ services:
       - internal
 
   # ---------------------------------------------------------------------------
+  # Piston — sandboxed code execution engine
+  # ---------------------------------------------------------------------------
+
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: thesis_piston
+    restart: unless-stopped
+    privileged: true
+    volumes:
+      - piston_packages:/piston/packages
+    expose:
+      - "2000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:2000/api/v2/runtimes > /dev/null || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - internal
+      - dokploy-network
+    labels:
+      - traefik.enable=true
+      # ── Piston API — piston.toin.dev ──────────────────────────────────────
+      - traefik.http.routers.thesis-piston.rule=Host(`piston.toin.dev`)
+      - traefik.http.routers.thesis-piston.entrypoints=websecure
+      - traefik.http.routers.thesis-piston.tls=true
+      - traefik.http.routers.thesis-piston.tls.certresolver=letsencrypt
+      - traefik.http.services.thesis-piston.loadbalancer.server.port=2000
+
+  # Install language runtimes on first deploy (idempotent — safe to re-run)
+  piston-init:
+    image: curlimages/curl:latest
+    container_name: thesis_piston_init
+    restart: no
+    depends_on:
+      piston:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        echo 'Installing Python...' &&
+        curl -s -X POST http://piston:2000/api/v2/packages \
+          -H 'Content-Type: application/json' \
+          -d '{\"language\":\"python\",\"version\":\"*\"}' &&
+        echo 'Installing JavaScript (Node.js)...' &&
+        curl -s -X POST http://piston:2000/api/v2/packages \
+          -H 'Content-Type: application/json' \
+          -d '{\"language\":\"javascript\",\"version\":\"*\"}' &&
+        echo 'Installing TypeScript...' &&
+        curl -s -X POST http://piston:2000/api/v2/packages \
+          -H 'Content-Type: application/json' \
+          -d '{\"language\":\"typescript\",\"version\":\"*\"}' &&
+        echo 'Installing Java (large download, may take several minutes)...' &&
+        curl -s -X POST http://piston:2000/api/v2/packages \
+          -H 'Content-Type: application/json' \
+          -d '{\"language\":\"java\",\"version\":\"*\"}' &&
+        echo 'Piston runtime installation complete.'
+      "
+    networks:
+      - internal
+
+  # ---------------------------------------------------------------------------
   # Application services
   # ---------------------------------------------------------------------------
 
@@ -131,6 +193,8 @@ services:
       MINIO_BUCKET: ${MINIO_BUCKET:-posts-images}
       # Public URL used to build image URLs returned to clients
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-https://minio.toin.dev}
+      # Piston — internal code execution engine
+      PISTON_URL: http://piston:2000
     healthcheck:
       test: ["CMD-SHELL", "curl -fs http://localhost:8080/health/live > /dev/null || exit 1"]
       interval: 30s
@@ -143,6 +207,8 @@ services:
       minio:
         condition: service_healthy
       minio-init:
+        condition: service_completed_successfully
+      piston-init:
         condition: service_completed_successfully
     networks:
       - internal
@@ -235,6 +301,7 @@ services:
 volumes:
   postgres_data:
   minio_data:
+  piston_packages:
 
 networks:
   # Service-to-service traffic (not reachable from outside)
