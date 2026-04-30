@@ -142,26 +142,20 @@ services:
     depends_on:
       piston:
         condition: service_healthy
-    entrypoint: >
-      sh -c "
-        echo 'Installing Python...' &&
-        curl -s -X POST http://piston:2000/api/v2/packages \
-          -H 'Content-Type: application/json' \
-          -d '{\"language\":\"python\",\"version\":\"*\"}' &&
-        echo 'Installing JavaScript (Node.js)...' &&
-        curl -s -X POST http://piston:2000/api/v2/packages \
-          -H 'Content-Type: application/json' \
-          -d '{\"language\":\"javascript\",\"version\":\"*\"}' &&
-        echo 'Installing TypeScript...' &&
-        curl -s -X POST http://piston:2000/api/v2/packages \
-          -H 'Content-Type: application/json' \
-          -d '{\"language\":\"typescript\",\"version\":\"*\"}' &&
-        echo 'Installing Java (large download, may take several minutes)...' &&
-        curl -s -X POST http://piston:2000/api/v2/packages \
-          -H 'Content-Type: application/json' \
-          -d '{\"language\":\"java\",\"version\":\"*\"}' &&
+    entrypoint:
+      - sh
+      - -c
+      - |
+        set -e
+        echo 'Installing Python...'
+        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"python","version":"*"}'
+        echo 'Installing JavaScript (Node.js)...'
+        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"javascript","version":"*"}'
+        echo 'Installing TypeScript...'
+        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"typescript","version":"*"}'
+        echo 'Installing Java (large download, may take several minutes)...'
+        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"java","version":"*"}'
         echo 'Piston runtime installation complete.'
-      "
     networks:
       - internal
 
