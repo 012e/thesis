@@ -35,25 +35,25 @@ WORKDIR /app/apps/ai
 RUN pnpm mastra build
 
 # -----------------------------------------------------------------------------
+# Stage: deploy — isolated production package via pnpm deploy
+# -----------------------------------------------------------------------------
+FROM builder AS deploy
+WORKDIR /app
+
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm --filter ai --prod deploy /deploy && \
+    cp -r apps/ai/.mastra /deploy/.mastra
+
+# -----------------------------------------------------------------------------
 # Stage: runner
 # -----------------------------------------------------------------------------
 FROM base AS runner
 WORKDIR /app
 
-# Install only production deps
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY apps/ai/package.json             apps/ai/
-COPY packages/shared-dto/package.json packages/shared-dto/
-
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --prod
-
-# Copy the bundled Mastra output and shared-dto dist
-COPY --from=builder /app/apps/ai/.mastra    apps/ai/.mastra
-COPY --from=builder /app/packages/shared-dto/dist packages/shared-dto/dist
+COPY --from=deploy /deploy .
 
 ENV NODE_ENV=production
 
 EXPOSE 4111
 
-CMD ["node", "apps/ai/.mastra/output/index.mjs"]
+CMD ["node", ".mastra/output/index.mjs"]
