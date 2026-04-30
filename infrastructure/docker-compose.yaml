@@ -11,7 +11,6 @@
 #   ai.toin.dev           → ai / Mastra (port 4111)
 #   minio.toin.dev        → MinIO S3 API (port 9000) — browser image CDN
 #   minio-console.toin.dev → MinIO Console (port 9001) — admin UI
-#   judge0.toin.dev       → Judge0 code execution (port 2358)
 #
 # Routing: Traefik (managed by Dokploy) terminates TLS via Let's Encrypt and
 # reverse-proxies to each service over the shared dokploy-network.
@@ -99,102 +98,6 @@ services:
         mc mb --ignore-existing local/${MINIO_BUCKET:-posts-images} &&
         mc anonymous set public local/${MINIO_BUCKET:-posts-images}
       "
-    networks:
-      - internal
-
-  # ---------------------------------------------------------------------------
-  # Judge0 — code execution engine
-  # ---------------------------------------------------------------------------
-
-  # Dedicated Redis queue for Judge0 job processing
-  judge0-redis:
-    image: redis:7.2.4
-    container_name: thesis_judge0_redis
-    restart: unless-stopped
-    environment:
-      REDIS_PASSWORD: ${JUDGE0_REDIS_PASSWORD:?JUDGE0_REDIS_PASSWORD is required}
-    command: >
-      bash -c 'docker-entrypoint.sh --appendonly no --requirepass "$$REDIS_PASSWORD"'
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "$$REDIS_PASSWORD", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - internal
-
-  # One-shot: create judge0 user + database on the shared postgres instance
-  judge0-db-init:
-    image: postgres:16
-    container_name: thesis_judge0_db_init
-    restart: no
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      PGPASSWORD: ${POSTGRES_PASSWORD:-password}
-      PGHOST: postgres
-      PGUSER: ${POSTGRES_USER:-username}
-      JUDGE0_DB_PASSWORD: ${JUDGE0_POSTGRES_PASSWORD:?JUDGE0_POSTGRES_PASSWORD is required}
-    entrypoint: >
-      sh -c "
-        psql -c \"CREATE USER judge0 WITH PASSWORD '$$JUDGE0_DB_PASSWORD'\" || true &&
-        psql -c \"CREATE DATABASE judge0 OWNER judge0\" || true
-      "
-    networks:
-      - internal
-
-  # Judge0 API server — handles submission requests and runs DB migrations
-  judge0-server:
-    image: judge0/judge0:1.13.1
-    container_name: thesis_judge0_server
-    restart: unless-stopped
-    volumes:
-      - ./judge0-v1.13.1/judge0.conf:/judge0.conf:ro
-    expose:
-      - "2358"
-    privileged: true
-    environment:
-      JUDGE0_REDIS_PASSWORD: ${JUDGE0_REDIS_PASSWORD:?JUDGE0_REDIS_PASSWORD is required}
-      JUDGE0_POSTGRES_PASSWORD: ${JUDGE0_POSTGRES_PASSWORD:?JUDGE0_POSTGRES_PASSWORD is required}
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:2358/system_info > /dev/null || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-    depends_on:
-      judge0-redis:
-        condition: service_healthy
-      judge0-db-init:
-        condition: service_completed_successfully
-    networks:
-      - internal
-      - dokploy-network
-    labels:
-      - traefik.enable=true
-      # ── Judge0 — judge0.toin.dev ───────────────────────────────────────────
-      - traefik.http.routers.thesis-judge0.rule=Host(`judge0.toin.dev`)
-      - traefik.http.routers.thesis-judge0.entrypoints=websecure
-      - traefik.http.routers.thesis-judge0.tls=true
-      - traefik.http.routers.thesis-judge0.tls.certresolver=letsencrypt
-      - traefik.http.services.thesis-judge0.loadbalancer.server.port=2358
-
-  # Judge0 workers — pull jobs from Redis queue and execute code in isolate
-  judge0-workers:
-    image: judge0/judge0:1.13.1
-    container_name: thesis_judge0_workers
-    restart: unless-stopped
-    command: ["./scripts/workers"]
-    volumes:
-      - ./judge0-v1.13.1/judge0.conf:/judge0.conf:ro
-    privileged: true
-    environment:
-      JUDGE0_REDIS_PASSWORD: ${JUDGE0_REDIS_PASSWORD:?JUDGE0_REDIS_PASSWORD is required}
-      JUDGE0_POSTGRES_PASSWORD: ${JUDGE0_POSTGRES_PASSWORD:?JUDGE0_POSTGRES_PASSWORD is required}
-    depends_on:
-      judge0-server:
-        condition: service_healthy
     networks:
       - internal
 
