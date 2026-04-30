@@ -112,6 +112,8 @@ services:
     container_name: thesis_piston
     restart: unless-stopped
     privileged: true
+    environment:
+      - PISTON_RUN_TIMEOUT=10000
     volumes:
       - piston_packages:/piston/packages
     expose:
