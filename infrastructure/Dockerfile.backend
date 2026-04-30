@@ -57,27 +57,39 @@ RUN pnpm --filter @repo/rest-contracts build
 RUN pnpm --filter backend build
 
 # -----------------------------------------------------------------------------
-# Stage: deploy — isolated production package via pnpm deploy
-# -----------------------------------------------------------------------------
-FROM builder AS deploy
-WORKDIR /app
-
-RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
-    pnpm --filter backend --prod deploy /deploy && \
-    cp -r apps/backend/dist /deploy/dist && \
-    cp -r apps/backend/drizzle /deploy/drizzle && \
-    cp apps/backend/drizzle.config.ts /deploy/drizzle.config.ts
-
-# -----------------------------------------------------------------------------
 # Stage: runner — lean production image
 # -----------------------------------------------------------------------------
 FROM base AS runner
 WORKDIR /app
 
-COPY --from=deploy /deploy .
+# Install all deps (drizzle-kit is a devDependency and is needed for migrations)
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
+COPY apps/backend/package.json            apps/backend/
+COPY packages/rest-contracts/package.json packages/rest-contracts/
+COPY packages/shared-dto/package.json     packages/shared-dto/
+COPY packages/auth-client/package.json    packages/auth-client/
+
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
+
+# Copy compiled backend
+COPY --from=builder /app/apps/backend/dist apps/backend/dist
+
+# Copy compiled workspace packages needed at runtime
+COPY --from=builder /app/packages/rest-contracts/dist packages/rest-contracts/dist
+COPY --from=builder /app/packages/shared-dto/dist     packages/shared-dto/dist
+COPY --from=builder /app/packages/auth-client/dist    packages/auth-client/dist
+
+# Copy DB migrations
+COPY --from=builder /app/apps/backend/drizzle apps/backend/drizzle
+COPY --from=builder /app/apps/backend/drizzle.config.ts apps/backend/drizzle.config.ts
+
+# Copy static assets bundled by nest-cli (e.g. default-profile-image.jpg)
+COPY --from=builder /app/apps/backend/dist/users apps/backend/dist/users
 
 ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+# Run migrations via the package.json script, then start the server
+CMD ["node", "apps/backend/dist/main.js"]
