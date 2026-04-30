@@ -150,7 +150,7 @@ services:
         echo 'Installing Python...'
         curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"python","version":"*"}'
         echo 'Installing JavaScript (Node.js)...'
-        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"javascript","version":"*"}'
+        curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"node","version":"*"}'
         echo 'Installing TypeScript...'
         curl -s -X POST http://piston:2000/api/v2/packages -H 'Content-Type: application/json' -d '{"language":"typescript","version":"*"}'
         echo 'Installing Java (large download, may take several minutes)...'
