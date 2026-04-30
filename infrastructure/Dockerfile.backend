@@ -33,7 +33,8 @@ COPY packages/rest-contracts/package.json packages/rest-contracts/
 COPY packages/shared-dto/package.json     packages/shared-dto/
 COPY packages/auth-client/package.json    packages/auth-client/
 
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # -----------------------------------------------------------------------------
 # Stage: builder — compile all packages then the backend
@@ -68,7 +69,8 @@ COPY packages/rest-contracts/package.json packages/rest-contracts/
 COPY packages/shared-dto/package.json     packages/shared-dto/
 COPY packages/auth-client/package.json    packages/auth-client/
 
-RUN pnpm install --frozen-lockfile
+RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
+    pnpm install --frozen-lockfile
 
 # Copy compiled backend
 COPY --from=builder /app/apps/backend/dist apps/backend/dist
