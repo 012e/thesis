@@ -135,7 +135,6 @@ services:
       PGPASSWORD: ${POSTGRES_PASSWORD:-password}
       PGHOST: postgres
       PGUSER: ${POSTGRES_USER:-username}
-      PGDATABASE: postgres
       JUDGE0_DB_PASSWORD: ${JUDGE0_POSTGRES_PASSWORD:?JUDGE0_POSTGRES_PASSWORD is required}
     entrypoint: >
       sh -c "
