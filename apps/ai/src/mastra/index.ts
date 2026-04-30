@@ -8,6 +8,7 @@ import { postDiscoveryAgent } from "./agents/post-discovery-agent";
 import { interactionsAgent } from "./agents/interactions-agent";
 import { pgStore } from "./memory";
 import { streamRoute } from "./routes/stream";
+import { healthRoute } from "./routes/health";
 import { RequestContext } from "@mastra/core/request-context";
 
 /**
@@ -48,6 +49,12 @@ export const mastra = new Mastra({
     },
     middleware: [
       async (c, next) => {
+        // Health endpoint is unauthenticated — skip auth gate
+        if (c.req.path === "/health") {
+          await next();
+          return;
+        }
+
         const context = c.get("requestContext") as RequestContext;
         if (!context) {
           throw new Error("Context must be available");
@@ -64,6 +71,6 @@ export const mastra = new Mastra({
         await next();
       },
     ],
-    apiRoutes: [streamRoute],
+    apiRoutes: [healthRoute, streamRoute],
   },
 });
