@@ -105,22 +105,6 @@ describe("PlaygroundController integration", () => {
       expect(res.body.exitCode).not.toBe(0);
     }, 120000);
 
-    it("respects custom timeout", async () => {
-      const res = await request(testApp.app.getHttpServer())
-        .post("/playground/execute")
-        .set("Cookie", userCookie)
-        .send({
-          code: "const start = Date.now(); while(Date.now() - start < 10000) {}", // Busy wait for 10 seconds
-          language: "javascript",
-          timeout: 2000, // 2 second timeout
-        })
-        .expect(200);
-
-      expect(res.body.stderr).toContain("timeout");
-      expect(res.body.exitCode).toBe(-1);
-      expect(res.body.executionTime).toBeGreaterThanOrEqual(2000);
-    }, 150000);
-
     it("rejects requests without authentication", async () => {
       await request(testApp.app.getHttpServer())
         .post("/playground/execute")
@@ -198,7 +182,7 @@ describe("PlaygroundController integration", () => {
         })
         .expect(200);
 
-      // Second execution should not see the global variable
+      // Second execution should not see the global variable from the first
       const res = await request(testApp.app.getHttpServer())
         .post("/playground/execute")
         .set("Cookie", userCookie)

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { Sandbox, NetworkPolicy } from "microsandbox";
+
+import { PistonClient } from "./piston.client";
 import type { ExecuteCodeInput } from "./playground.schemas";
 
 export interface ExecutionResult {
@@ -9,75 +10,62 @@ export interface ExecutionResult {
   executionTime: number;
 }
 
+/** Timeouts applied when the caller does not provide one. */
+const DEFAULT_RUN_TIMEOUT_MS = 10_000;
+const DEFAULT_COMPILE_TIMEOUT_MS = 10_000;
+
 @Injectable()
 export class PlaygroundService {
   private readonly logger = new Logger(PlaygroundService.name);
-  private readonly defaultTimeout = 30000; // 30 seconds
-  private readonly maxMemoryMb = 512;
-  private readonly cpus = 1;
+
+  constructor(private readonly pistonClient: PistonClient) {}
 
   async executeCode(input: ExecuteCodeInput): Promise<ExecutionResult> {
     const startTime = Date.now();
-    const timeout = input.timeout ?? this.defaultTimeout;
-    const isTypeScript = input.language === "typescript";
+    const runTimeout = input.timeout ?? DEFAULT_RUN_TIMEOUT_MS;
 
     this.logger.log(
-      `Executing ${input.language} code (timeout: ${timeout}ms, size: ${input.code.length} bytes)`,
+      `Executing ${input.language} code via Piston (run_timeout: ${runTimeout}ms, size: ${input.code.length} bytes)`,
     );
 
-    let sandbox: Sandbox | undefined;
-
     try {
-      // Create ephemeral sandbox with Node.js
-      sandbox = await Sandbox.create({
-        name: `playground-${Date.now()}`,
-        image: "node:alpine",
-        cpus: this.cpus,
-        memoryMib: this.maxMemoryMb,
-        network: NetworkPolicy.publicOnly(),
+      const response = await this.pistonClient.execute({
+        language: input.language,
+        version: "*",
+        files: [{ content: input.code }],
+        run_timeout: runTimeout,
+        compile_timeout: DEFAULT_COMPILE_TIMEOUT_MS,
       });
 
-      this.logger.debug("Sandbox created successfully");
+      const executionTime = Date.now() - startTime;
+      const run = response.run;
 
-      // For TypeScript, we need tsx to execute it directly
-      if (isTypeScript) {
-        // Install tsx in the sandbox
-        this.logger.debug("Installing tsx for TypeScript execution");
-        await sandbox.shell("npm install -g tsx");
+      // Piston status "TO" means the run was killed due to exceeding wall-time
+      // or CPU-time. Surface this the same way the previous implementation did.
+      if (run.status === "TO") {
+        this.logger.warn(
+          `Code execution timed out after ${executionTime}ms (limit: ${runTimeout}ms)`,
+        );
+        return {
+          stdout: run.stdout,
+          stderr:
+            run.stderr ||
+            `Error: Execution timeout exceeded (limit: ${runTimeout}ms)`,
+          exitCode: -1,
+          executionTime,
+        };
       }
 
-      // Write code to a temporary file in the sandbox
-      const fileExtension = isTypeScript ? "ts" : "js";
-      const codeFile = `/tmp/code.${fileExtension}`;
-      await sandbox.fs().write(codeFile, Buffer.from(input.code, "utf-8"));
-
-      this.logger.debug(`Code written to ${codeFile}`);
-
-      // Execute the code with a timeout
-      const executeCommand = isTypeScript
-        ? `tsx ${codeFile}`
-        : `node ${codeFile}`;
-
-      const executePromise = sandbox.shell(executeCommand);
-      const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error("Execution timeout exceeded")),
-          timeout,
-        ),
-      );
-
-      const output = await Promise.race([executePromise, timeoutPromise]);
-
-      const executionTime = Date.now() - startTime;
+      const exitCode = run.code ?? -1;
 
       this.logger.log(
-        `Code execution completed in ${executionTime}ms (exit code: ${output.code})`,
+        `Code execution completed in ${executionTime}ms (exit code: ${exitCode})`,
       );
 
       return {
-        stdout: output.stdout(),
-        stderr: output.stderr(),
-        exitCode: output.code,
+        stdout: run.stdout,
+        stderr: run.stderr,
+        exitCode,
         executionTime,
       };
     } catch (error) {
@@ -85,33 +73,12 @@ export class PlaygroundService {
 
       this.logger.error(`Code execution failed: ${error}`);
 
-      // Check if it's a timeout error
-      if (error instanceof Error && error.message.includes("timeout")) {
-        return {
-          stdout: "",
-          stderr: `Error: Execution timeout exceeded (limit: ${timeout}ms)`,
-          exitCode: -1,
-          executionTime,
-        };
-      }
-
-      // Return other errors as stderr
       return {
         stdout: "",
         stderr: error instanceof Error ? error.message : String(error),
         exitCode: -1,
         executionTime,
       };
-    } finally {
-      // Always clean up the sandbox
-      if (sandbox) {
-        try {
-          await sandbox.stopAndWait();
-          this.logger.debug("Sandbox stopped and cleaned up");
-        } catch (cleanupError) {
-          this.logger.error(`Failed to cleanup sandbox: ${cleanupError}`);
-        }
-      }
     }
   }
 }
