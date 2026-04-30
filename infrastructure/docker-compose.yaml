@@ -132,7 +132,7 @@ services:
       # Public URL used to build image URLs returned to clients
       MINIO_PUBLIC_URL: ${MINIO_PUBLIC_URL:-https://minio.toin.dev}
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:8080/health/live || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:8080/health/live > /dev/null || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
