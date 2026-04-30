@@ -115,7 +115,7 @@ services:
     expose:
       - "2000"
     healthcheck:
-      test: ["CMD-SHELL", "curl -fs http://localhost:2000/api/v2/runtimes > /dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:2000/api/v2/piston/runtimes > /dev/null || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
