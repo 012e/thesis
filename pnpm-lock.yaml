@@ -159,9 +159,6 @@ importers:
       jose:
         specifier: ^6.2.2
         version: 6.2.2
-      microsandbox:
-        specifier: ^0.3.14
-        version: 0.3.14
       openai:
         specifier: ^6.34.0
         version: 6.34.0(ws@8.20.0)(zod@4.3.6)
@@ -5444,24 +5441,6 @@ packages:
       typescript:
         optional: true
 
-  '@superradcompany/microsandbox-darwin-arm64@0.3.14':
-    resolution: {integrity: sha512-DuA5LWhDD9ReWeE9FeOkTuhwMeDoK/iHNeYSKDN6eISQgJWKlfnjFl9emcR54ZWiMsbv1ivY7g0IbDbAllLfUw==}
-    engines: {node: '>= 18'}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@superradcompany/microsandbox-linux-arm64-gnu@0.3.14':
-    resolution: {integrity: sha512-bmNaALM2bEbeh/bQruTEW6UtGyxONrLkp+7s3KPnlwRP6a4CFVTTeprDm/vfv6C52FtBlpIdHopZcEsFKlGVNg==}
-    engines: {node: '>= 18'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@superradcompany/microsandbox-linux-x64-gnu@0.3.14':
-    resolution: {integrity: sha512-acMQ+FQYAvOU08CJR6Iu2ct7Qcm9PORnbpYvqonWmgHY1/Bbo+f3F4w7z+Lc2XM2K2cxEE5RbE745LhmRFJ0lQ==}
-    engines: {node: '>= 18'}
-    cpu: [x64]
-    os: [linux]
-
   '@swc-node/core@1.14.1':
     resolution: {integrity: sha512-jrt5GUaZUU6cmMS+WTJEvGvaB6j1YNKPHPzC2PUi2BjaFbtxURHj6641Az6xN7b665hNniAIdvjxWcRml5yCnw==}
     engines: {node: '>= 10'}
@@ -9488,11 +9467,6 @@ packages:
   micromatch@4.0.8:
     resolution: {integrity: sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==}
     engines: {node: '>=8.6'}
-
-  microsandbox@0.3.14:
-    resolution: {integrity: sha512-3OwJRm0R3Ipv0XQFCjbVhSPuE4UZHUHUAEF/kIW/y+gqFuwcfmXpy9/ty3a6ct7z73gb82lW+16afKWVhMjuJg==}
-    engines: {node: '>= 18'}
-    hasBin: true
 
   mime-db@1.33.0:
     resolution: {integrity: sha512-BHJ/EKruNIqJf/QahvxwQZXKygOQ256myeN/Ew+THcAa5q+PjyTTMMeNQC4DZw5AwfvelsUrA6B67NKMqXDbzQ==}
@@ -17861,15 +17835,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@superradcompany/microsandbox-darwin-arm64@0.3.14':
-    optional: true
-
-  '@superradcompany/microsandbox-linux-arm64-gnu@0.3.14':
-    optional: true
-
-  '@superradcompany/microsandbox-linux-x64-gnu@0.3.14':
-    optional: true
-
   '@swc-node/core@1.14.1(@swc/core@1.15.30(@swc/helpers@0.5.21))(@swc/types@0.1.26)':
     dependencies:
       '@swc/core': 1.15.30(@swc/helpers@0.5.21)
@@ -22488,12 +22453,6 @@ snapshots:
     dependencies:
       braces: 3.0.3
       picomatch: 2.3.2
-
-  microsandbox@0.3.14:
-    optionalDependencies:
-      '@superradcompany/microsandbox-darwin-arm64': 0.3.14
-      '@superradcompany/microsandbox-linux-arm64-gnu': 0.3.14
-      '@superradcompany/microsandbox-linux-x64-gnu': 0.3.14
 
   mime-db@1.33.0: {}
 
