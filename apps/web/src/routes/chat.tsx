@@ -141,14 +141,16 @@ Current Form State: ${JSON.stringify(draft.data)}
 Use the open_form tool to select a form, and set_form_field to edit fields.
 `);
 
-  const ActiveForm = draft.activeForm ? FormRegistry[draft.activeForm] : null;
+  const activeFormConfig = draft.activeForm ? FormRegistry[draft.activeForm] : null;
+  const ActiveForm = activeFormConfig?.form;
+  const layoutOrientation = activeFormConfig?.layout || "horizontal";
 
   return (
-    <ResizablePanelGroup orientation="horizontal" className="w-full">
+    <ResizablePanelGroup orientation={layoutOrientation} className="w-full">
       {ActiveForm && (
         <>
           <ResizablePanel defaultSize={60} minSize={30} className="bg-muted/10 overflow-y-auto">
-            <div className="p-6 h-full">
+            <div className="p-6 h-full flex flex-col max-h-full">
               <ActiveForm key={threadId} threadId={threadId} />
             </div>
           </ResizablePanel>
