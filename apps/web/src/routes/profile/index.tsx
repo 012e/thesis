@@ -78,19 +78,28 @@ function ProfileContent({
         {/* Profile Header */}
         <div className="relative px-4">
           <div className="absolute -top-20">
-            <Avatar className="w-32 h-32 rounded-full border-4 border-background">
-              {profile?.image ? (
-                <AvatarImage
-                  src={profile.image}
-                  alt={user.name || "Profile"}
-                  className="object-cover w-full h-full rounded-full"
-                />
-              ) : (
-                <AvatarFallback className="flex justify-center items-center w-full h-full text-4xl font-bold rounded-full border-none bg-primary text-primary-foreground">
-                  {initials}
-                </AvatarFallback>
-              )}
-            </Avatar>
+            <button
+              className="group relative w-32 h-32 rounded-full focus:outline-none"
+              onClick={() => setIsEditDialogOpen(true)}
+              aria-label="Edit profile picture"
+            >
+              <Avatar className="w-32 h-32 rounded-full border-4 border-background">
+                {profile?.image ? (
+                  <AvatarImage
+                    src={profile.image}
+                    alt={user.name || "Profile"}
+                    className="object-cover w-full h-full rounded-full"
+                  />
+                ) : (
+                  <AvatarFallback className="flex justify-center items-center w-full h-full text-4xl font-bold rounded-full border-none bg-primary text-primary-foreground">
+                    {initials}
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/0 group-hover:bg-black/40 transition-colors">
+                <IconEdit className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+            </button>
           </div>
           <div className="flex justify-end pt-3">
             <Button
@@ -117,6 +126,9 @@ function ProfileContent({
             <IconCalendar className="w-4 h-4" />
             <span className="text-sm">Joined {joinDate}</span>
           </div>
+          {profile?.bio && (
+            <p className="mt-3 text-sm">{profile.bio}</p>
+          )}
         </div>
 
         <div className="my-6" />
@@ -172,6 +184,7 @@ function ProfileContent({
         defaultValues={{
           name: user.name || "",
           image: profile?.image || "",
+          bio: profile?.bio ?? null,
         }}
         onSuccess={() => {
           refetch();

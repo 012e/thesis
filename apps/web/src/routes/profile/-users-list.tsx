@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { UserAvatar } from "@/components/user-avatar";
 
 type User = {
   id: string;
@@ -27,15 +27,6 @@ export function UsersList({ users, emptyMessage }: UsersListProps) {
   return (
     <Card className="overflow-hidden gap-0 p-0 divide-y divide-border">
       {users.map((user) => {
-        const initials = user.name
-          ? user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)
-          : user.email.charAt(0).toUpperCase();
-
         return (
           <Link
             key={user.id}
@@ -43,15 +34,12 @@ export function UsersList({ users, emptyMessage }: UsersListProps) {
             params={{ userId: user.id }}
             className="flex gap-3 items-center py-3 px-4 transition-colors hover:bg-muted/50"
           >
-            <Avatar className="w-10 h-10 shrink-0">
-              <AvatarImage
-                src={user.image ?? undefined}
-                alt={user.name || user.username || undefined}
-              />
-              <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar
+              userId={user.id}
+              src={user.image}
+              name={user.name}
+              className="w-10 h-10 shrink-0 text-sm font-semibold bg-primary/10 text-primary"
+            />
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium truncate">
                 {user.name || user.username || "User"}

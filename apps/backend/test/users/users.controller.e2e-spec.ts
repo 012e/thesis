@@ -93,6 +93,9 @@ describe("UsersController (e2e)", () => {
       expect(response.body.postCount).toBe(1);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(response.body.isFollowing).toBe(true);
+      // bio is null by default
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.bio).toBeNull();
     });
 
     it("should return 401 if unauthorized", async () => {
@@ -306,6 +309,133 @@ describe("UsersController (e2e)", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(profileResponse.body.image).toBe(avatarUrl);
+    });
+  });
+
+  describe("PATCH /users/me/profile", () => {
+    it("should return 401 if not authenticated", () => {
+      return request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .send({ bio: "hello" })
+        .expect(401);
+    });
+
+    it("should update bio and return the updated profile", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "bioupdate@example.com",
+        "bioupdate",
+      );
+      const bio = "This is my bio.";
+
+      const response = await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.bio).toBe(bio);
+    });
+
+    it("should persist bio so that GET /users/:id/profile reflects it", async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        "biopersist@example.com",
+        "biopersist",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const bio = "Persisted bio text.";
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio })
+        .expect(200);
+
+      const profileResponse = await request(testApp.app.getHttpServer())
+        .get(`/users/${userId}/profile`)
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(profileResponse.body.bio).toBe(bio);
+    });
+
+    it("should write bio to the user_profiles table", async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        "biodbcheck@example.com",
+        "biodbcheck",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const bio = "DB-level bio.";
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio })
+        .expect(200);
+
+      const { eq } = await import("drizzle-orm");
+      const [profileRow] = await databaseService.db
+        .select()
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, userId))
+        .limit(1);
+
+      expect(profileRow).toBeDefined();
+      expect(profileRow?.bio).toBe(bio);
+    });
+
+    it("should allow updating bio multiple times (upsert)", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "bioupsert@example.com",
+        "bioupsert",
+      );
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio: "First bio." })
+        .expect(200);
+
+      const response = await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio: "Second bio." })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.bio).toBe("Second bio.");
+    });
+
+    it("should allow setting bio to null", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "bionull@example.com",
+        "bionull",
+      );
+
+      // Set a bio first
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio: "Some bio." })
+        .expect(200);
+
+      // Clear it
+      const response = await request(testApp.app.getHttpServer())
+        .patch("/users/me/profile")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ bio: null })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.bio).toBeNull();
     });
   });
 });
