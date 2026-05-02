@@ -1,21 +1,33 @@
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [],
-  "categories": {
-    "correctness": "off"
+import { defineConfig } from "oxlint";
+
+export default defineConfig({
+  plugins: [],
+  jsPlugins: ["@tanstack/eslint-plugin-router"],
+  categories: {
+    correctness: "off",
   },
-  "env": {
-    "builtin": true
+  env: {
+    builtin: true,
   },
-  "ignorePatterns": [
-    "dist"
-  ],
-  "overrides": [
+  ignorePatterns: ["dist"],
+  overrides: [
     {
-      "files": [
-        "**/*.{ts,tsx}"
-      ],
-      "rules": {
+      files: ["**/*.{ts,tsx}"],
+      plugins: ["typescript", "react"],
+      env: {
+        es2020: true,
+        browser: true,
+      },
+      globals: {
+        AudioWorkletGlobalScope: "readonly",
+        AudioWorkletProcessor: "readonly",
+        currentFrame: "readonly",
+        currentTime: "readonly",
+        registerProcessor: "readonly",
+        sampleRate: "readonly",
+        WorkletGlobalScope: "readonly",
+      },
+      rules: {
         "constructor-super": "error",
         "for-direction": "error",
         "no-async-promise-executor": "error",
@@ -96,27 +108,10 @@
         "react/only-export-components": [
           "error",
           {
-            "allowConstantExport": true
-          }
-        ]
+            allowConstantExport: true,
+          },
+        ],
       },
-      "plugins": [
-        "typescript",
-        "react"
-      ],
-      "env": {
-        "es2020": true,
-        "browser": true
-      },
-      "globals": {
-        "AudioWorkletGlobalScope": "readonly",
-        "AudioWorkletProcessor": "readonly",
-        "currentFrame": "readonly",
-        "currentTime": "readonly",
-        "registerProcessor": "readonly",
-        "sampleRate": "readonly",
-        "WorkletGlobalScope": "readonly"
-      }
-    }
-  ]
-}
+    },
+  ],
+});
