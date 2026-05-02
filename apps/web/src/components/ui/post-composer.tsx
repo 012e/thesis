@@ -111,12 +111,6 @@ export function PostComposer() {
     setUploadedImages([]);
   };
 
-  const handleClose = () => {
-    if (!isPending) {
-      handleClear();
-    }
-  };
-
   const handlePollToggle = () => {
     if (showPollCreator) {
       setShowPollCreator(false);
@@ -331,17 +325,6 @@ export function PostComposer() {
             </div>
           </div>
         </div>
-
-        {/* Close button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-8 h-8 rounded-full text-muted-foreground hover:text-foreground"
-          onClick={handleClose}
-          disabled={isPending}
-        >
-          <IconX className="w-4 h-4" />
-        </Button>
       </div>
     </div>
   );
