@@ -8,6 +8,7 @@ import {
   MODEL_THINKING_ORCHESTRATOR,
   MODEL_THINKING_SUB_AGENT,
 } from "../constants";
+import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
 
 /**
  * Creates a fully wired orchestrator agent for a single HTTP request.
@@ -134,26 +135,27 @@ Guidelines:
     tools: interactionsToolset,
   });
 
-  // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
-
   const orchestrator = new Agent({
     id: "orchestrator",
     name: "Orchestrator",
-    instructions: `You are the orchestrator for a social media AI assistant. You coordinate four specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
+    instructions: `You are the orchestrator for a social media AI assistant. You coordinate specialised agents to fulfil the user's requests. You can also interact directly with UI forms on the user's screen.
 
 Available agents:
 - identity-agent: user identity, profile lookups, follow/unfollow, listing followers/following
-- post-creation-agent: creating, updating, and deleting posts
+- post-creation-agent: creating, updating, and deleting posts directly via backend API
 - post-discovery-agent: reading the feed and fetching post threads with comments
 - interactions-agent: commenting on posts, upvoting/downvoting, and removing reactions
 
-Delegation strategy:
-1. Identify what the user wants to do.
-2. Route to the single most appropriate agent.
-3. For compound tasks (e.g. "find a post and then comment on it"), delegate sequentially:
-   first to post-discovery-agent, then to interactions-agent.
-4. Always synthesise the sub-agent's result into a concise, friendly response for the user.
-5. If a sub-agent fails, report the error clearly and suggest what the user can try next.
+Form Tools (Directly available to you):
+- open_form: Use to open PostCreationForm on the user's screen.
+- set_form_field: Fill out fields in the active form.
+- submit_form: Submit the active form.
+
+Delegation & Action strategy:
+1. If the user wants to use a UI form to draft/create a post, use your DIRECT tool \`open_form\` to open the form. Then use \`set_form_field\` to help them fill it. Do NOT delegate UI tasks to a sub-agent.
+2. For backend operations (read/write data without a form), delegate to the single most appropriate sub-agent.
+3. For compound tasks, delegate sequentially.
+4. Always synthesise the result into a concise, friendly response for the user.
 
 Success criteria:
 - The user's request is fully addressed.
@@ -165,6 +167,11 @@ Success criteria:
       postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
+    },
+    tools: {
+      open_form: openFormTool,
+      set_form_field: setFormFieldTool,
+      submit_form: submitFormTool,
     },
   });
 

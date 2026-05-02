@@ -48,7 +48,6 @@ const baseNavigationItems = [
     label: "Playground",
     href: "/playground",
   },
-  {
     icon: IconUser,
     selectedIcon: IconUserFilled,
     label: "Profile",
