@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PostAuthor } from "./shared";
+import { PostAuthor, ReactionType } from "./shared";
 
 export const Comment = z.object({
   id: z.string().uuid(),
@@ -10,6 +10,9 @@ export const Comment = z.object({
   content: z.string().min(1),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
+  upvoteCount: z.number().int().nonnegative().default(0),
+  downvoteCount: z.number().int().nonnegative().default(0),
+  currentUserReaction: ReactionType.nullable().default(null),
 });
 
 export const CreateCommentBody = z.object({
