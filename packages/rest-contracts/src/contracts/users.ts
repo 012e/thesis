@@ -33,6 +33,20 @@ export const usersContract = c.router({
     },
     summary: "Update the authenticated user's avatar URL in user_profiles.",
   },
+  // updateProfile MUST be declared before getUserProfile so the static segment
+  // "/users/me/profile" is not swallowed by the dynamic ":id" path parameter.
+  updateProfile: {
+    method: "PATCH",
+    path: "/users/me/profile",
+    body: z.object({
+      bio: z.string().max(500).nullable(),
+    }),
+    responses: {
+      200: UserProfile,
+      401: z.null(),
+    },
+    summary: "Update the authenticated user's profile fields (bio).",
+  },
   getUserProfile: {
     method: "GET",
     path: "/users/:id/profile",

@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { login } from "@/lib/auth";
+import { DEFAULT_ACCOUNT } from "@/lib/constants";
 
 const loginSchema = z.object({
   email: z.email("Invalid email address"),
@@ -35,8 +36,8 @@ export function LoginForm({
 
   const form = useForm({
     defaultValues: {
-      email: "",
-      password: "",
+      email: DEFAULT_ACCOUNT.email,
+      password: DEFAULT_ACCOUNT.password,
     },
     onSubmit: async ({ value }) => {
       try {

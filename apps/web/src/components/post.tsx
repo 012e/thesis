@@ -1,6 +1,5 @@
 import { useState } from "react";
 import type { ReactNode, MouseEvent } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
 import {
@@ -36,6 +35,7 @@ import { useDeletePost } from "@/hooks/use-delete-post";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
+import { UserAvatar } from "./user-avatar";
 import { toast } from "sonner";
 
 export interface PostProps {
@@ -193,36 +193,15 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
     return "now";
   };
 
-  const authorInitial = (
-    post.author.name?.[0] ||
-    post.author.username?.[0] ||
-    post.author.email[0]
-  ).toUpperCase();
-
   return (
     <article className="p-4 transition-colors cursor-pointer hover:bg-accent/50">
       <div className="flex gap-3 items-start">
-        <button
-          type="button"
-          onClick={handleAuthorClick}
-          disabled={isOwnPost}
-          className="shrink-0"
-          title={
-            isOwnPost
-              ? undefined
-              : `Message ${post.author.name ?? post.author.username}`
-          }
-        >
-          <Avatar className="w-10 h-10">
-            <AvatarImage
-              src={post.author.image ?? undefined}
-              alt={post.author.name || post.author.username || undefined}
-            />
-            <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
-              {authorInitial}
-            </AvatarFallback>
-          </Avatar>
-        </button>
+        <UserAvatar
+          userId={post.author.id}
+          src={post.author.image}
+          name={post.author.name}
+          className="w-10 h-10 shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <div className="flex gap-2 items-center mb-1">
             <button

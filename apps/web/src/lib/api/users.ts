@@ -41,3 +41,22 @@ export async function updateAvatar(
 
   throw new Error("Failed to update avatar");
 }
+
+export async function updateUserProfile(data: {
+  bio: string | null;
+}): Promise<UserProfileDto> {
+  const response = await client.updateProfile({
+    body: { bio: data.bio },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to update profile");
+}

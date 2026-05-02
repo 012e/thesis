@@ -18,10 +18,12 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { updateProfile } from "@/lib/auth";
 import { uploadImages } from "@/lib/api/uploads";
-import { updateAvatar } from "@/lib/api/users";
+import { updateAvatar, updateUserProfile } from "@/lib/api/users";
+import { Textarea } from "./ui/textarea";
 
 const editProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
+  bio: z.string().max(500, "Bio must be 500 characters or less").nullable(),
 });
 
 function createImage(url: string): Promise<HTMLImageElement> {
@@ -77,6 +79,7 @@ interface EditProfileDialogProps {
   defaultValues: {
     name: string;
     image?: string;
+    bio?: string | null;
   };
   onSuccess?: () => void;
 }
@@ -164,6 +167,7 @@ export function EditProfileDialog({
   const form = useForm({
     defaultValues: {
       name: defaultValues.name,
+      bio: defaultValues.bio ?? null,
     },
     onSubmit: async ({ value }) => {
       // Update name via Better Auth (image field intentionally omitted —
@@ -172,12 +176,16 @@ export function EditProfileDialog({
 
       if (!success) return;
 
+      // Persist bio in our own user_profiles table.
+      await updateUserProfile({ bio: value.bio ?? null });
+
       // Persist avatar separately in our own user_profiles table.
       if (avatarUrl && avatarUrl !== (defaultValues.image ?? "")) {
         await updateAvatar(avatarUrl);
-        // Invalidate the profile query so all avatar consumers refresh.
-        await queryClient.invalidateQueries();
       }
+
+      // Invalidate the profile query so all consumers refresh.
+      await queryClient.invalidateQueries();
 
       onOpenChange(false);
       onSuccess?.();
@@ -188,8 +196,9 @@ export function EditProfileDialog({
   useEffect(() => {
     if (open) {
       form.setFieldValue("name", defaultValues.name);
+      form.setFieldValue("bio", defaultValues.bio ?? null);
     }
-  }, [open, defaultValues.name, form]);
+  }, [open, defaultValues.name, defaultValues.bio, form]);
 
   const isCropping = rawImageSrc !== null;
   const initials = (defaultValues.name || "?").charAt(0).toUpperCase();
@@ -353,6 +362,55 @@ export function EditProfileDialog({
                     )}
                   </Field>
                 )}
+              </form.Field>
+
+              {/* Bio field */}
+              <form.Field
+                name="bio"
+                validators={{
+                  onChange: ({ value }) => {
+                    const result = editProfileSchema.shape.bio.safeParse(value);
+                    if (!result.success) {
+                      return result.error.issues[0]?.message;
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => {
+                  const bioLength = (field.state.value ?? "").length;
+                  return (
+                    <Field>
+                      <div className="flex justify-between items-center">
+                        <FieldLabel htmlFor={field.name}>Bio</FieldLabel>
+                        <span
+                          className={`text-xs ${bioLength > 480 ? "text-destructive" : "text-muted-foreground"}`}
+                        >
+                          {bioLength}/500
+                        </span>
+                      </div>
+                      <Textarea
+                        id={field.name}
+                        name={field.name}
+                        rows={3}
+                        maxLength={500}
+                        value={field.state.value ?? ""}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(
+                            e.target.value === "" ? null : e.target.value,
+                          )
+                        }
+                        placeholder="Tell people a little about yourself…"
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <span className="text-red-500 text-xs">
+                          {field.state.meta.errors.join(", ")}
+                        </span>
+                      )}
+                    </Field>
+                  );
+                }}
               </form.Field>
             </FieldGroup>
 

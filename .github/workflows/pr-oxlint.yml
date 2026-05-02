@@ -17,7 +17,19 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: oxc-project/oxlint-action@v3.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
         with:
-          deny: correctness
-          warn: suspicious
+          node-version: 24.13.0
+          cache: "pnpm"
+
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Run Oxlint
+        run: pnpm dlx oxlint --format github -D correctness -W suspicious
