@@ -16,10 +16,12 @@ import {
   IconCodeCircle2,
   IconCodeCircle2Filled,
   IconShield,
+  IconShieldFilled,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { cn } from "@/lib/utils";
 
 const baseNavigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
@@ -78,7 +80,7 @@ export function LeftSidebar() {
         ? [
             {
               icon: IconShield,
-              selectedIcon: IconShield,
+              selectedIcon: IconShieldFilled,
               label: "User Management",
               href: "/admin/users",
             },
@@ -94,7 +96,7 @@ export function LeftSidebar() {
     >
       <div className="flex flex-col gap-2">
         {/* Logo */}
-        <Link to="/" className="p-3 w-fit hover:bg-accent">
+        <Link to="/" className="p-3 w-fit hover:bg-foreground/8">
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -112,17 +114,22 @@ export function LeftSidebar() {
             <Link
               key={item.href}
               to={item.href}
-              className={`flex items-center gap-4 py-3 hover:bg-accent text-xl font-normal transition-all duration-300 [&.active]:font-bold px-3`}
               title={item.label}
               aria-label={item.label}
             >
-              {/* We use a function as children to access the isActive state */}
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;
                 const hasUnread =
                   item.href === "/notifications" && unreadCount > 0;
                 return (
-                  <>
+                  <div
+                    className={cn(
+                      "flex items-center gap-4 py-3 px-3 text-xl",
+                      isActive
+                        ? "bg-accent/20 text-primary font-bold "
+                        : "hover:bg-foreground/8 font-normal",
+                    )}
+                  >
                     <div className="relative shrink-0">
                       <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
                       {hasUnread && (
@@ -131,12 +138,10 @@ export function LeftSidebar() {
                         </span>
                       )}
                     </div>
-                    <span
-                      className={`overflow-hidden whitespace-nowrap transition-all duration-300 max-w-50 opacity-100"}`}
-                    >
+                    <span className="overflow-hidden whitespace-nowrap transition-all duration-300 max-w-50 opacity-100">
                       {item.label}
                     </span>
-                  </>
+                  </div>
                 );
               }}
             </Link>

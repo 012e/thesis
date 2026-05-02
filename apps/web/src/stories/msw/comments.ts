@@ -34,7 +34,11 @@ export const makeAuthor = (id: string, name: string, username: string) => ({
   image: null,
 });
 
-export const VIEWER_AUTHOR = makeAuthor(STORY_UUIDS.USER_VIEWER, "Viewer", "viewer");
+export const VIEWER_AUTHOR = makeAuthor(
+  STORY_UUIDS.USER_VIEWER,
+  "Viewer",
+  "viewer",
+);
 
 // --- Preset comment datasets ---
 
@@ -60,7 +64,8 @@ export const flatComments = (postId: string): CommentType[] => [
     parentId: null,
     authorId: STORY_UUIDS.USER_2,
     author: makeAuthor(STORY_UUIDS.USER_2, "Bob Smith", "bobsmith"),
-    content: "I had a similar experience. The key takeaway for me was to always test edge cases.",
+    content:
+      "I had a similar experience. The key takeaway for me was to always test edge cases.",
     createdAt: tenMinAgo,
     updatedAt: tenMinAgo,
   },
@@ -93,7 +98,8 @@ export const nestedComments = (postId: string): CommentType[] => [
     parentId: STORY_UUIDS.COMMENT_1,
     authorId: STORY_UUIDS.USER_2,
     author: makeAuthor(STORY_UUIDS.USER_2, "Bob Smith", "bobsmith"),
-    content: "I've been testing it on a production app. The performance gains are noticeable, especially on re-renders.",
+    content:
+      "I've been testing it on a production app. The performance gains are noticeable, especially on re-renders.",
     createdAt: tenMinAgo,
     updatedAt: tenMinAgo,
   },
@@ -103,7 +109,8 @@ export const nestedComments = (postId: string): CommentType[] => [
     parentId: STORY_UUIDS.COMMENT_2,
     authorId: STORY_UUIDS.USER_3,
     author: makeAuthor(STORY_UUIDS.USER_3, "Carol White", "carolw"),
-    content: "That's great to hear! Did you have to make any code changes or was it a drop-in replacement?",
+    content:
+      "That's great to hear! Did you have to make any code changes or was it a drop-in replacement?",
     createdAt: fiveMinAgo,
     updatedAt: fiveMinAgo,
   },
@@ -136,7 +143,14 @@ export const singleComment = (postId: string): CommentType[] => [
     parentId: null,
     authorId: STORY_UUIDS.USER_1,
     author: makeAuthor(STORY_UUIDS.USER_1, "Alice Johnson", "alicej"),
-    content: "First comment! Looking forward to the discussion.",
+    content: `First comment! Looking forward to the discussion.
+Here is some code:
+\`\`\`ts
+function doSomething(a = "ok") {
+  return doSomething("not ok");
+  }
+\`\`\`
+`,
     createdAt: now,
     updatedAt: now,
   },

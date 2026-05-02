@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PostMarkdown } from "@/components/ui/post-markdown";
 import { IconTrash } from "@tabler/icons-react";
 import type { CommentType } from "@repo/rest-contracts";
 import { useSession } from "@/hooks/use-session";
@@ -69,7 +70,7 @@ export function CommentItem({
           <span className="text-sm font-semibold truncate">
             {comment.author.name || comment.author.username || "Anonymous"}
           </span>
-          <span className="text-xs text-muted-foreground truncate">
+          <span className="text-[11px] text-muted-foreground truncate">
             @{comment.author.username || comment.author.email.split("@")[0]}
           </span>
           <span className="text-xs text-muted-foreground">·</span>
@@ -77,8 +78,8 @@ export function CommentItem({
             {getRelativeTime(comment.createdAt)}
           </span>
         </div>
-        <div className="mb-2 text-sm leading-relaxed whitespace-pre-wrap break-words">
-          {comment.content}
+        <div className="mb-2 text-sm leading-relaxed">
+          <PostMarkdown content={comment.content} />
         </div>
         <div className="flex gap-3 items-center">
           <Button

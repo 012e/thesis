@@ -3,13 +3,18 @@ import {
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
-import { ThemeProvider } from "@/components/theme-provider";
+import { useTheme } from "@/hooks/use-theme";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout } from "@/components/layout/app-layout";
 import { AuthGuard } from "@/components/auth-guard";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+
+function ThemeSync() {
+  useTheme();
+  return null;
+}
 
 function RootComponent() {
   const router = useRouterState();
@@ -19,7 +24,8 @@ function RootComponent() {
   const isPlaygroundRoute = router.location.pathname.startsWith("/playground");
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <>
+      <ThemeSync />
       <AuthGuard>
         {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />
@@ -46,7 +52,7 @@ function RootComponent() {
           },
         ]}
       />
-    </ThemeProvider>
+    </>
   );
 }
 

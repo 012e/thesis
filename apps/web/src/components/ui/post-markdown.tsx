@@ -1,14 +1,142 @@
 import { memo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTheme } from "@/hooks/use-theme";
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
+import {
+  oneLight,
+  vscDarkPlus,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
+import type { IconType } from "react-icons";
+import {
+  SiPython,
+  SiJavascript,
+  SiTypescript,
+  SiRust,
+  SiGo,
+  SiC,
+  SiCplusplus,
+  SiRuby,
+  SiSwift,
+  SiKotlin,
+  SiPhp,
+  SiHtml5,
+  SiCss,
+  SiGnubash,
+  SiLua,
+  SiScala,
+  SiHaskell,
+  SiDart,
+  SiElixir,
+  SiErlang,
+  SiClojure,
+  SiOcaml,
+  SiSvelte,
+  SiVuedotjs,
+  SiReact,
+  SiNextdotjs,
+  SiNodedotjs,
+  SiDocker,
+  SiKubernetes,
+  SiTerraform,
+  SiMysql,
+  SiPostgresql,
+  SiMongodb,
+  SiRedis,
+  SiGraphql,
+  SiGit,
+  SiYaml,
+  SiJson,
+  SiXml,
+  SiToml,
+  SiSqlite,
+} from "react-icons/si";
+
+/** Map from fenced-code language identifier → [Icon, brandHex, displayLabel] */
+const LANG_META: Record<string, [IconType, string, string]> = {
+  python: [SiPython, "#3776AB", "Python"],
+  py: [SiPython, "#3776AB", "Python"],
+  javascript: [SiJavascript, "#F7DF1E", "JavaScript"],
+  js: [SiJavascript, "#F7DF1E", "JavaScript"],
+  typescript: [SiTypescript, "#3178C6", "TypeScript"],
+  ts: [SiTypescript, "#3178C6", "TypeScript"],
+  tsx: [SiReact, "#61DAFB", "TSX"],
+  jsx: [SiReact, "#61DAFB", "JSX"],
+  rust: [SiRust, "#CE422B", "Rust"],
+  rs: [SiRust, "#CE422B", "Rust"],
+  go: [SiGo, "#00ACD7", "Go"],
+  golang: [SiGo, "#00ACD7", "Go"],
+  c: [SiC, "#A8B9CC", "C"],
+  cpp: [SiCplusplus, "#00599C", "C++"],
+  "c++": [SiCplusplus, "#00599C", "C++"],
+  ruby: [SiRuby, "#CC342D", "Ruby"],
+  rb: [SiRuby, "#CC342D", "Ruby"],
+  swift: [SiSwift, "#F05138", "Swift"],
+  kotlin: [SiKotlin, "#7F52FF", "Kotlin"],
+  kt: [SiKotlin, "#7F52FF", "Kotlin"],
+  php: [SiPhp, "#777BB4", "PHP"],
+  html: [SiHtml5, "#E34F26", "HTML"],
+  css: [SiCss, "#1572B6", "CSS"],
+  bash: [SiGnubash, "#4EAA25", "Bash"],
+  sh: [SiGnubash, "#4EAA25", "Shell"],
+  shell: [SiGnubash, "#4EAA25", "Shell"],
+  zsh: [SiGnubash, "#4EAA25", "Zsh"],
+  lua: [SiLua, "#2C2D72", "Lua"],
+  scala: [SiScala, "#DC322F", "Scala"],
+  haskell: [SiHaskell, "#5D4F85", "Haskell"],
+  hs: [SiHaskell, "#5D4F85", "Haskell"],
+  dart: [SiDart, "#0175C2", "Dart"],
+  elixir: [SiElixir, "#4B275F", "Elixir"],
+  ex: [SiElixir, "#4B275F", "Elixir"],
+  erlang: [SiErlang, "#A90533", "Erlang"],
+  clojure: [SiClojure, "#5881D8", "Clojure"],
+  clj: [SiClojure, "#5881D8", "Clojure"],
+  ocaml: [SiOcaml, "#EC6813", "OCaml"],
+  ml: [SiOcaml, "#EC6813", "OCaml"],
+  svelte: [SiSvelte, "#FF3E00", "Svelte"],
+  vue: [SiVuedotjs, "#4FC08D", "Vue"],
+  react: [SiReact, "#61DAFB", "React"],
+  nextjs: [SiNextdotjs, "#000000", "Next.js"],
+  nodejs: [SiNodedotjs, "#5FA04E", "Node.js"],
+  node: [SiNodedotjs, "#5FA04E", "Node.js"],
+  docker: [SiDocker, "#2496ED", "Docker"],
+  dockerfile: [SiDocker, "#2496ED", "Dockerfile"],
+  kubernetes: [SiKubernetes, "#326CE5", "Kubernetes"],
+  k8s: [SiKubernetes, "#326CE5", "Kubernetes"],
+  terraform: [SiTerraform, "#844FBA", "Terraform"],
+  tf: [SiTerraform, "#844FBA", "Terraform"],
+  mysql: [SiMysql, "#4479A1", "MySQL"],
+  postgres: [SiPostgresql, "#4169E1", "PostgreSQL"],
+  postgresql: [SiPostgresql, "#4169E1", "PostgreSQL"],
+  sql: [SiPostgresql, "#4169E1", "SQL"],
+  mongodb: [SiMongodb, "#47A248", "MongoDB"],
+  redis: [SiRedis, "#FF4438", "Redis"],
+  graphql: [SiGraphql, "#E10098", "GraphQL"],
+  gql: [SiGraphql, "#E10098", "GraphQL"],
+  git: [SiGit, "#F05032", "Git"],
+  yaml: [SiYaml, "#CB171E", "YAML"],
+  yml: [SiYaml, "#CB171E", "YAML"],
+  json: [SiJson, "#000000", "JSON"],
+  xml: [SiXml, "#005FAD", "XML"],
+  toml: [SiToml, "#9C4121", "TOML"],
+  sqlite: [SiSqlite, "#003B57", "SQLite"],
+};
 
 interface PostMarkdownProps {
   content: string;
   className?: string;
 }
 
-const markdownComponents: Components = {
+const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <div className={cn("post-markdown", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
           h1: ({ className: cls, ...props }) => (
             <h1
               className={cn(
@@ -114,7 +242,7 @@ const markdownComponents: Components = {
             />
           ),
           table: ({ className: cls, ...props }) => (
-            <div className="my-2 overflow-x-auto">
+            <div className="overflow-x-auto my-2">
               <table
                 className={cn(
                   "w-full border-separate border-spacing-0 text-sm",
@@ -154,43 +282,80 @@ const markdownComponents: Components = {
           li: ({ className: cls, ...props }) => (
             <li className={cn("leading-normal", cls)} {...props} />
           ),
-          pre: ({ className: cls, ...props }) => (
-            <pre
+          pre: ({ children, ...props }) => {
+            // Extract language and code text from the child <code> element
+            const codeChild = Array.isArray(children) ? children[0] : children;
+            if (
+              codeChild &&
+              typeof codeChild === "object" &&
+              "props" in codeChild
+            ) {
+              const { className: codeClass, children: codeText } =
+                codeChild.props as { className?: string; children?: unknown };
+              const match = /language-([\w-]+)/.exec(codeClass || "");
+              if (match) {
+                const lang = match[1].toLowerCase();
+                const meta = LANG_META[lang];
+                const LangIcon = meta?.[0];
+                const iconColor = meta?.[1];
+                const label = meta?.[2] ?? match[1];
+                return (
+                  <div className="overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none rounded-md border border-border/50 bg-muted/30">
+                    {/* language badge — pinned to top-right, outside scroll flow */}
+                    <div className="flex absolute top-0 right-0 z-10 gap-1 items-center px-2 font-mono font-medium transition-colors cursor-default pointer-events-auto text-muted-foreground/60 hover:bg-accent hover:text-accent-foreground">
+                      {LangIcon && (
+                        <LangIcon
+                          style={{ color: iconColor }}
+                          className="size-3 shrink-0"
+                        />
+                      )}
+                      <span className="pt-1">{label}</span>
+                    </div>
+                    <SyntaxHighlighter
+                      language={match[1]}
+                      style={isDark ? vscDarkPlus : oneLight}
+                      customStyle={{
+                        margin: 0,
+                        padding: "0.625rem",
+                        paddingTop: "1.5rem",
+                        background: "transparent",
+                        fontSize: "0.75rem",
+                        lineHeight: "1.5",
+                      }}
+                      codeTagProps={{ style: {} }}
+                      {...props}
+                    >
+                      {String(codeText).replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  </div>
+                );
+              }
+            }
+            return (
+              <pre
+                className="overflow-x-auto p-2.5 my-2 text-xs leading-relaxed rounded-md border border-border/50 bg-muted/30"
+                {...props}
+              >
+                {children}
+              </pre>
+            );
+          },
+          code: ({ className: cls, ...props }) => (
+            <code
               className={cn(
-                "my-2 overflow-x-auto rounded-md border border-border/50 bg-muted/30 p-2.5 text-xs leading-relaxed",
+                "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
                 cls,
               )}
               {...props}
             />
           ),
-          code: ({ className: cls, ...props }) => {
-            // Check if this is an inline code (not inside a pre tag)
-            const isInline = !cls?.includes("language-");
-            return (
-              <code
-                className={cn(
-                  isInline &&
-                    "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
-                  cls,
-                )}
-                {...props}
-              />
-            );
-          },
           strong: ({ className: cls, ...props }) => (
             <strong className={cn("font-semibold", cls)} {...props} />
           ),
           em: ({ className: cls, ...props }) => (
             <em className={cn("italic", cls)} {...props} />
           ),
-        };
-
-const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
-  return (
-    <div className={cn("post-markdown", className)}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={markdownComponents}
+        }}
       >
         {content}
       </ReactMarkdown>

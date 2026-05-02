@@ -142,7 +142,7 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
   const tree = buildCommentTree(comments);
 
   const handleReply = (commentId: string) => {
-    setReplyingTo(commentId);
+    setReplyingTo((prev) => (prev === commentId ? null : commentId));
   };
 
   const handleCancelReply = () => {

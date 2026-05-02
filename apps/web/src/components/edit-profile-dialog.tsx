@@ -205,7 +205,7 @@ export function EditProfileDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-106.25">
         <DialogHeader>
           <DialogTitle>Edit Profile</DialogTitle>
           <DialogDescription>
@@ -234,7 +234,7 @@ export function EditProfileDialog({
 
             {/* Zoom slider */}
             <div className="flex gap-3 items-center px-1">
-              <span className="text-sm text-muted-foreground min-w-[36px]">
+              <span className="text-sm text-muted-foreground min-w-9">
                 Zoom
               </span>
               <input
