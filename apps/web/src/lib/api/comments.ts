@@ -1,4 +1,5 @@
 import type { CommentType, CreateCommentBodyType } from "@repo/rest-contracts";
+import type { ReactionTypeDto } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
 
@@ -119,4 +120,46 @@ export async function listCommentReplies(
   }
 
   throw new Error("Failed to list replies");
+}
+
+export async function reactToComment(
+  commentId: string,
+  type: ReactionTypeDto,
+): Promise<void> {
+  const response = await client.reactToComment({
+    params: { id: commentId },
+    body: { type },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Comment not found");
+  }
+
+  if (response.status !== 200) {
+    throw new Error("Failed to react to comment");
+  }
+}
+
+export async function unreactToComment(commentId: string): Promise<void> {
+  const response = await client.unreactToComment({
+    params: { id: commentId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Comment not found");
+  }
+
+  if (response.status !== 200) {
+    throw new Error("Failed to remove reaction from comment");
+  }
 }

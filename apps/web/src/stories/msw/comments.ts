@@ -57,6 +57,9 @@ export const flatComments = (postId: string): CommentType[] => [
     content: "This is a really insightful post. Thanks for sharing!",
     createdAt: oneHourAgo,
     updatedAt: oneHourAgo,
+    upvoteCount: 5,
+    downvoteCount: 1,
+    currentUserReaction: null,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -68,6 +71,9 @@ export const flatComments = (postId: string): CommentType[] => [
       "I had a similar experience. The key takeaway for me was to always test edge cases.",
     createdAt: tenMinAgo,
     updatedAt: tenMinAgo,
+    upvoteCount: 3,
+    downvoteCount: 0,
+    currentUserReaction: "upvote",
   },
   {
     id: STORY_UUIDS.COMMENT_3,
@@ -78,6 +84,9 @@ export const flatComments = (postId: string): CommentType[] => [
     content: "Bookmarked for later. Great discussion happening here.",
     createdAt: fiveMinAgo,
     updatedAt: fiveMinAgo,
+    upvoteCount: 0,
+    downvoteCount: 2,
+    currentUserReaction: "downvote",
   },
 ];
 
@@ -91,6 +100,9 @@ export const nestedComments = (postId: string): CommentType[] => [
     content: "What do you all think about the new React compiler?",
     createdAt: oneHourAgo,
     updatedAt: oneHourAgo,
+    upvoteCount: 8,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -102,6 +114,9 @@ export const nestedComments = (postId: string): CommentType[] => [
       "I've been testing it on a production app. The performance gains are noticeable, especially on re-renders.",
     createdAt: tenMinAgo,
     updatedAt: tenMinAgo,
+    upvoteCount: 4,
+    downvoteCount: 1,
+    currentUserReaction: "upvote",
   },
   {
     id: STORY_UUIDS.COMMENT_3,
@@ -113,6 +128,9 @@ export const nestedComments = (postId: string): CommentType[] => [
       "That's great to hear! Did you have to make any code changes or was it a drop-in replacement?",
     createdAt: fiveMinAgo,
     updatedAt: fiveMinAgo,
+    upvoteCount: 2,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
   {
     id: STORY_UUIDS.COMMENT_4,
@@ -123,6 +141,9 @@ export const nestedComments = (postId: string): CommentType[] => [
     content: "I'd love to see some benchmarks if you have them.",
     createdAt: now,
     updatedAt: now,
+    upvoteCount: 1,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
   {
     id: STORY_UUIDS.COMMENT_5,
@@ -133,6 +154,9 @@ export const nestedComments = (postId: string): CommentType[] => [
     content: "Off-topic but the new `use` hook is also a game changer.",
     createdAt: fiveMinAgo,
     updatedAt: fiveMinAgo,
+    upvoteCount: 0,
+    downvoteCount: 3,
+    currentUserReaction: "downvote",
   },
 ];
 
@@ -153,6 +177,9 @@ function doSomething(a = "ok") {
 `,
     createdAt: now,
     updatedAt: now,
+    upvoteCount: 0,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
 ];
 
@@ -166,6 +193,9 @@ export const twoComments = (postId: string): CommentType[] => [
     content: "Great feature! I've been waiting for this.",
     createdAt: oneHourAgo,
     updatedAt: oneHourAgo,
+    upvoteCount: 2,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -176,6 +206,9 @@ export const twoComments = (postId: string): CommentType[] => [
     content: "Same here! Works perfectly on mobile too.",
     createdAt: now,
     updatedAt: now,
+    upvoteCount: 1,
+    downvoteCount: 0,
+    currentUserReaction: null,
   },
 ];
 
@@ -204,6 +237,9 @@ export const makeReplyHandler = (postId: string) =>
       content: body.content,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      upvoteCount: 0,
+      downvoteCount: 0,
+      currentUserReaction: null,
     });
   });
 
@@ -211,4 +247,37 @@ export const makeReplyHandler = (postId: string) =>
 export const deleteCommentHandler = http.delete(
   "*/comments/:commentId",
   () => new HttpResponse(null, { status: 204 }),
+);
+
+/**
+ * MSW PUT handler for `PUT /comments/:commentId/reaction`.
+ * Returns a minimal 200 response so the mutation resolves successfully.
+ * The UI uses optimistic updates, so the exact response body is not used.
+ */
+export const reactToCommentHandler = http.put(
+  "*/comments/:commentId/reaction",
+  async ({ params, request }) => {
+    const body = (await request.json()) as { type: string };
+    return HttpResponse.json({
+      commentId: params["commentId"],
+      userId: STORY_UUIDS.USER_VIEWER,
+      type: body.type,
+      createdAt: new Date().toISOString(),
+    });
+  },
+);
+
+/**
+ * MSW DELETE handler for `DELETE /comments/:commentId/reaction`.
+ * Returns a minimal 200 response so the mutation resolves successfully.
+ */
+export const unreactToCommentHandler = http.delete(
+  "*/comments/:commentId/reaction",
+  ({ params }) =>
+    HttpResponse.json({
+      commentId: params["commentId"],
+      userId: STORY_UUIDS.USER_VIEWER,
+      type: "upvote",
+      createdAt: new Date().toISOString(),
+    }),
 );
