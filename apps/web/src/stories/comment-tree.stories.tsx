@@ -10,6 +10,8 @@ import {
   makeCommentsHandler,
   makeReplyHandler,
   deleteCommentHandler,
+  reactToCommentHandler,
+  unreactToCommentHandler,
 } from "./msw/comments";
 
 const now = new Date().toISOString();
@@ -39,6 +41,8 @@ const baseHandlers = [
   sessionHandler,
   makeReplyHandler(STORY_UUIDS.POST_1),
   deleteCommentHandler,
+  reactToCommentHandler,
+  unreactToCommentHandler,
 ];
 
 const meta = {

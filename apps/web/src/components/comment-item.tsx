@@ -1,10 +1,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
-import { IconTrash } from "@tabler/icons-react";
+import { IconTrash, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
 import type { CommentType } from "@repo/rest-contracts";
 import { useSession } from "@/hooks/use-session";
 import { useDeleteComment } from "@/hooks/use-comments";
+import { useCommentReaction } from "@/hooks/use-comment-reaction";
 
 export interface CommentItemProps {
   comment: CommentType;
@@ -22,8 +23,20 @@ export function CommentItem({
   const { data: session } = useSession();
   const { mutate: deleteComment, isPending: isDeleting } =
     useDeleteComment(postId);
+  const { mutate: react, isPending: isVoting } = useCommentReaction(postId);
 
   const isOwner = session?.user?.id === comment.authorId;
+
+  const userVote = comment.currentUserReaction;
+  const upvoteCount = comment.upvoteCount;
+  const downvoteCount = comment.downvoteCount;
+
+  const handleVote = (type: "upvote" | "downvote") => {
+    react({
+      commentId: comment.id,
+      type: userVote === type ? null : type,
+    });
+  };
 
   const handleDelete = () => {
     if (confirm("Are you sure you want to delete this comment?")) {
@@ -82,6 +95,34 @@ export function CommentItem({
           <PostMarkdown content={comment.content} />
         </div>
         <div className="flex gap-3 items-center">
+          {/* Reaction pill */}
+          <div className="flex gap-1 items-center py-0.5 px-1.5 rounded-full bg-muted/50">
+            <button
+              onClick={() => handleVote("upvote")}
+              disabled={isVoting}
+              className={`p-1 rounded-full transition-all ${
+                userVote === "upvote"
+                  ? "text-orange-600 bg-orange-600/10"
+                  : "text-muted-foreground hover:text-orange-600 hover:bg-orange-600/10"
+              }`}
+            >
+              <IconArrowUp className="w-3 h-3" />
+            </button>
+            <span className="text-xs font-medium text-muted-foreground">
+              {upvoteCount - downvoteCount}
+            </span>
+            <button
+              onClick={() => handleVote("downvote")}
+              disabled={isVoting}
+              className={`p-1 rounded-full transition-all ${
+                userVote === "downvote"
+                  ? "text-blue-600 bg-blue-600/10"
+                  : "text-muted-foreground hover:text-blue-600 hover:bg-blue-600/10"
+              }`}
+            >
+              <IconArrowDown className="w-3 h-3" />
+            </button>
+          </div>
           <Button
             variant="ghost"
             size="sm"
