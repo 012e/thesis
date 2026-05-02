@@ -55,11 +55,26 @@ const postWithImages: PostDto = {
   id: STORY_UUIDS.POST_2,
   content: {
     text: "Here are some shots from the team offsite!",
-            images: [
-              { key: "1", url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c", width: 800, height: 600 },
-              { key: "2", url: "https://images.unsplash.com/photo-1542831371-29b0f74f9713", width: 800, height: 600 },
-              { key: "3", url: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97", width: 800, height: 600 },
-            ],
+    images: [
+      {
+        key: "1",
+        url: faker.image.urlPicsumPhotos({ width: 800, height: 600 }),
+        width: 800,
+        height: 600,
+      },
+      {
+        key: "2",
+        url: faker.image.urlPicsumPhotos({ width: 800, height: 600 }),
+        width: 800,
+        height: 600,
+      },
+      {
+        key: "3",
+        url: faker.image.urlPicsumPhotos({ width: 800, height: 600 }),
+        width: 800,
+        height: 600,
+      },
+    ],
   },
   upvoteCount: 128,
   downvoteCount: 5,

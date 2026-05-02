@@ -100,11 +100,11 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
               onClick={() => handleOptionClick(option.id)}
               disabled={isPending || isClosed}
               className={cn(
-                "relative w-full p-3 rounded-lg border text-left transition-all",
+                "relative w-full p-3 rounded-lg border text-left transition-all cursor-pointer",
                 "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
                 isSelected && !showResults && "border-primary bg-primary/5",
                 isSelected && showResults && "border-primary",
-                isClosed && "cursor-not-allowed opacity-70",
+                isClosed && "cursor-default opacity-70",
               )}
             >
               {/* Progress bar background */}
