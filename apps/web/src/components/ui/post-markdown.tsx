@@ -1,5 +1,5 @@
-import { memo } from "react";
-import ReactMarkdown, { type Components } from "react-markdown";
+import { memo, type CSSProperties } from "react";
+import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useTheme } from "@/hooks/use-theme";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -313,7 +313,7 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
                     </div>
                     <SyntaxHighlighter
                       language={match[1]}
-                      style={isDark ? vscDarkPlus : oneLight}
+                      style={(isDark ? vscDarkPlus : oneLight) as unknown as Record<string, CSSProperties>}
                       customStyle={{
                         margin: 0,
                         padding: "0.625rem",
@@ -323,7 +323,6 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
                         lineHeight: "1.5",
                       }}
                       codeTagProps={{ style: {} }}
-                      {...props}
                     >
                       {String(codeText).replace(/\n$/, "")}
                     </SyntaxHighlighter>

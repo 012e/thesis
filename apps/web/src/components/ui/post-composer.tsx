@@ -12,7 +12,6 @@ import "@mdxeditor/editor/style.css";
 import { Button } from "./button";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
-import { useSession } from "@/hooks/use-session";
 import type {
   PostContentDto,
   PollPostContentDto,
@@ -44,7 +43,6 @@ export function PostComposer() {
   const { mutate: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
-  const { data: session } = useSession();
   const editorRef = useRef(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -52,13 +50,6 @@ export function PostComposer() {
   const maxCharacters = POST_MAX_LENGTH;
   const isExceeded = characterCount > maxCharacters;
   const isPending = isCreating || isUploading;
-
-  const userInitial =
-    (
-      session?.user?.name?.[0] ||
-      session?.user?.username?.[0] ||
-      session?.user?.email?.[0]
-    )?.toUpperCase() || "U";
 
   const hasContent =
     content.trim() !== "" ||
