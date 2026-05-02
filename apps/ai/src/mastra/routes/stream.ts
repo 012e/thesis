@@ -3,6 +3,7 @@ import { toAISdkStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { z } from "zod";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
+import type { ModelMode } from "../constants";
 
 /**
  * Chat stream route for the assistant agent with authenticated MCP clients.
@@ -19,6 +20,7 @@ import { createOrchestratorAgent } from "../agents/orchestrator-agent";
  * Body:
  *   {
  *     "messages": [{ "id": "1", "role": "user", "parts": [{ "type": "text", "text": "Hello" }] }],
+ *     "mode": "fast" | "thinking"   // optional, defaults to "fast"
  *   }
  *
  * Response: AI SDK-compatible UIMessage stream
@@ -43,6 +45,8 @@ const StreamRequestSchema = z.object({
   messageId: z.string().optional(),
   metadata: z.any().optional(),
   resumeData: z.record(z.string(), z.any()).optional(),
+  /** Model interaction mode sent by the web client. Defaults to "fast". */
+  mode: z.enum(["fast", "thinking"]).optional(),
 });
 
 export const streamRoute = registerApiRoute("/chat", {
@@ -62,12 +66,16 @@ export const streamRoute = registerApiRoute("/chat", {
         );
       }
 
-      const { messages } = parseResult.data;
+      const { messages, mode } = parseResult.data;
       const context = c.get("requestContext");
+
+      // Resolve model mode from the request body.
+      // Defaults to "fast" if the field is absent or contains an unknown value.
+      const resolvedMode: ModelMode = mode ?? "fast";
 
       // Build a per-request orchestrator with auth-aware MCP tools baked into
       // each sub-agent at construction time.
-      const orchestrator = await createOrchestratorAgent(context);
+      const orchestrator = await createOrchestratorAgent(context, resolvedMode);
 
       const agentStream = await orchestrator.stream(messages, {
         maxSteps: 20,

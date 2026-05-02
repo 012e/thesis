@@ -35,6 +35,7 @@ import {
   UserMessageAttachments,
 } from "@/components/assistant-ui/attachment";
 import { cn } from "@/lib/utils";
+import { ModelSelector } from "@/components/assistant-ui/model-selector";
 
 export function Thread() {
   return (
@@ -150,7 +151,10 @@ function Composer() {
 function ComposerAction() {
   return (
     <div className="flex justify-between items-center mt-2">
-      <ComposerAddAttachment />
+      <div className="flex items-center gap-2">
+        <ComposerAddAttachment />
+        <ModelSelector />
+      </div>
 
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>

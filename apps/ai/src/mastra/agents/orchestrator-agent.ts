@@ -1,7 +1,13 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
 import { getSocialMcpToolsets } from "../mcp/social";
-import { MODEL_ORCHESTRATOR, MODEL_SUB_AGENT } from "../constants";
+import {
+  ModelMode,
+  MODEL_FAST_ORCHESTRATOR,
+  MODEL_FAST_SUB_AGENT,
+  MODEL_THINKING_ORCHESTRATOR,
+  MODEL_THINKING_SUB_AGENT,
+} from "../constants";
 
 /**
  * Creates a fully wired orchestrator agent for a single HTTP request.
@@ -19,10 +25,20 @@ import { MODEL_ORCHESTRATOR, MODEL_SUB_AGENT } from "../constants";
  *
  * The orchestrator uses GPT-4o for stronger multi-step reasoning and delegates
  * autonomously based on each sub-agent's `description`.
+ *
+ * @param context - The per-request context carrying auth tokens.
+ * @param mode - Interaction mode: "fast" uses cheap/quick models; "thinking"
+ *   uses o4-mini (reasoning) for the orchestrator and gpt-4o for sub-agents.
+ *   Defaults to "fast".
  */
 export async function createOrchestratorAgent(
   context: RequestContext,
+  mode: ModelMode = "fast",
 ): Promise<Agent> {
+  const orchestratorModel =
+    mode === "thinking" ? MODEL_THINKING_ORCHESTRATOR : MODEL_FAST_ORCHESTRATOR;
+  const subAgentModel =
+    mode === "thinking" ? MODEL_THINKING_SUB_AGENT : MODEL_FAST_SUB_AGENT;
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
@@ -47,7 +63,7 @@ Guidelines:
 - Be concise — return only the information requested
 - When listing followers/following, present them as a clean list
 - Do not attempt to create, read, update, or delete posts; delegate that elsewhere`,
-    model: MODEL_SUB_AGENT,
+    model: subAgentModel,
     tools: identityToolset,
   });
 
@@ -69,7 +85,7 @@ Guidelines:
 - After creating or updating a post, confirm success and return the post ID
 - After deleting a post, confirm the deletion by post ID
 - Do not read or list posts, fetch threads, or handle comments/reactions; delegate that elsewhere`,
-    model: MODEL_SUB_AGENT,
+    model: subAgentModel,
     tools: postsToolset,
   });
 
@@ -91,7 +107,7 @@ Guidelines:
 - If the user wants to react to or comment on a post, delegate that to the interactions agent
 - If the user wants to create, update, or delete a post, delegate that to the post-creation agent
 - Be concise — summarise long content instead of dumping raw text`,
-    model: MODEL_SUB_AGENT,
+    model: subAgentModel,
     tools: postsToolset,
   });
 
@@ -114,7 +130,7 @@ Guidelines:
 - When reacting, confirm whether the reaction was created or replaced a previous one
 - Do not read or list posts; if the user needs to see a thread first, ask the orchestrator to use the post-discovery agent
 - Do not create or modify posts; delegate that to the post-creation agent`,
-    model: MODEL_SUB_AGENT,
+    model: subAgentModel,
     tools: interactionsToolset,
   });
 
@@ -143,7 +159,7 @@ Success criteria:
 - The user's request is fully addressed.
 - Write operations (create, update, delete, comment, react) are confirmed with IDs.
 - Read operations return the requested data in a clean, readable format.`,
-    model: MODEL_ORCHESTRATOR,
+    model: orchestratorModel,
     agents: {
       identityAgent,
       postCreationAgent,
