@@ -38,8 +38,10 @@ import {
 import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { useAtomValue } from "jotai";
-import { formDraftsAtom } from "@/lib/atoms/form-drafts";
 import { FormRegistry } from "@/components/forms/registry";
+import {
+  threadActiveFormAtomFamily,
+} from "@/lib/atoms/chat-state";
 
 export function Thread() {
   return (
@@ -71,14 +73,12 @@ export function Thread() {
 }
 
 function ActiveVerticalForm() {
-  const threadId = useAuiState(
-    (s) => (s.thread as any).id || (s.thread as any).threadId || "default",
-  );
-  const drafts = useAtomValue(formDraftsAtom);
-  const draft = drafts[threadId];
+  const { id: localId, remoteId } = useAuiState((s) => s.threadListItem);
+  const threadId = remoteId ?? localId;
+  const activeForm = useAtomValue(threadActiveFormAtomFamily(threadId));
 
-  if (!draft?.activeForm) return null;
-  const config = FormRegistry[draft.activeForm];
+  if (!activeForm) return null;
+  const config = FormRegistry[activeForm];
   if (config?.layout !== "vertical") return null;
 
   const Form = config.form;

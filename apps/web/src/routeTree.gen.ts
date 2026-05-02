@@ -13,6 +13,7 @@ import { Route as TestingRouteImport } from './routes/testing'
 import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as ComposeRouteImport } from './routes/compose'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ApiRouteImport } from './routes/api'
 import { Route as IndexRouteImport } from './routes/index'
@@ -44,6 +45,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComposeRoute = ComposeRouteImport.update({
+  id: '/compose',
+  path: '/compose',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -111,6 +117,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
+  '/compose': typeof ComposeRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
+  '/compose': typeof ComposeRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
   '/chat': typeof ChatRoute
+  '/compose': typeof ComposeRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api'
     | '/chat'
+    | '/compose'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -186,6 +196,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api'
     | '/chat'
+    | '/compose'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api'
     | '/chat'
+    | '/compose'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiRoute: typeof ApiRoute
   ChatRoute: typeof ChatRoute
+  ComposeRoute: typeof ComposeRoute
   ExploreRoute: typeof ExploreRoute
   NotificationsRoute: typeof NotificationsRoute
   PlaygroundRoute: typeof PlaygroundRoute
@@ -266,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compose': {
+      id: '/compose'
+      path: '/compose'
+      fullPath: '/compose'
+      preLoaderRoute: typeof ComposeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiRoute: ApiRoute,
   ChatRoute: ChatRoute,
+  ComposeRoute: ComposeRoute,
   ExploreRoute: ExploreRoute,
   NotificationsRoute: NotificationsRoute,
   PlaygroundRoute: PlaygroundRoute,
