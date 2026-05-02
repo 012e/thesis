@@ -143,11 +143,11 @@ Use the open_form tool to select a form, and set_form_field to edit fields.
 
   const activeFormConfig = draft.activeForm ? FormRegistry[draft.activeForm] : null;
   const ActiveForm = activeFormConfig?.form;
-  const layoutOrientation = activeFormConfig?.layout || "horizontal";
+  const isHorizontalForm = ActiveForm && activeFormConfig?.layout === "horizontal";
 
   return (
-    <ResizablePanelGroup orientation={layoutOrientation} className="w-full">
-      {ActiveForm && (
+    <ResizablePanelGroup orientation="horizontal" className="w-full">
+      {isHorizontalForm && (
         <>
           <ResizablePanel defaultSize={60} minSize={30} className="bg-muted/10 overflow-y-auto">
             <div className="p-6 h-full flex flex-col max-h-full">
@@ -157,7 +157,7 @@ Use the open_form tool to select a form, and set_form_field to edit fields.
           <ResizableHandle withHandle />
         </>
       )}
-      <ResizablePanel defaultSize={ActiveForm ? 40 : 100} minSize={30} className="bg-background">
+      <ResizablePanel defaultSize={isHorizontalForm ? 40 : 100} minSize={30} className="bg-background">
         <Thread />
       </ResizablePanel>
     </ResizablePanelGroup>

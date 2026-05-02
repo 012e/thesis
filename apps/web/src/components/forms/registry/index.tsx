@@ -8,6 +8,6 @@ export type FormConfig = {
 export const FormRegistry: Record<string, FormConfig> = {
   PostCreationForm: {
     form: PostCreationForm,
-    layout: "horizontal",
+    layout: "vertical",
   },
 };

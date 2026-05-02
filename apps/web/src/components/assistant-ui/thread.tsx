@@ -37,6 +37,9 @@ import {
 } from "@/components/assistant-ui/attachment";
 import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
+import { useAtomValue } from "jotai";
+import { formDraftsAtom } from "@/lib/atoms/form-drafts";
+import { FormRegistry } from "@/components/forms/registry";
 
 export function Thread() {
   return (
@@ -59,10 +62,30 @@ export function Thread() {
 
         <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center px-4 pb-4 mt-auto w-full bg-background">
           <ThreadScrollToBottom />
+          <ActiveVerticalForm />
           <Composer />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
+  );
+}
+
+function ActiveVerticalForm() {
+  const threadId = useAuiState(
+    (s) => (s.thread as any).id || (s.thread as any).threadId || "default",
+  );
+  const drafts = useAtomValue(formDraftsAtom);
+  const draft = drafts[threadId];
+
+  if (!draft?.activeForm) return null;
+  const config = FormRegistry[draft.activeForm];
+  if (config?.layout !== "vertical") return null;
+
+  const Form = config.form;
+  return (
+    <div className="w-full max-w-2xl p-4 bg-muted/30 rounded-xl border border-border shadow-sm">
+      <Form threadId={threadId} />
+    </div>
   );
 }
 
@@ -227,7 +250,7 @@ function UserMessage() {
       data-role="user"
     >
       <UserActionBar />
-      <div className="col-start-2 max-w-xl break-words">
+      <div className="col-start-2 max-w-xl wrap-break-word">
         <UserMessageAttachments />
         <div className="py-2.5 px-5 rounded-3xl rounded-tr-sm bg-muted text-foreground">
           <MessagePrimitive.Parts />
