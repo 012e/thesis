@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useAtom } from "jotai";
 import { formDraftsAtom } from "@/lib/atoms/form-drafts";
 import {
   MDXEditor,
+  type MDXEditorMethods,
   headingsPlugin,
   listsPlugin,
   quotePlugin,
@@ -41,7 +42,12 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
   const draft = drafts[threadId]?.data || {};
 
   const content = draft.content || "";
-  const setContent = (val: string) => setDrafts(prev => ({ ...prev, [threadId]: { ...prev[threadId], activeForm: "PostCreationForm", data: { ...prev[threadId]?.data, content: val } } }));
+  const setContent = (val: string) => {
+    // Track that this change originated from the editor, so the external-update
+    // effect below knows not to call setMarkdown() again and cause a loop.
+    lastEditorContent.current = val;
+    setDrafts(prev => ({ ...prev, [threadId]: { ...prev[threadId], activeForm: "PostCreationForm", data: { ...prev[threadId]?.data, content: val } } }));
+  };
 
   const showPollCreator = draft.showPollCreator || false;
   const setShowPollCreator = (val: boolean) => setDrafts(prev => ({ ...prev, [threadId]: { ...prev[threadId], activeForm: "PostCreationForm", data: { ...prev[threadId]?.data, showPollCreator: val } } }));
@@ -69,8 +75,20 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
   const { mutate: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
-  const editorRef = useRef(null);
+  const editorRef = useRef<MDXEditorMethods>(null);
+  // Tracks the last content value that came from the editor itself.
+  // Initialized to the current draft content so the first-mount effect is a no-op.
+  const lastEditorContent = useRef(content);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // When content changes externally (e.g. via a backend set_form_field tool call),
+  // push the new value into the uncontrolled MDXEditor imperatively.
+  useEffect(() => {
+    if (content !== lastEditorContent.current && editorRef.current) {
+      lastEditorContent.current = content;
+      editorRef.current.setMarkdown(content);
+    }
+  }, [content]);
 
   const characterCount = content.length;
   const maxCharacters = POST_MAX_LENGTH;

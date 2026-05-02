@@ -7,6 +7,7 @@ import {
   thematicBreakPlugin,
   markdownShortcutPlugin,
   codeBlockPlugin,
+  codeMirrorPlugin,
 } from "@repo/mdx-editor";
 import "@repo/mdx-editor/style.css";
 import { Button } from "./button";
@@ -177,7 +178,17 @@ export function PostComposer() {
                   listsPlugin(),
                   quotePlugin(),
                   thematicBreakPlugin(),
-                  codeBlockPlugin(),
+                  codeBlockPlugin({
+                    defaultCodeBlockLanguage: "js",
+                  }),
+                  codeMirrorPlugin({
+                    autoLoadLanguageSupport: true,
+                    codeBlockLanguages: {
+                      js: "JavaScript",
+                      css: "CSS",
+                      html: "HTML",
+                    },
+                  }),
                   markdownShortcutPlugin(),
                 ]}
                 contentEditableClassName="prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base bg-background font-sans"
