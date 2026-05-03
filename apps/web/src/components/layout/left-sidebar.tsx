@@ -16,6 +16,8 @@ import {
   IconFlaskFilled,
   IconShield,
   IconShieldFilled,
+  IconCodeCircle2,
+  IconCodeCircle2Filled,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
@@ -41,6 +43,18 @@ const baseNavigationItems = [
     selectedIcon: IconBellFilled,
     label: "Notifications",
     href: "/notifications",
+  },
+  {
+    icon: IconCodeCircle2,
+    selectedIcon: IconCodeCircle2Filled,
+    label: "Playground",
+    href: "/playground",
+  },
+  {
+    icon: IconBell,
+    selectedIcon: IconBellFilled,
+    label: "Notifications",
+    href: "/",
   },
   {
     icon: IconCodeCircle2,
