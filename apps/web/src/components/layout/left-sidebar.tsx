@@ -29,12 +29,6 @@ const baseNavigationItems = [
     href: "/explore",
   },
   {
-    icon: IconBell,
-    selectedIcon: IconBellFilled,
-    label: "Notifications",
-    href: "/notifications",
-  },
-  {
     icon: IconRobot,
     selectedIcon: IconRobot,
     label: "AI Chat",
