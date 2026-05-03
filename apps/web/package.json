@@ -21,7 +21,7 @@
     "@assistant-ui/react-syntax-highlighter": "^0.12.9",
     "@base-ui/react": "^1.4.1",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
-    "@mdxeditor/editor": "^3.55.0",
+    "@repo/mdx-editor": "workspace:*",
     "@monaco-editor/react": "^4.7.0",
     "@repo/auth-client": "workspace:*",
     "@repo/rest-contracts": "workspace:*",
