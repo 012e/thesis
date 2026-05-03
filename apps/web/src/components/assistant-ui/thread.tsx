@@ -154,7 +154,7 @@ function Composer() {
 
   return (
     <ComposerPrimitive.Root className="flex flex-col w-full max-w-2xl">
-      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col rounded-2xl border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           ref={inputRef}
@@ -179,7 +179,7 @@ function ComposerAction() {
 
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
-          <button className="flex justify-center items-center rounded-full transition-colors disabled:opacity-50 size-8 bg-primary text-primary-foreground hover:bg-primary/90">
+          <button className="flex justify-center items-center transition-colors disabled:opacity-50 size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconArrowUp className="size-4" />
           </button>
         </ComposerPrimitive.Send>
@@ -187,7 +187,7 @@ function ComposerAction() {
 
       <AuiIf condition={(s) => s.thread.isRunning}>
         <ComposerPrimitive.Cancel asChild>
-          <button className="flex justify-center items-center rounded-full transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
+          <button className="flex justify-center items-center transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconPlayerStop className="size-4" />
           </button>
         </ComposerPrimitive.Cancel>

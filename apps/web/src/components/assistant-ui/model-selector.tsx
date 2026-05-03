@@ -62,7 +62,7 @@ export function ModelSelector({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-0.5 rounded-full border border-input bg-muted/50 p-0.5",
+        "flex items-center gap-0.5 border border-input bg-muted/50 p-0.5",
         className,
       )}
     >
@@ -75,7 +75,7 @@ export function ModelSelector({ className }: { className?: string }) {
             title={description}
             onClick={() => setMode(value)}
             className={cn(
-              "flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium transition-all",
+              "flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-all",
               isActive
                 ? "bg-background text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
