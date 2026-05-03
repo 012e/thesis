@@ -21,6 +21,7 @@ COPY apps/web/package.json                apps/web/
 COPY packages/rest-contracts/package.json packages/rest-contracts/
 COPY packages/shared-dto/package.json     packages/shared-dto/
 COPY packages/auth-client/package.json    packages/auth-client/
+COPY packages/mdx-editor/package.json     packages/mdx-editor/
 
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
@@ -42,11 +43,13 @@ COPY apps/web                apps/web
 COPY packages/rest-contracts packages/rest-contracts
 COPY packages/shared-dto     packages/shared-dto
 COPY packages/auth-client    packages/auth-client
+COPY packages/mdx-editor     packages/mdx-editor
 
 # Build shared packages
 RUN pnpm --filter @repo/shared-dto     build
 RUN pnpm --filter @repo/auth-client    build
 RUN pnpm --filter @repo/rest-contracts build
+RUN pnpm --filter @repo/mdx-editor    build
 
 # Build the Vite SPA
 RUN pnpm --filter web build

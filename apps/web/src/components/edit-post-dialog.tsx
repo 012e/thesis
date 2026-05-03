@@ -7,8 +7,8 @@ import {
   thematicBreakPlugin,
   markdownShortcutPlugin,
   codeBlockPlugin,
-} from "@mdxeditor/editor";
-import "@mdxeditor/editor/style.css";
+} from "@repo/mdx-editor";
+import "@repo/mdx-editor/style.css";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
