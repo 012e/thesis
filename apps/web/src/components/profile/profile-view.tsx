@@ -137,9 +137,7 @@ export function ProfileView({
             <IconCalendar className="w-4 h-4" />
             <span className="text-sm">Joined {joinDate}</span>
           </div>
-          {profile.bio && (
-            <p className="mt-3 text-sm">{profile.bio}</p>
-          )}
+          {profile.bio && <p className="mt-3 text-sm">{profile.bio}</p>}
         </div>
 
         <div className="my-6" />
@@ -172,11 +170,15 @@ export function ProfileView({
           ) : (
             <>
               <Card className="p-4">
-                <div className="text-2xl font-bold">{profile.followingCount}</div>
+                <div className="text-2xl font-bold">
+                  {profile.followingCount}
+                </div>
                 <div className="text-sm text-muted-foreground">Following</div>
               </Card>
               <Card className="p-4">
-                <div className="text-2xl font-bold">{profile.followersCount}</div>
+                <div className="text-2xl font-bold">
+                  {profile.followersCount}
+                </div>
                 <div className="text-sm text-muted-foreground">Followers</div>
               </Card>
             </>
@@ -193,7 +195,7 @@ export function ProfileView({
               <div className="text-muted-foreground">No posts yet</div>
             </Card>
           ) : (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col divide-y">
               {posts.map((post) => (
                 <Post key={post.id} post={post} />
               ))}
@@ -207,3 +209,4 @@ export function ProfileView({
     </div>
   );
 }
+
