@@ -67,6 +67,15 @@ export function Thread() {
 }
 
 function ThreadWelcome() {
+  const focusComposer = () => {
+    requestAnimationFrame(() => {
+      const composerInput = document.getElementById("thread-composer-input");
+      if (composerInput instanceof HTMLTextAreaElement) {
+        composerInput.focus();
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4 justify-center items-center p-8 text-center grow">
       <div className="p-4 rounded-full bg-primary/10">
@@ -86,6 +95,7 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">What's trending?</span>
@@ -100,6 +110,7 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">My feed summary</span>
@@ -114,6 +125,7 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Search posts</span>
@@ -128,6 +140,7 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Active users</span>
@@ -157,6 +170,7 @@ function Composer() {
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
+          id="thread-composer-input"
           ref={inputRef}
           placeholder="Message AI assistant..."
           className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
