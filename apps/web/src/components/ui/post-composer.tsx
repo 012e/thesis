@@ -10,6 +10,8 @@ import {
   codeMirrorPlugin,
 } from "@repo/mdx-editor";
 import "@repo/mdx-editor/style.css";
+import { oneDark } from "@codemirror/theme-one-dark";
+import "@mdxeditor/editor/style.css";
 import { Button } from "./button";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
@@ -167,7 +169,7 @@ export function PostComposer() {
       <div className="p-4">
         <div className="flex-1">
           <div className="mb-4">
-            <div className="overflow-hidden rounded-lg bg-background mdx-editor-wrapper">
+            <div className="overflow-hidden rounded-lg mdx-editor-wrapper">
               <MDXEditor
                 placeholder="What's happening"
                 ref={editorRef}
@@ -188,10 +190,11 @@ export function PostComposer() {
                       css: "CSS",
                       html: "HTML",
                     },
+                    codeMirrorExtensions: [oneDark],
                   }),
                   markdownShortcutPlugin(),
                 ]}
-                contentEditableClassName="prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base bg-background font-sans"
+                contentEditableClassName="prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base font-sans"
               />
             </div>
 

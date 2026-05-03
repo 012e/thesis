@@ -135,17 +135,13 @@
 }
 
 .mdx-editor-wrapper .mdx-editor {
-  @apply border-0 bg-background;
+  @apply border-0;
 }
 
 .mdx-editor-wrapper .mdx-editor__toolbar {
-  @apply border-b border-border bg-background;
-}
-
-.mdx-editor-wrapper .mdx-editor__content {
-  @apply bg-background;
+  @apply border-b border-border;
 }
 
 .mdx-editor-wrapper [contenteditable] {
-  @apply text-foreground bg-background;
+  @apply text-foreground border-0;
 }
