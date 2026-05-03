@@ -377,6 +377,57 @@ describe("UsersController (e2e)", () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(profileResponse.body.coverPhoto).toBe(coverPhotoUrl);
     });
+
+    it("should reject invalid cover photo URL", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "coverinvalid@example.com",
+        "coverinvalid",
+      );
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ coverPhotoUrl: "not-a-valid-url" })
+        .expect(400);
+    });
+
+    it("should allow updating cover photo multiple times (upsert)", async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        "coverupsert@example.com",
+        "coverupsert",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ coverPhotoUrl: "https://cdn.example.com/covers/first.webp" })
+        .expect(200);
+
+      const response = await request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ coverPhotoUrl: "https://cdn.example.com/covers/second.webp" })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.coverPhoto).toBe("https://cdn.example.com/covers/second.webp");
+
+      const { eq } = await import("drizzle-orm");
+      const [profileRow] = await databaseService.db
+        .select()
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, userId))
+        .limit(1);
+
+      expect(profileRow).toBeDefined();
+      expect(profileRow?.coverPhotoUrl).toBe(
+        "https://cdn.example.com/covers/second.webp",
+      );
+    });
   });
 
   describe("PATCH /users/me/profile", () => {

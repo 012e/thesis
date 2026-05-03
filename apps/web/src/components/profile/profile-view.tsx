@@ -71,7 +71,9 @@ export function ProfileView({
     }
   };
 
-  const handleCoverPhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+  const handleCoverPhotoChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     event.target.value = "";
 
@@ -96,9 +98,7 @@ export function ProfileView({
       toast.success("Cover photo updated");
     } catch (error) {
       const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to update cover photo";
+        error instanceof Error ? error.message : "Failed to update cover photo";
       toast.error(message);
     } finally {
       setIsCoverUploading(false);
@@ -133,7 +133,7 @@ export function ProfileView({
               aria-label="Change cover photo"
               disabled={isCoverUploading}
             >
-              <span className="flex gap-2 items-center px-3 py-2 text-sm text-white rounded-md opacity-0 transition-opacity bg-black/50 group-hover:opacity-100">
+              <span className="flex gap-2 items-center px-3 py-2 text-sm text-foreground opacity-0 transition-opacity bg-background/50 group-hover:opacity-100">
                 <IconEdit className="w-4 h-4" />
                 {isCoverUploading ? "Uploading..." : "Edit cover photo"}
               </span>
