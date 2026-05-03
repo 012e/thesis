@@ -54,7 +54,7 @@ function UserProfilePage() {
   return (
     <div className="min-h-screen">
       {/* Cover Photo */}
-      <div className="h-48 bg-gradient-to-r from-primary/20 to-primary/10" />
+      <div className="h-48 bg-linear-to-r from-primary/20 to-primary/10" />
 
       <div className="px-4 mx-auto max-w-2xl">
         {/* Profile Header */}
