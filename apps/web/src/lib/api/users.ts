@@ -42,6 +42,25 @@ export async function updateAvatar(
   throw new Error("Failed to update avatar");
 }
 
+export async function updateCoverPhoto(
+  coverPhotoUrl: string,
+): Promise<{ coverPhoto: string | null }> {
+  const response = await client.updateCoverPhoto({
+    body: { coverPhotoUrl },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to update cover photo");
+}
+
 export async function updateUserProfile(data: {
   bio: string | null;
 }): Promise<UserProfileDto> {

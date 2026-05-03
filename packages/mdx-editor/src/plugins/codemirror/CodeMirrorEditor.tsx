@@ -7,10 +7,10 @@ import { iconComponentFor$, readOnly$, useTranslation } from '../core'
 
 import { languages } from '@codemirror/language-data'
 import { EditorState, Extension } from '@codemirror/state'
-import { EditorView, lineNumbers, keymap } from '@codemirror/view'
-import { indentWithTab } from '@codemirror/commands'
+import { EditorView, lineNumbers, keymap, drawSelection, highlightActiveLine } from '@codemirror/view'
+import { bracketMatching } from '@codemirror/language'
+import { indentWithTab, history, defaultKeymap, historyKeymap } from '@codemirror/commands'
 import { basicLight } from 'cm6-theme-basic-light'
-import { basicSetup } from 'codemirror'
 import { $setSelection } from 'lexical'
 import {
   EMPTY_VALUE,
@@ -56,10 +56,13 @@ export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: Code
     void (async () => {
       const extensions = [
         ...codeMirrorExtensions,
-        basicSetup,
         basicLight,
         lineNumbers(),
-        keymap.of([indentWithTab]),
+        history(),
+        drawSelection(),
+        highlightActiveLine(),
+        bracketMatching(),
+        keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
         EditorView.lineWrapping,
         EditorView.updateListener.of(({ state }) => {
           setCodeRef.current(state.doc.toString())

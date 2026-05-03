@@ -37,7 +37,7 @@ import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
 import { UserAvatar } from "./user-avatar";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 
 export interface PostProps {
   post: PostDto;
@@ -207,6 +207,27 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
 
+  const [reactionSummary, setReactionSummary] = useState(() => ({
+    upvotes: initialReactionSummary?.upvotes ?? post.upvoteCount,
+    downvotes: initialReactionSummary?.downvotes ?? post.downvoteCount,
+    userReaction: initialReactionSummary?.userReaction ?? null,
+  }));
+
+  useEffect(() => {
+    setReactionSummary({
+      upvotes: initialReactionSummary?.upvotes ?? post.upvoteCount,
+      downvotes: initialReactionSummary?.downvotes ?? post.downvoteCount,
+      userReaction: initialReactionSummary?.userReaction ?? null,
+    });
+  }, [
+    initialReactionSummary?.downvotes,
+    initialReactionSummary?.upvotes,
+    initialReactionSummary?.userReaction,
+    post.downvoteCount,
+    post.upvoteCount,
+    post.id,
+  ]);
+
   const handleAuthorClick = (e: MouseEvent) => {
     e.stopPropagation();
     if (!isOwnPost) {
@@ -214,20 +235,44 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
     }
   };
 
-  const userVote = initialReactionSummary?.userReaction ?? null;
-  const upvoteCount = initialReactionSummary?.upvotes ?? post.upvoteCount;
-  const downvoteCount = initialReactionSummary?.downvotes ?? post.downvoteCount;
+  const { userReaction: userVote, upvotes: upvoteCount, downvotes: downvoteCount } =
+    reactionSummary;
 
   const handleVote = (voteType: ReactionTypeDto) => {
     if (isVoting) return;
 
+    const previousSummary = reactionSummary;
+    const isRemovingVote = userVote === voteType;
+    const nextVote = isRemovingVote ? null : voteType;
+
+    const nextSummary = {
+      upvotes:
+        previousSummary.upvotes +
+        (previousSummary.userReaction === "upvote" ? -1 : 0) +
+        (nextVote === "upvote" ? 1 : 0),
+      downvotes:
+        previousSummary.downvotes +
+        (previousSummary.userReaction === "downvote" ? -1 : 0) +
+        (nextVote === "downvote" ? 1 : 0),
+      userReaction: nextVote,
+    };
+
+    setReactionSummary(nextSummary);
+
     // If clicking the same vote type, remove the vote
-    if (userVote === voteType) {
-      reactToPost({ postId: post.id, type: null });
-    } else {
-      // Add new vote (replaces previous if exists)
-      reactToPost({ postId: post.id, type: voteType });
+    if (isRemovingVote) {
+      reactToPost(
+        { postId: post.id, type: null },
+        { onError: () => setReactionSummary(previousSummary) },
+      );
+      return;
     }
+
+    // Add new vote (replaces previous if exists)
+    reactToPost(
+      { postId: post.id, type: voteType },
+      { onError: () => setReactionSummary(previousSummary) },
+    );
   };
 
   // Format timestamp (simple relative time for now)

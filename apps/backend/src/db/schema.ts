@@ -43,6 +43,7 @@ export type NewPost = typeof posts.$inferInsert;
 export const userProfiles = pgTable('user_profiles', {
   userId: text('user_id').primaryKey(),
   avatarUrl: text('avatar_url'),
+  coverPhotoUrl: text('cover_photo_url'),
   bio: text('bio'),
 });
 

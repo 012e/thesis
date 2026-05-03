@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updatePost } from "@/lib/api/posts";
 import type { PostContentDto } from "@repo/shared-dto";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 
 export function useUpdatePost() {
   const queryClient = useQueryClient();

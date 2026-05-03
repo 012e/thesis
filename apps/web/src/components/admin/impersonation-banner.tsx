@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 import { IconAlertTriangle, IconX } from "@tabler/icons-react";
 
 import { authClient } from "@/lib/auth";

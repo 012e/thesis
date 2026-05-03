@@ -22,6 +22,7 @@ import {
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
+import { useEffect, useRef } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
 import { Button } from "@/components/ui/button";
@@ -66,6 +67,15 @@ export function Thread() {
 }
 
 function ThreadWelcome() {
+  const focusComposer = () => {
+    requestAnimationFrame(() => {
+      const composerInput = document.getElementById("thread-composer-input");
+      if (composerInput instanceof HTMLTextAreaElement) {
+        composerInput.focus();
+      }
+    });
+  };
+
   return (
     <div className="flex flex-col gap-4 justify-center items-center p-8 text-center grow">
       <div className="p-4 rounded-full bg-primary/10">
@@ -74,7 +84,8 @@ function ThreadWelcome() {
       <div>
         <h2 className="text-xl font-semibold">How can I help you?</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ask me anything — I can read posts, search content, and help you explore
+          Ask me anything — I can read posts, search content, and help you
+          explore
         </p>
       </div>
       <div className="grid gap-2 mt-4 w-full max-w-2xl md:grid-cols-2">
@@ -84,10 +95,13 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">What's trending?</span>
-            <span className="text-muted-foreground">Show me the most upvoted posts</span>
+            <span className="text-muted-foreground">
+              Show me the most upvoted posts
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -96,10 +110,13 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">My feed summary</span>
-            <span className="text-muted-foreground">Summarize recent posts I follow</span>
+            <span className="text-muted-foreground">
+              Summarize recent posts I follow
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -108,10 +125,13 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Search posts</span>
-            <span className="text-muted-foreground">Find posts about a topic</span>
+            <span className="text-muted-foreground">
+              Find posts about a topic
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -120,10 +140,13 @@ function ThreadWelcome() {
         >
           <Button
             variant="outline"
+            onClick={focusComposer}
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Active users</span>
-            <span className="text-muted-foreground">See who's been most active</span>
+            <span className="text-muted-foreground">
+              See who's been most active
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
       </div>
@@ -132,11 +155,23 @@ function ThreadWelcome() {
 }
 
 function Composer() {
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <ComposerPrimitive.Root className="flex flex-col w-full max-w-2xl">
-      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col rounded-2xl border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
+          id="thread-composer-input"
+          ref={inputRef}
           placeholder="Message AI assistant..."
           className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
           rows={1}
@@ -158,7 +193,7 @@ function ComposerAction() {
 
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
-          <button className="flex justify-center items-center rounded-full transition-colors disabled:opacity-50 size-8 bg-primary text-primary-foreground hover:bg-primary/90">
+          <button className="flex justify-center items-center transition-colors disabled:opacity-50 size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconArrowUp className="size-4" />
           </button>
         </ComposerPrimitive.Send>
@@ -166,7 +201,7 @@ function ComposerAction() {
 
       <AuiIf condition={(s) => s.thread.isRunning}>
         <ComposerPrimitive.Cancel asChild>
-          <button className="flex justify-center items-center rounded-full transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
+          <button className="flex justify-center items-center transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
             <IconPlayerStop className="size-4" />
           </button>
         </ComposerPrimitive.Cancel>
@@ -248,7 +283,7 @@ function AssistantMessage() {
       data-role="assistant"
     >
       <div className="flex flex-col justify-center">
-        <div className="flex my-1.5 max-w-xl text-sm leading-relaxed break-words text-foreground">
+        <div className="flex my-1.5 max-w-xl text-sm leading-relaxed wrap-break-word text-foreground">
           <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
             <IconRobot className="size-4 text-primary" />
           </div>
