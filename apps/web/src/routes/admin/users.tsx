@@ -21,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 
 import { authClient } from "@/lib/auth";
+import { searchUsers as searchUsersApi } from "@/lib/api/search";
 import { useSession } from "@/hooks/use-session";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Input } from "@/components/ui/input";
@@ -79,17 +80,33 @@ function AdminUsersPage() {
   } = useQuery({
     queryKey: ["admin", "users", debouncedSearch, pagination.pageIndex],
     queryFn: async () => {
+      const trimmedSearch = debouncedSearch.trim();
+
+      if (trimmedSearch) {
+        const searchResults = await searchUsersApi(trimmedSearch);
+        const mappedUsers: AdminUser[] = searchResults.map((user) => ({
+          id: user.id,
+          name: user.name ?? user.displayUsername ?? user.username ?? "Unknown",
+          email: "—",
+          username: user.username,
+          image: user.image,
+          role: null,
+          banned: false,
+          banReason: null,
+          banExpires: null,
+          createdAt: new Date(0).toISOString(),
+        }));
+
+        return {
+          users: mappedUsers.slice(offset, offset + PAGE_SIZE),
+          total: mappedUsers.length,
+        };
+      }
+
       const result = await authClient.admin.listUsers({
         query: {
           limit: PAGE_SIZE,
           offset,
-          ...(debouncedSearch
-            ? {
-                searchValue: debouncedSearch,
-                searchField: "email",
-                searchOperator: "contains" as const,
-              }
-            : {}),
           sortBy: "createdAt",
           sortDirection: "desc" as const,
         },

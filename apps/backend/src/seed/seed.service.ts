@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { CommentsService } from "@/comments/comments.service";
 import { DatabaseService } from "@/db/database.service";
+import { userProfiles } from "@/db/schema";
 import { FollowsService } from "@/follows/follows.service";
 import { PostsService } from "@/posts/posts.service";
 import { ReactionsService } from "@/reactions/reactions.service";
@@ -281,6 +282,12 @@ export class SeedService {
         data: { username: "demo" },
       },
     });
+    await this.databaseService.db.insert(userProfiles).values({
+      userId: demo.user.id,
+      avatarUrl: faker.image.avatar(),
+      coverPhotoUrl: faker.image.urlPicsumPhotos({ width: 1600, height: 400 }),
+      bio: faker.lorem.sentences({ min: 1, max: 3 }),
+    });
     users.push({ id: demo.user.id, email: demo.user.email });
 
     // Create extra users via the standard sign-up flow.
@@ -307,6 +314,12 @@ export class SeedService {
           name: candidate.name,
           username: candidate.username,
         },
+      });
+      await this.databaseService.db.insert(userProfiles).values({
+        userId: created.user.id,
+        avatarUrl: faker.image.avatar(),
+        coverPhotoUrl: faker.image.urlPicsumPhotos({ width: 1600, height: 400 }),
+        bio: faker.lorem.sentences({ min: 1, max: 3 }),
       });
       users.push({ id: created.user.id, email: created.user.email });
     }
