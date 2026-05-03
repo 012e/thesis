@@ -95,6 +95,39 @@
 
   --error-color: var(--red-10);
 
+  :global(.dark) & {
+    --basePageBg: var(--slate-12);
+    --baseBase: var(--slate-11);
+    --baseBgSubtle: var(--slate-10);
+    --baseBg: var(--slate-9);
+    --baseBgHover: var(--slate-8);
+    --baseBgActive: var(--slate-7);
+    --baseLine: var(--slate-6);
+    --baseBorder: var(--slate-5);
+    --baseBorderHover: var(--slate-4);
+    --baseSolid: var(--slate-3);
+    --baseSolidHover: var(--slate-2);
+    --baseText: var(--slate-2);
+    --baseTextContrast: var(--slate-1);
+
+    --admonitionTipBg: var(--cyan-9);
+    --admonitionTipBorder: var(--cyan-6);
+
+    --admonitionInfoBg: var(--grass-9);
+    --admonitionInfoBorder: var(--grass-6);
+
+    --admonitionCautionBg: var(--amber-9);
+    --admonitionCautionBorder: var(--amber-6);
+
+    --admonitionDangerBg: var(--red-9);
+    --admonitionDangerBorder: var(--red-6);
+
+    --admonitionNoteBg: var(--slate-9);
+    --admonitionNoteBorder: var(--slate-6);
+
+    --error-color: var(--red-4);
+  }
+
   --spacing-0: 0px;
   --spacing-px: 1px;
   --spacing-0_5: 0.125rem;
