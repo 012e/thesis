@@ -26,6 +26,7 @@
   "dependencies": {
     "@codemirror/commands": "^6.2.4",
     "@codemirror/lang-markdown": "^6.2.3",
+    "@codemirror/language": "^6.12.3",
     "@codemirror/language-data": "^6.5.1",
     "@codemirror/merge": "^6.4.0",
     "@codemirror/state": "^6.4.0",
