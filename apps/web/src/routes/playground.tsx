@@ -229,7 +229,7 @@ export function PlaygroundPage() {
             <button
               onClick={handleRun}
               disabled={isPending || !code.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? (
                 <IconLoader2 className="w-4 h-4 animate-spin" />

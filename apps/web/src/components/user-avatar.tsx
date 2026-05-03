@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -85,12 +85,14 @@ function ProfileCardContent({
     <div className="flex flex-col gap-3 w-90">
       {/* Header row: avatar + name + follow button */}
       <div className="flex gap-3 items-start">
-        <Avatar className="size-12 shrink-0">
-          <AvatarImage src={profile.image ?? undefined} alt={displayName} />
-          <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
+        <Link to="/users/$userId" params={{ userId: profile.id }}>
+          <Avatar className="size-12 shrink-0">
+            <AvatarImage src={profile.image ?? undefined} alt={displayName} />
+            <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
 
         <div className="flex-1 min-w-0">
           <Link
@@ -181,12 +183,14 @@ export function UserAvatar({
     : "?";
 
   const trigger = children ?? (
-    <Avatar className={className}>
-      <AvatarImage src={src ?? undefined} alt={name ?? undefined} />
-      <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
-        {initials}
-      </AvatarFallback>
-    </Avatar>
+    <Link to="/users/$userId" params={{ userId }}>
+      <Avatar className={className}>
+        <AvatarImage src={src ?? undefined} alt={name ?? undefined} />
+        <AvatarFallback className="font-semibold bg-primary text-primary-foreground">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+    </Link>
   );
 
   return (
