@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { toast } from "@/lib/toast";
+import { useToast as toast } from "@/hooks/use-toast";
 import { IconKey } from "@tabler/icons-react";
 
 import { authClient } from "@/lib/auth";

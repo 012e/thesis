@@ -37,7 +37,7 @@ import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
 import { UserAvatar } from "./user-avatar";
-import { toast } from "@/lib/toast";
+import { useToast as toast } from "@/hooks/use-toast";
 
 export interface PostProps {
   post: PostDto;

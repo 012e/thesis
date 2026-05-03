@@ -54,6 +54,7 @@ function ProfileContent({
           name: session.user.name || null,
           email: session.user.email || null,
           image: profile?.image || null,
+          coverPhoto: profile?.coverPhoto || null,
           bio: profile?.bio ?? null,
           postCount: profile?.postCount ?? 0,
           followingCount: profile?.followingCount ?? 0,

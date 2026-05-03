@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
-import { toast } from '@/lib/toast';
+import { useToast as toast } from '@/hooks/use-toast';
 import type { Socket } from 'socket.io-client';
 
 import bearerToken from '@/lib/atoms/bearer-token';

@@ -110,6 +110,16 @@ export class UsersService implements OnApplicationBootstrap {
       });
   }
 
+  async updateCoverPhoto(userId: string, coverPhotoUrl: string): Promise<void> {
+    await this.databaseService.db
+      .insert(userProfiles)
+      .values({ userId, coverPhotoUrl })
+      .onConflictDoUpdate({
+        target: userProfiles.userId,
+        set: { coverPhotoUrl },
+      });
+  }
+
   async getProfile(
     userId: string,
     currentUserId: string,
@@ -147,6 +157,7 @@ export class UsersService implements OnApplicationBootstrap {
         email: user.email,
         name: user.name,
         image: userProfiles.avatarUrl,
+        coverPhoto: userProfiles.coverPhotoUrl,
         bio: userProfiles.bio,
         createdAt: user.createdAt,
         followersCount: sql<number>`COALESCE((${followersCountSq}), 0)::int`,
@@ -170,6 +181,7 @@ export class UsersService implements OnApplicationBootstrap {
       email: row.email,
       name: row.name,
       image: row.image ?? this.defaultAvatarUrl,
+      coverPhoto: row.coverPhoto ?? null,
       bio: row.bio ?? null,
       createdAt: row.createdAt.toISOString(),
       followersCount: row.followersCount,

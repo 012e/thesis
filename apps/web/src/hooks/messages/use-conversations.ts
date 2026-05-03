@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "@/lib/toast";
+import { useToast as toast } from "@/hooks/use-toast";
 import {
   listConversations,
   startConversation,

@@ -12,6 +12,8 @@ import {
   IconRobot,
   IconCodeCircle2,
   IconCodeCircle2Filled,
+  IconFlask,
+  IconFlaskFilled,
   IconShield,
   IconShieldFilled,
 } from "@tabler/icons-react";
@@ -68,6 +70,12 @@ export function LeftSidebar() {
               selectedIcon: IconShieldFilled,
               label: "User Management",
               href: "/admin/users",
+            },
+            {
+              icon: IconFlask,
+              selectedIcon: IconFlaskFilled,
+              label: "Testing",
+              href: "/testing",
             },
           ]
         : []),

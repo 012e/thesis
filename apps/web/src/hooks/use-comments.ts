@@ -6,7 +6,7 @@ import {
   deleteComment,
 } from "@/lib/api/comments";
 import type { CreateCommentBodyType } from "@repo/rest-contracts";
-import { toast } from "@/lib/toast";
+import { useToast as toast } from "@/hooks/use-toast";
 
 export function useComments(postId: string, { enabled = true }: { enabled?: boolean } = {}) {
   return useQuery({

@@ -33,6 +33,21 @@ export const usersContract = c.router({
     },
     summary: "Update the authenticated user's avatar URL in user_profiles.",
   },
+  // updateCoverPhoto MUST be declared before getUserProfile so the static segment
+  // "/users/me/cover-photo" is not swallowed by the dynamic ":id" path parameter.
+  updateCoverPhoto: {
+    method: "PATCH",
+    path: "/users/me/cover-photo",
+    body: z.object({
+      coverPhotoUrl: z.string().url(),
+    }),
+    responses: {
+      200: z.object({ coverPhoto: z.string().nullable() }),
+      401: z.null(),
+    },
+    summary:
+      "Update the authenticated user's cover photo URL in user_profiles.",
+  },
   // updateProfile MUST be declared before getUserProfile so the static segment
   // "/users/me/profile" is not swallowed by the dynamic ":id" path parameter.
   updateProfile: {

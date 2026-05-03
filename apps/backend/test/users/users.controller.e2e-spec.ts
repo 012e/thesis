@@ -96,6 +96,9 @@ describe("UsersController (e2e)", () => {
       // bio is null by default
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(response.body.bio).toBeNull();
+      // coverPhoto is null by default
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.coverPhoto).toBeNull();
     });
 
     it("should return 401 if unauthorized", async () => {
@@ -309,6 +312,70 @@ describe("UsersController (e2e)", () => {
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(profileResponse.body.image).toBe(avatarUrl);
+    });
+  });
+
+  describe("PATCH /users/me/cover-photo", () => {
+    it("should return 401 if not authenticated", () => {
+      return request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .send({ coverPhotoUrl: "https://cdn.example.com/covers/unauth.webp" })
+        .expect(401);
+    });
+
+    it("should save the cover photo URL and return it in the response", async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        "coverphototest@example.com",
+        "coverphototest",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const coverPhotoUrl = "https://cdn.example.com/covers/coverphototest.webp";
+
+      const response = await request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ coverPhotoUrl })
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.coverPhoto).toBe(coverPhotoUrl);
+
+      const { eq } = await import("drizzle-orm");
+      const [profileRow] = await databaseService.db
+        .select()
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, userId))
+        .limit(1);
+
+      expect(profileRow).toBeDefined();
+      expect(profileRow?.coverPhotoUrl).toBe(coverPhotoUrl);
+    });
+
+    it("should reflect the saved cover photo in GET /users/:id/profile", async () => {
+      const { cookie, user } = await createE2ETestUser(
+        testApp.app,
+        "coverprofile@example.com",
+        "coverprofile",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const userId = user.id as string;
+      const coverPhotoUrl = "https://cdn.example.com/covers/coverprofile.webp";
+
+      await request(testApp.app.getHttpServer())
+        .patch("/users/me/cover-photo")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .send({ coverPhotoUrl })
+        .expect(200);
+
+      const profileResponse = await request(testApp.app.getHttpServer())
+        .get(`/users/${userId}/profile`)
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(profileResponse.body.coverPhoto).toBe(coverPhotoUrl);
     });
   });
 

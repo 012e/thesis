@@ -17,6 +17,7 @@ export const UserProfile = z.object({
   email: z.string(),
   name: z.string().nullable(),
   image: z.string().nullable(),
+  coverPhoto: z.string().nullable(),
   bio: z.string().nullable(),
   createdAt: z.string().datetime(),
   followersCount: z.number().int().nonnegative(),

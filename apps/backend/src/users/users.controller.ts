@@ -31,6 +31,20 @@ export class UsersController {
     });
   }
 
+  @TsRestHandler(usersContract.updateCoverPhoto)
+  updateCoverPhoto(@Session() session: UserSession) {
+    return tsRestHandler(usersContract.updateCoverPhoto, async ({ body }) => {
+      await this.usersService.updateCoverPhoto(
+        session.user.id,
+        body.coverPhotoUrl,
+      );
+      return {
+        status: 200,
+        body: { coverPhoto: body.coverPhotoUrl },
+      };
+    });
+  }
+
   @TsRestHandler(usersContract.updateProfile)
   updateProfile(@Session() session: UserSession) {
     return tsRestHandler(usersContract.updateProfile, async ({ body }) => {

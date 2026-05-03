@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,6 +7,10 @@ import { Separator } from "@/components/ui/separator";
 import { IconCalendar, IconMail, IconEdit } from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
 import { Post } from "@/components/post";
+import { uploadImages } from "@/lib/api/uploads";
+import { updateCoverPhoto } from "@/lib/api/users";
+import { toast } from "@/lib/toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export interface ProfileViewProps {
   profile: {
@@ -14,6 +18,7 @@ export interface ProfileViewProps {
     name: string | null;
     email: string | null;
     image: string | null;
+    coverPhoto: string | null;
     bio: string | null;
     postCount: number;
     followingCount: number;
@@ -40,6 +45,10 @@ export function ProfileView({
   followPending = false,
   editDialog,
 }: ProfileViewProps) {
+  const queryClient = useQueryClient();
+  const coverFileInputRef = useRef<HTMLInputElement>(null);
+  const [isCoverUploading, setIsCoverUploading] = useState(false);
+
   const initials = profile.name
     ? profile.name
         .split(" ")
@@ -62,10 +71,76 @@ export function ProfileView({
     }
   };
 
+  const handleCoverPhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file || !isCurrentUser || isCoverUploading) {
+      return;
+    }
+
+    setIsCoverUploading(true);
+    try {
+      const uploadResult = await uploadImages([file]);
+      const uploadedImage = uploadResult.images[0];
+
+      if (!uploadedImage) {
+        throw new Error("No image returned from upload");
+      }
+
+      await updateCoverPhoto(uploadedImage.url);
+      await queryClient.invalidateQueries({
+        queryKey: ["users", profile.id, "profile"],
+      });
+
+      toast.success("Cover photo updated");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to update cover photo";
+      toast.error(message);
+    } finally {
+      setIsCoverUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {/* Cover Photo */}
-      <div className="h-48 bg-linear-to-r from-primary/20 to-primary/10" />
+      <div className="relative h-48 bg-linear-to-r from-primary/20 to-primary/10">
+        {profile.coverPhoto && (
+          <img
+            src={profile.coverPhoto}
+            alt={`${profile.name || "User"} cover photo`}
+            className="object-cover absolute inset-0 w-full h-full"
+          />
+        )}
+        {isCurrentUser && (
+          <>
+            <input
+              ref={coverFileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverPhotoChange}
+              disabled={isCoverUploading}
+            />
+            <button
+              type="button"
+              className="group flex absolute inset-0 justify-center items-center bg-black/0 hover:bg-black/35 transition-colors cursor-pointer"
+              onClick={() => coverFileInputRef.current?.click()}
+              aria-label="Change cover photo"
+              disabled={isCoverUploading}
+            >
+              <span className="flex gap-2 items-center px-3 py-2 text-sm text-white rounded-md opacity-0 transition-opacity bg-black/50 group-hover:opacity-100">
+                <IconEdit className="w-4 h-4" />
+                {isCoverUploading ? "Uploading..." : "Edit cover photo"}
+              </span>
+            </button>
+          </>
+        )}
+      </div>
 
       <div className="mx-auto max-w-2xl">
         {/* Profile Header */}
@@ -209,4 +284,3 @@ export function ProfileView({
     </div>
   );
 }
-

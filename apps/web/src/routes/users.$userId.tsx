@@ -47,6 +47,7 @@ function UserProfilePage() {
         name: profile.name,
         email: profile.email,
         image: profile.image,
+        coverPhoto: profile.coverPhoto,
         bio: profile.bio,
         postCount: profile.postCount,
         followingCount: profile.followingCount,
