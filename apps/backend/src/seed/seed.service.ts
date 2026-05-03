@@ -12,12 +12,12 @@ import { ReactionsService } from "@/reactions/reactions.service";
 import { ThreadsService } from "@/threads/threads.service";
 
 // ── seed volume constants ─────────────────────────────────────────────────────
-const EXTRA_USERS = 4; // additional users alongside demo@gmail.com
-const POSTS_PER_USER = 20;
-const COMMENTS_PER_POST = 30;
-const REPLIES_PER_COMMENT = 30;
+const EXTRA_USERS = 10; // additional users alongside demo@gmail.com
+const POSTS_PER_USER = 10;
+const COMMENTS_PER_POST = 3;
+const REPLIES_PER_COMMENT = 3;
 const THREADS_PER_USER = 2;
-const FOLLOWS_PER_USER = 2; // how many other users each user follows
+const FOLLOWS_PER_USER = 5; // how many other users each user follows
 
 type SeededUser = { id: string; email: string };
 
@@ -225,12 +225,7 @@ export class SeedService {
   private randomPostContent() {
     const roll = faker.number.float({ min: 0, max: 1 });
 
-    if (roll < 0.6) {
-      // 60% markdown text post
-      return { text: this.randomMarkdown() };
-    }
-
-    if (roll < 0.8) {
+    if (roll > 0.8) {
       // 20% poll post
       const optionCount = faker.number.int({ min: 2, max: 4 });
       return {
@@ -248,33 +243,7 @@ export class SeedService {
       };
     }
 
-    // 20% visualization post
-    return {
-      visualization: {
-        title: faker.lorem.sentence({ min: 3, max: 6 }),
-        visualizationType: faker.helpers.arrayElement([
-          "bar",
-          "line",
-          "pie",
-          "table",
-        ] as const),
-        data: Array.from(
-          { length: faker.number.int({ min: 3, max: 6 }) },
-          () => ({
-            label: faker.lorem.word(),
-            value: faker.number.int({ min: 10, max: 1000 }),
-          }),
-        ),
-        description: faker.lorem.sentence(),
-        unit: faker.helpers.arrayElement([
-          "users",
-          "items",
-          "views",
-          "clicks",
-          "sales",
-        ]),
-      },
-    };
+    return { text: this.randomMarkdown() };
   }
 
   // ── cleanup & user creation ─────────────────────────────────────────────────
