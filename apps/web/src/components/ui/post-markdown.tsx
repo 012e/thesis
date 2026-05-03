@@ -300,9 +300,9 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
                 const iconColor = meta?.[1];
                 const label = meta?.[2] ?? match[1];
                 return (
-                  <div className="group overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none rounded-md border border-border/50 bg-muted/30">
+                  <div className="group overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none border border-border/50 bg-muted/30">
                     {/* language badge — pinned to top-right, outside scroll flow */}
-                    <div className="flex absolute top-0 right-0 z-10 gap-1 items-center px-1.5 py-0.5 font-mono text-[10px] font-medium transition-opacity transition-colors duration-150 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto cursor-default text-muted-foreground/60 hover:bg-accent hover:text-accent-foreground">
+                    <div className="flex absolute top-0 right-0 z-10 gap-1 items-center px-1.5 py-0.5 font-mono text-[10px] font-medium transition-opacity duration-150 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto cursor-default bg-accent text-accent-foreground">
                       {LangIcon && (
                         <LangIcon
                           style={{ color: iconColor }}

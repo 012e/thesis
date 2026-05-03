@@ -15,6 +15,14 @@ function UserProfilePage() {
   const { data: profile, isPending, error } = useUserProfile(userId);
   const { data: posts = [] } = useUserPosts(userId);
   const { data: session } = useSession();
+  const {
+    isFollowing,
+    isPending: isFollowPending,
+    toggle: toggleFollow,
+  } = useFollow({
+    userId,
+    initialIsFollowing: profile?.isFollowing ?? false,
+  });
 
   if (isPending) {
     return <PageSpinner />;
@@ -31,15 +39,6 @@ function UserProfilePage() {
   }
 
   const isCurrentUser = session?.user?.id === userId;
-
-  const {
-    isFollowing,
-    isPending: isFollowPending,
-    toggle: toggleFollow,
-  } = useFollow({
-    userId,
-    initialIsFollowing: profile.isFollowing,
-  });
 
   return (
     <ProfileView
@@ -63,4 +62,3 @@ function UserProfilePage() {
     />
   );
 }
-
