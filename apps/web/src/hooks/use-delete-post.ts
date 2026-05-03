@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deletePost } from "@/lib/api/posts";
 import { removeNewPost } from "@/lib/session-storage";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export function useDeletePost() {
   const queryClient = useQueryClient();

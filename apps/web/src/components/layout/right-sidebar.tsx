@@ -33,7 +33,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
 
   if (isCollapsed) {
     return (
-      <div className="flex sticky top-0 flex-col items-center py-2 px-1 h-screen border-l w-12 transition-all duration-300">
+      <div className="flex sticky top-0 flex-col items-center py-2 px-1 ml-auto h-screen border-l w-12 transition-all duration-300">
         <button
           onClick={() => setIsCollapsed(false)}
           className="p-2 mt-2 hover:bg-accent rounded-full transition-colors"
@@ -47,7 +47,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
   }
 
   return (
-    <div className="overflow-hidden sticky top-0 py-2 px-4 h-screen w-87.5 transition-all duration-300">
+    <div className="overflow-y-auto sticky top-0 py-2 px-4 ml-auto h-screen w-87.5 transition-all duration-300">
       <div className="flex flex-col gap-4">
         {/* Search row with collapse toggle */}
         <div className="flex items-center gap-2">

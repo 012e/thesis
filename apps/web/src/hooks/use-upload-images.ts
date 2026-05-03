@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { uploadImages } from "@/lib/api/uploads";
 import type { PostImageDto } from "@repo/shared-dto";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export interface UseUploadImagesResult {
   images: PostImageDto[];

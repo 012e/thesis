@@ -3,7 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 import { listMessages, sendMessageRest } from "@/lib/api/messages";
 import { conversationKeys } from "./use-conversations";
 

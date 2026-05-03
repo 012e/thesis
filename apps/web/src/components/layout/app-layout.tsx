@@ -5,8 +5,8 @@ import { ChatManager } from "@/components/chat";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex justify-center">
-      <div className="flex w-full max-w-7xl">
+    <div className="min-h-screen flex">
+      <div className="flex w-full">
         <LeftSidebar />
         <MainContent>{children}</MainContent>
         <RightSidebar />

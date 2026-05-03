@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { votePoll, unvotePoll, getPollResults } from "@/lib/api/polls";
 import type { PollResultsDto } from "@repo/shared-dto";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 export function usePollResults(postId: string) {
   return useQuery({

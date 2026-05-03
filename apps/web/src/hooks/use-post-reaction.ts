@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { reactToPost, unreactToPost } from "@/lib/api/posts";
 import type { ReactionTypeDto } from "@repo/shared-dto";
-import { toast } from "sonner";
+import { toast } from "@/lib/toast";
 
 interface PostReactionVariables {
   postId: string;
