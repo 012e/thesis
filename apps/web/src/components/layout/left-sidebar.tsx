@@ -51,12 +51,6 @@ const baseNavigationItems = [
     href: "/playground",
   },
   {
-    icon: IconBell,
-    selectedIcon: IconBellFilled,
-    label: "Notifications",
-    href: "/",
-  },
-  {
     icon: IconCodeCircle2,
     selectedIcon: IconCodeCircle2Filled,
     label: "Playground",
