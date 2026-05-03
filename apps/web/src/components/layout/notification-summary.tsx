@@ -1,13 +1,25 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { listNotifications, getUnreadNotificationCount, markAllNotificationsRead } from "@/lib/api/notifications";
+import {
+  listNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsRead,
+} from "@/lib/api/notifications";
 import type { NotificationDto, NotificationTypeDto } from "@repo/shared-dto";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { IconBell, IconCheck, IconUserPlus, IconMessage, IconMessageCircle, IconHeart, IconMail } from "@tabler/icons-react";
+import {
+  IconBell,
+  IconCheck,
+  IconUserPlus,
+  IconMessage,
+  IconMessageCircle,
+  IconHeart,
+  IconMail,
+} from "@tabler/icons-react";
 
 function getNotificationIcon(type: NotificationTypeDto) {
   switch (type) {
@@ -28,8 +40,9 @@ function getNotificationIcon(type: NotificationTypeDto) {
 }
 
 function getNotificationText(notification: NotificationDto): string {
-  const actorName = notification.actor?.name || notification.actor?.username || "Someone";
-  
+  const actorName =
+    notification.actor?.name || notification.actor?.username || "Someone";
+
   switch (notification.type) {
     case "follow":
       return `${actorName} followed you`;
@@ -96,7 +109,7 @@ export function NotificationSummary() {
       await markAllNotificationsRead();
       setUnreadCount(0);
       setNotifications((prev) =>
-        prev.map((n) => ({ ...n, readAt: new Date().toISOString() }))
+        prev.map((n) => ({ ...n, readAt: new Date().toISOString() })),
       );
     } catch (error) {
       console.error("Failed to mark all read:", error);
@@ -106,7 +119,7 @@ export function NotificationSummary() {
   }
 
   return (
-    <Card>
+    <Card className="pb-0">
       <CardHeader className="flex flex-row justify-between items-center pb-3">
         <div className="flex items-center gap-2">
           <h2 className="text-xl font-bold">Notifications</h2>
@@ -135,7 +148,9 @@ export function NotificationSummary() {
             <Spinner size="sm" />
           </div>
         ) : notifications.length === 0 ? (
-          <div className="px-4 py-3 text-sm text-muted-foreground">No notifications yet</div>
+          <div className="px-4 py-3 text-sm text-muted-foreground">
+            No notifications yet
+          </div>
         ) : (
           notifications.map((notification) => (
             <button
@@ -157,7 +172,9 @@ export function NotificationSummary() {
                 )}
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm line-clamp-2">{getNotificationText(notification)}</p>
+                <p className="text-sm line-clamp-2">
+                  {getNotificationText(notification)}
+                </p>
                 <span className="text-xs text-muted-foreground">
                   {formatTime(notification.createdAt)}
                 </span>
@@ -168,10 +185,10 @@ export function NotificationSummary() {
             </button>
           ))
         )}
-        <div className="p-2 border-t">
+        <div className="border-t">
           <Button
             variant="ghost"
-            className="w-full rounded-full"
+            className="w-full cursor-pointer p-5"
             onClick={() => navigate({ to: "/notifications" })}
           >
             View all notifications

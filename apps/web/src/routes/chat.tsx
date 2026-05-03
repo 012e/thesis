@@ -28,14 +28,16 @@ function ChatPage() {
           <button
             type="button"
             onClick={() => setIsThreadListOpen((prev) => !prev)}
-            aria-label={isThreadListOpen ? "Collapse threads" : "Expand threads"}
+            aria-label={
+              isThreadListOpen ? "Collapse threads" : "Expand threads"
+            }
             title={isThreadListOpen ? "Collapse threads" : "Expand threads"}
-            className="absolute top-4 left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-muted"
+            className="absolute top-4 left-4 z-10 flex size-10 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-muted"
           >
             {isThreadListOpen ? (
-              <IconChevronLeft className="h-4 w-4" />
+              <IconChevronLeft className="size-5" />
             ) : (
-              <IconChevronRight className="h-4 w-4" />
+              <IconChevronRight className="size-5" />
             )}
           </button>
           <Thread />

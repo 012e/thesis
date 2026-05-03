@@ -17,7 +17,9 @@ export function WhoToFollow({ currentUserId }: WhoToFollowProps) {
   const [users, setUsers] = useState<UserSearchResultDto[]>([]);
   const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
-  const [followingInProgress, setFollowingInProgress] = useState<Set<string>>(new Set());
+  const [followingInProgress, setFollowingInProgress] = useState<Set<string>>(
+    new Set(),
+  );
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,11 +29,13 @@ export function WhoToFollow({ currentUserId }: WhoToFollowProps) {
           searchUsers({ limit: 100 }),
           listFollowing(currentUserId),
         ]);
-        
+
         const followingSet = new Set(following.map((u) => u.id));
         setFollowingIds(followingSet);
-        
-        const notFollowing = allUsers.users.filter((u) => u.id !== currentUserId && !followingSet.has(u.id));
+
+        const notFollowing = allUsers.users.filter(
+          (u) => u.id !== currentUserId && !followingSet.has(u.id),
+        );
         setUsers(notFollowing.slice(0, 5));
       } catch (error) {
         console.error("Failed to load who to follow:", error);
@@ -99,26 +103,40 @@ export function WhoToFollow({ currentUserId }: WhoToFollowProps) {
           >
             <button
               className="flex items-center gap-3 flex-1 min-w-0"
-              onClick={() => navigate({ to: "/users/$userId", params: { userId: user.id } })}
+              onClick={() =>
+                navigate({ to: "/users/$userId", params: { userId: user.id } })
+              }
             >
               <Avatar className="w-10 h-10 shrink-0">
                 {user.image ? (
-                  <img src={user.image} alt={user.name ?? user.username ?? undefined} className="w-full h-full object-cover rounded-full" />
+                  <img
+                    src={user.image}
+                    alt={user.name ?? user.username ?? undefined}
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 ) : (
                   <div className="w-full h-full bg-muted rounded-full flex items-center justify-center text-muted-foreground">
-                    {(user.name?.[0] || user.username?.[0] || "?").toUpperCase()}
+                    {(
+                      user.name?.[0] ||
+                      user.username?.[0] ||
+                      "?"
+                    ).toUpperCase()}
                   </div>
                 )}
               </Avatar>
-              <div className="flex flex-col min-w-0">
-                <span className="font-semibold truncate">{user.name || user.username}</span>
-                <span className="text-sm text-muted-foreground truncate">@{user.displayUsername || user.username}</span>
+              <div className="flex flex-col min-w-0 items-start">
+                <span className="font-semibold truncate">
+                  {user.name || user.username}
+                </span>
+                <span className="text-sm text-muted-foreground truncate">
+                  @{user.displayUsername || user.username}
+                </span>
               </div>
             </button>
             <Button
               size="sm"
               variant={followingIds.has(user.id) ? "outline" : "default"}
-              className="shrink-0 ml-2 rounded-full px-3"
+              className="shrink-0 ml-2 px-3"
               onClick={(e) => {
                 e.stopPropagation();
                 handleFollow(user.id);
