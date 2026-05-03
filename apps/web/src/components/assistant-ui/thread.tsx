@@ -269,7 +269,7 @@ function AssistantMessage() {
       data-role="assistant"
     >
       <div className="flex flex-col justify-center">
-        <div className="flex my-1.5 max-w-xl text-sm leading-relaxed break-words text-foreground">
+        <div className="flex my-1.5 max-w-xl text-sm leading-relaxed wrap-break-word text-foreground">
           <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
             <IconRobot className="size-4 text-primary" />
           </div>

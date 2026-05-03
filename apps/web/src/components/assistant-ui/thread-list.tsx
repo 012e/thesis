@@ -42,7 +42,7 @@ export const ThreadList: FC<{ className?: string }> = ({ className }) => {
 const ThreadListItem: FC = () => {
   return (
     <ThreadListItemPrimitive.Root className="group relative flex items-center px-2 py-0.5">
-      <ThreadListItemPrimitive.Trigger className="flex flex-1 items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent transition-colors data-active:bg-accent data-active:font-medium truncate min-w-0">
+      <ThreadListItemPrimitive.Trigger className="flex flex-1 items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent group-hover:bg-accent transition-colors data-active:bg-accent data-active:font-medium truncate min-w-0">
         <IconMessage className="size-4 shrink-0 text-muted-foreground" />
         <span className="truncate">
           <ThreadListItemPrimitive.Title fallback="New conversation" />
