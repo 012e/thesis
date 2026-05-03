@@ -3,6 +3,7 @@ import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
 import { IconCalendar, IconMail, IconEdit } from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
@@ -189,11 +190,13 @@ export function ProfileView({
                 onClick={onFollow}
                 disabled={followPending}
               >
-                {followPending
-                  ? "Loading..."
-                  : profile.isFollowing
-                    ? "Unfollow"
-                    : "Follow"}
+                {followPending ? (
+                  <Spinner size="sm" className="border-current border-t-transparent" />
+                ) : profile.isFollowing ? (
+                  "Unfollow"
+                ) : (
+                  "Follow"
+                )}
               </Button>
             )}
           </div>

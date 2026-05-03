@@ -6,6 +6,7 @@ import type { UserSearchResultDto } from "@repo/shared-dto";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
+import { Spinner } from "@/components/ui/spinner";
 import { IconUserPlus, IconCheck } from "@tabler/icons-react";
 
 interface WhoToFollowProps {
@@ -65,8 +66,8 @@ export function WhoToFollow({ currentUserId }: WhoToFollowProps) {
         <CardHeader className="pb-3">
           <h2 className="text-xl font-bold">Who to follow</h2>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          Loading...
+        <CardContent className="flex justify-center py-4">
+          <Spinner size="sm" />
         </CardContent>
       </Card>
     );

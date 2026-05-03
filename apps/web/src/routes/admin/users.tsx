@@ -27,6 +27,7 @@ import { useSession } from "@/hooks/use-session";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -300,7 +301,7 @@ function AdminUsersPage() {
   if (sessionPending) {
     return (
       <div className="flex min-h-100 items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Spinner size="md" />
       </div>
     );
   }

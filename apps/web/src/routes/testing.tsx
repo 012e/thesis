@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useToast as toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useSession } from "@/hooks/use-session";
 
@@ -21,7 +22,7 @@ function TestingPage() {
   if (sessionPending) {
     return (
       <div className="flex min-h-100 items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Spinner size="md" />
       </div>
     );
   }

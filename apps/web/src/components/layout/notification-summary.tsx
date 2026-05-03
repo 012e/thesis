@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 import { IconBell, IconCheck, IconUserPlus, IconMessage, IconMessageCircle, IconHeart, IconMail } from "@tabler/icons-react";
 
 function getNotificationIcon(type: NotificationTypeDto) {
@@ -130,7 +131,9 @@ export function NotificationSummary() {
       </CardHeader>
       <CardContent className="p-0">
         {loading ? (
-          <div className="px-4 py-3 text-sm text-muted-foreground">Loading...</div>
+          <div className="px-4 py-3 flex justify-center">
+            <Spinner size="sm" />
+          </div>
         ) : notifications.length === 0 ? (
           <div className="px-4 py-3 text-sm text-muted-foreground">No notifications yet</div>
         ) : (
