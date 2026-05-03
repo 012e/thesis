@@ -195,13 +195,17 @@ export function PlaygroundPage() {
             <DropdownMenu>
               <DropdownMenuTrigger
                 disabled={isPending}
-                className="flex items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 border px-3 py-1.5 text-sm hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <CurrentLanguageIcon size={16} />
                 <span>{currentLanguageLabel}</span>
                 <IconChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="bottom" align="start" className="min-w-40">
+              <DropdownMenuContent
+                side="bottom"
+                align="start"
+                className="min-w-40"
+              >
                 {(Object.keys(LANGUAGE_CONFIG) as Language[]).map((lang) => {
                   const { Icon, label } = LANGUAGE_CONFIG[lang];
                   return (
@@ -225,7 +229,7 @@ export function PlaygroundPage() {
             <button
               onClick={handleRun}
               disabled={isPending || !code.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isPending ? (
                 <IconLoader2 className="w-4 h-4 animate-spin" />
