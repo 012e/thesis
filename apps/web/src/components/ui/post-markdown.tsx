@@ -52,9 +52,11 @@ import {
   SiToml,
   SiSqlite,
 } from "react-icons/si";
+import { GrJava } from "react-icons/gr";
 
 /** Map from fenced-code language identifier → [Icon, brandHex, displayLabel] */
 const LANG_META: Record<string, [IconType, string, string]> = {
+  java: [GrJava, "#ED8B00", "Java"],
   python: [SiPython, "#3776AB", "Python"],
   py: [SiPython, "#3776AB", "Python"],
   javascript: [SiJavascript, "#F7DF1E", "JavaScript"],

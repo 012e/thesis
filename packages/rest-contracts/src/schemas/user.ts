@@ -6,6 +6,11 @@ export const UserSearchResult = z.object({
   displayUsername: z.string().nullable(),
   name: z.string().nullable(),
   image: z.string().nullable(),
+  role: z.string().nullable(),
+  banned: z.boolean(),
+  banReason: z.string().nullable(),
+  banExpires: z.string().datetime().nullable(),
+  createdAt: z.string().datetime(),
 });
 
 export type UserSearchResultType = z.infer<typeof UserSearchResult>;

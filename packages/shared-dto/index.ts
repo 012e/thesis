@@ -4,6 +4,11 @@ export interface UserSearchResultDto {
   displayUsername: string | null;
   name: string | null;
   image: string | null;
+  role: string | null;
+  banned: boolean;
+  banReason: string | null;
+  banExpires: string | null;
+  createdAt: string;
 }
 
 export interface UserDto {

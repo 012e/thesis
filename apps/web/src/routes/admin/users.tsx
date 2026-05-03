@@ -95,11 +95,11 @@ function AdminUsersPage() {
         email: "—",
         username: user.username,
         image: user.image,
-        role: null,
-        banned: false,
-        banReason: null,
-        banExpires: null,
-        createdAt: "",
+        role: user.role,
+        banned: user.banned,
+        banReason: user.banReason,
+        banExpires: user.banExpires,
+        createdAt: user.createdAt,
       }));
 
       return {

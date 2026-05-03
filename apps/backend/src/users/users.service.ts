@@ -68,7 +68,12 @@ export class UsersService implements OnApplicationBootstrap {
             u.username,
             u.display_username,
             u.name,
-            COALESCE(up.avatar_url, u.image) AS image
+            COALESCE(up.avatar_url, u.image) AS image,
+            u.role,
+            COALESCE(u.banned, false) AS banned,
+            u.ban_reason,
+            u.ban_expires,
+            u.created_at
           FROM "user" u
           LEFT JOIN user_profiles up ON up.user_id = u.id
           ORDER BY u.created_at DESC
@@ -89,6 +94,13 @@ export class UsersService implements OnApplicationBootstrap {
           displayUsername: (r["display_username"] as string | null) ?? null,
           name: (r["name"] as string | null) ?? null,
           image: (r["image"] as string | null) ?? this.defaultAvatarUrl,
+          role: (r["role"] as string | null) ?? null,
+          banned: Boolean(r["banned"]),
+          banReason: (r["ban_reason"] as string | null) ?? null,
+          banExpires: r["ban_expires"]
+            ? new Date(r["ban_expires"] as string | Date).toISOString()
+            : null,
+          createdAt: new Date(r["created_at"] as string | Date).toISOString(),
         } satisfies UserSearchResultDto;
       });
 
@@ -119,6 +131,11 @@ export class UsersService implements OnApplicationBootstrap {
           u.display_username,
           u.name,
           COALESCE(up.avatar_url, u.image) AS image,
+          u.role,
+          COALESCE(u.banned, false) AS banned,
+          u.ban_reason,
+          u.ban_expires,
+          u.created_at,
           bm25.bm25_score
         FROM bm25
         JOIN "user" u ON u.id = bm25.id
@@ -144,6 +161,13 @@ export class UsersService implements OnApplicationBootstrap {
         displayUsername: (r["display_username"] as string | null) ?? null,
         name: (r["name"] as string | null) ?? null,
         image: (r["image"] as string | null) ?? this.defaultAvatarUrl,
+        role: (r["role"] as string | null) ?? null,
+        banned: Boolean(r["banned"]),
+        banReason: (r["ban_reason"] as string | null) ?? null,
+        banExpires: r["ban_expires"]
+          ? new Date(r["ban_expires"] as string | Date).toISOString()
+          : null,
+        createdAt: new Date(r["created_at"] as string | Date).toISOString(),
       } satisfies UserSearchResultDto;
     });
 
