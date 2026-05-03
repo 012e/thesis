@@ -38,7 +38,7 @@ const baseNavigationItems = [
     icon: IconBell,
     selectedIcon: IconBellFilled,
     label: "Notifications",
-    href: "/",
+    href: "/notifications",
   },
   {
     icon: IconCodeCircle2,

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { useUserPosts } from "@/hooks/use-user-posts";
 import { useSession } from "@/hooks/use-session";
+import { useFollow } from "@/hooks/use-follow";
 import { ProfileView } from "@/components/profile/profile-view";
 import { PageSpinner } from "@/components/ui/spinner";
 
@@ -31,6 +32,15 @@ function UserProfilePage() {
 
   const isCurrentUser = session?.user?.id === userId;
 
+  const {
+    isFollowing,
+    isPending: isFollowPending,
+    toggle: toggleFollow,
+  } = useFollow({
+    userId,
+    initialIsFollowing: profile.isFollowing,
+  });
+
   return (
     <ProfileView
       profile={{
@@ -42,16 +52,15 @@ function UserProfilePage() {
         postCount: profile.postCount,
         followingCount: profile.followingCount,
         followersCount: profile.followersCount,
-        isFollowing: profile.isFollowing,
+        isFollowing,
         createdAt: profile.createdAt,
       }}
       posts={posts}
       isCurrentUser={isCurrentUser}
       showFollowingLinks={false}
-      onFollow={() => {
-        // TODO: Implement follow/unfollow
-        alert("Follow feature coming soon");
-      }}
+      onFollow={toggleFollow}
+      followPending={isFollowPending}
     />
   );
 }
+

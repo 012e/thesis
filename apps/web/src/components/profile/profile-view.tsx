@@ -26,6 +26,7 @@ export interface ProfileViewProps {
   showFollowingLinks?: boolean;
   onEdit?: () => void;
   onFollow?: () => void;
+  followPending?: boolean;
   editDialog?: ReactNode;
 }
 
@@ -36,6 +37,7 @@ export function ProfileView({
   showFollowingLinks = false,
   onEdit,
   onFollow,
+  followPending = false,
   editDialog,
 }: ProfileViewProps) {
   const initials = profile.name
@@ -110,8 +112,13 @@ export function ProfileView({
                 variant={profile.isFollowing ? "outline" : "default"}
                 size="sm"
                 onClick={onFollow}
+                disabled={followPending}
               >
-                {profile.isFollowing ? "Unfollow" : "Follow"}
+                {followPending
+                  ? "Loading..."
+                  : profile.isFollowing
+                    ? "Unfollow"
+                    : "Follow"}
               </Button>
             )}
           </div>
