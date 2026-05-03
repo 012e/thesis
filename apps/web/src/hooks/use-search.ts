@@ -21,7 +21,10 @@ export function useSearchUsers(q: string) {
   const trimmed = q.trim();
   return useQuery({
     queryKey: SEARCH_USERS_QUERY_KEY(trimmed),
-    queryFn: () => searchUsers(trimmed),
+    queryFn: async () => {
+      const response = await searchUsers({ q: trimmed });
+      return response.users;
+    },
     enabled: trimmed.length > 0,
     staleTime: 1000 * 60 * 2, // 2 minutes
   });

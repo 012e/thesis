@@ -11,13 +11,18 @@ export const usersContract = c.router({
     method: "GET",
     path: "/users/search",
     query: z.object({
-      q: z.string().min(1),
+      q: z.string().optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
+      offset: z.coerce.number().int().min(0).default(0),
     }),
     responses: {
-      200: z.array(UserSearchResult),
+      200: z.object({
+        users: z.array(UserSearchResult),
+        total: z.number().int().nonnegative(),
+      }),
     },
     summary:
-      "Full-text search users by name, email, or username using ParadeDB BM25. Results ordered by relevance score descending.",
+      "Search users by name/email/username, or list all users when query is empty. Supports pagination with total count.",
   },
   // updateAvatar MUST be declared before getUserProfile so the static segment
   // "/users/me/avatar" is not swallowed by the dynamic ":id" path parameter.

@@ -23,14 +23,14 @@ export function WhoToFollow({ currentUserId }: WhoToFollowProps) {
     async function loadData() {
       try {
         const [allUsers, following] = await Promise.all([
-          searchUsers(""),
+          searchUsers({ limit: 100 }),
           listFollowing(currentUserId),
         ]);
         
         const followingSet = new Set(following.map((u) => u.id));
         setFollowingIds(followingSet);
         
-        const notFollowing = allUsers.filter((u) => u.id !== currentUserId && !followingSet.has(u.id));
+        const notFollowing = allUsers.users.filter((u) => u.id !== currentUserId && !followingSet.has(u.id));
         setUsers(notFollowing.slice(0, 5));
       } catch (error) {
         console.error("Failed to load who to follow:", error);

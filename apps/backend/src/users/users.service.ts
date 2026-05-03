@@ -53,7 +53,55 @@ export class UsersService implements OnApplicationBootstrap {
     return image ?? this.defaultAvatarUrl;
   }
 
-  async search(query: string): Promise<UserSearchResultDto[]> {
+  async search(
+    query: string | undefined,
+    limit: number,
+    offset: number,
+  ): Promise<{ users: UserSearchResultDto[]; total: number }> {
+    const trimmedQuery = query?.trim() ?? "";
+
+    if (!trimmedQuery) {
+      const [rowsResult, countResult] = await Promise.all([
+        this.databaseService.db.execute(sql`
+          SELECT
+            u.id,
+            u.username,
+            u.display_username,
+            u.name,
+            COALESCE(up.avatar_url, u.image) AS image
+          FROM "user" u
+          LEFT JOIN user_profiles up ON up.user_id = u.id
+          ORDER BY u.created_at DESC
+          LIMIT ${limit}
+          OFFSET ${offset}
+        `),
+        this.databaseService.db.execute(sql`
+          SELECT COUNT(*)::int AS total
+          FROM "user"
+        `),
+      ]);
+
+      const users = rowsResult.rows.map((row) => {
+        const r = row as Record<string, unknown>;
+        return {
+          id: r["id"] as string,
+          username: (r["username"] as string | null) ?? null,
+          displayUsername: (r["display_username"] as string | null) ?? null,
+          name: (r["name"] as string | null) ?? null,
+          image: (r["image"] as string | null) ?? this.defaultAvatarUrl,
+        } satisfies UserSearchResultDto;
+      });
+
+      const totalRow = countResult.rows[0] as { total?: number | string } | undefined;
+      return {
+        users,
+        total:
+          typeof totalRow?.total === "number"
+            ? totalRow.total
+            : Number(totalRow?.total ?? 0),
+      };
+    }
+
     // ParadeDB's @@@ operator cannot be used inside queries that also have JOINs
     // because the BM25 scan context does not propagate through join planner nodes.
     // Solution: run a standalone BM25 search first (with score) in a CTE, then
@@ -62,33 +110,47 @@ export class UsersService implements OnApplicationBootstrap {
     // paradedb.boolean(should => ARRAY[...]) performs an OR across the three
     // indexed text fields (name, email, username). NULL usernames are simply
     // absent from the index and will never produce a false match.
-    const result = await this.databaseService.db.execute(sql`
-      WITH bm25 AS (
-        SELECT id, paradedb.score(id) AS bm25_score
+    const [rowsResult, countResult] = await Promise.all([
+      this.databaseService.db.execute(sql`
+        WITH bm25 AS (
+          SELECT id, paradedb.score(id) AS bm25_score
+          FROM "user"
+          WHERE id @@@ paradedb.boolean(
+            should => ARRAY[
+              paradedb.match('name', ${trimmedQuery}),
+              paradedb.match('email', ${trimmedQuery}),
+              paradedb.match('username', ${trimmedQuery})
+            ]
+          )
+        )
+        SELECT
+          u.id,
+          u.username,
+          u.display_username,
+          u.name,
+          COALESCE(up.avatar_url, u.image) AS image,
+          bm25.bm25_score
+        FROM bm25
+        JOIN "user" u ON u.id = bm25.id
+        LEFT JOIN user_profiles up ON up.user_id = u.id
+        ORDER BY bm25.bm25_score DESC
+        LIMIT ${limit}
+        OFFSET ${offset}
+      `),
+      this.databaseService.db.execute(sql`
+        SELECT COUNT(*)::int AS total
         FROM "user"
         WHERE id @@@ paradedb.boolean(
           should => ARRAY[
-            paradedb.match('name', ${query}),
-            paradedb.match('email', ${query}),
-            paradedb.match('username', ${query})
+            paradedb.match('name', ${trimmedQuery}),
+            paradedb.match('email', ${trimmedQuery}),
+            paradedb.match('username', ${trimmedQuery})
           ]
         )
-        LIMIT 20
-      )
-      SELECT
-        u.id,
-        u.username,
-        u.display_username,
-        u.name,
-        up.avatar_url AS image,
-        bm25.bm25_score
-      FROM bm25
-      JOIN "user" u ON u.id = bm25.id
-      LEFT JOIN user_profiles up ON up.user_id = u.id
-      ORDER BY bm25.bm25_score DESC
-    `);
+      `),
+    ]);
 
-    return result.rows.map((row) => {
+    const users = rowsResult.rows.map((row) => {
       const r = row as Record<string, unknown>;
       return {
         id: r["id"] as string,
@@ -98,6 +160,15 @@ export class UsersService implements OnApplicationBootstrap {
         image: (r["image"] as string | null) ?? this.defaultAvatarUrl,
       } satisfies UserSearchResultDto;
     });
+
+    const totalRow = countResult.rows[0] as { total?: number | string } | undefined;
+    return {
+      users,
+      total:
+        typeof totalRow?.total === "number"
+          ? totalRow.total
+          : Number(totalRow?.total ?? 0),
+    };
   }
 
   async updateAvatar(userId: string, avatarUrl: string): Promise<void> {
@@ -156,7 +227,7 @@ export class UsersService implements OnApplicationBootstrap {
         displayUsername: user.displayUsername,
         email: user.email,
         name: user.name,
-        image: userProfiles.avatarUrl,
+        image: sql<string | null>`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
         coverPhoto: userProfiles.coverPhotoUrl,
         bio: userProfiles.bio,
         createdAt: user.createdAt,

@@ -136,13 +136,30 @@ describe("UsersController (e2e)", () => {
         .expect(401);
     });
 
-    it("should return an empty array when no users match the query", async () => {
+    it("should return an empty paginated result when no users match the query", async () => {
       const response = await request(testApp.app.getHttpServer())
         .get("/users/search?q=zzznomatchzzzxxx99999")
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body).toEqual([]);
+      expect(response.body).toEqual({ users: [], total: 0 });
+    });
+
+    it("should return all users with pagination when query is omitted", async () => {
+      await createE2ETestUser(testApp.app, "nopag1@example.com", "nopag1");
+      await createE2ETestUser(testApp.app, "nopag2@example.com", "nopag2");
+
+      const response = await request(testApp.app.getHttpServer())
+        .get("/users/search?limit=1&offset=0")
+        .set("Cookie", [authCookie])
+        .expect(200);
+
+      expect(response.body).toHaveProperty("users");
+      expect(response.body).toHaveProperty("total");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBe(1);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.total).toBeGreaterThanOrEqual(2);
     });
 
     it("should find users by username", async () => {
@@ -157,9 +174,10 @@ describe("UsersController (e2e)", () => {
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBeGreaterThan(0);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      const usernames = response.body.map((u: any) => u.username);
+      const usernames = response.body.users.map((u: any) => u.username);
       expect(usernames).toContain("srchbyusr");
     });
 
@@ -180,9 +198,10 @@ describe("UsersController (e2e)", () => {
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBeGreaterThan(0);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      const names = response.body.map((u: any) => u.name);
+      const names = response.body.users.map((u: any) => u.name);
       expect(names).toContain("Zephyranthes");
     });
 
@@ -204,9 +223,10 @@ describe("UsersController (e2e)", () => {
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBeGreaterThan(0);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-      const usernames = response.body.map((u: any) => u.username);
+      const usernames = response.body.users.map((u: any) => u.username);
       expect(usernames).toContain("emailsrchuser");
     });
 
@@ -222,9 +242,10 @@ describe("UsersController (e2e)", () => {
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBeGreaterThan(0);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      response.body.forEach((u: any) => {
+      response.body.users.forEach((u: any) => {
         // email is used for indexing but must never appear in the response
         expect(u).not.toHaveProperty("email");
       });
@@ -242,9 +263,10 @@ describe("UsersController (e2e)", () => {
         .set("Cookie", [authCookie])
         .expect(200);
 
-      expect(response.body.length).toBeGreaterThan(0);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(response.body.users.length).toBeGreaterThan(0);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const u = response.body[0];
+      const u = response.body.users[0];
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(u.id).toBeTruthy();
       expect(u).toHaveProperty("username");
@@ -252,6 +274,7 @@ describe("UsersController (e2e)", () => {
       expect(u).toHaveProperty("name");
       expect(u).toHaveProperty("image");
       expect(u).not.toHaveProperty("email");
+      expect(response.body).toHaveProperty("total");
     });
   });
 

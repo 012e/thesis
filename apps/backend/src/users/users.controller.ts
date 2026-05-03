@@ -12,7 +12,11 @@ export class UsersController {
   @TsRestHandler(usersContract.searchUsers)
   searchUsers(@Session() _session: UserSession) {
     return tsRestHandler(usersContract.searchUsers, async ({ query }) => {
-      const results = await this.usersService.search(query.q);
+      const results = await this.usersService.search(
+        query.q,
+        query.limit,
+        query.offset,
+      );
       return {
         status: 200,
         body: usersContract.searchUsers.responses[200].parse(results),
