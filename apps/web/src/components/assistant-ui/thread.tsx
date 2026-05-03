@@ -22,6 +22,7 @@ import {
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
+import { useEffect, useRef } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,8 @@ function ThreadWelcome() {
       <div>
         <h2 className="text-xl font-semibold">How can I help you?</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ask me anything — I can read posts, search content, and help you explore
+          Ask me anything — I can read posts, search content, and help you
+          explore
         </p>
       </div>
       <div className="grid gap-2 mt-4 w-full max-w-2xl md:grid-cols-2">
@@ -87,7 +89,9 @@ function ThreadWelcome() {
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">What's trending?</span>
-            <span className="text-muted-foreground">Show me the most upvoted posts</span>
+            <span className="text-muted-foreground">
+              Show me the most upvoted posts
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -99,7 +103,9 @@ function ThreadWelcome() {
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">My feed summary</span>
-            <span className="text-muted-foreground">Summarize recent posts I follow</span>
+            <span className="text-muted-foreground">
+              Summarize recent posts I follow
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -111,7 +117,9 @@ function ThreadWelcome() {
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Search posts</span>
-            <span className="text-muted-foreground">Find posts about a topic</span>
+            <span className="text-muted-foreground">
+              Find posts about a topic
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
         <ThreadPrimitive.Suggestion
@@ -123,7 +131,9 @@ function ThreadWelcome() {
             className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
           >
             <span className="font-medium">Active users</span>
-            <span className="text-muted-foreground">See who's been most active</span>
+            <span className="text-muted-foreground">
+              See who's been most active
+            </span>
           </Button>
         </ThreadPrimitive.Suggestion>
       </div>
@@ -132,11 +142,22 @@ function ThreadWelcome() {
 }
 
 function Composer() {
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const id = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <ComposerPrimitive.Root className="flex flex-col w-full max-w-2xl">
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col rounded-2xl border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
+          ref={inputRef}
           placeholder="Message AI assistant..."
           className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
           rows={1}

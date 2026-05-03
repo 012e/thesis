@@ -33,6 +33,7 @@ function ChatPage() {
             }
             title={isThreadListOpen ? "Collapse threads" : "Expand threads"}
             className="absolute top-4 left-4 z-10 flex size-10 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-muted"
+            tabIndex={-1}
           >
             {isThreadListOpen ? (
               <IconChevronLeft className="size-5" />
