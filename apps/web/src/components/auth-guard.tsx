@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useSession } from "@/hooks/use-session";
+import { Spinner } from "@/components/ui/spinner";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -44,7 +45,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   if (isPending && !isAuthRoute) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="text-muted-foreground">Loading...</div>
+        <Spinner size="md" />
       </div>
     );
   }

@@ -11,13 +11,18 @@ export const usersContract = c.router({
     method: "GET",
     path: "/users/search",
     query: z.object({
-      q: z.string().min(1),
+      q: z.string().optional(),
+      limit: z.coerce.number().int().min(1).max(100).default(20),
+      offset: z.coerce.number().int().min(0).default(0),
     }),
     responses: {
-      200: z.array(UserSearchResult),
+      200: z.object({
+        users: z.array(UserSearchResult),
+        total: z.number().int().nonnegative(),
+      }),
     },
     summary:
-      "Full-text search users by name, email, or username using ParadeDB BM25. Results ordered by relevance score descending.",
+      "Search users by name/email/username, or list all users when query is empty. Supports pagination with total count.",
   },
   // updateAvatar MUST be declared before getUserProfile so the static segment
   // "/users/me/avatar" is not swallowed by the dynamic ":id" path parameter.
@@ -32,6 +37,21 @@ export const usersContract = c.router({
       401: z.null(),
     },
     summary: "Update the authenticated user's avatar URL in user_profiles.",
+  },
+  // updateCoverPhoto MUST be declared before getUserProfile so the static segment
+  // "/users/me/cover-photo" is not swallowed by the dynamic ":id" path parameter.
+  updateCoverPhoto: {
+    method: "PATCH",
+    path: "/users/me/cover-photo",
+    body: z.object({
+      coverPhotoUrl: z.string().url(),
+    }),
+    responses: {
+      200: z.object({ coverPhoto: z.string().nullable() }),
+      401: z.null(),
+    },
+    summary:
+      "Update the authenticated user's cover photo URL in user_profiles.",
   },
   // updateProfile MUST be declared before getUserProfile so the static segment
   // "/users/me/profile" is not swallowed by the dynamic ":id" path parameter.

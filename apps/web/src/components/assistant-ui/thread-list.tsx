@@ -20,9 +20,9 @@ export const ThreadList: FC<{ className?: string }> = ({ className }) => {
       )}
     >
       {/* New thread button */}
-      <div className="p-3 border-b">
+      <div className="border-b">
         <ThreadListPrimitive.New asChild>
-          <button className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm font-medium hover:bg-accent transition-colors">
+          <button className="flex items-center gap-2 w-full px-5 py-3 text-sm font-medium hover:bg-accent transition-colors cursor-pointer">
             <IconPlus className="size-4" />
             New chat
           </button>
@@ -42,7 +42,7 @@ export const ThreadList: FC<{ className?: string }> = ({ className }) => {
 const ThreadListItem: FC = () => {
   return (
     <ThreadListItemPrimitive.Root className="group relative flex items-center px-2 py-0.5">
-      <ThreadListItemPrimitive.Trigger className="flex flex-1 items-center gap-2 rounded-lg px-3 py-2 text-sm text-left hover:bg-accent transition-colors data-[active]:bg-accent data-[active]:font-medium truncate min-w-0">
+      <ThreadListItemPrimitive.Trigger className="flex flex-1 items-center gap-2 px-3 py-2 text-sm text-left hover:bg-accent group-hover:bg-accent transition-colors data-active:bg-accent data-active:font-medium truncate min-w-0">
         <IconMessage className="size-4 shrink-0 text-muted-foreground" />
         <span className="truncate">
           <ThreadListItemPrimitive.Title fallback="New conversation" />
@@ -50,14 +50,14 @@ const ThreadListItem: FC = () => {
       </ThreadListItemPrimitive.Trigger>
 
       {/* Actions shown on hover */}
-      <div className="absolute right-2 hidden group-hover:flex items-center gap-0.5 bg-background rounded-md border shadow-sm p-0.5">
+      <div className="absolute right-2 hidden group-hover:flex items-center gap-0.5 bg-background border shadow-sm">
         <ThreadListItemPrimitive.Archive asChild>
-          <button className="rounded p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
+          <button className="p-1 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors">
             <IconArchive className="size-3.5" />
           </button>
         </ThreadListItemPrimitive.Archive>
         <ThreadListItemPrimitive.Delete asChild>
-          <button className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
+          <button className="p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors">
             <IconTrash className="size-3.5" />
           </button>
         </ThreadListItemPrimitive.Delete>

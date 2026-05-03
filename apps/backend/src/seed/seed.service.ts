@@ -6,6 +6,7 @@ import { sql } from "drizzle-orm";
 import { auth } from "@/auth";
 import { CommentsService } from "@/comments/comments.service";
 import { DatabaseService } from "@/db/database.service";
+import { userProfiles } from "@/db/schema";
 import { FollowsService } from "@/follows/follows.service";
 import { PostsService } from "@/posts/posts.service";
 import { ReactionsService } from "@/reactions/reactions.service";
@@ -24,6 +25,46 @@ type SeededUser = { id: string; email: string };
 @Injectable()
 export class SeedService {
   private readonly logger = new Logger(SeedService.name);
+  private readonly englishSentences = [
+    "Shipping small improvements every day beats waiting for a perfect launch.",
+    "A clear interface usually solves more problems than a clever workaround.",
+    "Good monitoring turns production incidents into short stories.",
+    "When tests describe intent, refactors become much less risky.",
+    "Teams move faster when naming is consistent across services.",
+    "Simple defaults help new contributors stay productive on day one.",
+    "Reliable background jobs need idempotency more than retries.",
+    "Healthy code reviews focus on behavior, not personal style.",
+    "Feature flags let us learn safely from real user feedback.",
+    "Performance wins often come from measuring before optimizing.",
+  ];
+
+  private readonly englishHeadings = [
+    "Implementation Notes",
+    "Operational Checklist",
+    "Design Decisions",
+    "Release Plan",
+    "Engineering Tradeoffs",
+    "Testing Strategy",
+  ];
+
+  private readonly englishPollQuestions = [
+    "Which feature should the team prioritize next",
+    "What is the best way to reduce API latency",
+    "Which release strategy should we use this sprint",
+    "What should be improved first in the onboarding flow",
+    "Which notification channel is most useful to users",
+  ];
+
+  private readonly englishPollOptions = [
+    "Ship now",
+    "Run experiment",
+    "Collect feedback",
+    "Improve docs",
+    "Refactor core",
+    "Add tests",
+    "Optimize query",
+    "Monitor metrics",
+  ];
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -104,7 +145,7 @@ export class SeedService {
         const comment = await this.commentsService.create(
           commenter.id,
           postId,
-          faker.lorem.sentence(),
+          this.randomSentence(),
         );
         commentIds.push(comment.id);
 
@@ -113,7 +154,7 @@ export class SeedService {
           const reply = await this.commentsService.create(
             user.id,
             postId,
-            faker.lorem.sentence(),
+            this.randomSentence(),
             comment.id,
           );
           commentIds.push(reply.id);
@@ -181,35 +222,81 @@ export class SeedService {
 
   // ── helpers ─────────────────────────────────────────────────────────────────
 
+  private randomSentence(): string {
+    return faker.helpers.arrayElement(this.englishSentences);
+  }
+
+  private randomParagraph(min = 2, max = 4): string {
+    const count = faker.number.int({ min, max });
+    return Array.from({ length: count }, () => this.randomSentence()).join(" ");
+  }
+
+  private randomCodeBlock(): string {
+    const snippets = [
+      {
+        language: "java",
+        lines: [
+          "public class Greeter {",
+          "  public static void main(String[] args) {",
+          '    String name = "Developer";',
+          '    System.out.println("Hello, " + name + "!");',
+          "  }",
+          "}",
+        ],
+      },
+      {
+        language: "python",
+        lines: [
+          "def total(values: list[int]) -> int:",
+          "    return sum(values)",
+          "",
+          "numbers = [3, 5, 8]",
+          "print(total(numbers))",
+        ],
+      },
+      {
+        language: "javascript",
+        lines: [
+          "const users = [{ active: true }, { active: false }, { active: true }];",
+          "const activeCount = users.filter((user) => user.active).length;",
+          "console.log(`Active users: ${activeCount}`);",
+        ],
+      },
+      {
+        language: "typescript",
+        lines: [
+          "type ApiResult<T> = { ok: true; data: T } | { ok: false; error: string };",
+          "",
+          "function unwrap<T>(result: ApiResult<T>): T {",
+          "  if (!result.ok) throw new Error(result.error);",
+          "  return result.data;",
+          "}",
+        ],
+      },
+    ];
+
+    const snippet = faker.helpers.arrayElement(snippets);
+    return ["```" + snippet.language, ...snippet.lines, "```"].join("\n");
+  }
+
   private randomMarkdown(): string {
-    const title = `# ${faker.lorem.sentence({ min: 3, max: 7 })}`;
+    const title = `# ${this.randomSentence().replace(/\.$/, "")}`;
 
-    const intro = faker.lorem.paragraph();
+    const intro = this.randomParagraph();
 
-    const heading = `## ${faker.lorem.words({ min: 2, max: 4 })}`;
+    const heading = `## ${faker.helpers.arrayElement(this.englishHeadings)}`;
 
     const bulletCount = faker.number.int({ min: 2, max: 5 });
     const bullets = Array.from(
       { length: bulletCount },
-      () => `- ${faker.lorem.sentence()}`,
+      () => `- ${this.randomSentence()}`,
     ).join("\n");
 
-    const codeLanguage = faker.helpers.arrayElement([
-      "ts",
-      "js",
-      "json",
-      "bash",
-    ]);
-    const codeSnippet = [
-      "```" + codeLanguage,
-      `// ${faker.hacker.phrase()}`,
-      `const ${faker.hacker.noun().replace(/ /g, "_")} = ${faker.number.int({ min: 1, max: 99 })};`,
-      "```",
-    ].join("\n");
+    const codeSnippet = this.randomCodeBlock();
 
-    const closing = faker.lorem.paragraph();
+    const closing = this.randomParagraph();
 
-    const blockquote = `> ${faker.lorem.sentence()}`;
+    const blockquote = `> ${this.randomSentence()}`;
 
     return [
       title,
@@ -230,10 +317,10 @@ export class SeedService {
       const optionCount = faker.number.int({ min: 2, max: 4 });
       return {
         poll: {
-          question: faker.lorem.sentence({ min: 5, max: 10 }) + "?",
+          question: `${faker.helpers.arrayElement(this.englishPollQuestions)}?`,
           options: Array.from({ length: optionCount }, (_, idx) => ({
             id: `opt-${idx + 1}`,
-            label: faker.lorem.words({ min: 1, max: 3 }),
+            label: faker.helpers.arrayElement(this.englishPollOptions),
           })),
           allowsMultipleSelections: faker.datatype.boolean(),
           closesAt: faker.datatype.boolean()
@@ -281,6 +368,12 @@ export class SeedService {
         data: { username: "demo" },
       },
     });
+    await this.databaseService.db.insert(userProfiles).values({
+      userId: demo.user.id,
+      avatarUrl: faker.image.avatar(),
+      coverPhotoUrl: faker.image.urlPicsumPhotos({ width: 1600, height: 400 }),
+      bio: this.randomParagraph(1, 3),
+    });
     users.push({ id: demo.user.id, email: demo.user.email });
 
     // Create extra users via the standard sign-up flow.
@@ -307,6 +400,12 @@ export class SeedService {
           name: candidate.name,
           username: candidate.username,
         },
+      });
+      await this.databaseService.db.insert(userProfiles).values({
+        userId: created.user.id,
+        avatarUrl: faker.image.avatar(),
+        coverPhotoUrl: faker.image.urlPicsumPhotos({ width: 1600, height: 400 }),
+        bio: this.randomParagraph(1, 3),
       });
       users.push({ id: created.user.id, email: created.user.email });
     }

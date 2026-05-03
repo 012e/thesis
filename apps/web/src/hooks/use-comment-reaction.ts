@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { reactToComment, unreactToComment } from "@/lib/api/comments";
 import type { CommentType } from "@repo/rest-contracts";
 import type { ReactionTypeDto } from "@repo/shared-dto";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 
 interface CommentReactionVariables {
   commentId: string;

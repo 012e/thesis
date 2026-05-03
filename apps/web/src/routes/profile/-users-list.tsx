@@ -38,7 +38,7 @@ export function UsersList({ users, emptyMessage }: UsersListProps) {
               userId={user.id}
               src={user.image}
               name={user.name}
-              className="w-10 h-10 shrink-0 text-sm font-semibold bg-primary/10 text-primary"
+              className="w-10 h-10 shrink-0 text-sm font-semibold text-primary"
             />
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium truncate">

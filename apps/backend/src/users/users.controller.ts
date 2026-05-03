@@ -12,7 +12,11 @@ export class UsersController {
   @TsRestHandler(usersContract.searchUsers)
   searchUsers(@Session() _session: UserSession) {
     return tsRestHandler(usersContract.searchUsers, async ({ query }) => {
-      const results = await this.usersService.search(query.q);
+      const results = await this.usersService.search(
+        query.q,
+        query.limit,
+        query.offset,
+      );
       return {
         status: 200,
         body: usersContract.searchUsers.responses[200].parse(results),
@@ -27,6 +31,20 @@ export class UsersController {
       return {
         status: 200,
         body: { image: body.avatarUrl },
+      };
+    });
+  }
+
+  @TsRestHandler(usersContract.updateCoverPhoto)
+  updateCoverPhoto(@Session() session: UserSession) {
+    return tsRestHandler(usersContract.updateCoverPhoto, async ({ body }) => {
+      await this.usersService.updateCoverPhoto(
+        session.user.id,
+        body.coverPhotoUrl,
+      );
+      return {
+        status: 200,
+        body: { coverPhoto: body.coverPhotoUrl },
       };
     });
   }

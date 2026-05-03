@@ -5,8 +5,20 @@ import { ChatManager } from "@/components/chat";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex justify-center">
-      <div className="flex w-full max-w-[1280px]">
+    <div className="min-h-screen flex">
+      <div className="flex w-full">
+        <LeftSidebar />
+        <MainContent>{children}</MainContent>
+      </div>
+      <ChatManager />
+    </div>
+  );
+}
+
+export function HomeLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen flex">
+      <div className="flex w-full">
         <LeftSidebar />
         <MainContent>{children}</MainContent>
         <RightSidebar />

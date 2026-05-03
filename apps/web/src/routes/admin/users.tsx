@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, createFileRoute } from "@tanstack/react-router";
 import {
   useReactTable,
@@ -7,7 +7,7 @@ import {
   type PaginationState,
 } from "@tanstack/react-table";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 import {
   IconShield,
   IconSearch,
@@ -21,11 +21,13 @@ import {
 } from "@tabler/icons-react";
 
 import { authClient } from "@/lib/auth";
+import { searchUsers as searchUsersApi } from "@/lib/api/search";
+import { useThrottledValue } from "@/hooks/use-throttled-value";
 import { useSession } from "@/hooks/use-session";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +43,6 @@ import {
   type DialogState,
   PAGE_SIZE,
   formatDate,
-  getInitials,
   isUserAdmin,
 } from "@/components/admin/types";
 import { BanDialog } from "@/components/admin/ban-dialog";
@@ -50,6 +51,7 @@ import { SessionsDialog } from "@/components/admin/sessions-dialog";
 import { DeleteDialog } from "@/components/admin/delete-dialog";
 import { ImpersonateDialog } from "@/components/admin/impersonate-dialog";
 import { UsersTable } from "@/components/admin/users-table";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/admin/users")({
   component: AdminUsersPage,
@@ -63,7 +65,7 @@ function AdminUsersPage() {
   const isAdmin = useIsAdmin();
 
   const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSearch = useThrottledValue(search, 400);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: PAGE_SIZE,
@@ -79,23 +81,31 @@ function AdminUsersPage() {
   } = useQuery({
     queryKey: ["admin", "users", debouncedSearch, pagination.pageIndex],
     queryFn: async () => {
-      const result = await authClient.admin.listUsers({
-        query: {
-          limit: PAGE_SIZE,
-          offset,
-          ...(debouncedSearch
-            ? {
-                searchValue: debouncedSearch,
-                searchField: "email",
-                searchOperator: "contains" as const,
-              }
-            : {}),
-          sortBy: "createdAt",
-          sortDirection: "desc" as const,
-        },
+      const trimmedSearch = debouncedSearch.trim();
+
+      const searchResults = await searchUsersApi({
+        q: trimmedSearch || undefined,
+        limit: PAGE_SIZE,
+        offset,
       });
-      if (result.error) throw new Error(result.error.message);
-      return result.data as { users: AdminUser[]; total: number };
+
+      const mappedUsers: AdminUser[] = searchResults.users.map((user) => ({
+        id: user.id,
+        name: user.name ?? user.displayUsername ?? user.username ?? "Unknown",
+        email: "—",
+        username: user.username,
+        image: user.image,
+        role: user.role,
+        banned: user.banned,
+        banReason: user.banReason,
+        banExpires: user.banExpires,
+        createdAt: user.createdAt,
+      }));
+
+      return {
+        users: mappedUsers,
+        total: searchResults.total,
+      };
     },
     enabled: !sessionPending && isAdmin,
   });
@@ -120,8 +130,6 @@ function AdminUsersPage() {
   function handleSearchChange(value: string) {
     setSearch(value);
     setPagination((p) => ({ ...p, pageIndex: 0 }));
-    const t = setTimeout(() => setDebouncedSearch(value), 400);
-    return () => clearTimeout(t);
   }
 
   function closeDialog() {
@@ -146,10 +154,7 @@ function AdminUsersPage() {
           const u = row.original;
           return (
             <div className="flex items-center gap-2">
-              <Avatar size="sm">
-                {u.image && <AvatarImage src={u.image} alt={u.name} />}
-                <AvatarFallback>{getInitials(u.name)}</AvatarFallback>
-              </Avatar>
+              <UserAvatar userId={u.id} src={u.image} name={u.name} />
               <span className="truncate text-xs font-medium">{u.name}</span>
             </div>
           );
@@ -296,7 +301,7 @@ function AdminUsersPage() {
   if (sessionPending) {
     return (
       <div className="flex min-h-100 items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
+        <Spinner size="md" />
       </div>
     );
   }
@@ -317,7 +322,7 @@ function AdminUsersPage() {
         <div className="relative max-w-sm">
           <IconSearch className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by email..."
+            placeholder="Search by name, email, or username..."
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-8"

@@ -1,5 +1,5 @@
 import { useTheme } from "@/hooks/use-theme";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { Toaster as Sonner, type ToasterProps } from "@/lib/toast";
 import {
   IconCircleCheck,
   IconInfoCircle,

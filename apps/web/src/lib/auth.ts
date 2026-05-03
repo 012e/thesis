@@ -6,7 +6,7 @@ import {
   type ResetPasswordParams,
   type UpdateProfileParams,
 } from "@repo/auth-client";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 import store from "@/lib/atoms/store";
 import bearerToken from "@/lib/atoms/bearer-token";
 import { env } from "@/env";

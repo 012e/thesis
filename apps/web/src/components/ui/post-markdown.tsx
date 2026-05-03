@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import {
   oneLight,
-  vscDarkPlus,
+  oneDark,
 } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import type { IconType } from "react-icons";
@@ -52,9 +52,11 @@ import {
   SiToml,
   SiSqlite,
 } from "react-icons/si";
+import { GrJava } from "react-icons/gr";
 
 /** Map from fenced-code language identifier → [Icon, brandHex, displayLabel] */
 const LANG_META: Record<string, [IconType, string, string]> = {
+  java: [GrJava, "#ED8B00", "Java"],
   python: [SiPython, "#3776AB", "Python"],
   py: [SiPython, "#3776AB", "Python"],
   javascript: [SiJavascript, "#F7DF1E", "JavaScript"],
@@ -300,24 +302,28 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
                 const iconColor = meta?.[1];
                 const label = meta?.[2] ?? match[1];
                 return (
-                  <div className="overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none rounded-md border border-border/50 bg-muted/30">
+                  <div className="group overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none border border-border/50 bg-muted/30">
                     {/* language badge — pinned to top-right, outside scroll flow */}
-                    <div className="flex absolute top-0 right-0 z-10 gap-1 items-center px-2 font-mono font-medium transition-colors cursor-default pointer-events-auto text-muted-foreground/60 hover:bg-accent hover:text-accent-foreground">
+                    <div className="flex absolute top-0 right-0 z-10 gap-1 items-center px-1.5 py-0.5 font-mono text-[10px] font-medium transition-opacity duration-150 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto group-focus-within:opacity-100 group-focus-within:pointer-events-auto cursor-default bg-accent text-accent-foreground">
                       {LangIcon && (
                         <LangIcon
                           style={{ color: iconColor }}
-                          className="size-3 shrink-0"
+                          className="size-2.5 shrink-0"
                         />
                       )}
-                      <span className="pt-1">{label}</span>
+                      <span>{label}</span>
                     </div>
                     <SyntaxHighlighter
                       language={match[1]}
-                      style={(isDark ? vscDarkPlus : oneLight) as unknown as Record<string, CSSProperties>}
+                      style={
+                        (isDark ? oneDark : oneLight) as unknown as Record<
+                          string,
+                          CSSProperties
+                        >
+                      }
                       customStyle={{
                         margin: 0,
                         padding: "0.625rem",
-                        paddingTop: "1.5rem",
                         background: "transparent",
                         fontSize: "0.75rem",
                         lineHeight: "1.5",

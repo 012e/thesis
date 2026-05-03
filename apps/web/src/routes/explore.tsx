@@ -8,7 +8,7 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useToast as toast } from "@/hooks/use-toast";
 import {
   IconSearch,
   IconUserPlus,

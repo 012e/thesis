@@ -127,6 +127,13 @@
       "when": 1777294314058,
       "tag": "0017_furry_lester",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1777825100852,
+      "tag": "0018_famous_kabuki",
+      "breakpoints": true
     }
   ]
 }
