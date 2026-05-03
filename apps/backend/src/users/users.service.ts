@@ -102,26 +102,16 @@ export class UsersService implements OnApplicationBootstrap {
       };
     }
 
-    // ParadeDB's @@@ operator cannot be used inside queries that also have JOINs
-    // because the BM25 scan context does not propagate through join planner nodes.
-    // Solution: run a standalone BM25 search first (with score) in a CTE, then
-    // JOIN back to "user" on the resulting IDs in the outer query.
-    //
-    // paradedb.boolean(should => ARRAY[...]) performs an OR across the three
-    // indexed text fields (name, email, username). NULL usernames are simply
-    // absent from the index and will never produce a false match.
+    // ParadeDB BM25 operators cannot be used in a joined query directly.
+    // We search in a CTE first, then join back to fetch profile columns.
     const [rowsResult, countResult] = await Promise.all([
       this.databaseService.db.execute(sql`
         WITH bm25 AS (
           SELECT id, paradedb.score(id) AS bm25_score
           FROM "user"
-          WHERE id @@@ paradedb.boolean(
-            should => ARRAY[
-              paradedb.match('name', ${trimmedQuery}),
-              paradedb.match('email', ${trimmedQuery}),
-              paradedb.match('username', ${trimmedQuery})
-            ]
-          )
+          WHERE name ||| ${trimmedQuery}
+             OR email ||| ${trimmedQuery}
+             OR username ||| ${trimmedQuery}
         )
         SELECT
           u.id,
@@ -140,13 +130,9 @@ export class UsersService implements OnApplicationBootstrap {
       this.databaseService.db.execute(sql`
         SELECT COUNT(*)::int AS total
         FROM "user"
-        WHERE id @@@ paradedb.boolean(
-          should => ARRAY[
-            paradedb.match('name', ${trimmedQuery}),
-            paradedb.match('email', ${trimmedQuery}),
-            paradedb.match('username', ${trimmedQuery})
-          ]
-        )
+        WHERE name ||| ${trimmedQuery}
+           OR email ||| ${trimmedQuery}
+           OR username ||| ${trimmedQuery}
       `),
     ]);
 

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useAtom } from "jotai";
 import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { Thread } from "@/components/assistant-ui/thread";
@@ -27,9 +28,15 @@ function ChatPage() {
           <button
             type="button"
             onClick={() => setIsThreadListOpen((prev) => !prev)}
-            className="absolute top-4 left-4 z-10 rounded-full border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-muted"
+            aria-label={isThreadListOpen ? "Collapse threads" : "Expand threads"}
+            title={isThreadListOpen ? "Collapse threads" : "Expand threads"}
+            className="absolute top-4 left-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 shadow-sm transition-colors hover:bg-muted"
           >
-            {isThreadListOpen ? "Hide threads" : "Show threads"}
+            {isThreadListOpen ? (
+              <IconChevronLeft className="h-4 w-4" />
+            ) : (
+              <IconChevronRight className="h-4 w-4" />
+            )}
           </button>
           <Thread />
         </div>
