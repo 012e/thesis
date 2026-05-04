@@ -63,6 +63,13 @@ export const Post = z.object({
   downvoteCount: z.number().int().nonnegative(),
   commentCount: z.number().int().nonnegative(),
   currentUserReaction: ReactionType.nullable(),
+  currentUserSubscribed: z.boolean(),
+});
+
+export const PostSubscription = z.object({
+  postId: z.string().uuid(),
+  userId: z.string(),
+  createdAt: z.string().datetime(),
 });
 
 export const CreatePostBody = z.object({
@@ -87,6 +94,7 @@ export type VisualizationPostContentType = z.infer<
 export type PostImageType = z.infer<typeof PostImage>;
 export type PostContentType = z.infer<typeof PostContent>;
 export type PostType = z.infer<typeof Post>;
+export type PostSubscriptionType = z.infer<typeof PostSubscription>;
 export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
 export type UpdatePostBodyType = z.infer<typeof UpdatePostBody>;
 export type RecommendationPageType = z.infer<typeof RecommendationPage>;

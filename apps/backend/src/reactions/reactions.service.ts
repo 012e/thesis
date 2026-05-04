@@ -18,12 +18,14 @@ import {
   usersView,
 } from '@/db/schema';
 import { NotificationsService } from '@/notifications/notifications.service';
+import { PostsService } from '@/posts/posts.service';
 
 @Injectable()
 export class ReactionsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
+    private readonly postsService: PostsService,
   ) {}
 
   /**
@@ -55,22 +57,14 @@ export class ReactionsService {
       })
       .returning();
 
-    // Notify post author — skip self-reactions
-    if (post.authorId !== userId) {
-      void this.notificationsService
-        .deliver(
-          {
-            userId: post.authorId,
-            actorId: userId,
-            type: 'post_reaction',
-            payload: { postId, reactionType: type },
-          },
-          ['websocket'],
-        )
-        .catch((err) =>
-          console.warn('[ReactionsService] Failed to deliver post reaction notification:', err),
-        );
-    }
+    void this.postsService
+      .notifySubscribers(postId, userId, 'post_reaction', {
+        postId,
+        reactionType: type,
+      })
+      .catch((err) =>
+        console.warn('[ReactionsService] Failed to deliver post reaction notification:', err),
+      );
 
     return this.toReactionDto(row);
   }

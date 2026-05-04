@@ -77,6 +77,13 @@ export interface PostDto {
   downvoteCount: number;
   commentCount: number;
   currentUserReaction: ReactionTypeDto | null;
+  currentUserSubscribed: boolean;
+}
+
+export interface PostSubscriptionDto {
+  postId: string;
+  userId: string;
+  createdAt: string;
 }
 
 export type ReactionTypeDto = "upvote" | "downvote";
@@ -230,6 +237,7 @@ export type NotificationTypeDto =
   | 'follow'
   | 'comment'
   | 'reply'
+  | 'post_update'
   | 'post_reaction'
   | 'comment_reaction'
   | 'direct_message';
@@ -258,6 +266,13 @@ export interface ReplyNotificationPayload {
   preview: string;
 }
 
+/** A subscribed post was edited. */
+export interface PostUpdateNotificationPayload {
+  postId: string;
+  /** First 100 characters of the updated post text, when available. */
+  preview: string | null;
+}
+
 /** Someone reacted to the recipient's post. */
 export interface PostReactionNotificationPayload {
   postId: string;
@@ -283,6 +298,7 @@ export type NotificationPayloadDto =
   | FollowNotificationPayload
   | CommentNotificationPayload
   | ReplyNotificationPayload
+  | PostUpdateNotificationPayload
   | PostReactionNotificationPayload
   | CommentReactionNotificationPayload
   | DirectMessageNotificationPayload;

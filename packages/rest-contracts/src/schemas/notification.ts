@@ -6,6 +6,7 @@ export const NotificationType = z.enum([
   'follow',
   'comment',
   'reply',
+  'post_update',
   'post_reaction',
   'comment_reaction',
   'direct_message',
@@ -32,6 +33,11 @@ export const ReplyNotificationPayload = z.object({
   preview: z.string(),
 });
 
+export const PostUpdateNotificationPayload = z.object({
+  postId: z.string().uuid(),
+  preview: z.string().nullable(),
+});
+
 export const PostReactionNotificationPayload = z.object({
   postId: z.string().uuid(),
   reactionType: z.enum(['upvote', 'downvote']),
@@ -52,6 +58,7 @@ export const NotificationPayload = z.union([
   FollowNotificationPayload,
   CommentNotificationPayload,
   ReplyNotificationPayload,
+  PostUpdateNotificationPayload,
   PostReactionNotificationPayload,
   CommentReactionNotificationPayload,
   DirectMessageNotificationPayload,

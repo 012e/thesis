@@ -58,7 +58,9 @@ describe("PostsController integration", () => {
   });
 
   beforeEach(async () => {
-    await pool.query("TRUNCATE TABLE posts RESTART IDENTITY CASCADE");
+    await pool.query(
+      "TRUNCATE TABLE notifications, posts RESTART IDENTITY CASCADE",
+    );
   });
 
   describe("GET /posts", () => {
@@ -140,6 +142,7 @@ describe("PostsController integration", () => {
       expect(res.body.author.email).toBeTruthy();
       expect(res.body.upvoteCount).toBe(0);
       expect(res.body.downvoteCount).toBe(0);
+      expect(res.body.currentUserSubscribed).toBe(true);
     });
 
     it("creates a poll post", async () => {
@@ -329,6 +332,105 @@ describe("PostsController integration", () => {
         .expect(201);
 
       await server.delete(`/posts/${created.body.id}`).expect(401);
+    });
+  });
+
+  describe("post subscriptions", () => {
+    it("lets a non-owner subscribe and unsubscribe", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/posts")
+        .set("Cookie", userACookie)
+        .send({ content: { text: "Subscription target" } })
+        .expect(201);
+
+      const initialFetch = await server
+        .get(`/posts/${created.body.id}`)
+        .set("Cookie", userBCookie)
+        .expect(200);
+      expect(initialFetch.body.currentUserSubscribed).toBe(false);
+
+      const subscribed = await server
+        .post(`/posts/${created.body.id}/subscribe`)
+        .set("Cookie", userBCookie)
+        .send({})
+        .expect(200);
+      expect(subscribed.body.postId).toBe(created.body.id);
+
+      const afterSubscribe = await server
+        .get(`/posts/${created.body.id}`)
+        .set("Cookie", userBCookie)
+        .expect(200);
+      expect(afterSubscribe.body.currentUserSubscribed).toBe(true);
+
+      await server
+        .delete(`/posts/${created.body.id}/subscribe`)
+        .set("Cookie", userBCookie)
+        .expect(200);
+
+      const afterUnsubscribe = await server
+        .get(`/posts/${created.body.id}`)
+        .set("Cookie", userBCookie)
+        .expect(200);
+      expect(afterUnsubscribe.body.currentUserSubscribed).toBe(false);
+    });
+
+    it("keeps the post owner subscribed", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/posts")
+        .set("Cookie", userACookie)
+        .send({ content: { text: "Owner subscription" } })
+        .expect(201);
+
+      await server
+        .delete(`/posts/${created.body.id}/subscribe`)
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      const fetched = await server
+        .get(`/posts/${created.body.id}`)
+        .set("Cookie", userACookie)
+        .expect(200);
+      expect(fetched.body.currentUserSubscribed).toBe(true);
+    });
+
+    it("notifies subscribers when a post is updated", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/posts")
+        .set("Cookie", userACookie)
+        .send({ content: { text: "Before update" } })
+        .expect(201);
+
+      await server
+        .post(`/posts/${created.body.id}/subscribe`)
+        .set("Cookie", userBCookie)
+        .send({})
+        .expect(200);
+
+      await server
+        .put(`/posts/${created.body.id}`)
+        .set("Cookie", userACookie)
+        .send({ content: { text: "After update" } })
+        .expect(200);
+
+      const notifications = await server
+        .get("/notifications")
+        .set("Cookie", userBCookie)
+        .expect(200);
+
+      expect(notifications.body.notifications).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            type: "post_update",
+            payload: expect.objectContaining({ postId: created.body.id }),
+          }),
+        ]),
+      );
     });
   });
 

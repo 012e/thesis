@@ -2,6 +2,7 @@ import { initContract } from "@ts-rest/core";
 import { z } from "zod";
 import {
   Post,
+  PostSubscription,
   CreatePostBody,
   UpdatePostBody,
   RecommendationPage,
@@ -71,6 +72,27 @@ export const postsContract = c.router({
       404: z.null(),
     },
     summary: "Delete a social media post",
+  },
+  subscribeToPost: {
+    method: "POST",
+    path: "/posts/:id/subscribe",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.object({}),
+    responses: {
+      200: PostSubscription,
+      404: z.null(),
+    },
+    summary: "Subscribe to notifications for a post",
+  },
+  unsubscribeFromPost: {
+    method: "DELETE",
+    path: "/posts/:id/subscribe",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: PostSubscription,
+      404: z.null(),
+    },
+    summary: "Unsubscribe from notifications for a post",
   },
   getRecommendations: {
     method: "GET",
