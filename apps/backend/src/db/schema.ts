@@ -87,6 +87,23 @@ export const postReactions = pgTable(
 export type PostReaction = typeof postReactions.$inferSelect;
 export type NewPostReaction = typeof postReactions.$inferInsert;
 
+export const postSubscriptions = pgTable(
+  'post_subscriptions',
+  {
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    userId: text('user_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.postId, table.userId] })],
+);
+
+export type PostSubscription = typeof postSubscriptions.$inferSelect;
+export type NewPostSubscription = typeof postSubscriptions.$inferInsert;
+
 export const comments = pgTable(
   'comments',
   {
@@ -254,6 +271,7 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'follow',
   'comment',
   'reply',
+  'post_update',
   'post_reaction',
   'comment_reaction',
   'direct_message',

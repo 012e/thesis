@@ -32,6 +32,8 @@ function getNotificationText(notification: NotificationDto): string {
       return `${actorName} commented on your post`;
     case 'reply':
       return `${actorName} replied to your comment`;
+    case 'post_update':
+      return `${actorName} updated a post you subscribe to`;
     case 'post_reaction':
       return `${actorName} reacted to your post`;
     case 'comment_reaction':

@@ -29,6 +29,8 @@ function getNotificationIcon(type: NotificationTypeDto) {
       return <IconMessage className="w-4 h-4" />;
     case "reply":
       return <IconMessageCircle className="w-4 h-4" />;
+    case "post_update":
+      return <IconBell className="w-4 h-4" />;
     case "post_reaction":
     case "comment_reaction":
       return <IconHeart className="w-4 h-4" />;
@@ -50,6 +52,8 @@ function getNotificationText(notification: NotificationDto): string {
       return `${actorName} commented on your post`;
     case "reply":
       return `${actorName} replied to your comment`;
+    case "post_update":
+      return `${actorName} updated a post you subscribe to`;
     case "post_reaction":
       return `${actorName} reacted to your post`;
     case "comment_reaction":

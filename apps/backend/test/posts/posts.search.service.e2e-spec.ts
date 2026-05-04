@@ -12,6 +12,7 @@ import { PostsSearchService } from "@/posts/posts-search.service";
 import { PostsService } from "@/posts/posts.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -49,6 +50,10 @@ describe("PostsSearchService.search integration", () => {
           useValue: {
             resolveAvatarUrl: (image: string | null) => image,
           },
+        },
+        {
+          provide: NotificationsService,
+          useValue: { deliver: async () => ({}) },
         },
       ],
     }).compile();
@@ -157,6 +162,7 @@ describe("PostsSearchService.search integration", () => {
     expect(post.downvoteCount).toBe(0);
     expect(post.commentCount).toBe(0);
     expect(post.currentUserReaction).toBeNull();
+    expect(post.currentUserSubscribed).toBe(true);
   });
 
   it("is case-insensitive", async () => {

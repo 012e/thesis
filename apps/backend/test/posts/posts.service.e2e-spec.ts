@@ -17,6 +17,7 @@ import {
 
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 
@@ -51,6 +52,10 @@ describe("PostsService integration", () => {
           useValue: {
             resolveAvatarUrl: (image: string | null) => image,
           },
+        },
+        {
+          provide: NotificationsService,
+          useValue: { deliver: async () => ({}) },
         },
         {
           provide: EMBEDDING_SERVICE,
@@ -98,7 +103,7 @@ describe("PostsService integration", () => {
       },
     });
 
-    const fetched = await postsService.getById(created.id);
+    const fetched = await postsService.getById(created.id, "author-1");
 
     expect(fetched).toEqual(created);
     expect(created.authorId).toBe("author-1");
@@ -111,6 +116,7 @@ describe("PostsService integration", () => {
     expect(created.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(created.upvoteCount).toBe(0);
     expect(created.downvoteCount).toBe(0);
+    expect(created.currentUserSubscribed).toBe(true);
   });
 
   it("lists posts in descending creation order", async () => {

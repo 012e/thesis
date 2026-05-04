@@ -33,6 +33,7 @@ import { usePostReaction } from "@/hooks/use-post-reaction";
 import { useSession } from "@/hooks/use-session";
 import { useOpenChat } from "@/hooks/use-open-chat";
 import { useDeletePost } from "@/hooks/use-delete-post";
+import { usePostSubscription } from "@/hooks/use-post-subscription";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
@@ -206,6 +207,14 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const openChat = useOpenChat();
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
+  const {
+    isSubscribed,
+    isPending: isSubscriptionPending,
+    toggle: toggleSubscription,
+  } = usePostSubscription({
+    postId: post.id,
+    initialSubscribed: post.currentUserSubscribed,
+  });
 
   const [reactionSummary, setReactionSummary] = useState(() => ({
     upvotes: initialReactionSummary?.upvotes ?? post.upvoteCount,
@@ -364,13 +373,19 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                     className="gap-3 py-3 px-3 cursor-pointer"
                     onClick={(e) => {
                       e.stopPropagation();
-                      toast.info("Post notifications coming soon!");
+                      void toggleSubscription();
                     }}
+                    disabled={isSubscriptionPending}
                   >
                     <MenuItemCard
                       icon={<IconBell className="w-4 h-4" />}
-                      label="Subscribe"
-                      description="Get notified about replies and reactions"
+                      iconClassName={isSubscribed ? "bg-primary/10" : "bg-muted"}
+                      label={isSubscribed ? "Subscribed" : "Subscribe"}
+                      description={
+                        isSubscribed
+                          ? "Stop notifications for this post"
+                          : "Get notified about replies and reactions"
+                      }
                     />
                   </DropdownMenuItem>
                 )}
