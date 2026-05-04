@@ -10,8 +10,6 @@ import {
   IconZoom,
   IconZoomFilled,
   IconRobot,
-  IconCodeCircle2,
-  IconCodeCircle2Filled,
   IconFlask,
   IconFlaskFilled,
   IconShield,
