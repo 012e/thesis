@@ -101,7 +101,7 @@ importers:
         version: 3.1033.0
       '@nestjs/axios':
         specifier: ^4.0.1
-        version: 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.1)(rxjs@7.8.2)
+        version: 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.2)(rxjs@7.8.2)
       '@nestjs/common':
         specifier: ^11.1.19
         version: 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -116,7 +116,7 @@ importers:
         version: 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.19)(rxjs@7.8.2)
       '@nestjs/terminus':
         specifier: ^11.1.1
-        version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.1)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+        version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.2)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/websockets':
         specifier: ^11.1.19
         version: 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(@nestjs/platform-socket.io@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -149,7 +149,7 @@ importers:
         version: 6.0.0(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(pg-boss@12.15.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       axios:
         specifier: ^1.15.1
-        version: 1.15.1
+        version: 1.15.2
       better-auth:
         specifier: ^1.4.18
         version: 1.6.6(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(kysely@0.28.16)(pg@8.20.0))(pg@8.20.0)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)(solid-js@1.9.12)(vitest@4.1.5)(vue@3.5.32(typescript@5.9.3))
@@ -315,7 +315,7 @@ importers:
         version: link:../../packages/shared-dto
       '@scalar/api-reference-react':
         specifier: ^0.9.24
-        version: 0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(react@19.2.5)(tailwindcss@4.2.4)(typescript@5.9.3)
+        version: 0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(react@19.2.5)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@t3-oss/env-core':
         specifier: ^0.13.11
         version: 0.13.11(typescript@5.9.3)(zod@4.3.6)
@@ -421,7 +421,7 @@ importers:
         version: 10.4.0
       '@storybook/addon-themes':
         specifier: ^10.3.5
-        version: 10.3.5(storybook@10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
+        version: 10.3.5(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.2.4)
@@ -5967,6 +5967,12 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
+  '@storybook/icons@2.0.2':
+    resolution: {integrity: sha512-KZBCpXsshAIjczYNXR/rlxEtCUX/eAbpFNwKi8bcOomrLA4t/SyPz5RF+lVPO2oZBUE4sAkt43mfJUevQDSEEw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   '@storybook/react-dom-shim@10.3.5':
     resolution: {integrity: sha512-Gw8R7XZm0zSUH0XAuxlQJhmizsLzyD6x00KOlP6l7oW9eQHXGfxg3seNDG3WrSAcW07iP1/P422kuiriQlOv7g==}
     peerDependencies:
@@ -6947,7 +6953,7 @@ packages:
     resolution: {integrity: sha512-7I3q6l5qr03dVfMX2wCo9FxwSJbPdwKjy2uu/YPpU3wfHvIL4QHwVRp57OfGrDFeUJ8/8QdfBKIV12FTtLn00g==}
 
   '@vitest/pretty-format@https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@c464c0d':
-    resolution: {tarball: https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@c464c0d}
+    resolution: {integrity: sha512-ZaIJ1G8IjMvN7lpOvl9Wg0+hkjKM/0ZFisJjyvmHaQnaXTZwE5XV/pUSmatx7mOKQiC7DNzVZ0Yi+G95iWweIw==, tarball: https://pkg.pr.new/vitest-dev/vitest/@vitest/pretty-format@c464c0d}
     version: 4.1.0-beta.2
 
   '@vitest/runner@4.1.5':
@@ -6963,7 +6969,7 @@ packages:
     resolution: {integrity: sha512-2lNOsh6+R2Idnf1TCZqSwYlKN2E/iDlD8sgU59kYVl+OMDmvldO1VDk39smRfpUNwYpNRVn3w4YfuC7KfbBnkQ==}
 
   '@vitest/ui@https://pkg.pr.new/@vitest/ui@9536':
-    resolution: {tarball: https://pkg.pr.new/@vitest/ui@9536}
+    resolution: {integrity: sha512-0Nb8Nkqup/f8mz/+W0rnwaYdyFbzT1kusFALWtLQcI112l3AgnCiurkH+sfIs2xIsJ/c5S/kTJ+xhuxFH3POeg==, tarball: https://pkg.pr.new/@vitest/ui@9536}
     version: 4.1.0-beta.2
     peerDependencies:
       vitest: 4.1.0-beta.2
@@ -6975,7 +6981,7 @@ packages:
     resolution: {integrity: sha512-76wdkrmfXfqGjueGgnb45ITPyUi1ycZ4IHgC2bhPDUfWHklY/q3MdLOAB+TF1e6xfl8NxNY0ZYaPCFNWSsw3Ug==}
 
   '@vitest/utils@https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@c464c0d':
-    resolution: {tarball: https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@c464c0d}
+    resolution: {integrity: sha512-pLpVAOlj1HjNnzD2cRORtyUC1YH6RS1VNRGXrzeG3scixa8W+3oU2J57wHi6P+Dy9WJGdUuFZbEru0MtT2R9Dw==, tarball: https://pkg.pr.new/vitest-dev/vitest/@vitest/utils@c464c0d}
     version: 4.1.0-beta.2
 
   '@volar/language-core@2.4.28':
@@ -7455,8 +7461,8 @@ packages:
   axios@1.15.0:
     resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
 
-  axios@1.15.1:
-    resolution: {integrity: sha512-WOG+Jj8ZOvR0a3rAn+Tuf1UQJRxw5venr6DgdbJzngJE3qG7X0kL83CZGpdHMxEm+ZK3seAbvFsw4FfOfP9vxg==}
+  axios@1.15.2:
+    resolution: {integrity: sha512-wLrXxPtcrPTsNlJmKjkPnNPK2Ihe0hn0wGSaTEiHRPxwjvJwT3hKmXF4dpqxmPO9SoNb2FsYXj/xEo0gHN+D5A==}
 
   b4a@1.8.0:
     resolution: {integrity: sha512-qRuSmNSkGQaHwNbM7J78Wwy+ghLEYF1zNrSeMxj4Kgw6y33O3mXcQ6Ie9fRvfU/YnxWkOchPXbaLb73TkIsfdg==}
@@ -11694,6 +11700,18 @@ packages:
       prettier: ^2 || ^3
     peerDependenciesMeta:
       prettier:
+        optional: true
+
+  storybook@10.3.6:
+    resolution: {integrity: sha512-vbSz7g/1rGMC1uAULqMZjALkIuLu2QABqfhRYhyr/11kzyesi+vAmwyJLukZP1FfecxGOgMwOh6GS0YsGpHAvQ==}
+    hasBin: true
+    peerDependencies:
+      prettier: ^2 || ^3
+      vite-plus: ^0.1.15
+    peerDependenciesMeta:
+      prettier:
+        optional: true
+      vite-plus:
         optional: true
 
   stream-parser@0.3.1:
@@ -16267,10 +16285,10 @@ snapshots:
       '@tybys/wasm-util': 0.10.1
     optional: true
 
-  '@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.1)(rxjs@7.8.2)':
+  '@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.2)(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      axios: 1.15.1
+      axios: 1.15.2
       rxjs: 7.8.2
 
   '@nestjs/cli@11.0.21(@swc/cli@0.8.1(@swc/core@1.15.30(@swc/helpers@0.5.21))(chokidar@4.0.3))(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@22.19.17)(esbuild@0.27.7)(prettier@3.8.3)':
@@ -16386,7 +16404,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.1)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
+  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.2)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.19)(@nestjs/websockets@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -16397,7 +16415,7 @@ snapshots:
     optionalDependencies:
       '@grpc/grpc-js': 1.14.3
       '@grpc/proto-loader': 0.8.0
-      '@nestjs/axios': 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.1)(rxjs@7.8.2)
+      '@nestjs/axios': 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.15.2)(rxjs@7.8.2)
 
   '@nestjs/testing@11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(@nestjs/platform-express@11.1.19)':
     dependencies:
@@ -18124,10 +18142,10 @@ snapshots:
       - '@types/node'
     optional: true
 
-  '@scalar/agent-chat@0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/agent-chat@0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@ai-sdk/vue': 3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)
-      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/components': 0.22.1(typescript@5.9.3)
       '@scalar/helpers': 0.5.1
       '@scalar/icons': 0.7.2(typescript@5.9.3)
@@ -18163,7 +18181,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-client@3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-client@3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@headlessui/tailwindcss': 0.2.2(tailwindcss@4.2.4)
       '@headlessui/vue': 1.7.23(vue@3.5.32(typescript@5.9.3))
@@ -18185,7 +18203,7 @@ snapshots:
       '@scalar/workspace-store': 0.46.1(typescript@5.9.3)
       '@types/har-format': 1.2.16
       '@vueuse/core': 13.9.0(vue@3.5.32(typescript@5.9.3))
-      '@vueuse/integrations': 13.9.0(axios@1.15.1)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))
+      '@vueuse/integrations': 13.9.0(axios@1.15.2)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))
       cookie: 1.1.1
       focus-trap: 7.8.0
       fuse.js: 7.3.0
@@ -18221,9 +18239,9 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference-react@0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(react@19.2.5)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-reference-react@0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(react@19.2.5)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
-      '@scalar/api-reference': 1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-reference': 1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/types': 0.9.1
       react: 19.2.5
     transitivePeerDependencies:
@@ -18245,11 +18263,11 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference@1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-reference@1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@headlessui/vue': 1.7.23(vue@3.5.32(typescript@5.9.3))
-      '@scalar/agent-chat': 0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)
-      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/agent-chat': 0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/code-highlight': 0.3.3
       '@scalar/components': 0.22.1(typescript@5.9.3)
       '@scalar/helpers': 0.5.1
@@ -18868,9 +18886,9 @@ snapshots:
 
   '@stitches/core@1.2.8': {}
 
-  '@storybook/addon-themes@10.3.5(storybook@10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
+  '@storybook/addon-themes@10.3.5(storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))':
     dependencies:
-      storybook: 10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      storybook: 10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       ts-dedent: 2.2.0
 
   '@storybook/builder-vite@10.3.5(esbuild@0.27.7)(rollup@4.60.3)(storybook@10.3.5(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5))(vite@8.0.10(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.4))(webpack@5.106.0(@swc/core@1.15.30(@swc/helpers@0.5.21))(esbuild@0.27.7))':
@@ -18897,6 +18915,11 @@ snapshots:
   '@storybook/global@5.0.0': {}
 
   '@storybook/icons@2.0.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
+    dependencies:
+      react: 19.2.5
+      react-dom: 19.2.5(react@19.2.5)
+
+  '@storybook/icons@2.0.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)':
     dependencies:
       react: 19.2.5
       react-dom: 19.2.5(react@19.2.5)
@@ -19684,7 +19707,7 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 25.6.0
+      '@types/node': 22.19.17
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -20137,13 +20160,13 @@ snapshots:
       '@vueuse/shared': 13.9.0(vue@3.5.32(typescript@5.9.3))
       vue: 3.5.32(typescript@5.9.3)
 
-  '@vueuse/integrations@13.9.0(axios@1.15.1)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))':
+  '@vueuse/integrations@13.9.0(axios@1.15.2)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 13.9.0(vue@3.5.32(typescript@5.9.3))
       '@vueuse/shared': 13.9.0(vue@3.5.32(typescript@5.9.3))
       vue: 3.5.32(typescript@5.9.3)
     optionalDependencies:
-      axios: 1.15.1
+      axios: 1.15.2
       focus-trap: 7.8.0
       fuse.js: 7.3.0
 
@@ -20619,7 +20642,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.15.1:
+  axios@1.15.2:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -25727,6 +25750,30 @@ snapshots:
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.0.1(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
+      '@testing-library/jest-dom': 6.9.1
+      '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
+      '@vitest/expect': 3.2.4
+      '@vitest/spy': 3.2.4
+      '@webcontainer/env': 1.1.1
+      esbuild: 0.27.7
+      open: 10.2.0
+      recast: 0.23.11
+      semver: 7.7.4
+      use-sync-external-store: 1.6.0(react@19.2.5)
+      ws: 8.20.0
+    optionalDependencies:
+      prettier: 3.8.3
+    transitivePeerDependencies:
+      - '@testing-library/dom'
+      - bufferutil
+      - react
+      - react-dom
+      - utf-8-validate
+
+  storybook@10.3.6(@testing-library/dom@10.4.1)(prettier@3.8.3)(react-dom@19.2.5(react@19.2.5))(react@19.2.5):
+    dependencies:
+      '@storybook/global': 5.0.0
+      '@storybook/icons': 2.0.2(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
       '@testing-library/jest-dom': 6.9.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
       '@vitest/expect': 3.2.4
