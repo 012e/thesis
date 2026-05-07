@@ -3,12 +3,14 @@ import { Tool, type Context } from "@rekog/mcp-nest";
 import { z } from "zod";
 import { UsersService } from "../../users/users.service";
 import { FollowsService } from "../../follows/follows.service";
+import { NotificationsService } from "../../notifications/notifications.service";
 
 @Injectable()
 export class IdentityTools {
   constructor(
     private readonly usersService: UsersService,
     private readonly followsService: FollowsService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   @Tool({
@@ -185,6 +187,155 @@ export class IdentityTools {
 
     return {
       content: [{ type: "text", text: JSON.stringify(following, null, 2) }],
+    };
+  }
+
+  @Tool({
+    name: "search_users",
+    description: "Search for users by name, username, or email",
+    parameters: z.object({
+      query: z.string().describe("The search query"),
+      limit: z
+        .number()
+        .min(1)
+        .max(50)
+        .default(10)
+        .describe("Maximum number of results to return"),
+    }),
+  })
+  async searchUsers(
+    { query, limit }: { query: string; limit: number },
+    _context: Context,
+    request: any,
+  ) {
+    const currentUser = request.user;
+    if (!currentUser)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const result = await this.usersService.search(query, limit, 0);
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+    };
+  }
+
+  @Tool({
+    name: "list_notifications",
+    description: "List your notifications, newest first",
+    parameters: z.object({
+      limit: z
+        .number()
+        .min(1)
+        .max(50)
+        .default(20)
+        .describe("Maximum number of notifications to return"),
+    }),
+  })
+  async listNotifications(
+    { limit }: { limit: number },
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const result = await this.notificationsService.list(user.id, { limit });
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+    };
+  }
+
+  @Tool({
+    name: "get_unread_notification_count",
+    description: "Get the count of your unread notifications",
+  })
+  async getUnreadNotificationCount(
+    _args: any,
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const count = await this.notificationsService.getUnreadCount(user.id);
+
+    return {
+      content: [
+        { type: "text", text: `You have ${count} unread notification(s).` },
+      ],
+    };
+  }
+
+  @Tool({
+    name: "mark_notification_read",
+    description: "Mark a specific notification as read",
+    parameters: z.object({
+      notificationId: z
+        .string()
+        .uuid()
+        .describe("The UUID of the notification to mark as read"),
+    }),
+  })
+  async markNotificationRead(
+    { notificationId }: { notificationId: string },
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const result = await this.notificationsService.markRead(
+      notificationId,
+      user.id,
+    );
+
+    if (!result) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error: Notification ${notificationId} not found.`,
+          },
+        ],
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Notification marked as read.\n\n${JSON.stringify(result, null, 2)}`,
+        },
+      ],
+    };
+  }
+
+  @Tool({
+    name: "mark_all_notifications_read",
+    description: "Mark all your unread notifications as read",
+  })
+  async markAllNotificationsRead(
+    _args: any,
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const count = await this.notificationsService.markAllRead(user.id);
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Successfully marked ${count} notification(s) as read.`,
+        },
+      ],
     };
   }
 }

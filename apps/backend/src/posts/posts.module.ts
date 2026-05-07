@@ -13,6 +13,6 @@ import { PostsService } from "./posts.service";
   imports: [DatabaseModule, StorageModule, UsersModule, EmbeddingModule],
   controllers: [PostsController],
   providers: [PostsService, PostsSearchService],
-  exports: [PostsService],
+  exports: [PostsService, PostsSearchService],
 })
 export class PostsModule {}

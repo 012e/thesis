@@ -4,6 +4,7 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { IdentityTools } from "./identity.tools";
 import { UsersModule } from "../../users/users.module";
 import { FollowsModule } from "../../follows/follows.module";
+import { NotificationsModule } from "../../notifications/notifications.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { FollowsModule } from "../../follows/follows.module";
     }),
     UsersModule,
     FollowsModule,
+    NotificationsModule,
   ],
   providers: [IdentityTools],
 })
