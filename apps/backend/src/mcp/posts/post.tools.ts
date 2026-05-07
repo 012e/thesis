@@ -2,12 +2,14 @@ import { Injectable } from "@nestjs/common";
 import { Tool, type Context } from "@rekog/mcp-nest";
 import { z } from "zod";
 import { PostsService } from "../../posts/posts.service";
+import { PostsSearchService } from "../../posts/posts-search.service";
 import { CommentsService } from "../../comments/comments.service";
 
 @Injectable()
 export class PostTools {
   constructor(
     private readonly postsService: PostsService,
+    private readonly postsSearchService: PostsSearchService,
     private readonly commentsService: CommentsService,
   ) {}
 
@@ -187,6 +189,56 @@ export class PostTools {
           text: `Post deleted successfully!\n\n${JSON.stringify(deletedPost, null, 2)}`,
         },
       ],
+    };
+  }
+
+  @Tool({
+    name: "search_posts",
+    description:
+      "Search for posts using a text query. Uses hybrid BM25 + semantic search for best results.",
+    parameters: z.object({
+      query: z.string().min(1).describe("The search query"),
+    }),
+  })
+  async searchPosts(
+    { query }: { query: string },
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const results = await this.postsSearchService.search(query, user.id);
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+    };
+  }
+
+  @Tool({
+    name: "get_posts_by_user",
+    description: "Get all posts authored by a specific user",
+    parameters: z.object({
+      userId: z
+        .string()
+        .uuid()
+        .describe("The UUID of the user whose posts to retrieve"),
+    }),
+  })
+  async getPostsByUser(
+    { userId }: { userId: string },
+    _context: Context,
+    request: any,
+  ) {
+    const user = request.user;
+    if (!user)
+      return { content: [{ type: "text", text: "Error: Not authenticated" }] };
+
+    const posts = await this.postsService.listByUser(userId, user.id);
+
+    return {
+      content: [{ type: "text", text: JSON.stringify(posts, null, 2) }],
     };
   }
 }
