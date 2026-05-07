@@ -49,12 +49,6 @@ const baseNavigationItems = [
     href: "/playground",
   },
   {
-    icon: IconCodeCircle2,
-    selectedIcon: IconCodeCircle2Filled,
-    label: "Playground",
-    href: "/playground",
-  },
-  {
     icon: IconUser,
     selectedIcon: IconUserFilled,
     label: "Profile",
