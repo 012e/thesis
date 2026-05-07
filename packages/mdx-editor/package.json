@@ -100,7 +100,7 @@
     "terser": "^5.26.0",
     "typescript": "^5.9.3",
     "user-agent-data-types": "^0.4.2",
-    "vite": "^5.0.10",
+    "vite": "^6.4.2",
     "vite-plugin-dts": "^5.0.0",
     "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^4.2.3"

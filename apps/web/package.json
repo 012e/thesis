@@ -81,7 +81,7 @@
     "randexp": "^0.5.3",
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
-    "vite": "^8.0.10",
+    "vite": "^6.4.2",
     "zod-schema-faker": "^2.1.1"
   }
 }
