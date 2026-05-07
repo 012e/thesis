@@ -250,7 +250,7 @@ function UserMessage() {
       data-role="user"
     >
       <UserActionBar />
-      <div className="col-start-2 max-w-xl wrap-break-word">
+      <div className="col-start-2 max-w-xl break-words">
         <UserMessageAttachments />
         <div className="py-2.5 px-5 rounded-3xl rounded-tr-sm bg-muted text-foreground">
           <MessagePrimitive.Parts />
