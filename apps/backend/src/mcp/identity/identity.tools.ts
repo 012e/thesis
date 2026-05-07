@@ -204,7 +204,7 @@ export class IdentityTools {
     }),
   })
   async searchUsers(
-    { query, limit }: { query: string; limit: number },
+    { query, limit, offset }: { query: string; limit: number; offset: number },
     _context: Context,
     request: any,
   ) {
@@ -212,7 +212,7 @@ export class IdentityTools {
     if (!currentUser)
       return { content: [{ type: "text", text: "Error: Not authenticated" }] };
 
-    const result = await this.usersService.search(query, limit, 0);
+    const result = await this.usersService.search(query, limit, offset);
 
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
