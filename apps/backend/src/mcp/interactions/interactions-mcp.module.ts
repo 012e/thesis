@@ -4,6 +4,7 @@ import { AuthGuard } from "@thallesp/nestjs-better-auth";
 import { InteractionTools } from "./interaction.tools";
 import { CommentsModule } from "../../comments/comments.module";
 import { ReactionsModule } from "../../reactions/reactions.module";
+import { PollsModule } from "../../polls/polls.module";
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { ReactionsModule } from "../../reactions/reactions.module";
     }),
     CommentsModule,
     ReactionsModule,
+    PollsModule,
   ],
   providers: [InteractionTools],
 })
