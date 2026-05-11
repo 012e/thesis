@@ -1,6 +1,8 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
 import { getSocialMcpToolsets } from "../mcp/social";
+import { getSearchMcpToolset } from "../mcp/search";
+import { SEARCH_AGENT_CONFIG } from "./search-agent";
 import {
   ModelMode,
   MODEL_FAST_ORCHESTRATOR,
@@ -42,6 +44,8 @@ export async function createOrchestratorAgent(
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
+
+  const searchToolset = await getSearchMcpToolset();
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
@@ -134,26 +138,35 @@ Guidelines:
     tools: interactionsToolset,
   });
 
+  const searchAgent = new Agent({
+    ...SEARCH_AGENT_CONFIG,
+    model: subAgentModel,
+    tools: searchToolset,
+  });
+
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
 
   const orchestrator = new Agent({
     id: "orchestrator",
     name: "Orchestrator",
-    instructions: `You are the orchestrator for a social media AI assistant. You coordinate four specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
+    instructions: `You are the orchestrator for a social media AI assistant. You coordinate five specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
 
 Available agents:
 - identity-agent: user identity, profile lookups, follow/unfollow, listing followers/following
 - post-creation-agent: creating, updating, and deleting posts
 - post-discovery-agent: reading the feed and fetching post threads with comments
 - interactions-agent: commenting on posts, upvoting/downvoting, and removing reactions
+- search-agent: web search via DuckDuckGo for current events, external information, or URL content
 
 Delegation strategy:
 1. Identify what the user wants to do.
 2. Route to the single most appropriate agent.
 3. For compound tasks (e.g. "find a post and then comment on it"), delegate sequentially:
    first to post-discovery-agent, then to interactions-agent.
-4. Always synthesise the sub-agent's result into a concise, friendly response for the user.
-5. If a sub-agent fails, report the error clearly and suggest what the user can try next.
+4. Use search-agent whenever the user asks about topics outside the social platform
+   (news, facts, real-world information) or requests a web search explicitly.
+5. Always synthesise the sub-agent's result into a concise, friendly response for the user.
+6. If a sub-agent fails, report the error clearly and suggest what the user can try next.
 
 Success criteria:
 - The user's request is fully addressed.
@@ -165,6 +178,7 @@ Success criteria:
       postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
+      searchAgent,
     },
   });
 
