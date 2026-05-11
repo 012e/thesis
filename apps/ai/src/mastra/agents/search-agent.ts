@@ -2,16 +2,10 @@ import { Agent } from "@mastra/core/agent";
 import { MODEL_SUB_AGENT } from "../constants";
 
 /**
- * Search agent — owns all web search operations.
- *
- * Capable of:
- * - Searching the web via DuckDuckGo
- * - Fetching and parsing webpage content
- *
- * Tools are injected per-request by the orchestrator via toolsets.
- * This static registration is kept for Mastra Studio compatibility only.
+ * Shared config for the search agent. Exported so the orchestrator factory can
+ * reuse the same id, name, description, and instructions without duplicating them.
  */
-export const searchAgent = new Agent({
+export const SEARCH_AGENT_CONFIG = {
   id: "search-agent",
   name: "Search Agent",
   description:
@@ -28,5 +22,19 @@ Guidelines:
 - Summarise search results concisely; include source URLs so the user can follow up
 - When fetching a URL, extract the key information the user needs — do not dump raw HTML
 - Do not fabricate information; rely only on what the search results return`,
+} as const;
+
+/**
+ * Search agent — owns all web search operations.
+ *
+ * Capable of:
+ * - Searching the web via DuckDuckGo
+ * - Fetching and parsing webpage content
+ *
+ * Tools are injected per-request by the orchestrator via toolsets.
+ * This static registration is kept for Mastra Studio compatibility only.
+ */
+export const searchAgent = new Agent({
+  ...SEARCH_AGENT_CONFIG,
   model: MODEL_SUB_AGENT,
 });
