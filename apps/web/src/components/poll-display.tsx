@@ -73,7 +73,7 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
 
   if (isLoading) {
     return (
-      <div className="p-4 mt-3 rounded-xl border bg-muted/30">
+      <div className="p-4 mt-3 border bg-muted/30">
         <div className="flex justify-center items-center py-4">
           <IconLoader2 className="w-5 h-5 animate-spin text-muted-foreground" />
         </div>
@@ -82,7 +82,7 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
   }
 
   return (
-    <div className="p-4 mt-3 rounded-xl border bg-muted/30">
+    <div className="p-4 mt-3 border bg-muted/30">
       <h4 className="mb-3 font-semibold">{poll.question}</h4>
 
       <div className="space-y-2">
@@ -100,7 +100,7 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
               onClick={() => handleOptionClick(option.id)}
               disabled={isPending || isClosed}
               className={cn(
-                "relative w-full p-3 rounded-lg border text-left transition-all cursor-pointer",
+                "relative w-full p-3 border text-left transition-all cursor-pointer",
                 "hover:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20",
                 isSelected && !showResults && "border-primary bg-primary/5",
                 isSelected && showResults && "border-primary",
@@ -111,7 +111,7 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
               {showResults && (
                 <div
                   className={cn(
-                    "absolute inset-0 rounded-lg transition-all",
+                    "absolute inset-0 transition-all",
                     isSelected ? "bg-primary/20" : "bg-muted",
                   )}
                   style={{ width: `${percentage}%` }}
