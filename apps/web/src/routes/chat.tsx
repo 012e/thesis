@@ -95,49 +95,50 @@ function ChatWorkspace() {
 
   useEffect(() => {
     if (!messages) return;
-    let newDraftData = { ...draftData };
-    let newActiveForm = activeForm;
-    let stateChanged = false;
 
-    // Scan messages for tool calls. We replay them sequentially.
-    messages.forEach((msg) => {
-      if (msg.role !== "assistant" || !msg.content) return;
-      msg.content.forEach((part) => {
-        if (part.type === "tool-call") {
-          const { toolName, args } = part;
-          if (toolName === "open_form") {
-            if (newActiveForm !== args.formName) {
-              newActiveForm = args.formName as string;
-              stateChanged = true;
-            }
-          } else if (toolName === "set_form_field") {
-             if (newDraftData[args.field as string] !== args.value) {
-                newDraftData[args.field as string] = args.value;
-                stateChanged = true;
-             }
-          }
+    // Replay all COMPLETED tool calls from the full message history to derive
+    // the authoritative form state. Skipping "running" parts avoids flickering
+    // from partially-streamed JSON args.
+    let derivedActiveForm: string | undefined = undefined;
+    const derivedData: Record<string, unknown> = {};
+    let hasSubmit = false;
+
+    for (const msg of messages) {
+      if (msg.role !== "assistant") continue;
+      for (const part of ((msg as any).content ?? [])) {
+        if (part.type !== "tool-call") continue;
+        // Skip tool calls whose args are still streaming
+        if ((part as any).status?.type === "running") continue;
+
+        const args = (part as any).args ?? {};
+        if (part.toolName === "open_form") {
+          derivedActiveForm = args.formName as string;
+        } else if (part.toolName === "set_form_field") {
+          derivedData[args.field as string] = args.value;
+        } else if (part.toolName === "submit_form") {
+          hasSubmit = true;
         }
-      });
-    });
+      }
+    }
 
-    if (stateChanged) {
-      setDrafts((prev) => ({
+    setDrafts((prev) => {
+      const current = prev[threadId];
+      return {
         ...prev,
         [threadId]: {
-          activeForm: newActiveForm,
-          data: newDraftData,
-        }
-      }));
-    }
+          activeForm: derivedActiveForm,
+          data: derivedData,
+          // Only set submitRequest; PostCreationForm clears it after submission.
+          submitRequest: hasSubmit || (current?.submitRequest ?? false),
+        },
+      };
+    });
   }, [messages, threadId, setDrafts]);
 
   // System instructions to make AI aware of current form
-  useAssistantInstructions(`
-Current Active Form: ${activeForm || "None"}
-Current Form State: ${JSON.stringify(draftData)}
-
-Use the open_form tool to select a form, and set_form_field to edit fields.
-`);
+  useAssistantInstructions(
+    `Current Active Form: ${activeForm ?? "None"}\nCurrent Form State: ${JSON.stringify(draftData)}\n\nUse the open_form tool to select a form, and set_form_field to edit fields.`,
+  );
 
   const activeFormConfig = activeForm ? FormRegistry[activeForm] : null;
   const ActiveForm = activeFormConfig?.form;
