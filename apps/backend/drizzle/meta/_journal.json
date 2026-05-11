@@ -134,6 +134,13 @@
       "when": 1777825100852,
       "tag": "0018_famous_kabuki",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1778512738249,
+      "tag": "0019_post_subscriptions",
+      "breakpoints": true
     }
   ]
 }
