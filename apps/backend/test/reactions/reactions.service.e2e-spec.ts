@@ -7,8 +7,9 @@ import { posts, postReactions } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { ReactionsService } from "@/reactions/reactions.service";
-import { NotificationsService } from "@/notifications/notifications.service";
-import { PostsService } from "@/posts/posts.service";
+import { NotificationsModule } from "@/notifications/notifications.module";
+import { PostsModule } from "@/posts/posts.module";
+import { PgBossModule } from "@wavezync/nestjs-pgboss";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -32,6 +33,11 @@ describe("ReactionsService integration", () => {
 
     pool = new Pool({ connectionString: containers.databaseUrl });
     moduleRef = await Test.createTestingModule({
+      imports: [
+        PgBossModule.forRoot({ connectionString: containers.databaseUrl }),
+        NotificationsModule,
+        PostsModule,
+      ],
       providers: [
         {
           provide: DATABASE_POOL,
@@ -39,14 +45,6 @@ describe("ReactionsService integration", () => {
         },
         DatabaseService,
         ReactionsService,
-        {
-          provide: NotificationsService,
-          useValue: { deliver: () => Promise.resolve() },
-        },
-        {
-          provide: PostsService,
-          useValue: { notifySubscribers: () => Promise.resolve() },
-        },
       ],
     }).compile();
 
