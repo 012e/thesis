@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
 import { getSocialMcpToolsets } from "../mcp/social";
+import { getSearchMcpToolset } from "../mcp/search";
 import {
   ModelMode,
   MODEL_FAST_ORCHESTRATOR,
@@ -42,6 +43,8 @@ export async function createOrchestratorAgent(
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
+
+  const searchToolset = await getSearchMcpToolset();
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
@@ -134,26 +137,50 @@ Guidelines:
     tools: interactionsToolset,
   });
 
+  const searchAgent = new Agent({
+    id: "search-agent",
+    name: "Search Agent",
+    description:
+      "Handles web search operations using DuckDuckGo. Use this agent to look up current events, find information about people, places, or topics, or retrieve webpage content from the internet.",
+    instructions: `You are the web search specialist.
+
+Your responsibilities:
+- Search the web for current information using DuckDuckGo
+- Fetch and summarise the content of specific web pages when provided a URL
+- Answer questions that require up-to-date or real-world knowledge
+
+Guidelines:
+- Use the search tool when the user asks for information you may not know or that changes over time
+- Summarise search results concisely; include source URLs so the user can follow up
+- When fetching a URL, extract the key information the user needs — do not dump raw HTML
+- Do not fabricate information; rely only on what the search results return`,
+    model: subAgentModel,
+    tools: searchToolset,
+  });
+
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
 
   const orchestrator = new Agent({
     id: "orchestrator",
     name: "Orchestrator",
-    instructions: `You are the orchestrator for a social media AI assistant. You coordinate four specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
+    instructions: `You are the orchestrator for a social media AI assistant. You coordinate five specialised agents to fulfil the user's requests. You do NOT call social media tools yourself — always delegate to the right agent.
 
 Available agents:
 - identity-agent: user identity, profile lookups, follow/unfollow, listing followers/following
 - post-creation-agent: creating, updating, and deleting posts
 - post-discovery-agent: reading the feed and fetching post threads with comments
 - interactions-agent: commenting on posts, upvoting/downvoting, and removing reactions
+- search-agent: web search via DuckDuckGo for current events, external information, or URL content
 
 Delegation strategy:
 1. Identify what the user wants to do.
 2. Route to the single most appropriate agent.
 3. For compound tasks (e.g. "find a post and then comment on it"), delegate sequentially:
    first to post-discovery-agent, then to interactions-agent.
-4. Always synthesise the sub-agent's result into a concise, friendly response for the user.
-5. If a sub-agent fails, report the error clearly and suggest what the user can try next.
+4. Use search-agent whenever the user asks about topics outside the social platform
+   (news, facts, real-world information) or requests a web search explicitly.
+5. Always synthesise the sub-agent's result into a concise, friendly response for the user.
+6. If a sub-agent fails, report the error clearly and suggest what the user can try next.
 
 Success criteria:
 - The user's request is fully addressed.
@@ -165,6 +192,7 @@ Success criteria:
       postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
+      searchAgent,
     },
   });
 

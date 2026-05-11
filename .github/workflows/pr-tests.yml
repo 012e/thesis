@@ -47,6 +47,9 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Install dependencies
         run: just setup
 
