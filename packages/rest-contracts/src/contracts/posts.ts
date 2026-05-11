@@ -96,6 +96,15 @@ export const postsContract = c.router({
     summary:
       "List posts by a specific user, ordered by creation date descending.",
   },
+  listFollowingPosts: {
+    method: "GET",
+    path: "/posts/following",
+    responses: {
+      200: z.array(Post),
+    },
+    summary:
+      "List newest posts from users followed by the current user, ordered by creation date descending.",
+  },
 });
 
 export type PostsContract = typeof postsContract;

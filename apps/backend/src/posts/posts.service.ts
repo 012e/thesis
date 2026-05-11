@@ -4,7 +4,7 @@ import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
 
 import { DatabaseService } from "@/db/database.service";
-import { postReactions, posts, usersView, comments } from "@/db/schema";
+import { postReactions, posts, usersView, comments, userFollows } from "@/db/schema";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
 import {
@@ -114,6 +114,51 @@ export class PostsService {
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+        usersView.image,
+      )
+      .orderBy(desc(posts.createdAt));
+
+    return rows.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
+  }
+
+  async listByFollowing(userId: string): Promise<PostDto[]> {
+    const rows = await this.databaseService.db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          email: usersView.email,
+          name: usersView.name,
+          image: usersView.image,
+        },
+        upvoteCount,
+        downvoteCount,
+        commentCount,
+        userReactionType: getUserReactionType(userId),
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .innerJoin(
+        userFollows,
+        and(
+          eq(userFollows.followeeId, posts.authorId),
+          eq(userFollows.followerId, userId),
+        ),
+      )
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
       .groupBy(
         posts.id,
