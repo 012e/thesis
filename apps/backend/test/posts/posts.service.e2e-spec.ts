@@ -17,9 +17,10 @@ import {
 
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
-import { NotificationsService } from "@/notifications/notifications.service";
+import { NotificationsModule } from "@/notifications/notifications.module";
 import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
+import { PgBossModule } from "@wavezync/nestjs-pgboss";
 
 describe("PostsService integration", () => {
   let containers: PostgresContainerContext;
@@ -34,6 +35,10 @@ describe("PostsService integration", () => {
 
     pool = new Pool({ connectionString: containers.databaseUrl });
     moduleRef = await Test.createTestingModule({
+      imports: [
+        PgBossModule.forRoot({ connectionString: containers.databaseUrl }),
+        NotificationsModule,
+      ],
       providers: [
         {
           provide: DATABASE_POOL,
@@ -52,10 +57,6 @@ describe("PostsService integration", () => {
           useValue: {
             resolveAvatarUrl: (image: string | null) => image,
           },
-        },
-        {
-          provide: NotificationsService,
-          useValue: { deliver: async () => ({}) },
         },
         {
           provide: EMBEDDING_SERVICE,
