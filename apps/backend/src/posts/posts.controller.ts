@@ -56,6 +56,21 @@ export class PostsController {
     });
   }
 
+  @TsRestHandler(postsContract.listFollowingPosts)
+  listFollowingPosts(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.listFollowingPosts, async () => {
+      const followingPosts = await this.postsService.listByFollowing(
+        session.user.id,
+      );
+      return {
+        status: 200,
+        body: postsContract.listFollowingPosts.responses[200].parse(
+          followingPosts,
+        ),
+      };
+    });
+  }
+
   @TsRestHandler(postsContract.getPost)
   getPost(@Session() session: UserSession) {
     return tsRestHandler(postsContract.getPost, async ({ params }) => {
@@ -165,21 +180,6 @@ export class PostsController {
       return {
         status: 200,
         body: userPosts as any,
-      };
-    });
-  }
-
-  @TsRestHandler(postsContract.listFollowingPosts)
-  listFollowingPosts(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.listFollowingPosts, async () => {
-      const followingPosts = await this.postsService.listByFollowing(
-        session.user.id,
-      );
-      return {
-        status: 200,
-        body: postsContract.listFollowingPosts.responses[200].parse(
-          followingPosts,
-        ),
       };
     });
   }

@@ -39,6 +39,15 @@ export const postsContract = c.router({
     summary:
       "Full-text search posts by content text using ParadeDB BM25. Results are ordered by relevance score descending.",
   },
+  listFollowingPosts: {
+    method: "GET",
+    path: "/posts/following",
+    responses: {
+      200: z.array(Post),
+    },
+    summary:
+      "List newest posts from users followed by the current user, ordered by creation date descending.",
+  },
   getPost: {
     method: "GET",
     path: "/posts/:id",
@@ -95,15 +104,6 @@ export const postsContract = c.router({
     },
     summary:
       "List posts by a specific user, ordered by creation date descending.",
-  },
-  listFollowingPosts: {
-    method: "GET",
-    path: "/posts/following",
-    responses: {
-      200: z.array(Post),
-    },
-    summary:
-      "List newest posts from users followed by the current user, ordered by creation date descending.",
   },
 });
 
