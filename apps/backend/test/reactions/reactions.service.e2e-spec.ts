@@ -7,9 +7,14 @@ import { posts, postReactions } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { ReactionsService } from "@/reactions/reactions.service";
-import { NotificationsModule } from "@/notifications/notifications.module";
-import { PostsModule } from "@/posts/posts.module";
-import { PgBossModule } from "@wavezync/nestjs-pgboss";
+import { NotificationsService } from "@/notifications/notifications.service";
+import { PostsService } from "@/posts/posts.service";
+import { StorageService } from "@/storage/storage.service";
+import { UsersService } from "@/users/users.service";
+import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
+import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
+import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
+import { PgBossService } from "@wavezync/nestjs-pgboss";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -33,11 +38,6 @@ describe("ReactionsService integration", () => {
 
     pool = new Pool({ connectionString: containers.databaseUrl });
     moduleRef = await Test.createTestingModule({
-      imports: [
-        PgBossModule.forRoot({ connectionString: containers.databaseUrl }),
-        NotificationsModule,
-        PostsModule,
-      ],
       providers: [
         {
           provide: DATABASE_POOL,
@@ -45,6 +45,34 @@ describe("ReactionsService integration", () => {
         },
         DatabaseService,
         ReactionsService,
+        {
+          provide: StorageService,
+          useValue: {
+            deleteImages: async () => {},
+          },
+        },
+        {
+          provide: UsersService,
+          useValue: {
+            resolveAvatarUrl: (image: string | null) => image,
+          },
+        },
+        {
+          provide: PgBossService,
+          useValue: {
+            scheduleJob: async () => ({}),
+          },
+        },
+        {
+          provide: NOTIFICATION_TRANSPORTS,
+          useValue: [],
+        },
+        NotificationsService,
+        {
+          provide: EMBEDDING_SERVICE,
+          useClass: StubEmbeddingService,
+        },
+        PostsService,
       ],
     }).compile();
 

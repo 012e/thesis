@@ -33,10 +33,10 @@ export function usePostSubscription({
     try {
       await subscribeToPost(postId);
       await queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey[0] === "post" ||
-          q.queryKey[0] === "posts" ||
-          q.queryKey[0] === "recommendations",
+        predicate: (q) => {
+          const key = q.queryKey[0];
+          return key === "post" || key === "posts" || q.queryKey.includes("post");
+        },
       });
       toast.success("Subscribed to post notifications");
     } catch (error) {
@@ -57,10 +57,10 @@ export function usePostSubscription({
     try {
       await unsubscribeFromPost(postId);
       await queryClient.invalidateQueries({
-        predicate: (q) =>
-          q.queryKey[0] === "post" ||
-          q.queryKey[0] === "posts" ||
-          q.queryKey[0] === "recommendations",
+        predicate: (q) => {
+          const key = q.queryKey[0];
+          return key === "post" || key === "posts" || q.queryKey.includes("post");
+        },
       });
       toast.success("Unsubscribed from post notifications");
     } catch (error) {
