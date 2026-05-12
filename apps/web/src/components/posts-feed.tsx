@@ -3,6 +3,7 @@ import type { InfiniteData } from "@tanstack/react-query";
 import type { PostDto } from "@repo/shared-dto";
 import { Post } from "@/components/post";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PostsPageData {
   items: PostDto[];
@@ -62,19 +63,22 @@ export function PostsFeed({
 
   const allPosts = data?.pages.flatMap((page) => page.items) ?? [];
 
+  if (isLoading) {
+    return (
+      <div className="flex justify-center p-12" aria-label={loadingLabel}>
+        <Spinner className="w-6 h-6" />
+      </div>
+    );
+  }
+
   return (
     <div className="divide-y">
-      {isLoading && (
-        <div className="p-8 text-center text-muted-foreground">
-          {loadingLabel}
-        </div>
-      )}
       {isError && (
         <div className="p-8 text-center text-destructive">
           {errorLabel}: {error?.message}
         </div>
       )}
-      {allPosts.length === 0 && !isLoading && !isError && (
+      {allPosts.length === 0 && !isError && (
         <div className="p-8 text-center text-muted-foreground">
           {emptyLabel}
         </div>
@@ -82,10 +86,10 @@ export function PostsFeed({
       {allPosts.map((post) => (
         <Post key={post.id} post={post} />
       ))}
-      <div ref={observerTarget} className="h-20">
+      <div ref={observerTarget} className="min-h-px">
         {isFetchingNextPage && (
-          <div className="p-4 text-center text-muted-foreground">
-            {loadingMoreLabel}
+          <div className="flex justify-center p-4" aria-label={loadingMoreLabel}>
+            <Spinner className="w-5 h-5" />
           </div>
         )}
         {!hasNextPage && allPosts.length > 0 && (

@@ -13,9 +13,29 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
+  const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
   const recommendations = useRecommendations({ limit: 20 });
   const followingPosts = useFollowingPosts({ limit: 20 });
   const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
+  const isSwitchingFeed = refreshingTab === activeTab;
+
+  const handleTabChange = (nextTab: FeedTab) => {
+    if (nextTab === activeTab) {
+      return;
+    }
+
+    const nextFeed = nextTab === "for-you" ? recommendations : followingPosts;
+
+    setActiveTab(nextTab);
+    setRefreshingTab(nextTab);
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    void nextFeed.refetch().finally(() => {
+      setRefreshingTab((currentTab) =>
+        currentTab === nextTab ? null : currentTab,
+      );
+    });
+  };
 
   return (
     <>
@@ -28,7 +48,7 @@ function Index() {
                 ? "font-bold"
                 : "font-semibold text-muted-foreground"
             }`}
-            onClick={() => setActiveTab("for-you")}
+            onClick={() => handleTabChange("for-you")}
           >
             For you
           </button>
@@ -39,7 +59,7 @@ function Index() {
                 ? "font-bold"
                 : "font-semibold text-muted-foreground"
             }`}
-            onClick={() => setActiveTab("following")}
+            onClick={() => handleTabChange("following")}
           >
             Following
           </button>
@@ -48,11 +68,11 @@ function Index() {
       <PostComposer />
       <PostsFeed
         key={activeTab}
-        data={activeFeed.data}
+        data={isSwitchingFeed ? undefined : activeFeed.data}
         fetchNextPage={activeFeed.fetchNextPage}
         hasNextPage={activeFeed.hasNextPage}
         isFetchingNextPage={activeFeed.isFetchingNextPage}
-        isLoading={activeFeed.isLoading}
+        isLoading={activeFeed.isLoading || isSwitchingFeed}
         isError={activeFeed.isError}
         error={activeFeed.error}
         loadingLabel={
