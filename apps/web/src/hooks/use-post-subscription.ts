@@ -20,10 +20,22 @@ export function usePostSubscription({
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
-    if (!isPending) {
-      setIsSubscribed(initialSubscribed);
-    }
-  }, [initialSubscribed, isPending]);
+    setIsSubscribed(initialSubscribed);
+  }, [postId, initialSubscribed]);
+
+  const invalidatePostQueries = () =>
+    queryClient.invalidateQueries({
+      predicate: (q) => {
+        const key = q.queryKey[0];
+        return (
+          key === "post" ||
+          key === "posts" ||
+          key === "recommendations" ||
+          q.queryKey.includes("post") ||
+          q.queryKey.includes("posts")
+        );
+      },
+    });
 
   const subscribe = async () => {
     if (isPending || isSubscribed) return;
@@ -32,12 +44,7 @@ export function usePostSubscription({
 
     try {
       await subscribeToPost(postId);
-      await queryClient.invalidateQueries({
-        predicate: (q) => {
-          const key = q.queryKey[0];
-          return key === "post" || key === "posts" || q.queryKey.includes("post");
-        },
-      });
+      await invalidatePostQueries();
       toast.success("Subscribed to post notifications");
     } catch (error) {
       setIsSubscribed(false);
@@ -56,12 +63,7 @@ export function usePostSubscription({
 
     try {
       await unsubscribeFromPost(postId);
-      await queryClient.invalidateQueries({
-        predicate: (q) => {
-          const key = q.queryKey[0];
-          return key === "post" || key === "posts" || q.queryKey.includes("post");
-        },
-      });
+      await invalidatePostQueries();
       toast.success("Unsubscribed from post notifications");
     } catch (error) {
       setIsSubscribed(true);

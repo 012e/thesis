@@ -573,10 +573,6 @@ export class PostsService {
       .limit(1);
     if (!post) return null;
 
-    if (post.authorId === userId) {
-      return this.subscribe(postId, userId);
-    }
-
     const [row] = await this.databaseService.db
       .delete(postSubscriptions)
       .where(

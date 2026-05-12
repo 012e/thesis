@@ -376,7 +376,7 @@ describe("PostsController integration", () => {
       expect(afterUnsubscribe.body.currentUserSubscribed).toBe(false);
     });
 
-    it("keeps the post owner subscribed", async () => {
+    it("lets the post owner unsubscribe", async () => {
       const server = request(testApp.app.getHttpServer());
 
       const created = await server
@@ -394,7 +394,7 @@ describe("PostsController integration", () => {
         .get(`/posts/${created.body.id}`)
         .set("Cookie", userACookie)
         .expect(200);
-      expect(fetched.body.currentUserSubscribed).toBe(true);
+      expect(fetched.body.currentUserSubscribed).toBe(false);
     });
 
     it("notifies subscribers when a post is updated", async () => {

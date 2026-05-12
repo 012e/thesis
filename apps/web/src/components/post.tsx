@@ -299,6 +299,28 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
     return "now";
   };
 
+  const subscriptionMenuItem = (
+    <DropdownMenuItem
+      className="gap-3 py-3 px-3 cursor-pointer"
+      onClick={(e) => {
+        e.stopPropagation();
+        void toggleSubscription();
+      }}
+      disabled={isSubscriptionPending}
+    >
+      <MenuItemCard
+        icon={<IconBell className="w-4 h-4" />}
+        iconClassName={isSubscribed ? "bg-primary/10" : "bg-muted"}
+        label={isSubscribed ? "Subscribed" : "Subscribe"}
+        description={
+          isSubscribed
+            ? "Stop notifications for this post"
+            : "Get notified about replies and reactions"
+        }
+      />
+    </DropdownMenuItem>
+  );
+
   return (
     <article className="p-4 transition-colors hover:bg-accent/50">
       <div className="flex gap-3 items-start">
@@ -367,27 +389,10 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                         description="Remove this post"
                       />
                     </DropdownMenuItem>
+                    {subscriptionMenuItem}
                   </>
                 ) : (
-                  <DropdownMenuItem
-                    className="gap-3 py-3 px-3 cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void toggleSubscription();
-                    }}
-                    disabled={isSubscriptionPending}
-                  >
-                    <MenuItemCard
-                      icon={<IconBell className="w-4 h-4" />}
-                      iconClassName={isSubscribed ? "bg-primary/10" : "bg-muted"}
-                      label={isSubscribed ? "Subscribed" : "Subscribe"}
-                      description={
-                        isSubscribed
-                          ? "Stop notifications for this post"
-                          : "Get notified about replies and reactions"
-                      }
-                    />
-                  </DropdownMenuItem>
+                  subscriptionMenuItem
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
