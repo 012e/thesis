@@ -1,6 +1,8 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
 import { getSocialMcpToolsets } from "../mcp/social";
+import { getSearchMcpToolset } from "../mcp/search";
+import { SEARCH_AGENT_CONFIG } from "./search-agent";
 import {
   ModelMode,
   MODEL_FAST_ORCHESTRATOR,
@@ -18,9 +20,9 @@ import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
  *
  * 1. Fetches all three MCP toolsets (identity, posts, interactions) using the
  *    current request's auth context.
- * 2. Constructs four specialised sub-agents, each receiving only the subset of
+ * 2. Constructs five specialised sub-agents, each receiving only the subset of
  *    tools that belongs to its domain.
- * 3. Returns an orchestrator (supervisor) agent that has all four sub-agents
+ * 3. Returns an orchestrator (supervisor) agent that has all five sub-agents
  *    registered. Use `stepJudgeAgent` separately to evaluate whether the
  *    orchestrator fully completed the user's requested steps.
  *
@@ -43,6 +45,8 @@ export async function createOrchestratorAgent(
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
+
+  const searchToolset = await getSearchMcpToolset();
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
@@ -135,16 +139,25 @@ Guidelines:
     tools: interactionsToolset,
   });
 
+  const searchAgent = new Agent({
+    ...SEARCH_AGENT_CONFIG,
+    model: subAgentModel,
+    tools: searchToolset,
+  });
+
+  // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
+
   const orchestrator = new Agent({
     id: "orchestrator",
     name: "Orchestrator",
-    instructions: `You are the orchestrator for a social media AI assistant. You coordinate specialised agents to fulfil the user's requests. You can also interact directly with UI forms on the user's screen.
+    instructions: `You are the orchestrator for a social media AI assistant. You coordinate five specialised agents to fulfil the user's requests. You can also interact directly with UI forms on the user's screen. You do NOT call social media tools yourself — always delegate platform operations to the right agent.
 
 Available agents:
 - identity-agent: user identity, profile lookups, follow/unfollow, listing followers/following
 - post-creation-agent: creating, updating, and deleting posts directly via backend API
 - post-discovery-agent: reading the feed and fetching post threads with comments
 - interactions-agent: commenting on posts, upvoting/downvoting, and removing reactions
+- search-agent: web search via DuckDuckGo for current events, external information, or URL content
 
 Form Tools (Directly available to you):
 - open_form: Use to open PostCreationForm on the user's screen.
@@ -152,10 +165,12 @@ Form Tools (Directly available to you):
 - submit_form: Submit the active form.
 
 Delegation & Action strategy:
-1. If the user wants to use a UI form to draft/create a post, use your DIRECT tool \`open_form\` to open the form. Then use \`set_form_field\` to help them fill it. Do NOT delegate UI tasks to a sub-agent.
-2. For backend operations (read/write data without a form), delegate to the single most appropriate sub-agent.
-3. For compound tasks, delegate sequentially.
-4. Always synthesise the result into a concise, friendly response for the user.
+1. If the user wants to use a UI form to draft or create a post, use your direct form tools to open the form and help fill it. Do NOT delegate UI tasks to a sub-agent.
+2. For social-platform operations that do not require a visible form, delegate to the single most appropriate sub-agent.
+3. For compound tasks (for example, finding a post and then commenting on it), delegate sequentially to the right agents.
+4. Use search-agent whenever the user asks about topics outside the social platform, requests a web search, or provides a URL to inspect.
+5. Always synthesise the result into a concise, friendly response for the user.
+6. If a sub-agent fails, report the error clearly and suggest what the user can try next.
 
 Success criteria:
 - The user's request is fully addressed.
@@ -167,6 +182,7 @@ Success criteria:
       postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
+      searchAgent,
     },
     tools: {
       open_form: openFormTool,
