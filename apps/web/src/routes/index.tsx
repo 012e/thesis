@@ -14,8 +14,8 @@ export const Route = createFileRoute("/")({
 function Index() {
   const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
   const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
-  const recommendations = useRecommendations({ limit: 20 });
-  const followingPosts = useFollowingPosts({ limit: 20 });
+  const recommendations = useRecommendations({ limit: 20, enabled: activeTab === "for-you" });
+  const followingPosts = useFollowingPosts({ limit: 20, enabled: activeTab === "following" });
   const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
   const isSwitchingFeed = refreshingTab === activeTab;
 
