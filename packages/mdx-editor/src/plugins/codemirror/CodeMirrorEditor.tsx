@@ -55,7 +55,6 @@ export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: Code
     const el = elRef.current!
     void (async () => {
       const extensions = [
-        ...codeMirrorExtensions,
         basicLight,
         lineNumbers(),
         history(),
@@ -73,7 +72,8 @@ export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: Code
               $setSelection(null)
             })
           }
-        })
+        }),
+        ...codeMirrorExtensions
       ]
       if (readOnly) {
         extensions.push(EditorState.readOnly.of(true))
