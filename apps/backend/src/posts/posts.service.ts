@@ -41,6 +41,10 @@ export type PostRow = typeof posts.$inferSelect & {
 @Injectable()
 export class PostsService {
   private readonly logger = new Logger(PostsService.name);
+  private static readonly UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  private static readonly ISO8601_REGEX =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -530,7 +534,8 @@ export class PostsService {
         "postId" in decoded &&
         typeof (decoded as { reactionCount: unknown }).reactionCount ===
           "number" &&
-        typeof (decoded as { postId: unknown }).postId === "string"
+        typeof (decoded as { postId: unknown }).postId === "string" &&
+        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
       ) {
         return decoded as { reactionCount: number; postId: string };
       }
@@ -561,7 +566,11 @@ export class PostsService {
         "createdAt" in decoded &&
         "postId" in decoded &&
         typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
-        typeof (decoded as { postId: unknown }).postId === "string"
+        typeof (decoded as { postId: unknown }).postId === "string" &&
+        PostsService.ISO8601_REGEX.test(
+          (decoded as { createdAt: string }).createdAt,
+        ) &&
+        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
       ) {
         return decoded as { createdAt: string; postId: string };
       }
