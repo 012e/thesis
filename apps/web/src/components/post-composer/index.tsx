@@ -91,6 +91,8 @@ export interface PostComposerProviderProps {
   setSelectedImages: Dispatch<SetStateAction<ImagePreview[]>>;
   uploadedImages: PostImageDto[];
   setUploadedImages: Dispatch<SetStateAction<PostImageDto[]>>;
+  onSubmitContent?: (content: string) => void | Promise<void>;
+  isSubmitting?: boolean;
   children: ReactNode;
 }
 
@@ -105,13 +107,15 @@ export function PostComposerProvider({
   setSelectedImages,
   uploadedImages,
   setUploadedImages,
+  onSubmitContent,
+  isSubmitting = false,
   children,
 }: PostComposerProviderProps) {
   const { mutate: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
 
-  const isPending = isCreating || isUploading;
+  const isPending = isCreating || isUploading || isSubmitting;
   const characterCount = content.length;
   const isExceeded = characterCount > POST_MAX_LENGTH;
   const hasContent =
@@ -125,6 +129,13 @@ export function PostComposerProvider({
 
   const handlePost = async () => {
     if (!canPost) return;
+
+    if (onSubmitContent) {
+      await onSubmitContent(content.trim());
+      setContent("");
+      return;
+    }
+
     try {
       let images = uploadedImages;
       if (selectedImages.length > 0) {
@@ -239,6 +250,7 @@ export function PostComposerProvider({
 
 type PostComposerEditorProps = {
   plugins: ComponentProps<typeof MDXEditor>["plugins"];
+  placeholder?: string;
   wrapperClassName?: string;
   contentEditableClassName?: string;
 };
@@ -250,6 +262,7 @@ export const PostComposerEditor = forwardRef<
   (
     {
       plugins,
+      placeholder = "What's happening",
       wrapperClassName,
       contentEditableClassName = "post-composer-markdown p-4 outline-none bg-background",
     },
@@ -258,10 +271,10 @@ export const PostComposerEditor = forwardRef<
     const { content, setContent } = usePostComposerContext();
     return (
       <div
-        className={`overflow-hidden rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
+        className={`rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
-          placeholder="What's happening"
+          placeholder={placeholder}
           ref={ref}
           markdown={content}
           onChange={setContent}

@@ -3,8 +3,8 @@ import * as RadixSelect from '@radix-ui/react-select'
 import classNames from 'classnames'
 import styles from '../../../styles/ui.module.css'
 import { TooltipWrap } from './TooltipWrap'
-import { editorRootElementRef$, iconComponentFor$, readOnly$ } from '../../core'
-import { useCellValue, useCellValues } from '@mdxeditor/gurx'
+import { iconComponentFor$, readOnly$ } from '../../core'
+import { useCellValues } from '@mdxeditor/gurx'
 
 /**
  * @internal
@@ -46,10 +46,8 @@ export const SelectContent: React.FC<{ children: React.ReactNode; className?: st
   children,
   className = styles.selectContainer
 }) => {
-  const editorRootElementRef = useCellValue(editorRootElementRef$)
-
   return (
-    <RadixSelect.Portal container={editorRootElementRef?.current}>
+    <RadixSelect.Portal>
       <RadixSelect.Content
         className={classNames(className, 'mdxeditor-select-content')}
         onCloseAutoFocus={(e) => {

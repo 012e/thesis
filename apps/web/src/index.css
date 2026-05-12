@@ -283,7 +283,7 @@
   border-color: var(--border) !important;
   width: auto !important;
   min-width: 8rem !important;
-  z-index: 50 !important;
+  z-index: 60 !important;
 }
 
 .mdxeditor-select-content [role="option"] {
