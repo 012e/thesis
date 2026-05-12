@@ -8,10 +8,10 @@ There are two migration sets with separate lifecycles:
 
 | Set                    | Location                  | Managed by      | Purpose                                             |
 | ---------------------- | ------------------------- | --------------- | --------------------------------------------------- |
-| Application migrations | `drizzle/`                | `drizzle-kit`   | `posts`, `users_view`, `post_reactions`             |
-| Better Auth migrations | `better-auth_migrations/` | Better Auth CLI | `user`, `session`, `account`, `verification` tables |
+| Application migrations | `apps/backend/drizzle/`   | `drizzle-kit`   | `posts`, `users_view`, `post_reactions`, other app tables |
+| Better Auth migrations | (managed by Better Auth)  | Better Auth CLI | `user`, `session`, `account`, `verification` tables |
 
-Both migration sets must be run against the database before the application can start.
+Application (drizzle-kit) migrations and Better Auth migrations must both be applied before the app can start. Drizzle migration files are under `apps/backend/drizzle/`.
 
 ## Drizzle commands
 
@@ -32,7 +32,7 @@ pnpm --filter backend db:push
 pnpm --filter backend db:studio
 ```
 
-All commands read `DATABASE_URL` from the environment via `drizzle.config.ts`.
+All commands read `DATABASE_URL` from the environment via the backend drizzle configuration.
 
 ## Schema (`src/db/schema.ts`)
 
@@ -50,7 +50,7 @@ Stores social-media-style posts. The `content` column is JSONB and maps to the `
 
 ### `users_view` view
 
-A read-only view over Better Auth's `"user"` table. The backend never queries `"user"` directly; it uses this view to keep a clean separation from Better Auth's schema.
+A read-only view over Better Auth's `"user"` table. The backend reads user data through this view to keep a separation from Better Auth's internal schema.
 
 ```sql
 SELECT id, username, email, name FROM "user";
@@ -88,7 +88,7 @@ CREATE TYPE reaction_type AS ENUM ('upvote', 'downvote');
 | `drizzle/0001_add_users_view.sql`     | Creates `users_view` over the Better Auth `"user"` table. |
 | `drizzle/0002_add_post_reactions.sql` | Creates `reaction_type` enum and `post_reactions` table.  |
 
-Better Auth migrations are in `better-auth_migrations/` and create the `user`, `session`, `account`, and `verification` tables. They are applied by the Better Auth CLI, not drizzle-kit.
+Better Auth migrations are managed and applied by the Better Auth CLI (see `pnpm --filter backend run auth:migrate` for helper scripts). They create the `user`, `session`, `account`, and `verification` tables and are separate from the Drizzle-managed application migrations.
 
 ## Connection pooling
 

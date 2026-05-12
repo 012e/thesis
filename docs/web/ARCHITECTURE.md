@@ -98,10 +98,14 @@ Layout in `src/components/layout/`: `AppLayout` (3-col shell), `LeftSidebar`, `R
 
 ## Server State (TanStack Query)
 
-Infrastructure in place; no active `useQuery`/`useMutation` hooks yet — all fetching is still imperative. Use TanStack Query for all new data interactions:
+TanStack Query is actively used across the app. Prefer creating typed `useQuery` / `useMutation` hooks or `queryOptions` factories and colocating them with feature logic. Example pattern:
 
 ```ts
-// src/lib/queries/posts.ts
+function authHeaders() {
+  const token = store.get(bearerToken);
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export const postsQueryOptions = queryOptions({
   queryKey: ["posts"],
   queryFn: async () => {
@@ -112,4 +116,4 @@ export const postsQueryOptions = queryOptions({
 });
 ```
 
-Colocate `queryOptions` factories near the feature. Keep query keys typed.
+There are many existing `useQuery` / `useMutation` usages in `src/hooks` and `src/components` — search for `@tanstack/react-query` to find examples.

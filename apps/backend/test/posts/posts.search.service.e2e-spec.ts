@@ -12,6 +12,9 @@ import { PostsSearchService } from "@/posts/posts-search.service";
 import { PostsService } from "@/posts/posts.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
+import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
+import { PgBossService } from "@wavezync/nestjs-pgboss";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -50,6 +53,17 @@ describe("PostsSearchService.search integration", () => {
             resolveAvatarUrl: (image: string | null) => image,
           },
         },
+        {
+          provide: PgBossService,
+          useValue: {
+            scheduleJob: async () => ({}),
+          },
+        },
+        {
+          provide: NOTIFICATION_TRANSPORTS,
+          useValue: [],
+        },
+        NotificationsService,
       ],
     }).compile();
 
@@ -157,6 +171,7 @@ describe("PostsSearchService.search integration", () => {
     expect(post.downvoteCount).toBe(0);
     expect(post.commentCount).toBe(0);
     expect(post.currentUserReaction).toBeNull();
+    expect(post.currentUserSubscribed).toBe(true);
   });
 
   it("is case-insensitive", async () => {
