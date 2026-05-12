@@ -1,10 +1,10 @@
-import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
 
 import { DatabaseService } from "@/db/database.service";
-import { postReactions, posts, usersView, comments } from "@/db/schema";
+import { postReactions, posts, usersView, comments, userFollows } from "@/db/schema";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
 import {
@@ -41,6 +41,10 @@ export type PostRow = typeof posts.$inferSelect & {
 @Injectable()
 export class PostsService {
   private readonly logger = new Logger(PostsService.name);
+  private static readonly UUID_REGEX =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  private static readonly ISO8601_REGEX =
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
   constructor(
     private readonly databaseService: DatabaseService,
@@ -128,6 +132,85 @@ export class PostsService {
     return rows.map((row) =>
       this.toDto(row, row.userReactionType as ReactionTypeDto | null),
     );
+  }
+
+  async listByFollowing(
+    userId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
+    const parsed = cursor ? this.decodeFollowingCursor(cursor) : null;
+
+    let query = this.databaseService.db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          email: usersView.email,
+          name: usersView.name,
+          image: usersView.image,
+        },
+        upvoteCount,
+        downvoteCount,
+        commentCount,
+        userReactionType: getUserReactionType(userId),
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .innerJoin(
+        userFollows,
+        and(
+          eq(userFollows.followeeId, posts.authorId),
+          eq(userFollows.followerId, userId),
+        ),
+      )
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+        usersView.image,
+      )
+      .$dynamic();
+
+    if (parsed) {
+      const cursorDate = new Date(parsed.createdAt);
+      query = query.where(
+        or(
+          lt(posts.createdAt, cursorDate),
+          and(eq(posts.createdAt, cursorDate), gt(posts.id, parsed.postId)),
+        ),
+      );
+    }
+
+    const rows = await query
+      .orderBy(desc(posts.createdAt), asc(posts.id))
+      .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? this.encodeFollowingCursor({
+            createdAt: lastItem.createdAt.toISOString(),
+            postId: lastItem.id,
+          })
+        : null;
+
+    return {
+      items: items.map((row) =>
+        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+      ),
+      nextCursor,
+    };
   }
 
   async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
@@ -451,9 +534,45 @@ export class PostsService {
         "postId" in decoded &&
         typeof (decoded as { reactionCount: unknown }).reactionCount ===
           "number" &&
-        typeof (decoded as { postId: unknown }).postId === "string"
+        typeof (decoded as { postId: unknown }).postId === "string" &&
+        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
       ) {
         return decoded as { reactionCount: number; postId: string };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private encodeFollowingCursor(cursor: {
+    createdAt: string;
+    postId: string;
+  }): string {
+    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+  }
+
+  private decodeFollowingCursor(cursor: string): {
+    createdAt: string;
+    postId: string;
+  } | null {
+    try {
+      const decoded = JSON.parse(
+        Buffer.from(cursor, "base64url").toString("utf8"),
+      ) as unknown;
+      if (
+        typeof decoded === "object" &&
+        decoded !== null &&
+        "createdAt" in decoded &&
+        "postId" in decoded &&
+        typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
+        typeof (decoded as { postId: unknown }).postId === "string" &&
+        PostsService.ISO8601_REGEX.test(
+          (decoded as { createdAt: string }).createdAt,
+        ) &&
+        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
+      ) {
+        return decoded as { createdAt: string; postId: string };
       }
       return null;
     } catch {
