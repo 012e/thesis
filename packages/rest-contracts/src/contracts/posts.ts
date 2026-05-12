@@ -5,6 +5,7 @@ import {
   CreatePostBody,
   UpdatePostBody,
   RecommendationPage,
+  FollowingFeedPage,
 } from "../schemas/post";
 
 const c = initContract();
@@ -38,6 +39,19 @@ export const postsContract = c.router({
     },
     summary:
       "Full-text search posts by content text using ParadeDB BM25. Results are ordered by relevance score descending.",
+  },
+  listFollowingPosts: {
+    method: "GET",
+    path: "/posts/following",
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: FollowingFeedPage,
+    },
+    summary:
+      "List newest posts from users followed by the current user, ordered by creation date descending. Paginated with a keyset cursor encoding (createdAt, postId).",
   },
   getPost: {
     method: "GET",

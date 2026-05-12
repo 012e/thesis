@@ -78,6 +78,11 @@ export const RecommendationPage = z.object({
   nextCursor: z.string().nullable(),
 });
 
+export const FollowingFeedPage = z.object({
+  items: z.array(Post),
+  nextCursor: z.string().nullable(),
+});
+
 export type PollPostOptionType = z.infer<typeof PollPostOption>;
 export type PollPostContentType = z.infer<typeof PollPostContent>;
 export type VisualizationDataPointType = z.infer<typeof VisualizationDataPoint>;
@@ -90,3 +95,4 @@ export type PostType = z.infer<typeof Post>;
 export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
 export type UpdatePostBodyType = z.infer<typeof UpdatePostBody>;
 export type RecommendationPageType = z.infer<typeof RecommendationPage>;
+export type FollowingFeedPageType = z.infer<typeof FollowingFeedPage>;
