@@ -224,35 +224,74 @@
   @apply border-0 bg-transparent p-0 text-xs;
 }
 
+.code-language-badge {
+  @apply flex gap-1.5 items-center px-2 py-1 font-mono text-xs font-medium leading-none transition-colors cursor-default text-muted-foreground/60 hover:bg-accent hover:text-accent-foreground;
+}
+
+.code-language-badge-icon {
+  @apply size-3.5 shrink-0;
+}
+
+.mdx-editor-wrapper .post-composer-markdown [class*="codeMirrorToolbar"] {
+  @apply z-20 flex-row-reverse items-start gap-1 bg-transparent p-0;
+  top: 0.8rem !important;
+  right: 0.8rem !important;
+  width: fit-content !important;
+}
+
 .mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] {
-  @apply min-h-8 rounded-md border border-border/60 bg-background px-2 text-sm text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground;
+  @apply m-0 h-auto min-h-0 rounded-none border-0 bg-transparent p-0 text-muted-foreground/60 shadow-none transition-colors hover:bg-accent hover:text-accent-foreground;
+  justify-content: flex-end !important;
+  line-height: 1 !important;
+  width: fit-content !important;
 }
 
-.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] svg {
-  @apply text-muted-foreground;
-}
-
-.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item]:hover svg {
-  @apply text-accent-foreground;
+.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] [class*="selectDropdownArrow"] {
+  @apply hidden;
 }
 
 .mdx-editor-wrapper .post-composer-markdown button[title="Delete code block"] {
-  @apply rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground;
+  @apply rounded-none p-0.5 text-muted-foreground/40 opacity-0 transition-colors hover:bg-accent hover:text-accent-foreground;
 }
 
 .mdx-editor-wrapper .post-composer-markdown button[title="Delete code block"] svg {
-  @apply size-5;
+  @apply size-3.5;
 }
 
-.mdx-editor-wrapper .mdxeditor-select-content {
-  @apply overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md;
+.mdx-editor-wrapper .post-composer-markdown [class*="codeMirrorWrapper"]:hover button[title="Delete code block"],
+.mdx-editor-wrapper .post-composer-markdown [class*="codeMirrorToolbar"]:focus-within button[title="Delete code block"] {
+  @apply opacity-100;
 }
 
-.mdx-editor-wrapper .mdxeditor-select-content [role="option"] {
-  @apply px-2 py-1.5 text-sm text-popover-foreground outline-none;
+.mdxeditor-select-content {
+  @apply overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-md;
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border-color: var(--border) !important;
+  width: auto !important;
+  min-width: 8rem !important;
+  z-index: 50 !important;
 }
 
-.mdx-editor-wrapper .mdxeditor-select-content [role="option"][data-highlighted],
-.mdx-editor-wrapper .mdxeditor-select-content [role="option"][data-state="checked"] {
+.mdxeditor-select-content [role="option"] {
+  @apply px-2 py-1.5 text-sm text-popover-foreground outline-none transition-colors;
+  color: var(--popover-foreground) !important;
+}
+
+.mdxeditor-select-content [role="option"][data-highlighted],
+.mdxeditor-select-content [role="option"][data-state="checked"] {
   @apply bg-accent text-accent-foreground;
+  background-color: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+.mdxeditor-select-content .code-language-badge {
+  @apply w-full cursor-default px-0 py-0 text-popover-foreground hover:bg-transparent hover:text-popover-foreground;
+  color: var(--popover-foreground) !important;
+}
+
+.mdxeditor-select-content [role="option"][data-highlighted] .code-language-badge,
+.mdxeditor-select-content [role="option"][data-state="checked"] .code-language-badge {
+  @apply text-accent-foreground;
+  color: var(--accent-foreground) !important;
 }

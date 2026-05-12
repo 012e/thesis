@@ -10,6 +10,7 @@ import {
 } from "@repo/mdx-editor";
 import { oneDark } from "@codemirror/theme-one-dark";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
+import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
 import {
   PostComposerProvider,
   PostComposerEditor,
@@ -36,7 +37,7 @@ export function PostComposer() {
       codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
       codeMirrorPlugin({
         autoLoadLanguageSupport: true,
-        codeBlockLanguages: { js: "JavaScript", css: "CSS", html: "HTML" },
+        codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
         codeMirrorExtensions: [oneDark],
       }),
       markdownShortcutPlugin(),
