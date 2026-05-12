@@ -1,16 +1,21 @@
-import * as Dialog from '@radix-ui/react-dialog'
-import * as RadixToolbar from '@radix-ui/react-toolbar'
+import * as Dialog from "@radix-ui/react-dialog";
+import * as RadixToolbar from "@radix-ui/react-toolbar";
 
-import React from 'react'
+import React from "react";
 
-import classNames from 'classnames'
-import { useCombobox } from 'downshift'
-import { editorRootElementRef$, iconComponentFor$, readOnly$, useTranslation } from '../../core'
-import styles from '../../../styles/ui.module.css'
-import { TooltipWrap } from './TooltipWrap'
-import { useCellValue, useCellValues } from '@mdxeditor/gurx'
+import classNames from "classnames";
+import { useCombobox } from "downshift";
+import {
+  editorRootElementRef$,
+  iconComponentFor$,
+  readOnly$,
+  useTranslation,
+} from "../../core";
+import styles from "../../../styles/ui.module.css";
+import { TooltipWrap } from "./TooltipWrap";
+import { useCellValue, useCellValues } from "@mdxeditor/gurx";
 
-const MAX_SUGGESTIONS = 20
+const MAX_SUGGESTIONS = 20;
 
 /**
  * Use this primitive to create a toolbar button that opens a dialog with a text input, autocomplete suggestions, and a submit button.
@@ -22,15 +27,15 @@ export const DialogButton = React.forwardRef<
     /**
      * The autocomplete suggestions to show in the dialog input.
      */
-    autocompleteSuggestions?: string[]
+    autocompleteSuggestions?: string[];
     /**
      * The callback to call when the dialog is submitted. The callback receives the value of the text input as a parameter.
      */
-    onSubmit: (value: string) => void
+    onSubmit: (value: string) => void;
     /**
      * The title to show in the tooltip of the toolbar button.
      */
-    tooltipTitle: string
+    tooltipTitle: string;
     /**
      * The contents of the button. Usually an icon.
      * @example
@@ -38,119 +43,157 @@ export const DialogButton = React.forwardRef<
      * <DialogButton buttonContent={<CustomIcon />} />
      * ```
      */
-    buttonContent?: React.ReactNode
+    buttonContent?: React.ReactNode;
     /**
      * The placeholder text to show in the dialog input.
      */
-    dialogInputPlaceholder: string
+    dialogInputPlaceholder: string;
     /**
      * The title of the submit button.
      */
-    submitButtonTitle: string
+    submitButtonTitle: string;
   }
->(({ autocompleteSuggestions = [], submitButtonTitle, dialogInputPlaceholder, onSubmit, tooltipTitle, buttonContent }, forwardedRef) => {
-  const [editorRootElementRef, readOnly] = useCellValues(editorRootElementRef$, readOnly$)
-  const [open, setOpen] = React.useState(false)
-
-  const onSubmitCallback = React.useCallback(
-    (value: string) => {
-      onSubmit(value)
-      setOpen(false)
+>(
+  (
+    {
+      autocompleteSuggestions = [],
+      submitButtonTitle,
+      dialogInputPlaceholder,
+      onSubmit,
+      tooltipTitle,
+      buttonContent,
     },
-    [onSubmit]
-  )
+    forwardedRef,
+  ) => {
+    const [editorRootElementRef, readOnly] = useCellValues(
+      editorRootElementRef$,
+      readOnly$,
+    );
+    const [open, setOpen] = React.useState(false);
 
-  return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        <RadixToolbar.Button aria-label={tooltipTitle} className={styles.toolbarButton} ref={forwardedRef} disabled={readOnly}>
-          <TooltipWrap title={tooltipTitle}>{buttonContent}</TooltipWrap>
-        </RadixToolbar.Button>
-      </Dialog.Trigger>
-      <Dialog.Portal container={editorRootElementRef?.current}>
-        <Dialog.Overlay className={styles.dialogOverlay} />
-        <Dialog.Content className={styles.dialogContent}>
-          <DialogForm
-            submitButtonTitle={submitButtonTitle}
-            autocompleteSuggestions={autocompleteSuggestions}
-            onSubmitCallback={onSubmitCallback}
-            dialogInputPlaceholder={dialogInputPlaceholder}
-          />
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
-  )
-})
+    const onSubmitCallback = React.useCallback(
+      (value: string) => {
+        onSubmit(value);
+        setOpen(false);
+      },
+      [onSubmit],
+    );
+
+    return (
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Trigger asChild>
+          <RadixToolbar.Button
+            aria-label={tooltipTitle}
+            className={styles.toolbarButton}
+            ref={forwardedRef}
+            disabled={readOnly}
+          >
+            <TooltipWrap title={tooltipTitle}>{buttonContent}</TooltipWrap>
+          </RadixToolbar.Button>
+        </Dialog.Trigger>
+        <Dialog.Portal container={editorRootElementRef?.current}>
+          <Dialog.Overlay className={styles.dialogOverlay} />
+          <Dialog.Content className={styles.dialogContent}>
+            <DialogForm
+              submitButtonTitle={submitButtonTitle}
+              autocompleteSuggestions={autocompleteSuggestions}
+              onSubmitCallback={onSubmitCallback}
+              dialogInputPlaceholder={dialogInputPlaceholder}
+            />
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    );
+  },
+);
 
 const DialogForm: React.FC<{
-  submitButtonTitle: string
-  autocompleteSuggestions: string[]
-  dialogInputPlaceholder: string
-  onSubmitCallback: (value: string) => void
-}> = ({ autocompleteSuggestions, onSubmitCallback, dialogInputPlaceholder, submitButtonTitle }) => {
-  const [items, setItems] = React.useState(autocompleteSuggestions.slice(0, MAX_SUGGESTIONS))
-  const iconComponentFor = useCellValue(iconComponentFor$)
-  const t = useTranslation()
+  submitButtonTitle: string;
+  autocompleteSuggestions: string[];
+  dialogInputPlaceholder: string;
+  onSubmitCallback: (value: string) => void;
+}> = ({
+  autocompleteSuggestions,
+  onSubmitCallback,
+  dialogInputPlaceholder,
+  submitButtonTitle,
+}) => {
+  const [items, setItems] = React.useState(
+    autocompleteSuggestions.slice(0, MAX_SUGGESTIONS),
+  );
+  const iconComponentFor = useCellValue(iconComponentFor$);
+  const t = useTranslation();
 
-  const enableAutoComplete = autocompleteSuggestions.length > 0
+  const enableAutoComplete = autocompleteSuggestions.length > 0;
 
-  const { isOpen, getToggleButtonProps, getMenuProps, getInputProps, highlightedIndex, getItemProps, selectedItem } = useCombobox({
-    initialInputValue: '',
+  const {
+    isOpen,
+    getToggleButtonProps,
+    getMenuProps,
+    getInputProps,
+    highlightedIndex,
+    getItemProps,
+    selectedItem,
+  } = useCombobox({
+    initialInputValue: "",
     onInputValueChange({ inputValue }) {
-      inputValue = inputValue?.toLowerCase() ?? ''
-      const matchingItems = []
+      inputValue = inputValue?.toLowerCase() ?? "";
+      const matchingItems = [];
       for (const suggestion of autocompleteSuggestions) {
         if (suggestion.toLowerCase().includes(inputValue)) {
-          matchingItems.push(suggestion)
+          matchingItems.push(suggestion);
           if (matchingItems.length >= MAX_SUGGESTIONS) {
-            break
+            break;
           }
         }
       }
-      setItems(matchingItems)
+      setItems(matchingItems);
     },
     items,
     itemToString(item) {
-      return item ?? ''
-    }
-  })
+      return item ?? "";
+    },
+  });
 
   const onKeyDownEH = React.useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === 'Escape') {
-        ;(e.target as HTMLInputElement).form?.reset()
-      } else if (e.key === 'Enter' && (!isOpen || items.length === 0)) {
-        e.preventDefault()
-        onSubmitCallback((e.target as HTMLInputElement).value)
+      if (e.key === "Escape") {
+        (e.target as HTMLInputElement).form?.reset();
+      } else if (e.key === "Enter" && (!isOpen || items.length === 0)) {
+        e.preventDefault();
+        onSubmitCallback((e.target as HTMLInputElement).value);
       }
     },
-    [isOpen, items, onSubmitCallback]
-  )
+    [isOpen, items, onSubmitCallback],
+  );
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const downshiftInputProps = getInputProps()
+  const downshiftInputProps = getInputProps();
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const inputProps = {
     ...downshiftInputProps,
     onKeyDown: (e: React.KeyboardEvent<HTMLInputElement>) => {
-      onKeyDownEH(e)
+      onKeyDownEH(e);
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-      downshiftInputProps.onKeyDown(e)
-    }
-  }
+      downshiftInputProps.onKeyDown(e);
+    },
+  };
 
   const onSubmitEH = (e: React.FormEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onSubmitCallback((inputProps as { value: string }).value)
-  }
+    e.preventDefault();
+    e.stopPropagation();
+    onSubmitCallback((inputProps as { value: string }).value);
+  };
 
-  const dropdownIsVisible = isOpen && items.length > 0
+  const dropdownIsVisible = isOpen && items.length > 0;
   return (
     <form onSubmit={onSubmitEH} className={classNames(styles.dialogForm)}>
       <div className={styles.linkDialogInputContainer}>
-        <div data-visible-dropdown={dropdownIsVisible} className={styles.linkDialogInputWrapper}>
+        <div
+          data-visible-dropdown={dropdownIsVisible}
+          className={styles.linkDialogInputWrapper}
+        >
           <input
             placeholder={dialogInputPlaceholder}
             className={styles.linkDialogInput}
@@ -160,8 +203,12 @@ const DialogForm: React.FC<{
             data-editor-dialog={true}
           />
           {enableAutoComplete && (
-            <button aria-label="toggle menu" type="button" {...getToggleButtonProps()}>
-              {iconComponentFor('arrow_drop_down')}
+            <button
+              aria-label="toggle menu"
+              type="button"
+              {...getToggleButtonProps()}
+            >
+              {iconComponentFor("arrow_drop_down")}
             </button>
           )}
         </div>
@@ -188,12 +235,15 @@ const DialogForm: React.FC<{
         aria-label={submitButtonTitle}
         className={classNames(styles.actionButton, styles.primaryActionButton)}
       >
-        {iconComponentFor('check')}
+        {iconComponentFor("check")}
       </button>
 
-      <Dialog.Close aria-label={t('dialog.close', 'Close dialog')} className={styles.actionButton}>
-        {iconComponentFor('close')}
+      <Dialog.Close
+        aria-label={t("dialog.close", "Close dialog")}
+        className={styles.actionButton}
+      >
+        {iconComponentFor("close")}
       </Dialog.Close>
     </form>
-  )
-}
+  );
+};

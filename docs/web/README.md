@@ -12,18 +12,18 @@ pnpm --filter web lint
 
 ## Stack
 
-| Concern       | Choice                                   | Notes                                                       |
-| ------------- | ---------------------------------------- | ----------------------------------------------------------- |
-| Routing       | TanStack Router (file-based)             | auto-generates `src/routeTree.gen.ts` — never edit          |
+| Concern       | Choice                                   | Notes                                                                    |
+| ------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
+| Routing       | TanStack Router (file-based)             | auto-generates `src/routeTree.gen.ts` — never edit                       |
 | Server state  | TanStack Query                           | configured and used across hooks/components via `useQuery`/`useMutation` |
-| Client state  | Jotai v2                                 | custom store for imperative access outside React            |
-| Forms         | TanStack Form + Zod                      | per-field `safeParse`, no global adapter                    |
-| Auth          | `better-auth` via `@repo/auth-client`    | JWT persisted via `atomWithStorage`                         |
-| API           | `@ts-rest/core` + `@repo/rest-contracts` | fully typed from Zod schemas                                |
-| UI primitives | `@base-ui/react` (NOT Radix)             | shadcn `base-lyra` style, CVA variants                      |
-| Styling       | Tailwind CSS v4 (Vite plugin)            | no `tailwind.config.js`; OKLCH design tokens in `index.css` |
-| Icons         | `@tabler/icons-react` (NOT Lucide)       |                                                             |
-| Theme         | `next-themes` class-based                | `"light"` / `"dark"` / `"system"`                           |
+| Client state  | Jotai v2                                 | custom store for imperative access outside React                         |
+| Forms         | TanStack Form + Zod                      | per-field `safeParse`, no global adapter                                 |
+| Auth          | `better-auth` via `@repo/auth-client`    | JWT persisted via `atomWithStorage`                                      |
+| API           | `@ts-rest/core` + `@repo/rest-contracts` | fully typed from Zod schemas                                             |
+| UI primitives | `@base-ui/react` (NOT Radix)             | shadcn `base-lyra` style, CVA variants                                   |
+| Styling       | Tailwind CSS v4 (Vite plugin)            | no `tailwind.config.js`; OKLCH design tokens in `index.css`              |
+| Icons         | `@tabler/icons-react` (NOT Lucide)       |                                                                          |
+| Theme         | `next-themes` class-based                | `"light"` / `"dark"` / `"system"`                                        |
 
 ## Directory Layout
 

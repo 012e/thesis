@@ -1,14 +1,14 @@
-import React from 'react'
-import { applyListType$, currentListType$ } from '../../lists'
-import { SingleChoiceToggleGroup } from '.././primitives/toolbar'
-import { useCellValues, usePublisher } from '@mdxeditor/gurx'
-import { editorInTable$, iconComponentFor$, useTranslation } from '../../core'
+import React from "react";
+import { applyListType$, currentListType$ } from "../../lists";
+import { SingleChoiceToggleGroup } from ".././primitives/toolbar";
+import { useCellValues, usePublisher } from "@mdxeditor/gurx";
+import { editorInTable$, iconComponentFor$, useTranslation } from "../../core";
 
 const ICON_NAME_MAP = {
-  bullet: 'format_list_bulleted',
-  number: 'format_list_numbered',
-  check: 'format_list_checked'
-} as const
+  bullet: "format_list_bulleted",
+  number: "format_list_numbered",
+  check: "format_list_checked",
+} as const;
 
 /**
  * A toolbar toggle that allows the user to toggle between bulleted, numbered, and check lists.
@@ -17,22 +17,35 @@ const ICON_NAME_MAP = {
  * @group Toolbar Components
  * @param options - The list types that the user can toggle between. Defaults to `['bullet', 'number', 'check']`.
  */
-export const ListsToggle: React.FC<{ options?: ('bullet' | 'number' | 'check')[] }> = ({ options = ['bullet', 'number', 'check'] }) => {
-  const [currentListType, iconComponentFor, inTable] = useCellValues(currentListType$, iconComponentFor$, editorInTable$)
-  const applyListType = usePublisher(applyListType$)
-  const t = useTranslation()
+export const ListsToggle: React.FC<{
+  options?: ("bullet" | "number" | "check")[];
+}> = ({ options = ["bullet", "number", "check"] }) => {
+  const [currentListType, iconComponentFor, inTable] = useCellValues(
+    currentListType$,
+    iconComponentFor$,
+    editorInTable$,
+  );
+  const applyListType = usePublisher(applyListType$);
+  const t = useTranslation();
 
   const LIST_TITLE_MAP = {
-    bullet: t('toolbar.bulletedList', 'Bulleted list'),
-    number: t('toolbar.numberedList', 'Numbered list'),
-    check: t('toolbar.checkList', 'Check list')
-  } as const
+    bullet: t("toolbar.bulletedList", "Bulleted list"),
+    number: t("toolbar.numberedList", "Numbered list"),
+    check: t("toolbar.checkList", "Check list"),
+  } as const;
 
   const items = options.map((type) => ({
     value: type,
     title: LIST_TITLE_MAP[type],
-    contents: iconComponentFor(ICON_NAME_MAP[type])
-  }))
+    contents: iconComponentFor(ICON_NAME_MAP[type]),
+  }));
 
-  return <SingleChoiceToggleGroup value={currentListType || ''} items={items} onChange={applyListType} disabled={inTable} />
-}
+  return (
+    <SingleChoiceToggleGroup
+      value={currentListType || ""}
+      items={items}
+      onChange={applyListType}
+      disabled={inTable}
+    />
+  );
+};

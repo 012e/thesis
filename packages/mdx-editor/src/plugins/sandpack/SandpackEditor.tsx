@@ -1,34 +1,56 @@
-import { SandpackCodeEditor, SandpackLayout, SandpackPreview, SandpackProvider, useSandpack } from '@codesandbox/sandpack-react'
-import { useCellValues } from '@mdxeditor/gurx'
-import React from 'react'
-import { SandpackPreset } from '.'
-import styles from '../../styles/ui.module.css'
-import { CodeBlockEditorProps } from '../codeblock'
-import { useCodeBlockEditorContext } from '../codeblock/CodeBlockNode'
-import { iconComponentFor$, readOnly$, useTranslation } from '../core'
-import { useCodeMirrorRef } from './useCodeMirrorRef'
+import {
+  SandpackCodeEditor,
+  SandpackLayout,
+  SandpackPreview,
+  SandpackProvider,
+  useSandpack,
+} from "@codesandbox/sandpack-react";
+import { useCellValues } from "@mdxeditor/gurx";
+import React from "react";
+import { SandpackPreset } from ".";
+import styles from "../../styles/ui.module.css";
+import { CodeBlockEditorProps } from "../codeblock";
+import { useCodeBlockEditorContext } from "../codeblock/CodeBlockNode";
+import { iconComponentFor$, readOnly$, useTranslation } from "../core";
+import { useCodeMirrorRef } from "./useCodeMirrorRef";
 
 interface CodeUpdateEmitterProps {
-  snippetFileName: string
-  onChange: (code: string) => void
+  snippetFileName: string;
+  onChange: (code: string) => void;
 }
 
-const CodeUpdateEmitter = ({ onChange, snippetFileName }: CodeUpdateEmitterProps) => {
-  const { sandpack } = useSandpack()
-  onChange(sandpack.files[snippetFileName].code)
-  return null
-}
+const CodeUpdateEmitter = ({
+  onChange,
+  snippetFileName,
+}: CodeUpdateEmitterProps) => {
+  const { sandpack } = useSandpack();
+  onChange(sandpack.files[snippetFileName].code);
+  return null;
+};
 
 export interface SandpackEditorProps extends CodeBlockEditorProps {
-  preset: SandpackPreset
+  preset: SandpackPreset;
 }
 
-export const SandpackEditor = ({ nodeKey, code, focusEmitter, preset }: SandpackEditorProps) => {
-  const codeMirrorRef = useCodeMirrorRef(nodeKey, 'sandpack', 'jsx', focusEmitter)
-  const [readOnly, iconComponentFor] = useCellValues(readOnly$, iconComponentFor$)
-  const { setCode } = useCodeBlockEditorContext()
-  const { parentEditor, lexicalNode } = useCodeBlockEditorContext()
-  const t = useTranslation()
+export const SandpackEditor = ({
+  nodeKey,
+  code,
+  focusEmitter,
+  preset,
+}: SandpackEditorProps) => {
+  const codeMirrorRef = useCodeMirrorRef(
+    nodeKey,
+    "sandpack",
+    "jsx",
+    focusEmitter,
+  );
+  const [readOnly, iconComponentFor] = useCellValues(
+    readOnly$,
+    iconComponentFor$,
+  );
+  const { setCode } = useCodeBlockEditorContext();
+  const { parentEditor, lexicalNode } = useCodeBlockEditorContext();
+  const t = useTranslation();
 
   return (
     <div className={styles.sandPackWrapper}>
@@ -37,15 +59,15 @@ export const SandpackEditor = ({ nodeKey, code, focusEmitter, preset }: Sandpack
           className={styles.iconButton}
           type="button"
           disabled={readOnly}
-          title={t('codeblock.delete', 'Delete code block')}
+          title={t("codeblock.delete", "Delete code block")}
           onClick={(e) => {
-            e.preventDefault()
+            e.preventDefault();
             parentEditor.update(() => {
-              lexicalNode.remove()
-            })
+              lexicalNode.remove();
+            });
           }}
         >
-          {iconComponentFor('delete_small')}
+          {iconComponentFor("delete_small")}
         </button>
       </div>
       <SandpackProvider
@@ -54,20 +76,31 @@ export const SandpackEditor = ({ nodeKey, code, focusEmitter, preset }: Sandpack
         files={{
           [preset.snippetFileName]: code,
           ...Object.entries(preset.files ?? {}).reduce(
-            (acc, [filePath, fileContents]) => ({ ...acc, ...{ [filePath]: { code: fileContents, readOnly: true } } }),
-            {}
-          )
+            (acc, [filePath, fileContents]) => ({
+              ...acc,
+              ...{ [filePath]: { code: fileContents, readOnly: true } },
+            }),
+            {},
+          ),
         }}
         customSetup={{
-          dependencies: preset.dependencies
+          dependencies: preset.dependencies,
         }}
       >
         <SandpackLayout>
-          <SandpackCodeEditor readOnly={readOnly} showLineNumbers showInlineErrors ref={codeMirrorRef} />
+          <SandpackCodeEditor
+            readOnly={readOnly}
+            showLineNumbers
+            showInlineErrors
+            ref={codeMirrorRef}
+          />
           <SandpackPreview />
         </SandpackLayout>
-        <CodeUpdateEmitter onChange={setCode} snippetFileName={preset.snippetFileName} />
+        <CodeUpdateEmitter
+          onChange={setCode}
+          snippetFileName={preset.snippetFileName}
+        />
       </SandpackProvider>
     </div>
-  )
-}
+  );
+};

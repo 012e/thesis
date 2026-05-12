@@ -318,11 +318,7 @@ export class IdentityTools {
     name: "mark_all_notifications_read",
     description: "Mark all your unread notifications as read",
   })
-  async markAllNotificationsRead(
-    _args: any,
-    _context: Context,
-    request: any,
-  ) {
+  async markAllNotificationsRead(_args: any, _context: Context, request: any) {
     const user = request.user;
     if (!user)
       return { content: [{ type: "text", text: "Error: Not authenticated" }] };

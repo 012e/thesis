@@ -5,7 +5,13 @@ import { withRouter } from "../../.storybook/create-router-decorator";
 import { ExplorePageContent } from "../routes/explore";
 import { reactionsContract, pollsContract } from "@repo/rest-contracts";
 import { createMockHandlers } from "../../.storybook/create-mock-handlers";
-import { makeAuthor, makeCommentsHandler, twoComments, makeReplyHandler, deleteCommentHandler } from "./msw/comments";
+import {
+  makeAuthor,
+  makeCommentsHandler,
+  twoComments,
+  makeReplyHandler,
+  deleteCommentHandler,
+} from "./msw/comments";
 import type { PostType, UserSearchResultType } from "@repo/rest-contracts";
 
 // ─── Shared timestamps ────────────────────────────────────────────────────────
@@ -126,10 +132,7 @@ const mockUsers: UserSearchResultType[] = [
 
 // ─── Reusable MSW handler factories ──────────────────────────────────────────
 
-const makeSearchPostsHandler = (
-  posts: PostType[],
-  delayMs?: number,
-) =>
+const makeSearchPostsHandler = (posts: PostType[], delayMs?: number) =>
   http.get("*/api/posts/search", async () => {
     if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
     return HttpResponse.json(posts);
@@ -152,12 +155,14 @@ const searchUsersErrorHandler = http.get("*/api/users/search", () =>
   HttpResponse.json({ message: "Internal Server Error" }, { status: 500 }),
 );
 
-const followHandler = http.post("*/api/users/*/follow", () =>
-  new HttpResponse(null, { status: 201 }),
+const followHandler = http.post(
+  "*/api/users/*/follow",
+  () => new HttpResponse(null, { status: 201 }),
 );
 
-const unfollowHandler = http.delete("*/api/users/*/follow", () =>
-  new HttpResponse(null, { status: 200 }),
+const unfollowHandler = http.delete(
+  "*/api/users/*/follow",
+  () => new HttpResponse(null, { status: 200 }),
 );
 
 const reactionHandlers = createMockHandlers(reactionsContract);
@@ -407,10 +412,7 @@ export const PostsSingleResult: Story = {
   },
   parameters: {
     msw: {
-      handlers: [
-        ...baseHandlers,
-        makeSearchPostsHandler([mockPosts[0]]),
-      ],
+      handlers: [...baseHandlers, makeSearchPostsHandler([mockPosts[0]])],
     },
   },
 };

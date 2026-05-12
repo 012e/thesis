@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@/db/database.module';
-import { NotificationsModule } from '@/notifications/notifications.module';
-import { MessagesController } from './messages.controller';
-import { MessagesGateway } from './messages.gateway';
-import { MessagesService } from './messages.service';
+import { Module } from "@nestjs/common";
+import { DatabaseModule } from "@/db/database.module";
+import { NotificationsModule } from "@/notifications/notifications.module";
+import { MessagesController } from "./messages.controller";
+import { MessagesGateway } from "./messages.gateway";
+import { MessagesService } from "./messages.service";
 
 @Module({
   imports: [DatabaseModule, NotificationsModule],

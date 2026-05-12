@@ -58,18 +58,21 @@ export class PostsController {
 
   @TsRestHandler(postsContract.listFollowingPosts)
   listFollowingPosts(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.listFollowingPosts, async ({ query }) => {
-      const limit = query.limit ?? 20;
-      const result = await this.postsService.listByFollowing(
-        session.user.id,
-        limit,
-        query.cursor,
-      );
-      return {
-        status: 200,
-        body: postsContract.listFollowingPosts.responses[200].parse(result),
-      };
-    });
+    return tsRestHandler(
+      postsContract.listFollowingPosts,
+      async ({ query }) => {
+        const limit = query.limit ?? 20;
+        const result = await this.postsService.listByFollowing(
+          session.user.id,
+          limit,
+          query.cursor,
+        );
+        return {
+          status: 200,
+          body: postsContract.listFollowingPosts.responses[200].parse(result),
+        };
+      },
+    );
   }
 
   @TsRestHandler(postsContract.getPost)
@@ -173,23 +176,26 @@ export class PostsController {
 
   @TsRestHandler(postsContract.unsubscribeFromPost)
   unsubscribeFromPost(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.unsubscribeFromPost, async ({ params }) => {
-      const subscription = await this.postsService.unsubscribe(
-        params.id,
-        session.user.id,
-      );
+    return tsRestHandler(
+      postsContract.unsubscribeFromPost,
+      async ({ params }) => {
+        const subscription = await this.postsService.unsubscribe(
+          params.id,
+          session.user.id,
+        );
 
-      if (!subscription) {
-        return { status: 404, body: null };
-      }
+        if (!subscription) {
+          return { status: 404, body: null };
+        }
 
-      return {
-        status: 200,
-        body: postsContract.unsubscribeFromPost.responses[200].parse(
-          subscription,
-        ),
-      };
-    });
+        return {
+          status: 200,
+          body: postsContract.unsubscribeFromPost.responses[200].parse(
+            subscription,
+          ),
+        };
+      },
+    );
   }
 
   @TsRestHandler(postsContract.getRecommendations)

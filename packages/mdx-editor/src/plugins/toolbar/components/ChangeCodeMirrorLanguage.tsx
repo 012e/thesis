@@ -1,10 +1,14 @@
-import { useCellValues } from '@mdxeditor/gurx'
-import React from 'react'
-import styles from '../../../styles/ui.module.css'
-import { $isCodeBlockNode } from '../../codeblock/CodeBlockNode'
-import { EMPTY_VALUE, codeBlockLanguages$, getCodeBlockLanguageSelectData } from '../../codemirror'
-import { activeEditor$, editorInFocus$, useTranslation } from '../../core'
-import { Select } from '.././primitives/select'
+import { useCellValues } from "@mdxeditor/gurx";
+import React from "react";
+import styles from "../../../styles/ui.module.css";
+import { $isCodeBlockNode } from "../../codeblock/CodeBlockNode";
+import {
+  EMPTY_VALUE,
+  codeBlockLanguages$,
+  getCodeBlockLanguageSelectData,
+} from "../../codemirror";
+import { activeEditor$, editorInFocus$, useTranslation } from "../../core";
+import { Select } from ".././primitives/select";
 
 /**
  * A component that allows the user to change the code block language of the current selection.
@@ -13,35 +17,47 @@ import { Select } from '.././primitives/select'
  * @group Toolbar Components
  */
 export const ChangeCodeMirrorLanguage = () => {
-  const [editorInFocus, theEditor, codeBlockLanguages] = useCellValues(editorInFocus$, activeEditor$, codeBlockLanguages$)
-  const codeBlockNode = $isCodeBlockNode(editorInFocus!.rootNode) ? editorInFocus!.rootNode : null
-  const t = useTranslation()
+  const [editorInFocus, theEditor, codeBlockLanguages] = useCellValues(
+    editorInFocus$,
+    activeEditor$,
+    codeBlockLanguages$,
+  );
+  const codeBlockNode = $isCodeBlockNode(editorInFocus!.rootNode)
+    ? editorInFocus!.rootNode
+    : null;
+  const t = useTranslation();
 
   if (!codeBlockNode) {
-    return null
+    return null;
   }
 
-  const rawLanguage = codeBlockNode.getLanguage()
-  const { value: currentLanguage, items } = getCodeBlockLanguageSelectData(codeBlockLanguages, rawLanguage)
+  const rawLanguage = codeBlockNode.getLanguage();
+  const { value: currentLanguage, items } = getCodeBlockLanguageSelectData(
+    codeBlockLanguages,
+    rawLanguage,
+  );
   return (
     <div className={styles.selectWithLabel}>
-      <label>{t('codeBlock.language', 'Code block language')}</label>
+      <label>{t("codeBlock.language", "Code block language")}</label>
       <Select
         value={currentLanguage || EMPTY_VALUE}
         onChange={(language) => {
           theEditor?.update(() => {
-            codeBlockNode.setLanguage(language === EMPTY_VALUE ? '' : language)
+            codeBlockNode.setLanguage(language === EMPTY_VALUE ? "" : language);
             setTimeout(() => {
               theEditor.update(() => {
-                codeBlockNode.getLatest().select()
-              })
-            })
-          })
+                codeBlockNode.getLatest().select();
+              });
+            });
+          });
         }}
-        triggerTitle={t('codeBlock.selectLanguage', 'Select code block language')}
-        placeholder={t('codeBlock.language', 'Code block language')}
+        triggerTitle={t(
+          "codeBlock.selectLanguage",
+          "Select code block language",
+        )}
+        placeholder={t("codeBlock.language", "Code block language")}
         items={items}
       />
     </div>
-  )
-}
+  );
+};

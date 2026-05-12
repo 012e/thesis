@@ -386,9 +386,9 @@ describe("GET /posts/following integration", () => {
 
       expect(page1.body.items).toHaveLength(3);
       expect(page1.body.nextCursor).not.toBeNull();
-      const page1Texts = (page1.body.items as { content: { text: string } }[]).map(
-        (p) => p.content.text,
-      );
+      const page1Texts = (
+        page1.body.items as { content: { text: string } }[]
+      ).map((p) => p.content.text);
       expect(page1Texts).toEqual(["Post 5", "Post 4", "Post 3"]);
 
       // Second page using cursor → should give remaining 2 (Post 2, 1)
@@ -399,9 +399,9 @@ describe("GET /posts/following integration", () => {
 
       expect(page2.body.items).toHaveLength(2);
       expect(page2.body.nextCursor).toBeNull();
-      const page2Texts = (page2.body.items as { content: { text: string } }[]).map(
-        (p) => p.content.text,
-      );
+      const page2Texts = (
+        page2.body.items as { content: { text: string } }[]
+      ).map((p) => p.content.text);
       expect(page2Texts).toEqual(["Post 2", "Post 1"]);
 
       // No duplicate IDs across pages

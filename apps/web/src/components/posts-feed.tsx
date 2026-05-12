@@ -88,7 +88,10 @@ export function PostsFeed({
       ))}
       <div ref={observerTarget} className="min-h-px">
         {isFetchingNextPage && (
-          <div className="flex justify-center p-4" aria-label={loadingMoreLabel}>
+          <div
+            className="flex justify-center p-4"
+            aria-label={loadingMoreLabel}
+          >
             <Spinner className="w-5 h-5" />
           </div>
         )}

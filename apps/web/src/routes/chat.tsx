@@ -29,27 +29,45 @@ export const Route = createFileRoute("/chat")({
 const OpenFormToolUI = makeAssistantToolUI({
   toolName: "open_form",
   render: ({ args, status }) => {
-    if (status.type === "running") return <div className="text-sm text-blue-500">Opening {args.formName as string}...</div>;
-    return <div className="text-sm text-green-600">Opened {args.formName as string}</div>;
-  }
+    if (status.type === "running")
+      return (
+        <div className="text-sm text-blue-500">
+          Opening {args.formName as string}...
+        </div>
+      );
+    return (
+      <div className="text-sm text-green-600">
+        Opened {args.formName as string}
+      </div>
+    );
+  },
 });
 
 const SetFormFieldToolUI = makeAssistantToolUI({
   toolName: "set_form_field",
   render: ({ args, status }) => {
-    if (status.type === "running") return <div className="text-sm text-blue-500">Updating {args.field as string}...</div>;
-    return <div className="text-sm text-green-600">Updated {args.field as string}</div>;
-  }
+    if (status.type === "running")
+      return (
+        <div className="text-sm text-blue-500">
+          Updating {args.field as string}...
+        </div>
+      );
+    return (
+      <div className="text-sm text-green-600">
+        Updated {args.field as string}
+      </div>
+    );
+  },
 });
 
 const SubmitFormToolUI = makeAssistantToolUI({
   toolName: "submit_form",
   render: ({ status }) => {
-    if (status.type === "running") return <div className="text-sm text-blue-500">Submitting form...</div>;
+    if (status.type === "running")
+      return <div className="text-sm text-blue-500">Submitting form...</div>;
     return <div className="text-sm text-green-600">Form submitted</div>;
-  }
+  },
 });
-
 
 function ChatPage() {
   const [isThreadListOpen, setIsThreadListOpen] = useAtom(isThreadListOpenAtom);
@@ -105,7 +123,7 @@ function ChatWorkspace() {
 
     for (const msg of messages) {
       if (msg.role !== "assistant") continue;
-      for (const part of ((msg as any).content ?? [])) {
+      for (const part of (msg as any).content ?? []) {
         if (part.type !== "tool-call") continue;
         // Skip tool calls whose args are still streaming
         if ((part as any).status?.type === "running") continue;
@@ -142,13 +160,18 @@ function ChatWorkspace() {
 
   const activeFormConfig = activeForm ? FormRegistry[activeForm] : null;
   const ActiveForm = activeFormConfig?.form;
-  const isHorizontalForm = ActiveForm && activeFormConfig?.layout === "horizontal";
+  const isHorizontalForm =
+    ActiveForm && activeFormConfig?.layout === "horizontal";
 
   return (
     <ResizablePanelGroup orientation="horizontal" className="w-full">
       {isHorizontalForm && (
         <>
-          <ResizablePanel defaultSize={60} minSize={30} className="bg-muted/10 overflow-y-auto">
+          <ResizablePanel
+            defaultSize={60}
+            minSize={30}
+            className="bg-muted/10 overflow-y-auto"
+          >
             <div className="p-6 h-full flex flex-col max-h-full">
               <ActiveForm key={threadId} threadId={threadId} />
             </div>
@@ -156,7 +179,11 @@ function ChatWorkspace() {
           <ResizableHandle withHandle />
         </>
       )}
-      <ResizablePanel defaultSize={isHorizontalForm ? 40 : 100} minSize={30} className="bg-background">
+      <ResizablePanel
+        defaultSize={isHorizontalForm ? 40 : 100}
+        minSize={30}
+        className="bg-background"
+      >
         <Thread />
       </ResizablePanel>
     </ResizablePanelGroup>

@@ -1,5 +1,10 @@
 import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
-import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+} from "@nestjs/common";
 import type {
   NotificationPayloadDto,
   NotificationTypeDto,
@@ -35,9 +40,10 @@ const downvoteCount = count(
   sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
 ).as("downvoteCount");
 
-const commentCount = sql<number>`(SELECT count(*)::int FROM ${comments} WHERE ${comments.postId} = ${posts.id})`.as(
-  "commentCount",
-);
+const commentCount =
+  sql<number>`(SELECT count(*)::int FROM ${comments} WHERE ${comments.postId} = ${posts.id})`.as(
+    "commentCount",
+  );
 
 const getUserReactionType = (userId: string) => {
   return sql<
@@ -395,11 +401,14 @@ export class PostsService {
       : null;
 
     if (dto) {
-      void this.deliverPostUpdateNotification(dto.id, authorId, dto.content.text).catch(
-        (error) =>
-          this.logger.warn(
-            `Failed to notify subscribers for post update ${dto.id}: ${(error as Error).message}`,
-          ),
+      void this.deliverPostUpdateNotification(
+        dto.id,
+        authorId,
+        dto.content.text,
+      ).catch((error) =>
+        this.logger.warn(
+          `Failed to notify subscribers for post update ${dto.id}: ${(error as Error).message}`,
+        ),
       );
     }
 
@@ -599,15 +608,15 @@ export class PostsService {
       .from(postSubscriptions)
       .where(eq(postSubscriptions.postId, postId));
 
-    const recipientIds = [...new Set(subscribers.map((row) => row.userId))]
-      .filter((userId) => !excluded.has(userId));
+    const recipientIds = [
+      ...new Set(subscribers.map((row) => row.userId)),
+    ].filter((userId) => !excluded.has(userId));
 
     await Promise.all(
       recipientIds.map((userId) =>
-        this.notificationsService.deliver(
-          { userId, actorId, type, payload },
-          ["websocket"],
-        ),
+        this.notificationsService.deliver({ userId, actorId, type, payload }, [
+          "websocket",
+        ]),
       ),
     );
   }

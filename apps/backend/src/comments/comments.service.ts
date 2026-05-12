@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
-import { DatabaseService } from '@/db/database.service';
-import { comments, commentReactions, usersView } from '@/db/schema';
-import { eq, desc, count, sql } from 'drizzle-orm';
-import { UsersService } from '@/users/users.service';
-import { NotificationsService } from '@/notifications/notifications.service';
-import { PostsService } from '@/posts/posts.service';
+import { Injectable } from "@nestjs/common";
+import type { CommentDto, ReactionTypeDto } from "@repo/shared-dto";
+import { DatabaseService } from "@/db/database.service";
+import { comments, commentReactions, usersView } from "@/db/schema";
+import { eq, desc, count, sql } from "drizzle-orm";
+import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
+import { PostsService } from "@/posts/posts.service";
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
@@ -135,7 +135,10 @@ export class CommentsService {
       content,
       parentId,
     }).catch((err) =>
-      console.warn('[CommentsService] Failed to deliver comment notification:', err),
+      console.warn(
+        "[CommentsService] Failed to deliver comment notification:",
+        err,
+      ),
     );
 
     return dto;
@@ -165,27 +168,26 @@ export class CommentsService {
           {
             userId: parentComment.authorId,
             actorId: authorId,
-            type: 'reply',
+            type: "reply",
             payload: { postId, parentCommentId: parentId, commentId, preview },
           },
-          ['websocket'],
+          ["websocket"],
         );
       }
 
       await this.postsService.notifySubscribers(
         postId,
         authorId,
-        'reply',
+        "reply",
         { postId, parentCommentId: parentId, commentId, preview },
         parentComment ? [parentComment.authorId] : [],
       );
     } else {
-      await this.postsService.notifySubscribers(
+      await this.postsService.notifySubscribers(postId, authorId, "comment", {
         postId,
-        authorId,
-        'comment',
-        { postId, commentId, preview },
-      );
+        commentId,
+        preview,
+      });
     }
   }
 

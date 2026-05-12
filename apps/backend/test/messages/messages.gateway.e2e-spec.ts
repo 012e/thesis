@@ -5,9 +5,7 @@ import { io as ioClient, type Socket } from "socket.io-client";
 
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
-import {
-  registerAndGetSessionWithToken,
-} from "../helpers/auth.helper";
+import { registerAndGetSessionWithToken } from "../helpers/auth.helper";
 import {
   startPostgresContainer,
   stopPostgresContainer,

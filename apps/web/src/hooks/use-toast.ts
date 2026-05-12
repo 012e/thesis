@@ -11,7 +11,8 @@ function messageToast(title: string, options?: ToastOptions) {
 
 const toastApi = {
   headless: (input: HeadlessToastInput) => baseToast.headless(input),
-  message: (title: string, options?: ToastOptions) => messageToast(title, options),
+  message: (title: string, options?: ToastOptions) =>
+    messageToast(title, options),
   success: (title: string, options?: ToastOptions) =>
     messageToast(title, { ...options, variant: "success" }),
   error: (title: string, options?: ToastOptions) =>

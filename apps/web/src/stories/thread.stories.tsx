@@ -16,7 +16,7 @@ const CANNED_RESPONSES: Record<string, string> = {
 };
 
 const DEFAULT_RESPONSE =
-  "I'm a mock AI assistant running in Storybook. I can respond to predefined prompts like:\n\n- *\"What's the weather in San Francisco?\"*\n- *\"Explain React hooks like useState\"*\n\nTry one of those, or type anything and I'll echo it back!";
+  'I\'m a mock AI assistant running in Storybook. I can respond to predefined prompts like:\n\n- *"What\'s the weather in San Francisco?"*\n- *"Explain React hooks like useState"*\n\nTry one of those, or type anything and I\'ll echo it back!';
 
 function createMockAdapter(): ChatModelAdapter {
   return {

@@ -60,7 +60,9 @@ function ProfileContent({
           followingCount: profile?.followingCount ?? 0,
           followersCount: profile?.followersCount ?? 0,
           isFollowing: false,
-          createdAt: (session.user.createdAt ? new Date(session.user.createdAt).toISOString() : null),
+          createdAt: session.user.createdAt
+            ? new Date(session.user.createdAt).toISOString()
+            : null,
         }}
         posts={userPosts}
         isCurrentUser={true}

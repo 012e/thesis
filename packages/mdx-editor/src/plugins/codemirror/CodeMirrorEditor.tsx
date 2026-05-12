@@ -1,58 +1,85 @@
-import { useCellValues } from '@mdxeditor/gurx'
-import React from 'react'
-import styles from '../../styles/ui.module.css'
-import { CodeBlockEditorProps } from '../codeblock'
-import { useCodeBlockEditorContext } from '../codeblock/CodeBlockNode'
-import { iconComponentFor$, readOnly$, useTranslation } from '../core'
+import { useCellValues } from "@mdxeditor/gurx";
+import React from "react";
+import styles from "../../styles/ui.module.css";
+import { CodeBlockEditorProps } from "../codeblock";
+import { useCodeBlockEditorContext } from "../codeblock/CodeBlockNode";
+import { iconComponentFor$, readOnly$, useTranslation } from "../core";
 
-import { languages } from '@codemirror/language-data'
-import { EditorState, Extension } from '@codemirror/state'
-import { EditorView, lineNumbers, keymap, drawSelection, highlightActiveLine } from '@codemirror/view'
-import { bracketMatching } from '@codemirror/language'
-import { indentWithTab, history, defaultKeymap, historyKeymap } from '@codemirror/commands'
-import { basicLight } from 'cm6-theme-basic-light'
-import { $setSelection } from 'lexical'
+import { languages } from "@codemirror/language-data";
+import { EditorState, Extension } from "@codemirror/state";
+import {
+  EditorView,
+  lineNumbers,
+  keymap,
+  drawSelection,
+  highlightActiveLine,
+} from "@codemirror/view";
+import { bracketMatching } from "@codemirror/language";
+import {
+  indentWithTab,
+  history,
+  defaultKeymap,
+  historyKeymap,
+} from "@codemirror/commands";
+import { basicLight } from "cm6-theme-basic-light";
+import { $setSelection } from "lexical";
 import {
   EMPTY_VALUE,
   codeBlockLanguages$,
   codeMirrorAutoLoadLanguageSupport$,
   codeMirrorExtensions$,
-  getCodeBlockLanguageSelectData
-} from '.'
-import { useCodeMirrorRef } from '../sandpack/useCodeMirrorRef'
-import { Select } from '../toolbar/primitives/select'
+  getCodeBlockLanguageSelectData,
+} from ".";
+import { useCodeMirrorRef } from "../sandpack/useCodeMirrorRef";
+import { Select } from "../toolbar/primitives/select";
 
-export const COMMON_STATE_CONFIG_EXTENSIONS: Extension[] = []
+export const COMMON_STATE_CONFIG_EXTENSIONS: Extension[] = [];
 
-export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: CodeBlockEditorProps) => {
-  const t = useTranslation()
-  const { parentEditor, lexicalNode } = useCodeBlockEditorContext()
-  const [readOnly, codeMirrorExtensions, autoLoadLanguageSupport, iconComponentFor, codeBlockLanguages] = useCellValues(
+export const CodeMirrorEditor = ({
+  language,
+  nodeKey,
+  code,
+  focusEmitter,
+}: CodeBlockEditorProps) => {
+  const t = useTranslation();
+  const { parentEditor, lexicalNode } = useCodeBlockEditorContext();
+  const [
+    readOnly,
+    codeMirrorExtensions,
+    autoLoadLanguageSupport,
+    iconComponentFor,
+    codeBlockLanguages,
+  ] = useCellValues(
     readOnly$,
     codeMirrorExtensions$,
     codeMirrorAutoLoadLanguageSupport$,
     iconComponentFor$,
-    codeBlockLanguages$
-  )
+    codeBlockLanguages$,
+  );
 
-  const codeMirrorRef = useCodeMirrorRef(nodeKey, 'codeblock', language, focusEmitter)
-  const { setCode } = useCodeBlockEditorContext()
-  const editorViewRef = React.useRef<EditorView | null>(null)
-  const elRef = React.useRef<HTMLDivElement | null>(null)
+  const codeMirrorRef = useCodeMirrorRef(
+    nodeKey,
+    "codeblock",
+    language,
+    focusEmitter,
+  );
+  const { setCode } = useCodeBlockEditorContext();
+  const editorViewRef = React.useRef<EditorView | null>(null);
+  const elRef = React.useRef<HTMLDivElement | null>(null);
 
   const { value: selectValue, items: selectItems } = React.useMemo(
     () => getCodeBlockLanguageSelectData(codeBlockLanguages, language),
-    [codeBlockLanguages, language]
-  )
+    [codeBlockLanguages, language],
+  );
 
-  const setCodeRef = React.useRef(setCode)
-  setCodeRef.current = setCode
+  const setCodeRef = React.useRef(setCode);
+  setCodeRef.current = setCode;
   codeMirrorRef.current = {
-    getCodemirror: () => editorViewRef.current as any
-  }
+    getCodemirror: () => editorViewRef.current as any,
+  };
 
   React.useEffect(() => {
-    const el = elRef.current!
+    const el = elRef.current!;
     void (async () => {
       const extensions = [
         basicLight,
@@ -64,54 +91,58 @@ export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: Code
         keymap.of([indentWithTab, ...defaultKeymap, ...historyKeymap]),
         EditorView.lineWrapping,
         EditorView.updateListener.of(({ state }) => {
-          setCodeRef.current(state.doc.toString())
+          setCodeRef.current(state.doc.toString());
         }),
         EditorView.domEventHandlers({
           focus: () => {
             parentEditor.update(() => {
-              $setSelection(null)
-            })
-          }
+              $setSelection(null);
+            });
+          },
         }),
-        ...codeMirrorExtensions
-      ]
+        ...codeMirrorExtensions,
+      ];
       if (readOnly) {
-        extensions.push(EditorState.readOnly.of(true))
+        extensions.push(EditorState.readOnly.of(true));
       }
-      if (language !== '') {
-        const canonical = codeBlockLanguages.keyMap[language] ?? language
-        const providedSupport = codeBlockLanguages.supportMap[canonical]
+      if (language !== "") {
+        const canonical = codeBlockLanguages.keyMap[language] ?? language;
+        const providedSupport = codeBlockLanguages.supportMap[canonical];
         if (providedSupport) {
-          extensions.push(providedSupport.extension)
+          extensions.push(providedSupport.extension);
         } else if (autoLoadLanguageSupport) {
           const languageData = languages.find((l) => {
-            return l.name === language || l.alias.includes(language) || l.extensions.includes(language)
-          })
+            return (
+              l.name === language ||
+              l.alias.includes(language) ||
+              l.extensions.includes(language)
+            );
+          });
           if (languageData) {
             try {
-              const languageSupport = await languageData.load()
-              extensions.push(languageSupport.extension)
+              const languageSupport = await languageData.load();
+              extensions.push(languageSupport.extension);
             } catch (_e) {
-              console.warn('failed to load language support for', language)
+              console.warn("failed to load language support for", language);
             }
           }
         }
       }
-      el.innerHTML = ''
+      el.innerHTML = "";
       editorViewRef.current = new EditorView({
         parent: el,
-        state: EditorState.create({ doc: code, extensions })
-      })
+        state: EditorState.create({ doc: code, extensions }),
+      });
 
-      el.addEventListener('keydown', stopPropagationHandler)
-    })()
+      el.addEventListener("keydown", stopPropagationHandler);
+    })();
     return () => {
-      editorViewRef.current?.destroy()
-      editorViewRef.current = null
-      el.removeEventListener('keydown', stopPropagationHandler)
-    }
+      editorViewRef.current?.destroy();
+      editorViewRef.current = null;
+      el.removeEventListener("keydown", stopPropagationHandler);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readOnly, language, ...codeMirrorExtensions])
+  }, [readOnly, language, ...codeMirrorExtensions]);
 
   return (
     <div className={styles.codeMirrorWrapper}>
@@ -121,37 +152,40 @@ export const CodeMirrorEditor = ({ language, nodeKey, code, focusEmitter }: Code
           value={selectValue}
           onChange={(language) => {
             parentEditor.update(() => {
-              lexicalNode.setLanguage(language === EMPTY_VALUE ? '' : language)
+              lexicalNode.setLanguage(language === EMPTY_VALUE ? "" : language);
               setTimeout(() => {
                 parentEditor.update(() => {
-                  lexicalNode.getLatest().select()
-                })
-              })
-            })
+                  lexicalNode.getLatest().select();
+                });
+              });
+            });
           }}
-          triggerTitle={t('codeBlock.selectLanguage', 'Select code block language')}
-          placeholder={t('codeBlock.inlineLanguage', 'Language')}
+          triggerTitle={t(
+            "codeBlock.selectLanguage",
+            "Select code block language",
+          )}
+          placeholder={t("codeBlock.inlineLanguage", "Language")}
           items={selectItems}
         />
         <button
           className={styles.iconButton}
           type="button"
           disabled={readOnly}
-          title={t('codeblock.delete', 'Delete code block')}
+          title={t("codeblock.delete", "Delete code block")}
           onClick={(e) => {
-            e.preventDefault()
+            e.preventDefault();
             parentEditor.update(() => {
-              lexicalNode.remove()
-            })
+              lexicalNode.remove();
+            });
           }}
         >
-          {iconComponentFor('delete_small')}
+          {iconComponentFor("delete_small")}
         </button>
       </div>
       <div ref={elRef} />
     </div>
-  )
-}
+  );
+};
 function stopPropagationHandler(this: HTMLDivElement, ev: KeyboardEvent) {
-  ev.stopPropagation()
+  ev.stopPropagation();
 }

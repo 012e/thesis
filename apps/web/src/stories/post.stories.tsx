@@ -89,12 +89,12 @@ const postWithPoll: PostDto = {
     text: "Which framework do you prefer for building web apps?",
     poll: {
       question: "Favorite web framework?",
-              options: [
-                { id: "1", label: "React" },
-                { id: "2", label: "Vue" },
-                { id: "3", label: "Angular" },
-                { id: "4", label: "Svelte" },
-              ],
+      options: [
+        { id: "1", label: "React" },
+        { id: "2", label: "Vue" },
+        { id: "3", label: "Angular" },
+        { id: "4", label: "Svelte" },
+      ],
       allowsMultipleSelections: false,
       closesAt: new Date(Date.now() + 86_400_000 * 3).toISOString(),
     },

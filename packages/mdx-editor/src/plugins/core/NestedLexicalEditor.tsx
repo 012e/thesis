@@ -14,11 +14,11 @@ import {
   LexicalEditor,
   SELECTION_CHANGE_COMMAND,
   createEditor,
-  COMMAND_PRIORITY_LOW
-} from 'lexical'
-import * as Mdast from 'mdast'
-import { Node } from 'unist'
-import React from 'react'
+  COMMAND_PRIORITY_LOW,
+} from "lexical";
+import * as Mdast from "mdast";
+import { Node } from "unist";
+import React from "react";
 import {
   NESTED_EDITOR_UPDATED_COMMAND,
   codeBlockEditorDescriptors$,
@@ -31,23 +31,23 @@ import {
   lexicalTheme$,
   nestedEditorChildren$,
   rootEditor$,
-  usedLexicalNodes$
-} from '.'
-import { ContentEditable } from '@lexical/react/LexicalContentEditable'
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
-import { LexicalNestedComposer } from '@lexical/react/LexicalNestedComposer'
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import classNames from 'classnames'
-import { exportLexicalTreeToMdast } from '../../exportMarkdownFromLexical'
-import { importMdastTreeToLexical } from '../../importMarkdownToLexical'
-import styles from '../../styles/ui.module.css'
-import { SharedHistoryPlugin } from './SharedHistoryPlugin'
-import { mergeRegister } from '@lexical/utils'
-import { VoidEmitter } from '../../utils/voidEmitter'
-import { isPartOftheEditorUI } from '../../utils/isPartOftheEditorUI'
-import { useCellValues, usePublisher, useRealm } from '@mdxeditor/gurx'
-import { DirectiveNode } from '../directives'
-import { LexicalJsxNode } from '../jsx/LexicalJsxNode'
+  usedLexicalNodes$,
+} from ".";
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import classNames from "classnames";
+import { exportLexicalTreeToMdast } from "../../exportMarkdownFromLexical";
+import { importMdastTreeToLexical } from "../../importMarkdownToLexical";
+import styles from "../../styles/ui.module.css";
+import { SharedHistoryPlugin } from "./SharedHistoryPlugin";
+import { mergeRegister } from "@lexical/utils";
+import { VoidEmitter } from "../../utils/voidEmitter";
+import { isPartOftheEditorUI } from "../../utils/isPartOftheEditorUI";
+import { useCellValues, usePublisher, useRealm } from "@mdxeditor/gurx";
+import { DirectiveNode } from "../directives";
+import { LexicalJsxNode } from "../jsx/LexicalJsxNode";
 
 /**
  * The value of the {@link NestedEditorsContext} React context.
@@ -57,15 +57,15 @@ export interface NestedEditorsContextValue<T extends Node> {
   /**
    * The parent lexical editor
    */
-  parentEditor: LexicalEditor
+  parentEditor: LexicalEditor;
   /**
    * The parent editor config
    */
-  config: EditorConfig
+  config: EditorConfig;
   /**
    * The mdast node that is being edited
    */
-  mdastNode: T
+  mdastNode: T;
   /**
    * The lexical node that is being edited
    */
@@ -73,12 +73,12 @@ export interface NestedEditorsContextValue<T extends Node> {
     /**
      * Use this method to update the mdast node. This will also update the mdast tree of the parent editor.
      */
-    setMdastNode: (mdastNode: any) => void
-  }
+    setMdastNode: (mdastNode: any) => void;
+  };
   /**
    * Subscribe to the emitter and implement the logic to focus the custom editor.
    */
-  focusEmitter: VoidEmitter
+  focusEmitter: VoidEmitter;
 }
 
 /**
@@ -86,18 +86,24 @@ export interface NestedEditorsContextValue<T extends Node> {
  * Place it as a wrapper in your custom lexical node decorators.
  * @group Custom Editor Primitives
  */
-export const NestedEditorsContext = React.createContext<NestedEditorsContextValue<Node> | undefined>(undefined)
+export const NestedEditorsContext = React.createContext<
+  NestedEditorsContextValue<Node> | undefined
+>(undefined);
 
 /**
  * A hook to get the current {@link NestedEditorsContext} value. Use this in your custom editor components.
  * @group Custom Editor Primitives
  */
 export function useNestedEditorContext<T extends Mdast.RootContent>() {
-  const context = React.useContext(NestedEditorsContext) as NestedEditorsContextValue<T> | undefined
+  const context = React.useContext(NestedEditorsContext) as
+    | NestedEditorsContextValue<T>
+    | undefined;
   if (!context) {
-    throw new Error('useNestedEditor must be used within a NestedEditorsProvider')
+    throw new Error(
+      "useNestedEditor must be used within a NestedEditorsProvider",
+    );
   }
-  return context
+  return context;
 }
 
 /**
@@ -105,21 +111,24 @@ export function useNestedEditorContext<T extends Mdast.RootContent>() {
  * @group Custom Editor Primitives
  */
 export function useMdastNodeUpdater<T extends Mdast.RootContent>() {
-  const { parentEditor, mdastNode, lexicalNode } = useNestedEditorContext<T>()
+  const { parentEditor, mdastNode, lexicalNode } = useNestedEditorContext<T>();
 
   return function updateMdastNode(node: Partial<T>) {
     parentEditor.update(
       () => {
-        $addUpdateTag('history-push')
-        const currentNode = $getNodeByKey(lexicalNode.getKey()) as DirectiveNode | LexicalJsxNode | null
+        $addUpdateTag("history-push");
+        const currentNode = $getNodeByKey(lexicalNode.getKey()) as
+          | DirectiveNode
+          | LexicalJsxNode
+          | null;
         if (currentNode) {
-          currentNode.setMdastNode({ ...mdastNode, ...node } as any)
+          currentNode.setMdastNode({ ...mdastNode, ...node } as any);
         }
       },
-      { discrete: true }
-    )
-    parentEditor.dispatchCommand(NESTED_EDITOR_UPDATED_COMMAND, undefined)
-  }
+      { discrete: true },
+    );
+    parentEditor.dispatchCommand(NESTED_EDITOR_UPDATED_COMMAND, undefined);
+  };
 }
 
 /**
@@ -127,15 +136,15 @@ export function useMdastNodeUpdater<T extends Mdast.RootContent>() {
  * @group Custom Editor Primitives
  */
 export function useLexicalNodeRemove() {
-  const { parentEditor, lexicalNode } = useNestedEditorContext()
+  const { parentEditor, lexicalNode } = useNestedEditorContext();
 
   return () => {
     parentEditor.update(() => {
-      const node = $getNodeByKey(lexicalNode.getKey())
-      node!.selectNext()
-      node!.remove()
-    })
-  }
+      const node = $getNodeByKey(lexicalNode.getKey());
+      node!.selectNext();
+      node!.remove();
+    });
+  };
 }
 
 /**
@@ -155,33 +164,40 @@ export function useLexicalNodeRemove() {
  * ```
  * @group Custom Editor Primitives
  */
-export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props: {
+export const NestedLexicalEditor = function <
+  T extends Mdast.RootContent,
+>(props: {
   /**
    * A function that returns the phrasing content of the mdast node. In most cases, this will be the `children` property of the mdast node, but you can also have multiple nested nodes with their own children.
    */
-  getContent: (mdastNode: T) => Mdast.RootContent[]
+  getContent: (mdastNode: T) => Mdast.RootContent[];
 
   /**
    * A function that should return the updated mdast node based on the original mdast node and the new content (serialized as mdast tree) produced by the editor.
    */
-  getUpdatedMdastNode: (mdastNode: T, children: Mdast.RootContent[]) => T
+  getUpdatedMdastNode: (mdastNode: T, children: Mdast.RootContent[]) => T;
 
   /**
    * Props passed to the {@link https://github.com/facebook/lexical/blob/main/packages/lexical-react/src/LexicalContentEditable.tsx | ContentEditable} component.
    */
-  contentEditableProps?: React.ComponentProps<typeof ContentEditable>
+  contentEditableProps?: React.ComponentProps<typeof ContentEditable>;
 
   /**
    * Whether or not the editor edits blocks (multiple paragraphs)
    */
-  block?: boolean
+  block?: boolean;
 }) {
-  const { getContent, getUpdatedMdastNode, contentEditableProps, block = false } = props
-  const { mdastNode, lexicalNode, focusEmitter } = useNestedEditorContext<T>()
-  const updateMdastNode = useMdastNodeUpdater<T>()
-  const removeNode = useLexicalNodeRemove()
-  const content = getContent(mdastNode)
-  const realm = useRealm()
+  const {
+    getContent,
+    getUpdatedMdastNode,
+    contentEditableProps,
+    block = false,
+  } = props;
+  const { mdastNode, lexicalNode, focusEmitter } = useNestedEditorContext<T>();
+  const updateMdastNode = useMdastNodeUpdater<T>();
+  const removeNode = useLexicalNodeRemove();
+  const content = getContent(mdastNode);
+  const realm = useRealm();
 
   const [
     rootEditor,
@@ -193,7 +209,7 @@ export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props:
     codeBlockEditorDescriptors,
     jsxIsAvailable,
     nestedEditorChildren,
-    lexicalTheme
+    lexicalTheme,
   ] = useCellValues(
     rootEditor$,
     importVisitors$,
@@ -204,52 +220,54 @@ export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props:
     codeBlockEditorDescriptors$,
     jsxIsAvailable$,
     nestedEditorChildren$,
-    lexicalTheme$
-  )
+    lexicalTheme$,
+  );
 
-  const setEditorInFocus = usePublisher(editorInFocus$)
+  const setEditorInFocus = usePublisher(editorInFocus$);
 
   const [editor] = React.useState(() => {
     const editor = createEditor({
       nodes: usedLexicalNodes,
       theme: realm.getValue(lexicalTheme$),
-      namespace: 'NestedEditor'
-    })
-    return editor
-  })
+      namespace: "NestedEditor",
+    });
+    return editor;
+  });
 
   React.useEffect(() => {
     focusEmitter.subscribe(() => {
-      editor.focus()
-    })
-  }, [editor, focusEmitter])
+      editor.focus();
+    });
+  }, [editor, focusEmitter]);
 
   React.useEffect(() => {
     editor.update(() => {
-      $getRoot().clear()
-      let theContent: Mdast.PhrasingContent[] | Mdast.RootContent[] = content
+      $getRoot().clear();
+      let theContent: Mdast.PhrasingContent[] | Mdast.RootContent[] = content;
       if (block) {
         if (theContent.length === 0) {
-          theContent = [{ type: 'paragraph', children: [] }]
+          theContent = [{ type: "paragraph", children: [] }];
         }
       } else {
-        theContent = [{ type: 'paragraph', children: content as Mdast.PhrasingContent[] }]
+        theContent = [
+          { type: "paragraph", children: content as Mdast.PhrasingContent[] },
+        ];
       }
 
       importMdastTreeToLexical({
         root: $getRoot(),
         mdastRoot: {
-          type: 'root',
-          children: theContent
+          type: "root",
+          children: theContent,
         },
         visitors: importVisitors,
         directiveDescriptors,
         codeBlockEditorDescriptors,
-        jsxComponentDescriptors
-      })
-    })
+        jsxComponentDescriptors,
+      });
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editor, block, importVisitors])
+  }, [editor, block, importVisitors]);
 
   React.useEffect(() => {
     function updateParentNode() {
@@ -259,66 +277,83 @@ export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props:
           visitors: exportVisitors,
           jsxComponentDescriptors,
           jsxIsAvailable,
-          addImportStatements: false
-        })
-        const content: Mdast.RootContent[] = block ? mdast.children : (mdast.children[0] as Mdast.Paragraph)!.children
-        updateMdastNode(getUpdatedMdastNode(structuredClone(mdastNode) as any, content as any))
-      })
+          addImportStatements: false,
+        });
+        const content: Mdast.RootContent[] = block
+          ? mdast.children
+          : (mdast.children[0] as Mdast.Paragraph)!.children;
+        updateMdastNode(
+          getUpdatedMdastNode(
+            structuredClone(mdastNode) as any,
+            content as any,
+          ),
+        );
+      });
     }
 
     return mergeRegister(
       editor.registerCommand(
         FOCUS_COMMAND,
         () => {
-          setEditorInFocus({ editorType: 'lexical', rootNode: lexicalNode, editorRef: editor })
-          return false
+          setEditorInFocus({
+            editorType: "lexical",
+            rootNode: lexicalNode,
+            editorRef: editor,
+          });
+          return false;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand(
         BLUR_COMMAND,
         (payload) => {
-          const relatedTarget = payload.relatedTarget as HTMLElement | null
-          if (isPartOftheEditorUI(relatedTarget, rootEditor!.getRootElement()!)) {
-            return false
+          const relatedTarget = payload.relatedTarget as HTMLElement | null;
+          if (
+            isPartOftheEditorUI(relatedTarget, rootEditor!.getRootElement()!)
+          ) {
+            return false;
           }
-          updateParentNode()
-          setEditorInFocus(null)
-          return true
+          updateParentNode();
+          setEditorInFocus(null);
+          return true;
         },
-        COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_EDITOR,
       ),
       // triggered by codemirror
       editor.registerCommand(
         NESTED_EDITOR_UPDATED_COMMAND,
         () => {
-          updateParentNode()
-          return true
+          updateParentNode();
+          return true;
         },
-        COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_EDITOR,
       ),
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
         () => {
-          setEditorInFocus({ editorType: 'lexical', rootNode: lexicalNode, editorRef: editor })
-          return false
+          setEditorInFocus({
+            editorType: "lexical",
+            rootNode: lexicalNode,
+            editorRef: editor,
+          });
+          return false;
         },
-        COMMAND_PRIORITY_HIGH
+        COMMAND_PRIORITY_HIGH,
       ),
       editor.registerCommand(
         KEY_BACKSPACE_COMMAND,
         (_, editor) => {
-          const editorElement = editor.getRootElement()
+          const editorElement = editor.getRootElement();
           // the innerText here is actually the text before backspace takes effect.
-          if (editorElement?.innerText === '\n') {
-            removeNode()
-            return true
+          if (editorElement?.innerText === "\n") {
+            removeNode();
+            return true;
           }
-          return false
+          return false;
         },
-        COMMAND_PRIORITY_CRITICAL
-      )
-    )
+        COMMAND_PRIORITY_CRITICAL,
+      ),
+    );
   }, [
     block,
     editor,
@@ -331,14 +366,20 @@ export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props:
     removeNode,
     setEditorInFocus,
     updateMdastNode,
-    rootEditor
-  ])
+    rootEditor,
+  ]);
 
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={lexicalTheme}>
       <RichTextPlugin
         contentEditable={
-          <ContentEditable {...contentEditableProps} className={classNames(styles.nestedEditor, contentEditableProps?.className)} />
+          <ContentEditable
+            {...contentEditableProps}
+            className={classNames(
+              styles.nestedEditor,
+              contentEditableProps?.className,
+            )}
+          />
         }
         placeholder={null}
         ErrorBoundary={LexicalErrorBoundary}
@@ -348,5 +389,5 @@ export const NestedLexicalEditor = function <T extends Mdast.RootContent>(props:
         <Child key={index} />
       ))}
     </LexicalNestedComposer>
-  )
-}
+  );
+};

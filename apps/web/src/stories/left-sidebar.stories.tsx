@@ -41,9 +41,8 @@ const userProfileHandler = http.get("*/api/users/*/profile", () =>
   }),
 );
 
-const unreadCountHandler = http.get(
-  "*/api/notifications/unread-count",
-  () => HttpResponse.json({ count: 0 }),
+const unreadCountHandler = http.get("*/api/notifications/unread-count", () =>
+  HttpResponse.json({ count: 0 }),
 );
 
 const unreadCountWithNotificationsHandler = http.get(

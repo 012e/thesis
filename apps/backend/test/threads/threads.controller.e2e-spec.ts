@@ -172,7 +172,10 @@ describe("ThreadsController integration", () => {
         .set("Cookie", userACookie)
         .expect(200);
 
-      expect(res.body).toMatchObject({ id: created.body.id, externalId: "get-test" });
+      expect(res.body).toMatchObject({
+        id: created.body.id,
+        externalId: "get-test",
+      });
     });
 
     it("returns 404 for a non-existent thread ID", async () => {
@@ -382,7 +385,10 @@ describe("ThreadsController integration", () => {
         .send({
           messages: [
             { role: "user", content: "Hello, what is TypeScript?" },
-            { role: "assistant", content: "TypeScript is a superset of JavaScript." },
+            {
+              role: "assistant",
+              content: "TypeScript is a superset of JavaScript.",
+            },
           ],
         })
         .expect(200);
@@ -453,7 +459,10 @@ describe("ThreadsController integration", () => {
               role: "user",
               content: [
                 { type: "text", text: "Content part message" },
-                { type: "image_url", image_url: { url: "http://example.com/img.png" } },
+                {
+                  type: "image_url",
+                  image_url: { url: "http://example.com/img.png" },
+                },
               ],
             },
           ],
@@ -516,8 +525,18 @@ describe("ThreadsController integration", () => {
         .send({})
         .expect(201);
 
-      const entry1 = { id: "msg-1", parent_id: null, format: "ai-sdk/v6", content: { role: "user", text: "Hello" } };
-      const entry2 = { id: "msg-2", parent_id: "msg-1", format: "ai-sdk/v6", content: { role: "assistant", text: "Hi" } };
+      const entry1 = {
+        id: "msg-1",
+        parent_id: null,
+        format: "ai-sdk/v6",
+        content: { role: "user", text: "Hello" },
+      };
+      const entry2 = {
+        id: "msg-2",
+        parent_id: "msg-1",
+        format: "ai-sdk/v6",
+        content: { role: "assistant", text: "Hi" },
+      };
 
       await server
         .post(`/threads/${created.body.id}/messages`)
@@ -557,7 +576,12 @@ describe("ThreadsController integration", () => {
         .send({})
         .expect(201);
 
-      const entry = { id: "msg-a", parent_id: null, format: "ai-sdk/v6", content: {} };
+      const entry = {
+        id: "msg-a",
+        parent_id: null,
+        format: "ai-sdk/v6",
+        content: {},
+      };
 
       const appendRes = await server
         .post(`/threads/${created.body.id}/messages`)
@@ -581,7 +605,13 @@ describe("ThreadsController integration", () => {
         await server
           .post(`/threads/${created.body.id}/messages`)
           .set("Cookie", userACookie)
-          .send({ entry: { id: `msg-${i}`, parent_id: i === 1 ? null : `msg-${i - 1}`, order: i } })
+          .send({
+            entry: {
+              id: `msg-${i}`,
+              parent_id: i === 1 ? null : `msg-${i - 1}`,
+              order: i,
+            },
+          })
           .expect(200);
       }
 
@@ -591,7 +621,11 @@ describe("ThreadsController integration", () => {
         .expect(200);
 
       expect(res.body.messages).toHaveLength(3);
-      expect(res.body.messages.map((m: { id: string }) => m.id)).toEqual(["msg-1", "msg-2", "msg-3"]);
+      expect(res.body.messages.map((m: { id: string }) => m.id)).toEqual([
+        "msg-1",
+        "msg-2",
+        "msg-3",
+      ]);
       expect(res.body.headId).toBe("msg-3");
     });
 
@@ -642,9 +676,7 @@ describe("ThreadsController integration", () => {
         format: "ai-sdk/v6",
         content: {
           role: "user",
-          parts: [
-            { type: "text", text: "What is 2+2?" },
-          ],
+          parts: [{ type: "text", text: "What is 2+2?" }],
           nested: { deeply: { value: 42 } },
         },
       };

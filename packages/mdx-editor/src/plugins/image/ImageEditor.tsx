@@ -1,12 +1,12 @@
-import React, { JSX } from 'react'
+import React, { JSX } from "react";
 
-import type { BaseSelection, LexicalEditor } from 'lexical'
+import type { BaseSelection, LexicalEditor } from "lexical";
 
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { useLexicalNodeSelection } from '@lexical/react/useLexicalNodeSelection'
-import { mergeRegister } from '@lexical/utils'
-import { useCellValues } from '@mdxeditor/gurx'
-import classNames from 'classnames'
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import { useLexicalNodeSelection } from "@lexical/react/useLexicalNodeSelection";
+import { mergeRegister } from "@lexical/utils";
+import { useCellValues } from "@mdxeditor/gurx";
+import classNames from "classnames";
 import {
   $getNodeByKey,
   $getSelection,
@@ -19,38 +19,38 @@ import {
   KEY_DELETE_COMMAND,
   KEY_ENTER_COMMAND,
   KEY_ESCAPE_COMMAND,
-  SELECTION_CHANGE_COMMAND
-} from 'lexical'
-import { MdxJsxAttribute, MdxJsxExpressionAttribute } from 'mdast-util-mdx-jsx'
+  SELECTION_CHANGE_COMMAND,
+} from "lexical";
+import { MdxJsxAttribute, MdxJsxExpressionAttribute } from "mdast-util-mdx-jsx";
 import {
   disableImageResize$,
   editImageToolbarComponent$,
   imagePlaceholder$ as imagePlaceholderComponent$,
   imagePreviewHandler$,
-  allowSetImageDimensions$
-} from '.'
-import styles from '../../styles/ui.module.css'
-import { readOnly$ } from '../core'
-import { $isImageNode } from './ImageNode'
-import ImageResizer from './ImageResizer'
+  allowSetImageDimensions$,
+} from ".";
+import styles from "../../styles/ui.module.css";
+import { readOnly$ } from "../core";
+import { $isImageNode } from "./ImageNode";
+import ImageResizer from "./ImageResizer";
 
 const BROKEN_IMG_URI =
-  'data:image/svg+xml;charset=utf-8,' +
+  "data:image/svg+xml;charset=utf-8," +
   encodeURIComponent(/* xml */ `
     <svg id="imgLoadError" xmlns="http://www.w3.org/2000/svg" width="100" height="100">
       <rect x="0" y="0" width="100" height="100" fill="none" stroke="red" stroke-width="4" stroke-dasharray="4" />
       <text x="50" y="55" text-anchor="middle" font-size="20" fill="red">⚠️</text>
     </svg>
-`)
+`);
 
 export interface ImageEditorProps {
-  nodeKey: string
-  src: string
-  alt?: string
-  title?: string
-  width: number | 'inherit'
-  height: number | 'inherit'
-  rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+  nodeKey: string;
+  src: string;
+  alt?: string;
+  title?: string;
+  width: number | "inherit";
+  height: number | "inherit";
+  rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 }
 
 // https://css-tricks.com/pre-caching-image-with-react-suspense/
@@ -59,25 +59,25 @@ const imgCache = {
   read(src: string) {
     if (!this.__cache[src]) {
       this.__cache[src] = new Promise<void>((resolve) => {
-        const img = new Image()
+        const img = new Image();
         img.onerror = () => {
-          this.__cache[src] = BROKEN_IMG_URI
-          resolve()
-        }
+          this.__cache[src] = BROKEN_IMG_URI;
+          resolve();
+        };
         img.onload = () => {
-          this.__cache[src] = src
-          resolve()
-        }
-        img.src = src
-      })
+          this.__cache[src] = src;
+          resolve();
+        };
+        img.src = src;
+      });
     }
     if (this.__cache[src] instanceof Promise) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error
-      throw this.__cache[src]
+      throw this.__cache[src];
     }
-    return this.__cache[src] as string
-  }
-}
+    return this.__cache[src] as string;
+  },
+};
 
 function LazyImage({
   title,
@@ -86,15 +86,15 @@ function LazyImage({
   imageRef,
   src,
   width,
-  height
+  height,
 }: {
-  title: string
-  alt: string
-  className: string | null
-  imageRef: { current: null | HTMLImageElement }
-  src: string
-  width: number | 'inherit'
-  height: number | 'inherit'
+  title: string;
+  alt: string;
+  className: string | null;
+  imageRef: { current: null | HTMLImageElement };
+  src: string;
+  width: number | "inherit";
+  height: number | "inherit";
 }) {
   return (
     <img
@@ -107,140 +107,161 @@ function LazyImage({
       width={width}
       height={height}
     />
-  )
+  );
 }
 
-export function ImageEditor({ src, title, alt, nodeKey, width, height, rest }: ImageEditorProps): JSX.Element | null {
-  const [ImagePlaceholderComponent, disableImageResize, allowSetImageDimensions, imagePreviewHandler, readOnly, EditImageToolbar] =
-    useCellValues(
-      imagePlaceholderComponent$,
-      disableImageResize$,
-      allowSetImageDimensions$,
-      imagePreviewHandler$,
-      readOnly$,
-      editImageToolbarComponent$
-    )
+export function ImageEditor({
+  src,
+  title,
+  alt,
+  nodeKey,
+  width,
+  height,
+  rest,
+}: ImageEditorProps): JSX.Element | null {
+  const [
+    ImagePlaceholderComponent,
+    disableImageResize,
+    allowSetImageDimensions,
+    imagePreviewHandler,
+    readOnly,
+    EditImageToolbar,
+  ] = useCellValues(
+    imagePlaceholderComponent$,
+    disableImageResize$,
+    allowSetImageDimensions$,
+    imagePreviewHandler$,
+    readOnly$,
+    editImageToolbarComponent$,
+  );
 
-  const imageRef = React.useRef<null | HTMLImageElement>(null)
-  const buttonRef = React.useRef<HTMLButtonElement | null>(null)
-  const [isSelected, setSelected, clearSelection] = useLexicalNodeSelection(nodeKey)
-  const [editor] = useLexicalComposerContext()
-  const [selection, setSelection] = React.useState<BaseSelection | null>(null)
-  const activeEditorRef = React.useRef<LexicalEditor | null>(null)
-  const [isResizing, setIsResizing] = React.useState<boolean>(false)
-  const [imageSource, setImageSource] = React.useState<string | null>(null)
-  const [initialImagePath, setInitialImagePath] = React.useState<string | null>(null)
+  const imageRef = React.useRef<null | HTMLImageElement>(null);
+  const buttonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [isSelected, setSelected, clearSelection] =
+    useLexicalNodeSelection(nodeKey);
+  const [editor] = useLexicalComposerContext();
+  const [selection, setSelection] = React.useState<BaseSelection | null>(null);
+  const activeEditorRef = React.useRef<LexicalEditor | null>(null);
+  const [isResizing, setIsResizing] = React.useState<boolean>(false);
+  const [imageSource, setImageSource] = React.useState<string | null>(null);
+  const [initialImagePath, setInitialImagePath] = React.useState<string | null>(
+    null,
+  );
 
   const onDelete = React.useCallback(
     (payload: KeyboardEvent) => {
       if (isSelected && $isNodeSelection($getSelection())) {
-        const event: KeyboardEvent = payload
-        event.preventDefault()
-        const node = $getNodeByKey(nodeKey)
+        const event: KeyboardEvent = payload;
+        event.preventDefault();
+        const node = $getNodeByKey(nodeKey);
         if ($isImageNode(node)) {
-          node.remove()
+          node.remove();
         }
       }
-      return false
+      return false;
     },
-    [isSelected, nodeKey]
-  )
+    [isSelected, nodeKey],
+  );
 
   const onEnter = React.useCallback(
     (event: KeyboardEvent) => {
-      const latestSelection = $getSelection()
-      const buttonElem = buttonRef.current
-      if (isSelected && $isNodeSelection(latestSelection) && latestSelection.getNodes().length === 1) {
+      const latestSelection = $getSelection();
+      const buttonElem = buttonRef.current;
+      if (
+        isSelected &&
+        $isNodeSelection(latestSelection) &&
+        latestSelection.getNodes().length === 1
+      ) {
         if (buttonElem !== null && buttonElem !== document.activeElement) {
-          event.preventDefault()
-          buttonElem.focus()
-          return true
+          event.preventDefault();
+          buttonElem.focus();
+          return true;
         }
       }
-      return false
+      return false;
     },
-    [isSelected]
-  )
+    [isSelected],
+  );
 
   const onEscape = React.useCallback(
     (event: KeyboardEvent) => {
       if (buttonRef.current === event.target) {
-        $setSelection(null)
+        $setSelection(null);
         editor.update(() => {
-          setSelected(true)
-          const parentRootElement = editor.getRootElement()
+          setSelected(true);
+          const parentRootElement = editor.getRootElement();
           if (parentRootElement !== null) {
-            parentRootElement.focus()
+            parentRootElement.focus();
           }
-        })
-        return true
+        });
+        return true;
       }
-      return false
+      return false;
     },
-    [editor, setSelected]
-  )
+    [editor, setSelected],
+  );
 
   React.useEffect(() => {
     if (imagePreviewHandler) {
       const callPreviewHandler = async () => {
-        if (!initialImagePath) setInitialImagePath(src)
-        const updatedSrc = await imagePreviewHandler(src)
-        setImageSource(updatedSrc)
-      }
+        if (!initialImagePath) setInitialImagePath(src);
+        const updatedSrc = await imagePreviewHandler(src);
+        setImageSource(updatedSrc);
+      };
       callPreviewHandler().catch((e: unknown) => {
-        console.error(e)
-      })
+        console.error(e);
+      });
     } else {
-      setImageSource(src)
+      setImageSource(src);
     }
-  }, [src, imagePreviewHandler, initialImagePath])
+  }, [src, imagePreviewHandler, initialImagePath]);
 
   React.useEffect(() => {
     if (allowSetImageDimensions && imageRef.current) {
-      const { current: image } = imageRef
+      const { current: image } = imageRef;
 
-      syncDimensionWithImageResizer(image, 'width', width)
-      syncDimensionWithImageResizer(image, 'height', height)
+      syncDimensionWithImageResizer(image, "width", width);
+      syncDimensionWithImageResizer(image, "height", height);
     }
-  }, [allowSetImageDimensions, width, height])
+  }, [allowSetImageDimensions, width, height]);
 
   React.useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
     const unregister = mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
         if (isMounted) {
-          setSelection(editorState.read(() => $getSelection()))
+          setSelection(editorState.read(() => $getSelection()));
         }
       }),
       editor.registerCommand(
         SELECTION_CHANGE_COMMAND,
         (_, activeEditor) => {
-          activeEditorRef.current = activeEditor
-          return false
+          activeEditorRef.current = activeEditor;
+          return false;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand<MouseEvent>(
         CLICK_COMMAND,
         (payload) => {
-          const event = payload
+          const event = payload;
 
           if (isResizing) {
-            return true
+            return true;
           }
           if (event.target === imageRef.current) {
             if (event.shiftKey) {
-              setSelected(!isSelected)
+              setSelected(!isSelected);
             } else {
-              clearSelection()
-              setSelected(true)
+              clearSelection();
+              setSelected(true);
             }
-            return true
+            return true;
           }
 
-          return false
+          return false;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
       editor.registerCommand(
         DRAGSTART_COMMAND,
@@ -248,58 +269,91 @@ export function ImageEditor({ src, title, alt, nodeKey, width, height, rest }: I
           if (event.target === imageRef.current) {
             // TODO This is just a temporary workaround for FF to behave like other browsers.
             // Ideally, this handles drag & drop too (and all browsers).
-            event.preventDefault()
-            return true
+            event.preventDefault();
+            return true;
           }
-          return false
+          return false;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
-      editor.registerCommand(KEY_DELETE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
-      editor.registerCommand(KEY_BACKSPACE_COMMAND, onDelete, COMMAND_PRIORITY_LOW),
+      editor.registerCommand(
+        KEY_DELETE_COMMAND,
+        onDelete,
+        COMMAND_PRIORITY_LOW,
+      ),
+      editor.registerCommand(
+        KEY_BACKSPACE_COMMAND,
+        onDelete,
+        COMMAND_PRIORITY_LOW,
+      ),
       editor.registerCommand(KEY_ENTER_COMMAND, onEnter, COMMAND_PRIORITY_LOW),
-      editor.registerCommand(KEY_ESCAPE_COMMAND, onEscape, COMMAND_PRIORITY_LOW)
-    )
+      editor.registerCommand(
+        KEY_ESCAPE_COMMAND,
+        onEscape,
+        COMMAND_PRIORITY_LOW,
+      ),
+    );
     return () => {
-      isMounted = false
-      unregister()
-    }
-  }, [clearSelection, editor, isResizing, isSelected, nodeKey, onDelete, onEnter, onEscape, setSelected])
+      isMounted = false;
+      unregister();
+    };
+  }, [
+    clearSelection,
+    editor,
+    isResizing,
+    isSelected,
+    nodeKey,
+    onDelete,
+    onEnter,
+    onEscape,
+    setSelected,
+  ]);
 
-  const onResizeEnd = (nextWidth: 'inherit' | number, nextHeight: 'inherit' | number) => {
+  const onResizeEnd = (
+    nextWidth: "inherit" | number,
+    nextHeight: "inherit" | number,
+  ) => {
     // Delay hiding the resize bars for click case
     setTimeout(() => {
-      setIsResizing(false)
-    }, 200)
+      setIsResizing(false);
+    }, 200);
 
     editor.update(() => {
-      const node = $getNodeByKey(nodeKey)
+      const node = $getNodeByKey(nodeKey);
       if ($isImageNode(node)) {
-        node.setWidthAndHeight(nextWidth, nextHeight)
+        node.setWidthAndHeight(nextWidth, nextHeight);
       }
-    })
-  }
+    });
+  };
 
   const onResizeStart = () => {
-    setIsResizing(true)
-  }
+    setIsResizing(true);
+  };
 
-  const draggable = $isNodeSelection(selection)
-  const isFocused = isSelected
+  const draggable = $isNodeSelection(selection);
+  const isFocused = isSelected;
 
   const passedClassName = React.useMemo(() => {
     if (rest.length === 0) {
-      return null
+      return null;
     }
-    const className = rest.find((attr) => attr.type === 'mdxJsxAttribute' && (attr.name === 'class' || attr.name === 'className'))
+    const className = rest.find(
+      (attr) =>
+        attr.type === "mdxJsxAttribute" &&
+        (attr.name === "class" || attr.name === "className"),
+    );
     if (className) {
-      return className.value as string
+      return className.value as string;
     }
-    return null
-  }, [rest])
+    return null;
+  }, [rest]);
 
   return imageSource !== null ? (
-    <React.Suspense fallback={ImagePlaceholderComponent ? <ImagePlaceholderComponent /> : null}>
+    <React.Suspense
+      fallback={
+        ImagePlaceholderComponent ? <ImagePlaceholderComponent /> : null
+      }
+    >
       <div className={styles.imageWrapper} data-editor-block-type="image">
         <div draggable={draggable}>
           <LazyImage
@@ -307,39 +361,48 @@ export function ImageEditor({ src, title, alt, nodeKey, width, height, rest }: I
             height={height}
             className={classNames(
               {
-                [styles.focusedImage]: isFocused
+                [styles.focusedImage]: isFocused,
               },
-              passedClassName
+              passedClassName,
             )}
             src={imageSource}
-            title={title ?? ''}
-            alt={alt ?? ''}
+            title={title ?? ""}
+            alt={alt ?? ""}
             imageRef={imageRef}
           />
         </div>
         {draggable && isFocused && !disableImageResize && (
-          <ImageResizer editor={editor} imageRef={imageRef} onResizeStart={onResizeStart} onResizeEnd={onResizeEnd} />
+          <ImageResizer
+            editor={editor}
+            imageRef={imageRef}
+            onResizeStart={onResizeStart}
+            onResizeEnd={onResizeEnd}
+          />
         )}
         {readOnly || (
           <EditImageToolbar
             nodeKey={nodeKey}
             imageSource={imageSource}
             initialImagePath={initialImagePath}
-            title={title ?? ''}
-            alt={alt ?? ''}
+            title={title ?? ""}
+            alt={alt ?? ""}
             width={width}
             height={height}
           />
         )}
       </div>
     </React.Suspense>
-  ) : null
+  ) : null;
 }
 
-const syncDimensionWithImageResizer = (image: HTMLImageElement, key: 'width' | 'height', value: number | 'inherit') => {
-  if (typeof value === 'number') {
-    image.style[key] = `${value}px`
+const syncDimensionWithImageResizer = (
+  image: HTMLImageElement,
+  key: "width" | "height",
+  value: number | "inherit",
+) => {
+  if (typeof value === "number") {
+    image.style[key] = `${value}px`;
   } else {
-    image.style.removeProperty(key)
+    image.style.removeProperty(key);
   }
-}
+};

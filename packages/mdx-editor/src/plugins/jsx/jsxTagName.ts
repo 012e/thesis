@@ -1,5 +1,5 @@
-import { htmlTags } from '../core/MdastHTMLNode'
+import { htmlTags } from "../core/MdastHTMLNode";
 
 export function isHtmlTagName(name: string): boolean {
-  return (htmlTags as readonly string[]).includes(name)
+  return (htmlTags as readonly string[]).includes(name);
 }

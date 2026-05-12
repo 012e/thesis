@@ -10,6 +10,9 @@ export type {
   UseMessageSocketOptions,
   UseMessageSocketReturn,
   TypingIndicatorPayload,
-} from './use-message-socket';
-export { useUnreadNotifications, unreadCountKey } from './use-unread-notifications';
-export type { UseUnreadNotificationsReturn } from './use-unread-notifications';
+} from "./use-message-socket";
+export {
+  useUnreadNotifications,
+  unreadCountKey,
+} from "./use-unread-notifications";
+export type { UseUnreadNotificationsReturn } from "./use-unread-notifications";

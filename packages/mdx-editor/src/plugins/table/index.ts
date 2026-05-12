@@ -1,8 +1,12 @@
-import { realmPlugin } from '../../RealmWithPlugins'
-import { Signal, map } from '@mdxeditor/gurx'
-import * as Mdast from 'mdast'
-import { gfmTableFromMarkdown, gfmTableToMarkdown, Options as GfmTableOptions } from 'mdast-util-gfm-table'
-import { gfmTable } from 'micromark-extension-gfm-table'
+import { realmPlugin } from "../../RealmWithPlugins";
+import { Signal, map } from "@mdxeditor/gurx";
+import * as Mdast from "mdast";
+import {
+  gfmTableFromMarkdown,
+  gfmTableToMarkdown,
+  Options as GfmTableOptions,
+} from "mdast-util-gfm-table";
+import { gfmTable } from "micromark-extension-gfm-table";
 import {
   addExportVisitor$,
   addImportVisitor$,
@@ -10,37 +14,37 @@ import {
   addMdastExtension$,
   addSyntaxExtension$,
   addToMarkdownExtension$,
-  insertDecoratorNode$
-} from '../core'
-import { LexicalTableVisitor } from './LexicalTableVisitor'
-import { MdastTableVisitor } from './MdastTableVisitor'
-import { $createTableNode, TableNode } from './TableNode'
-export * from './TableNode'
+  insertDecoratorNode$,
+} from "../core";
+import { LexicalTableVisitor } from "./LexicalTableVisitor";
+import { MdastTableVisitor } from "./MdastTableVisitor";
+import { $createTableNode, TableNode } from "./TableNode";
+export * from "./TableNode";
 
 function seedTable(rows = 1, columns = 1): Mdast.Table {
   const table: Mdast.Table = {
-    type: 'table',
-    children: []
-  }
+    type: "table",
+    children: [],
+  };
 
   for (let i = 0; i < rows; i++) {
     const tableRow: Mdast.TableRow = {
-      type: 'tableRow',
-      children: []
-    }
+      type: "tableRow",
+      children: [],
+    };
 
     for (let j = 0; j < columns; j++) {
       const cell: Mdast.TableCell = {
-        type: 'tableCell',
-        children: []
-      }
-      tableRow.children.push(cell)
+        type: "tableCell",
+        children: [],
+      };
+      tableRow.children.push(cell);
     }
 
-    table.children.push(tableRow)
+    table.children.push(tableRow);
   }
 
-  return table
+  return table;
 }
 
 /**
@@ -58,22 +62,22 @@ export const insertTable$ = Signal<{
   /**
    * The number of rows of the table.
    */
-  rows?: number
+  rows?: number;
   /**
    * The number of columns of the table.
    */
-  columns?: number
+  columns?: number;
 }>((r) => {
   r.link(
     r.pipe(
       insertTable$,
       map(({ rows, columns }) => {
-        return () => $createTableNode(seedTable(rows, columns))
-      })
+        return () => $createTableNode(seedTable(rows, columns));
+      }),
     ),
-    insertDecoratorNode$
-  )
-})
+    insertDecoratorNode$,
+  );
+});
 
 /**
  * A plugin that adds support for tables to the editor.
@@ -91,8 +95,8 @@ export const tablePlugin = realmPlugin<GfmTableOptions>({
       [addExportVisitor$]: LexicalTableVisitor,
       [addToMarkdownExtension$]: gfmTableToMarkdown({
         tableCellPadding: params?.tableCellPadding ?? true,
-        tablePipeAlign: params?.tablePipeAlign ?? true
-      })
-    })
-  }
-})
+        tablePipeAlign: params?.tablePipeAlign ?? true,
+      }),
+    });
+  },
+});
