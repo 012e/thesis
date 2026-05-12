@@ -1,5 +1,5 @@
-import type { NotificationDto } from '@repo/shared-dto';
-import { client } from '.';
+import type { NotificationDto } from "@repo/shared-dto";
+import { client } from ".";
 
 export async function listNotifications(options?: {
   limit?: number;
@@ -14,7 +14,7 @@ export async function listNotifications(options?: {
   if (response.status === 200) {
     return response.body;
   }
-  throw new Error('Failed to load notifications');
+  throw new Error("Failed to load notifications");
 }
 
 export async function getUnreadNotificationCount(): Promise<number> {
@@ -22,7 +22,7 @@ export async function getUnreadNotificationCount(): Promise<number> {
   if (response.status === 200) {
     return response.body.count;
   }
-  throw new Error('Failed to load unread notification count');
+  throw new Error("Failed to load unread notification count");
 }
 
 export async function markNotificationRead(
@@ -36,9 +36,9 @@ export async function markNotificationRead(
     return response.body;
   }
   if (response.status === 404) {
-    throw new Error('Notification not found');
+    throw new Error("Notification not found");
   }
-  throw new Error('Failed to mark notification as read');
+  throw new Error("Failed to mark notification as read");
 }
 
 export async function markAllNotificationsRead(): Promise<number> {
@@ -46,5 +46,5 @@ export async function markAllNotificationsRead(): Promise<number> {
   if (response.status === 200) {
     return response.body.updated;
   }
-  throw new Error('Failed to mark all notifications as read');
+  throw new Error("Failed to mark all notifications as read");
 }

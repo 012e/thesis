@@ -1,21 +1,25 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
+import { createFileRoute } from "@tanstack/react-router";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   listNotifications,
   markNotificationRead,
   markAllNotificationsRead,
-} from '@/lib/api/notifications';
+} from "@/lib/api/notifications";
 import {
   notificationsListKey,
   notificationUnreadCountKey,
-} from '@/hooks/notifications';
-import type { NotificationDto } from '@repo/shared-dto';
-import { IconBell, IconCheck } from '@tabler/icons-react';
+} from "@/hooks/notifications";
+import type { NotificationDto } from "@repo/shared-dto";
+import { IconBell, IconCheck } from "@tabler/icons-react";
 
-export const Route = createFileRoute('/notifications')({
+export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
 });
 
@@ -23,32 +27,32 @@ export const Route = createFileRoute('/notifications')({
 
 function getNotificationText(notification: NotificationDto): string {
   const actorName =
-    notification.actor?.username ?? notification.actor?.name ?? 'Someone';
+    notification.actor?.username ?? notification.actor?.name ?? "Someone";
 
   switch (notification.type) {
-    case 'follow':
+    case "follow":
       return `${actorName} started following you`;
-    case 'comment':
+    case "comment":
       return `${actorName} commented on your post`;
-    case 'reply':
+    case "reply":
       return `${actorName} replied to your comment`;
-    case 'post_update':
+    case "post_update":
       return `${actorName} updated a post you subscribe to`;
-    case 'post_reaction':
+    case "post_reaction":
       return `${actorName} reacted to your post`;
-    case 'comment_reaction':
+    case "comment_reaction":
       return `${actorName} reacted to your comment`;
-    case 'direct_message':
+    case "direct_message":
       return `New message from ${actorName}`;
     default:
-      return 'New notification';
+      return "New notification";
   }
 }
 
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return 'just now';
+  if (minutes < 1) return "just now";
   if (minutes < 60) return `${minutes}m`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}h`;
@@ -67,22 +71,20 @@ interface NotificationItemProps {
 function NotificationItem({ notification, onMarkRead }: NotificationItemProps) {
   const isUnread = notification.readAt === null;
   const actorLabel =
-    notification.actor?.username ??
-    notification.actor?.name ??
-    '?';
+    notification.actor?.username ?? notification.actor?.name ?? "?";
   const initial = actorLabel.charAt(0).toUpperCase();
 
   return (
     <>
       <div
-        className={`flex items-start gap-3 px-4 py-3 hover:bg-accent cursor-pointer transition-colors${isUnread ? ' bg-primary/5' : ''}`}
+        className={`flex items-start gap-3 px-4 py-3 hover:bg-accent cursor-pointer transition-colors${isUnread ? " bg-primary/5" : ""}`}
         role="button"
         tabIndex={0}
         onClick={() => {
           if (isUnread) onMarkRead(notification.id);
         }}
         onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && isUnread) {
+          if ((e.key === "Enter" || e.key === " ") && isUnread) {
             onMarkRead(notification.id);
           }
         }}
@@ -94,7 +96,7 @@ function NotificationItem({ notification, onMarkRead }: NotificationItemProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className={`text-sm${isUnread ? ' font-semibold' : ''}`}>
+          <p className={`text-sm${isUnread ? " font-semibold" : ""}`}>
             {getNotificationText(notification)}
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -140,7 +142,9 @@ function NotificationsPage() {
     mutationFn: markNotificationRead,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: notificationsListKey });
-      void queryClient.invalidateQueries({ queryKey: notificationUnreadCountKey });
+      void queryClient.invalidateQueries({
+        queryKey: notificationUnreadCountKey,
+      });
     },
   });
 
@@ -148,7 +152,9 @@ function NotificationsPage() {
     mutationFn: markAllNotificationsRead,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: notificationsListKey });
-      void queryClient.invalidateQueries({ queryKey: notificationUnreadCountKey });
+      void queryClient.invalidateQueries({
+        queryKey: notificationUnreadCountKey,
+      });
     },
   });
 
@@ -185,7 +191,9 @@ function NotificationsPage() {
           variant="ghost"
           size="sm"
           onClick={() => markAllReadMutation.mutate()}
-          disabled={markAllReadMutation.isPending || allNotifications.length === 0}
+          disabled={
+            markAllReadMutation.isPending || allNotifications.length === 0
+          }
         >
           <IconCheck className="w-4 h-4 mr-1" />
           Mark all as read

@@ -3,9 +3,12 @@ import { z } from "zod";
 
 export const openFormTool = createTool({
   id: "open_form",
-  description: "Selects and opens a specific form for the user to view or edit in the split-screen view.",
+  description:
+    "Selects and opens a specific form for the user to view or edit in the split-screen view.",
   inputSchema: z.object({
-    formName: z.enum(["PostCreationForm"]).describe("The name of the form to open"),
+    formName: z
+      .enum(["PostCreationForm"])
+      .describe("The name of the form to open"),
   }),
   execute: async () => {
     return { status: "forwarded_to_client" };
@@ -14,7 +17,8 @@ export const openFormTool = createTool({
 
 export const setFormFieldTool = createTool({
   id: "set_form_field",
-  description: "Updates a specific field in the currently active form. The frontend will intercept this and update the UI.",
+  description:
+    "Updates a specific field in the currently active form. The frontend will intercept this and update the UI.",
   inputSchema: z.object({
     formName: z.string().describe("The name of the currently active form"),
     field: z.string().describe("The name of the field to update"),
@@ -27,7 +31,8 @@ export const setFormFieldTool = createTool({
 
 export const submitFormTool = createTool({
   id: "submit_form",
-  description: "Submits the currently active form. Only call this after ensuring all required fields are filled and the user confirms they want to submit.",
+  description:
+    "Submits the currently active form. Only call this after ensuring all required fields are filled and the user confirms they want to submit.",
   inputSchema: z.object({
     formName: z.string().describe("The name of the form to submit"),
   }),

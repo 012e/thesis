@@ -1,4 +1,4 @@
-import type { NotificationDto } from '@repo/shared-dto';
+import type { NotificationDto } from "@repo/shared-dto";
 
 /**
  * A notification transport is responsible for delivering a persisted
@@ -22,4 +22,4 @@ export interface NotificationTransport {
  * Injection token for the transport registry array.
  * Use @Inject(NOTIFICATION_TRANSPORTS) to receive the registered list.
  */
-export const NOTIFICATION_TRANSPORTS = Symbol('NOTIFICATION_TRANSPORTS');
+export const NOTIFICATION_TRANSPORTS = Symbol("NOTIFICATION_TRANSPORTS");

@@ -3,12 +3,12 @@ import {
   OnGatewayDisconnect,
   WebSocketGateway,
   WebSocketServer,
-} from '@nestjs/websockets';
-import type { Server, Socket } from 'socket.io';
-import { Injectable } from '@nestjs/common';
+} from "@nestjs/websockets";
+import type { Server, Socket } from "socket.io";
+import { Injectable } from "@nestjs/common";
 
-import { auth } from '@/auth';
-import type { NotificationDto } from '@repo/shared-dto';
+import { auth } from "@/auth";
+import type { NotificationDto } from "@repo/shared-dto";
 
 // ─── Event name constants ─────────────────────────────────────────────────────
 
@@ -16,7 +16,7 @@ import type { NotificationDto } from '@repo/shared-dto';
  * Server → Client: a new notification has been persisted and delivered.
  * Emitted to `user:{userId}` room so any connected client of that user receives it.
  */
-export const WS_NOTIFICATION = 'notification' as const;
+export const WS_NOTIFICATION = "notification" as const;
 
 // ─── Gateway ─────────────────────────────────────────────────────────────────
 
@@ -34,10 +34,10 @@ export const WS_NOTIFICATION = 'notification' as const;
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: "*",
     credentials: true,
   },
-  namespace: '/notifications',
+  namespace: "/notifications",
 })
 export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -51,10 +51,10 @@ export class NotificationsGateway
     try {
       const token =
         (client.handshake.auth as Record<string, unknown>)?.token ??
-        client.handshake.headers?.authorization?.replace(/^Bearer\s+/i, '');
+        client.handshake.headers?.authorization?.replace(/^Bearer\s+/i, "");
 
-      if (!token || typeof token !== 'string') {
-        this.disconnect(client, 'Missing auth token');
+      if (!token || typeof token !== "string") {
+        this.disconnect(client, "Missing auth token");
         return;
       }
 
@@ -63,7 +63,7 @@ export class NotificationsGateway
       });
 
       if (!session?.user) {
-        this.disconnect(client, 'Invalid or expired token');
+        this.disconnect(client, "Invalid or expired token");
         return;
       }
 
@@ -73,9 +73,9 @@ export class NotificationsGateway
       // for the authenticated user without any further handshake.
       await client.join(`user:${session.user.id}`);
 
-      client.emit('authenticated');
+      client.emit("authenticated");
     } catch {
-      this.disconnect(client, 'Authentication error');
+      this.disconnect(client, "Authentication error");
     }
   }
 
@@ -96,7 +96,7 @@ export class NotificationsGateway
   // ─── Private helpers ─────────────────────────────────────────────────────
 
   private disconnect(client: Socket, reason: string): void {
-    client.emit('error', { message: reason });
+    client.emit("error", { message: reason });
     client.disconnect(true);
   }
 }

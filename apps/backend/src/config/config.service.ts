@@ -10,9 +10,7 @@ export class ConfigService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async getAll(): Promise<AppConfig> {
-    const rows = await this.databaseService.db
-      .select()
-      .from(appConfig);
+    const rows = await this.databaseService.db.select().from(appConfig);
 
     // Seed every known namespace with an empty object so Zod can apply field
     // defaults even for namespaces that have no row in the database yet.

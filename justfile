@@ -130,6 +130,9 @@ e2e-install:
 lint:
     pnpm dlx oxlint
 
+format:
+    pnpm dlx oxfmt
+
 # --- Docker ---
 
 # Start Docker containers (detached)

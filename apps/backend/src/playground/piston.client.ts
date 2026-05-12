@@ -116,9 +116,9 @@ export class PistonClient {
     });
 
     if (!response.ok) {
-      const body = (await response
-        .json()
-        .catch(() => ({}))) as { message?: string };
+      const body = (await response.json().catch(() => ({}))) as {
+        message?: string;
+      };
 
       throw new Error(
         body.message ??

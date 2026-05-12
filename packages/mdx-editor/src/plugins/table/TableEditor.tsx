@@ -1,8 +1,8 @@
-import { ContentEditable } from '@lexical/react/LexicalContentEditable'
-import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
-import { LexicalNestedComposer } from '@lexical/react/LexicalNestedComposer'
-import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import * as RadixPopover from '@radix-ui/react-popover'
+import { ContentEditable } from "@lexical/react/LexicalContentEditable";
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
+import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
+import * as RadixPopover from "@radix-ui/react-popover";
 import {
   $createParagraphNode,
   $getRoot,
@@ -15,22 +15,22 @@ import {
   KEY_ENTER_COMMAND,
   KEY_TAB_COMMAND,
   LexicalEditor,
-  createEditor
-} from 'lexical'
-import * as Mdast from 'mdast'
-import React, { ElementType } from 'react'
-import { exportLexicalTreeToMdast } from '../../exportMarkdownFromLexical'
-import { importMdastTreeToLexical } from '../../importMarkdownToLexical'
-import { lexicalTheme } from '../../styles/lexicalTheme'
-import { TableNode } from './TableNode'
+  createEditor,
+} from "lexical";
+import * as Mdast from "mdast";
+import React, { ElementType } from "react";
+import { exportLexicalTreeToMdast } from "../../exportMarkdownFromLexical";
+import { importMdastTreeToLexical } from "../../importMarkdownToLexical";
+import { lexicalTheme } from "../../styles/lexicalTheme";
+import { TableNode } from "./TableNode";
 
-import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
-import { mergeRegister } from '@lexical/utils'
-import * as RadixToolbar from '@radix-ui/react-toolbar'
-import classNames from 'classnames'
-import styles from '../../styles/ui.module.css'
-import { isPartOftheEditorUI } from '../../utils/isPartOftheEditorUI'
-import { uuidv4 } from '../../utils/uuid4'
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
+import { mergeRegister } from "@lexical/utils";
+import * as RadixToolbar from "@radix-ui/react-toolbar";
+import classNames from "classnames";
+import styles from "../../styles/ui.module.css";
+import { isPartOftheEditorUI } from "../../utils/isPartOftheEditorUI";
+import { uuidv4 } from "../../utils/uuid4";
 import {
   NESTED_EDITOR_UPDATED_COMMAND,
   codeBlockEditorDescriptors$,
@@ -45,9 +45,9 @@ import {
   readOnly$,
   rootEditor$,
   useTranslation,
-  usedLexicalNodes$
-} from '../core'
-import { useCellValues } from '@mdxeditor/gurx'
+  usedLexicalNodes$,
+} from "../core";
+import { useCellValues } from "@mdxeditor/gurx";
 
 /**
  * Returns the element type for the cell based on the rowIndex
@@ -57,132 +57,152 @@ import { useCellValues } from '@mdxeditor/gurx'
  */
 const getCellType = (rowIndex: number): ElementType => {
   if (rowIndex === 0) {
-    return 'th'
+    return "th";
   }
-  return 'td'
-}
+  return "td";
+};
 
 const AlignToTailwindClassMap = {
   center: styles.centeredCell,
   left: styles.leftAlignedCell,
-  right: styles.rightAlignedCell
-}
+  right: styles.rightAlignedCell,
+};
 
 export interface TableEditorProps {
-  parentEditor: LexicalEditor
-  lexicalTable: TableNode
-  mdastNode: Mdast.Table
+  parentEditor: LexicalEditor;
+  lexicalTable: TableNode;
+  mdastNode: Mdast.Table;
 }
 
-export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEditor, lexicalTable }) => {
-  const [activeCell, setActiveCell] = React.useState<[number, number] | null>(null)
-  const [iconComponentFor, readOnly] = useCellValues(iconComponentFor$, readOnly$)
+export const TableEditor: React.FC<TableEditorProps> = ({
+  mdastNode,
+  parentEditor,
+  lexicalTable,
+}) => {
+  const [activeCell, setActiveCell] = React.useState<[number, number] | null>(
+    null,
+  );
+  const [iconComponentFor, readOnly] = useCellValues(
+    iconComponentFor$,
+    readOnly$,
+  );
   const getCellKey = React.useMemo(() => {
     return (cell: Mdast.TableCell & { __cacheKey?: string }) => {
-      cell.__cacheKey ??= uuidv4()
-      return cell.__cacheKey
-    }
-  }, [])
+      cell.__cacheKey ??= uuidv4();
+      return cell.__cacheKey;
+    };
+  }, []);
 
   const setActiveCellWithBoundaries = React.useCallback(
     (cell: [number, number] | null) => {
-      const colCount = lexicalTable.getColCount()
+      const colCount = lexicalTable.getColCount();
 
       if (cell === null) {
-        setActiveCell(null)
-        return
+        setActiveCell(null);
+        return;
       }
-      let [colIndex, rowIndex] = cell
+      let [colIndex, rowIndex] = cell;
 
       // overflow columns
       if (colIndex > colCount - 1) {
-        colIndex = 0
-        rowIndex++
+        colIndex = 0;
+        rowIndex++;
       }
 
       // underflow columns
       if (colIndex < 0) {
-        colIndex = colCount - 1
-        rowIndex -= 1
+        colIndex = colCount - 1;
+        rowIndex -= 1;
       }
 
       if (rowIndex > lexicalTable.getRowCount() - 1) {
-        setActiveCell(null)
+        setActiveCell(null);
         parentEditor.update(() => {
-          const nextSibling = lexicalTable.getLatest().getNextSibling()
+          const nextSibling = lexicalTable.getLatest().getNextSibling();
           if (nextSibling) {
-            lexicalTable.getLatest().selectNext()
+            lexicalTable.getLatest().selectNext();
           } else {
-            const newParagraph = $createParagraphNode()
-            lexicalTable.insertAfter(newParagraph)
-            newParagraph.select()
+            const newParagraph = $createParagraphNode();
+            lexicalTable.insertAfter(newParagraph);
+            newParagraph.select();
           }
-        })
-        return
+        });
+        return;
       }
 
       if (rowIndex < 0) {
-        setActiveCell(null)
+        setActiveCell(null);
         parentEditor.update(() => {
-          lexicalTable.getLatest().selectPrevious()
-        })
-        return
+          lexicalTable.getLatest().selectPrevious();
+        });
+        return;
       }
 
-      setActiveCell([colIndex, rowIndex])
+      setActiveCell([colIndex, rowIndex]);
     },
-    [lexicalTable, parentEditor]
-  )
+    [lexicalTable, parentEditor],
+  );
   React.useEffect(() => {
-    lexicalTable.focusEmitter.subscribe(setActiveCellWithBoundaries)
-  }, [lexicalTable, setActiveCellWithBoundaries])
+    lexicalTable.focusEmitter.subscribe(setActiveCellWithBoundaries);
+  }, [lexicalTable, setActiveCellWithBoundaries]);
 
   const addRowToBottom = React.useCallback(
     (e: React.MouseEvent) => {
-      e.preventDefault()
+      e.preventDefault();
       parentEditor.update(() => {
-        lexicalTable.addRowToBottom()
-        setActiveCell([0, lexicalTable.getRowCount()])
-      })
+        lexicalTable.addRowToBottom();
+        setActiveCell([0, lexicalTable.getRowCount()]);
+      });
     },
-    [parentEditor, lexicalTable]
-  )
+    [parentEditor, lexicalTable],
+  );
 
   // adds column to the right and focuses the top cell of it
   const addColumnToRight = React.useCallback(
     (e: React.MouseEvent) => {
-      e.preventDefault()
+      e.preventDefault();
       parentEditor.update(() => {
-        lexicalTable.addColumnToRight()
-        setActiveCell([lexicalTable.getColCount(), 0])
-      })
+        lexicalTable.addColumnToRight();
+        setActiveCell([lexicalTable.getColCount(), 0]);
+      });
     },
-    [parentEditor, lexicalTable]
-  )
+    [parentEditor, lexicalTable],
+  );
 
-  const [highlightedCoordinates, setHighlightedCoordinates] = React.useState<[number, number]>([-1, -1])
+  const [highlightedCoordinates, setHighlightedCoordinates] = React.useState<
+    [number, number]
+  >([-1, -1]);
 
-  const onTableMouseOver = React.useCallback((e: React.MouseEvent<HTMLTableElement>) => {
-    let tableCell = e.target as HTMLElement | null
+  const onTableMouseOver = React.useCallback(
+    (e: React.MouseEvent<HTMLTableElement>) => {
+      let tableCell = e.target as HTMLElement | null;
 
-    while (tableCell && !['TH', 'TD'].includes(tableCell.tagName)) {
-      if (tableCell === e.currentTarget) {
-        return
+      while (tableCell && !["TH", "TD"].includes(tableCell.tagName)) {
+        if (tableCell === e.currentTarget) {
+          return;
+        }
+
+        tableCell = tableCell.parentElement;
       }
+      if (tableCell === null) {
+        return;
+      }
+      const tableRow = tableCell.parentElement!;
+      const tableContainer = tableRow.parentElement!;
+      const colIndex =
+        tableContainer.tagName === "TFOOT"
+          ? -1
+          : Array.from(tableRow.children).indexOf(tableCell);
+      const rowIndex =
+        tableCell.tagName === "TH"
+          ? -1
+          : Array.from(tableRow.parentElement!.children).indexOf(tableRow);
+      setHighlightedCoordinates([colIndex, rowIndex]);
+    },
+    [],
+  );
 
-      tableCell = tableCell.parentElement
-    }
-    if (tableCell === null) {
-      return
-    }
-    const tableRow = tableCell.parentElement!
-    const tableContainer = tableRow.parentElement!
-    const colIndex = tableContainer.tagName === 'TFOOT' ? -1 : Array.from(tableRow.children).indexOf(tableCell)
-    const rowIndex = tableCell.tagName === 'TH' ? -1 : Array.from(tableRow.parentElement!.children).indexOf(tableRow)
-    setHighlightedCoordinates([colIndex, rowIndex])
-  }, [])
-
-  const t = useTranslation()
+  const t = useTranslation();
 
   // remove tool cols in readOnly mode
   return (
@@ -190,18 +210,21 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
       className={styles.tableEditor}
       onMouseOver={onTableMouseOver}
       onMouseLeave={() => {
-        setHighlightedCoordinates([-1, -1])
+        setHighlightedCoordinates([-1, -1]);
       }}
     >
       <colgroup>
         {readOnly ? null : <col />}
 
-        {Array.from({ length: mdastNode.children[0].children.length }, (_, colIndex) => {
-          const align = mdastNode.align ?? []
-          const currentColumnAlign = align[colIndex] ?? 'left'
-          const className = AlignToTailwindClassMap[currentColumnAlign]
-          return <col key={colIndex} className={className} />
-        })}
+        {Array.from(
+          { length: mdastNode.children[0].children.length },
+          (_, colIndex) => {
+            const align = mdastNode.align ?? [];
+            const currentColumnAlign = align[colIndex] ?? "left";
+            const className = AlignToTailwindClassMap[currentColumnAlign];
+            return <col key={colIndex} className={className} />;
+          },
+        )}
 
         {readOnly ? null : <col />}
       </colgroup>
@@ -210,37 +233,40 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
         <thead>
           <tr>
             <th className={styles.tableToolsColumn}></th>
-            {Array.from({ length: mdastNode.children[0].children.length }, (_, colIndex) => {
-              return (
-                <th key={colIndex} data-tool-cell={true}>
-                  <ColumnEditor
-                    {...{
-                      setActiveCellWithBoundaries,
-                      parentEditor,
-                      colIndex,
-                      highlightedCoordinates,
-                      lexicalTable,
-                      align: (mdastNode.align ?? [])[colIndex]
-                    }}
-                  />
-                </th>
-              )
-            })}
+            {Array.from(
+              { length: mdastNode.children[0].children.length },
+              (_, colIndex) => {
+                return (
+                  <th key={colIndex} data-tool-cell={true}>
+                    <ColumnEditor
+                      {...{
+                        setActiveCellWithBoundaries,
+                        parentEditor,
+                        colIndex,
+                        highlightedCoordinates,
+                        lexicalTable,
+                        align: (mdastNode.align ?? [])[colIndex],
+                      }}
+                    />
+                  </th>
+                );
+              },
+            )}
 
             <th className={styles.tableToolsColumn} data-tool-cell={true}>
               <button
                 className={styles.iconButton}
                 type="button"
-                title={t('table.deleteTable', 'Delete table')}
+                title={t("table.deleteTable", "Delete table")}
                 onClick={(e) => {
-                  e.preventDefault()
+                  e.preventDefault();
                   parentEditor.update(() => {
-                    lexicalTable.selectNext()
-                    lexicalTable.remove()
-                  })
+                    lexicalTable.selectNext();
+                    lexicalTable.remove();
+                  });
                 }}
               >
-                {iconComponentFor('delete_small')}
+                {iconComponentFor("delete_small")}
               </button>
             </th>
           </tr>
@@ -249,12 +275,20 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
 
       <tbody>
         {mdastNode.children.map((row, rowIndex) => {
-          const CellElement = getCellType(rowIndex)
+          const CellElement = getCellType(rowIndex);
           return (
             <tr key={rowIndex}>
               {readOnly || (
                 <CellElement className={styles.toolCell} data-tool-cell={true}>
-                  <RowEditor {...{ setActiveCellWithBoundaries, parentEditor, rowIndex, highlightedCoordinates, lexicalTable }} />
+                  <RowEditor
+                    {...{
+                      setActiveCellWithBoundaries,
+                      parentEditor,
+                      rowIndex,
+                      highlightedCoordinates,
+                      lexicalTable,
+                    }}
+                  />
                 </CellElement>
               )}
               {row.children.map((mdastCell, colIndex) => {
@@ -269,21 +303,28 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
                       colIndex,
                       lexicalTable,
                       parentEditor,
-                      activeCell: readOnly ? [-1, -1] : activeCell
+                      activeCell: readOnly ? [-1, -1] : activeCell,
                     }}
                   />
-                )
+                );
               })}
               {readOnly ||
                 (rowIndex === 0 && (
-                  <th rowSpan={lexicalTable.getRowCount()} data-tool-cell={true}>
-                    <button type="button" className={styles.addColumnButton} onClick={addColumnToRight}>
-                      {iconComponentFor('add_column')}
+                  <th
+                    rowSpan={lexicalTable.getRowCount()}
+                    data-tool-cell={true}
+                  >
+                    <button
+                      type="button"
+                      className={styles.addColumnButton}
+                      onClick={addColumnToRight}
+                    >
+                      {iconComponentFor("add_column")}
                     </button>
                   </th>
                 ))}
             </tr>
-          )
+          );
         })}
       </tbody>
       {readOnly || (
@@ -291,8 +332,12 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
           <tr>
             <th></th>
             <th colSpan={lexicalTable.getColCount()} data-tool-cell={true}>
-              <button type="button" className={styles.addRowButton} onClick={addRowToBottom}>
-                {iconComponentFor('add_row')}
+              <button
+                type="button"
+                className={styles.addRowButton}
+                onClick={addRowToBottom}
+              >
+                {iconComponentFor("add_row")}
               </button>
             </th>
             <th></th>
@@ -300,43 +345,55 @@ export const TableEditor: React.FC<TableEditorProps> = ({ mdastNode, parentEdito
         </tfoot>
       )}
     </table>
-  )
-}
+  );
+};
 
 export interface CellProps {
-  parentEditor: LexicalEditor
-  lexicalTable: TableNode
-  contents: Mdast.PhrasingContent[]
-  colIndex: number
-  rowIndex: number
-  align?: Mdast.AlignType
-  activeCell: [number, number] | null
-  setActiveCell: (cell: [number, number] | null) => void
-  focus: boolean
+  parentEditor: LexicalEditor;
+  lexicalTable: TableNode;
+  contents: Mdast.PhrasingContent[];
+  colIndex: number;
+  rowIndex: number;
+  align?: Mdast.AlignType;
+  activeCell: [number, number] | null;
+  setActiveCell: (cell: [number, number] | null) => void;
+  focus: boolean;
 }
 
-const Cell: React.FC<Omit<CellProps, 'focus'>> = ({ align, ...props }) => {
-  const { activeCell, setActiveCell } = props
-  const isActive = Boolean(activeCell && activeCell[0] === props.colIndex && activeCell[1] === props.rowIndex)
+const Cell: React.FC<Omit<CellProps, "focus">> = ({ align, ...props }) => {
+  const { activeCell, setActiveCell } = props;
+  const isActive = Boolean(
+    activeCell &&
+    activeCell[0] === props.colIndex &&
+    activeCell[1] === props.rowIndex,
+  );
 
-  const className = AlignToTailwindClassMap[align ?? 'left']
+  const className = AlignToTailwindClassMap[align ?? "left"];
 
-  const CellElement = getCellType(props.rowIndex)
+  const CellElement = getCellType(props.rowIndex);
 
   return (
     <CellElement
       className={className}
       data-active={isActive}
       onClick={() => {
-        setActiveCell([props.colIndex, props.rowIndex])
+        setActiveCell([props.colIndex, props.rowIndex]);
       }}
     >
       <CellEditor {...props} focus={isActive} />
     </CellElement>
-  )
-}
+  );
+};
 
-const CellEditor: React.FC<CellProps> = ({ focus, setActiveCell, parentEditor, lexicalTable, contents, colIndex, rowIndex }) => {
+const CellEditor: React.FC<CellProps> = ({
+  focus,
+  setActiveCell,
+  parentEditor,
+  lexicalTable,
+  contents,
+  colIndex,
+  rowIndex,
+}) => {
   const [
     importVisitors,
     exportVisitors,
@@ -346,7 +403,7 @@ const CellEditor: React.FC<CellProps> = ({ focus, setActiveCell, parentEditor, l
     codeBlockEditorDescriptors,
     jsxIsAvailable,
     rootEditor,
-    tableCellEditorChildren
+    tableCellEditorChildren,
   ] = useCellValues(
     importVisitors$,
     exportVisitors$,
@@ -356,29 +413,32 @@ const CellEditor: React.FC<CellProps> = ({ focus, setActiveCell, parentEditor, l
     codeBlockEditorDescriptors$,
     jsxIsAvailable$,
     rootEditor$,
-    tableCellEditorChildren$
-  )
+    tableCellEditorChildren$,
+  );
 
   const [editor] = React.useState(() => {
     const editor = createEditor({
       nodes: usedLexicalNodes,
       theme: lexicalTheme as EditorThemeClasses,
-      namespace: 'TableCellEditor'
-    })
+      namespace: "TableCellEditor",
+    });
 
     editor.update(() => {
       importMdastTreeToLexical({
         root: $getRoot(),
-        mdastRoot: { type: 'root', children: [{ type: 'paragraph', children: contents }] },
+        mdastRoot: {
+          type: "root",
+          children: [{ type: "paragraph", children: contents }],
+        },
         visitors: importVisitors,
         jsxComponentDescriptors,
         directiveDescriptors,
-        codeBlockEditorDescriptors
-      })
-    })
+        codeBlockEditorDescriptors,
+      });
+    });
 
-    return editor
-  })
+    return editor;
+  });
 
   const saveAndFocus = React.useCallback(
     (nextCell: [number, number] | null) => {
@@ -387,105 +447,129 @@ const CellEditor: React.FC<CellProps> = ({ focus, setActiveCell, parentEditor, l
           root: $getRoot(),
           jsxComponentDescriptors,
           visitors: exportVisitors,
-          jsxIsAvailable
-        })
+          jsxIsAvailable,
+        });
         parentEditor.update(
           () => {
-            lexicalTable.updateCellContents(colIndex, rowIndex, (mdast.children[0] as Mdast.Paragraph).children)
+            lexicalTable.updateCellContents(
+              colIndex,
+              rowIndex,
+              (mdast.children[0] as Mdast.Paragraph).children,
+            );
           },
-          { discrete: true }
-        )
-        parentEditor.dispatchCommand(NESTED_EDITOR_UPDATED_COMMAND, undefined)
-      })
+          { discrete: true },
+        );
+        parentEditor.dispatchCommand(NESTED_EDITOR_UPDATED_COMMAND, undefined);
+      });
 
-      setActiveCell(nextCell)
+      setActiveCell(nextCell);
     },
-    [colIndex, editor, exportVisitors, jsxComponentDescriptors, jsxIsAvailable, lexicalTable, parentEditor, rowIndex, setActiveCell]
-  )
+    [
+      colIndex,
+      editor,
+      exportVisitors,
+      jsxComponentDescriptors,
+      jsxIsAvailable,
+      lexicalTable,
+      parentEditor,
+      rowIndex,
+      setActiveCell,
+    ],
+  );
 
   React.useEffect(() => {
     return mergeRegister(
       editor.registerCommand(
         KEY_TAB_COMMAND,
         (payload) => {
-          payload.preventDefault()
-          const nextCell: [number, number] = payload.shiftKey ? [colIndex - 1, rowIndex] : [colIndex + 1, rowIndex]
-          saveAndFocus(nextCell)
-          return true
+          payload.preventDefault();
+          const nextCell: [number, number] = payload.shiftKey
+            ? [colIndex - 1, rowIndex]
+            : [colIndex + 1, rowIndex];
+          saveAndFocus(nextCell);
+          return true;
         },
-        COMMAND_PRIORITY_CRITICAL
+        COMMAND_PRIORITY_CRITICAL,
       ),
 
       editor.registerCommand(
         FOCUS_COMMAND,
         () => {
-          setActiveCell([colIndex, rowIndex])
-          return false
+          setActiveCell([colIndex, rowIndex]);
+          return false;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_LOW,
       ),
 
       editor.registerCommand(
         KEY_ENTER_COMMAND,
         (payload) => {
-          payload?.preventDefault()
-          const nextCell: [number, number] = payload?.shiftKey ? [colIndex, rowIndex - 1] : [colIndex, rowIndex + 1]
-          saveAndFocus(nextCell)
-          return true
+          payload?.preventDefault();
+          const nextCell: [number, number] = payload?.shiftKey
+            ? [colIndex, rowIndex - 1]
+            : [colIndex, rowIndex + 1];
+          saveAndFocus(nextCell);
+          return true;
         },
-        COMMAND_PRIORITY_CRITICAL
+        COMMAND_PRIORITY_CRITICAL,
       ),
 
       editor.registerCommand(
         BLUR_COMMAND,
         (payload) => {
-          const relatedTarget = payload.relatedTarget as HTMLElement | null
+          const relatedTarget = payload.relatedTarget as HTMLElement | null;
 
-          if (isPartOftheEditorUI(relatedTarget, rootEditor!.getRootElement()!)) {
-            return false
+          if (
+            isPartOftheEditorUI(relatedTarget, rootEditor!.getRootElement()!)
+          ) {
+            return false;
           }
-          saveAndFocus(null)
-          return true
+          saveAndFocus(null);
+          return true;
         },
-        COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_EDITOR,
       ),
 
       editor.registerCommand(
         NESTED_EDITOR_UPDATED_COMMAND,
         () => {
-          saveAndFocus(null)
-          return true
+          saveAndFocus(null);
+          return true;
         },
-        COMMAND_PRIORITY_EDITOR
-      )
-    )
-  }, [colIndex, editor, rootEditor, rowIndex, saveAndFocus, setActiveCell])
+        COMMAND_PRIORITY_EDITOR,
+      ),
+    );
+  }, [colIndex, editor, rootEditor, rowIndex, saveAndFocus, setActiveCell]);
 
   React.useEffect(() => {
     if (focus) {
-      editor.focus()
+      editor.focus();
     }
-  }, [focus, editor])
+  }, [focus, editor]);
 
   return (
     <LexicalNestedComposer initialEditor={editor}>
-      <RichTextPlugin contentEditable={<ContentEditable />} placeholder={<div></div>} ErrorBoundary={LexicalErrorBoundary} />
+      <RichTextPlugin
+        contentEditable={<ContentEditable />}
+        placeholder={<div></div>}
+        ErrorBoundary={LexicalErrorBoundary}
+      />
 
       {tableCellEditorChildren.map((Child, index) => (
         <Child key={index} />
       ))}
       <HistoryPlugin />
     </LexicalNestedComposer>
-  )
-}
+  );
+};
 
 interface ColumnEditorProps {
-  parentEditor: LexicalEditor
-  lexicalTable: TableNode
-  colIndex: number
-  highlightedCoordinates: [number, number]
-  setActiveCellWithBoundaries: (cell: [number, number] | null) => void
-  align: Mdast.AlignType
+  parentEditor: LexicalEditor;
+  lexicalTable: TableNode;
+  colIndex: number;
+  highlightedCoordinates: [number, number];
+  setActiveCellWithBoundaries: (cell: [number, number] | null) => void;
+  align: Mdast.AlignType;
 }
 
 const ColumnEditor: React.FC<ColumnEditorProps> = ({
@@ -494,53 +578,56 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
   align,
   lexicalTable,
   colIndex,
-  setActiveCellWithBoundaries
+  setActiveCellWithBoundaries,
 }) => {
-  const [editorRootElementRef, iconComponentFor] = useCellValues(editorRootElementRef$, iconComponentFor$)
+  const [editorRootElementRef, iconComponentFor] = useCellValues(
+    editorRootElementRef$,
+    iconComponentFor$,
+  );
 
   const insertColumnAt = React.useCallback(
     (colIndex: number) => {
       parentEditor.update(() => {
-        lexicalTable.insertColumnAt(colIndex)
-      })
-      setActiveCellWithBoundaries([colIndex, 0])
+        lexicalTable.insertColumnAt(colIndex);
+      });
+      setActiveCellWithBoundaries([colIndex, 0]);
     },
-    [parentEditor, lexicalTable, setActiveCellWithBoundaries]
-  )
+    [parentEditor, lexicalTable, setActiveCellWithBoundaries],
+  );
 
   const deleteColumnAt = React.useCallback(
     (colIndex: number) => {
       parentEditor.update(() => {
-        lexicalTable.deleteColumnAt(colIndex)
-      })
+        lexicalTable.deleteColumnAt(colIndex);
+      });
     },
-    [parentEditor, lexicalTable]
-  )
+    [parentEditor, lexicalTable],
+  );
 
   const setColumnAlign = React.useCallback(
     (colIndex: number, align: Mdast.AlignType) => {
       parentEditor.update(() => {
-        lexicalTable.setColumnAlign(colIndex, align)
-      })
+        lexicalTable.setColumnAlign(colIndex, align);
+      });
     },
-    [parentEditor, lexicalTable]
-  )
+    [parentEditor, lexicalTable],
+  );
 
-  const t = useTranslation()
+  const t = useTranslation();
   return (
     <RadixPopover.Root>
       <RadixPopover.PopoverTrigger
         className={styles.tableColumnEditorTrigger}
         data-active={highlightedCoordinates[0] === colIndex + 1}
-        title={t('table.columnMenu', 'Column menu')}
+        title={t("table.columnMenu", "Column menu")}
       >
-        {iconComponentFor('more_horiz')}
+        {iconComponentFor("more_horiz")}
       </RadixPopover.PopoverTrigger>
       <RadixPopover.Portal container={editorRootElementRef?.current}>
         <RadixPopover.PopoverContent
           className={classNames(styles.tableColumnEditorPopoverContent)}
           onOpenAutoFocus={(e) => {
-            e.preventDefault()
+            e.preventDefault();
           }}
           sideOffset={5}
           side="top"
@@ -549,51 +636,69 @@ const ColumnEditor: React.FC<ColumnEditorProps> = ({
             <RadixToolbar.ToggleGroup
               className={styles.toggleGroupRoot}
               onValueChange={(value) => {
-                setColumnAlign(colIndex, value as Mdast.AlignType)
+                setColumnAlign(colIndex, value as Mdast.AlignType);
               }}
-              value={align ?? 'left'}
+              value={align ?? "left"}
               type="single"
-              aria-label={t('table.textAlignment', 'Text alignment')}
+              aria-label={t("table.textAlignment", "Text alignment")}
             >
-              <RadixToolbar.ToggleItem value="left" title={t('table.alignLeft', 'Align left')}>
-                {iconComponentFor('format_align_left')}
+              <RadixToolbar.ToggleItem
+                value="left"
+                title={t("table.alignLeft", "Align left")}
+              >
+                {iconComponentFor("format_align_left")}
               </RadixToolbar.ToggleItem>
-              <RadixToolbar.ToggleItem value="center" title={t('table.alignCenter', 'Align center')}>
-                {iconComponentFor('format_align_center')}
+              <RadixToolbar.ToggleItem
+                value="center"
+                title={t("table.alignCenter", "Align center")}
+              >
+                {iconComponentFor("format_align_center")}
               </RadixToolbar.ToggleItem>
-              <RadixToolbar.ToggleItem value="right" title={t('table.alignRight', 'Align right')}>
-                {iconComponentFor('format_align_right')}
+              <RadixToolbar.ToggleItem
+                value="right"
+                title={t("table.alignRight", "Align right")}
+              >
+                {iconComponentFor("format_align_right")}
               </RadixToolbar.ToggleItem>
             </RadixToolbar.ToggleGroup>
             <RadixToolbar.Separator />
             <RadixToolbar.Button
               onClick={insertColumnAt.bind(null, colIndex)}
-              title={t('table.insertColumnLeft', 'Insert a column to the left of this one')}
+              title={t(
+                "table.insertColumnLeft",
+                "Insert a column to the left of this one",
+              )}
             >
-              {iconComponentFor('insert_col_left')}
+              {iconComponentFor("insert_col_left")}
             </RadixToolbar.Button>
             <RadixToolbar.Button
               onClick={insertColumnAt.bind(null, colIndex + 1)}
-              title={t('table.insertColumnRight', 'Insert a column to the right of this one')}
+              title={t(
+                "table.insertColumnRight",
+                "Insert a column to the right of this one",
+              )}
             >
-              {iconComponentFor('insert_col_right')}
+              {iconComponentFor("insert_col_right")}
             </RadixToolbar.Button>
-            <RadixToolbar.Button onClick={deleteColumnAt.bind(null, colIndex)} title={t('table.deleteColumn', 'Delete this column')}>
-              {iconComponentFor('delete_small')}
+            <RadixToolbar.Button
+              onClick={deleteColumnAt.bind(null, colIndex)}
+              title={t("table.deleteColumn", "Delete this column")}
+            >
+              {iconComponentFor("delete_small")}
             </RadixToolbar.Button>
           </RadixToolbar.Root>
           <RadixPopover.Arrow className={styles.popoverArrow} />
         </RadixPopover.PopoverContent>
       </RadixPopover.Portal>
     </RadixPopover.Root>
-  )
-}
+  );
+};
 interface RowEditorProps {
-  parentEditor: LexicalEditor
-  lexicalTable: TableNode
-  rowIndex: number
-  highlightedCoordinates: [number, number]
-  setActiveCellWithBoundaries: (cell: [number, number] | null) => void
+  parentEditor: LexicalEditor;
+  lexicalTable: TableNode;
+  rowIndex: number;
+  highlightedCoordinates: [number, number];
+  setActiveCellWithBoundaries: (cell: [number, number] | null) => void;
 }
 
 const RowEditor: React.FC<RowEditorProps> = ({
@@ -601,44 +706,47 @@ const RowEditor: React.FC<RowEditorProps> = ({
   highlightedCoordinates,
   lexicalTable,
   rowIndex,
-  setActiveCellWithBoundaries
+  setActiveCellWithBoundaries,
 }) => {
-  const [editorRootElementRef, iconComponentFor] = useCellValues(editorRootElementRef$, iconComponentFor$)
+  const [editorRootElementRef, iconComponentFor] = useCellValues(
+    editorRootElementRef$,
+    iconComponentFor$,
+  );
 
   const insertRowAt = React.useCallback(
     (rowIndex: number) => {
       parentEditor.update(() => {
-        lexicalTable.insertRowAt(rowIndex)
-      })
-      setActiveCellWithBoundaries([0, rowIndex])
+        lexicalTable.insertRowAt(rowIndex);
+      });
+      setActiveCellWithBoundaries([0, rowIndex]);
     },
-    [parentEditor, lexicalTable, setActiveCellWithBoundaries]
-  )
+    [parentEditor, lexicalTable, setActiveCellWithBoundaries],
+  );
 
   const deleteRowAt = React.useCallback(
     (rowIndex: number) => {
       parentEditor.update(() => {
-        lexicalTable.deleteRowAt(rowIndex)
-      })
+        lexicalTable.deleteRowAt(rowIndex);
+      });
     },
-    [parentEditor, lexicalTable]
-  )
+    [parentEditor, lexicalTable],
+  );
 
-  const t = useTranslation()
+  const t = useTranslation();
   return (
     <RadixPopover.Root>
       <RadixPopover.PopoverTrigger
         className={styles.tableColumnEditorTrigger}
         data-active={highlightedCoordinates[1] === rowIndex}
-        title={t('table.rowMenu', 'Row menu')}
+        title={t("table.rowMenu", "Row menu")}
       >
-        {iconComponentFor('more_horiz')}
+        {iconComponentFor("more_horiz")}
       </RadixPopover.PopoverTrigger>
       <RadixPopover.Portal container={editorRootElementRef?.current}>
         <RadixPopover.PopoverContent
           className={classNames(styles.tableColumnEditorPopoverContent)}
           onOpenAutoFocus={(e) => {
-            e.preventDefault()
+            e.preventDefault();
           }}
           sideOffset={5}
           side="bottom"
@@ -646,23 +754,26 @@ const RowEditor: React.FC<RowEditorProps> = ({
           <RadixToolbar.Root className={styles.tableColumnEditorToolbar}>
             <RadixToolbar.Button
               onClick={insertRowAt.bind(null, rowIndex)}
-              title={t('table.insertRowAbove', 'Insert a row above this one')}
+              title={t("table.insertRowAbove", "Insert a row above this one")}
             >
-              {iconComponentFor('insert_row_above')}
+              {iconComponentFor("insert_row_above")}
             </RadixToolbar.Button>
             <RadixToolbar.Button
               onClick={insertRowAt.bind(null, rowIndex + 1)}
-              title={t('table.insertRowBelow', 'Insert a row below this one')}
+              title={t("table.insertRowBelow", "Insert a row below this one")}
             >
-              {iconComponentFor('insert_row_below')}
+              {iconComponentFor("insert_row_below")}
             </RadixToolbar.Button>
-            <RadixToolbar.Button onClick={deleteRowAt.bind(null, rowIndex)} title={t('table.deleteRow', 'Delete this row')}>
-              {iconComponentFor('delete_small')}
+            <RadixToolbar.Button
+              onClick={deleteRowAt.bind(null, rowIndex)}
+              title={t("table.deleteRow", "Delete this row")}
+            >
+              {iconComponentFor("delete_small")}
             </RadixToolbar.Button>
           </RadixToolbar.Root>
           <RadixPopover.Arrow className={styles.popoverArrow} />
         </RadixPopover.PopoverContent>
       </RadixPopover.Portal>
     </RadixPopover.Root>
-  )
-}
+  );
+};

@@ -22,13 +22,19 @@ import {
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type PropsWithChildren } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
 import { Button } from "@/components/ui/button";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
-import { Reasoning, ReasoningGroup } from "@/components/assistant-ui/reasoning";
+import {
+  Reasoning,
+  ReasoningContent,
+  ReasoningRoot,
+  ReasoningText,
+  ReasoningTrigger,
+} from "@/components/assistant-ui/reasoning";
 import { Sources } from "@/components/assistant-ui/sources";
 import {
   ComposerAddAttachment,
@@ -39,9 +45,7 @@ import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { useAtomValue } from "jotai";
 import { FormRegistry } from "@/components/forms/registry";
-import {
-  threadActiveFormAtomFamily,
-} from "@/lib/atoms/chat-state";
+import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 
 export function Thread() {
   return (
@@ -252,7 +256,7 @@ function UserMessage() {
       <UserActionBar />
       <div className="col-start-2 max-w-xl wrap-break-word">
         <UserMessageAttachments />
-        <div className="py-2.5 px-5 rounded-3xl rounded-tr-sm bg-muted text-foreground">
+        <div className="py-2.5 px-5 rounded-sm bg-muted text-foreground">
           <MessagePrimitive.Parts />
         </div>
       </div>
@@ -299,6 +303,80 @@ function EditComposer() {
   );
 }
 
+type GroupedMessagePart = {
+  type?: string;
+  status?: { type?: string };
+};
+
+function isChainOfThoughtPart(part: unknown) {
+  const type = (part as GroupedMessagePart | undefined)?.type;
+  return type === "reasoning" || type === "tool-call";
+}
+
+function groupChainOfThoughtParts(parts: readonly unknown[]) {
+  const groups: { groupKey: string | undefined; indices: number[] }[] = [];
+  let chainIndices: number[] = [];
+  let chainIndex = 0;
+
+  const flushChain = () => {
+    if (chainIndices.length === 0) return;
+    groups.push({
+      groupKey: `chain-of-thought-${chainIndex}`,
+      indices: chainIndices,
+    });
+    chainIndex += 1;
+    chainIndices = [];
+  };
+
+  parts.forEach((part, index) => {
+    if (isChainOfThoughtPart(part)) {
+      chainIndices.push(index);
+      return;
+    }
+
+    flushChain();
+    groups.push({ groupKey: undefined, indices: [index] });
+  });
+
+  flushChain();
+  return groups;
+}
+
+function ChainOfThoughtGroup({
+  groupKey,
+  indices,
+  children,
+}: PropsWithChildren<{ groupKey: string | undefined; indices: number[] }>) {
+  const isChainOfThought = groupKey?.startsWith("chain-of-thought-") ?? false;
+  const active = useAuiState((s) => {
+    if (!isChainOfThought || s.message.status?.type !== "running") return false;
+    const lastIndex = s.message.parts.length - 1;
+
+    if (indices.includes(lastIndex)) return true;
+
+    return indices.some((index) => {
+      const part = s.message.parts[index] as GroupedMessagePart | undefined;
+      return part?.status?.type === "running";
+    });
+  });
+
+  if (!isChainOfThought) return <>{children}</>;
+
+  return (
+    <ReasoningRoot defaultOpen={active} className="mb-2">
+      <ReasoningTrigger
+        active={active}
+        label={`Thinking (${indices.length} step${indices.length === 1 ? "" : "s"})`}
+      />
+      <ReasoningContent aria-busy={active}>
+        <ReasoningText className="flex flex-col gap-2">
+          {children}
+        </ReasoningText>
+      </ReasoningContent>
+    </ReasoningRoot>
+  );
+}
+
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root
@@ -312,13 +390,14 @@ function AssistantMessage() {
           </div>
 
           <div className="flex flex-col gap-2 min-w-0 flex-1">
-            <MessagePrimitive.Parts
+            <MessagePrimitive.Unstable_PartsGrouped
+              groupingFunction={groupChainOfThoughtParts}
               components={{
                 Text: MarkdownText,
                 tools: { Fallback: ToolFallback },
                 Reasoning,
-                ReasoningGroup,
                 Source: Sources,
+                Group: ChainOfThoughtGroup,
               }}
             />
 

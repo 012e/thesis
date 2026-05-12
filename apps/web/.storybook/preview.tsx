@@ -55,12 +55,14 @@ const preview: Preview = {
     (Story) => {
       queryClient.clear();
 
-      return <JotaiProvider>
-        <QueryClientProvider client={queryClient}>
-          <Story />
-        </QueryClientProvider>
-      </JotaiProvider>
-    }
+      return (
+        <JotaiProvider>
+          <QueryClientProvider client={queryClient}>
+            <Story />
+          </QueryClientProvider>
+        </JotaiProvider>
+      );
+    },
   ],
 };
 

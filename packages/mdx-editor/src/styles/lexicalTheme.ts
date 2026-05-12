@@ -1,5 +1,5 @@
-import { EditorThemeClasses } from 'lexical'
-import styles from './lexical-theme.module.css'
+import { EditorThemeClasses } from "lexical";
+import styles from "./lexical-theme.module.css";
 
 export const lexicalTheme: EditorThemeClasses = {
   text: {
@@ -10,7 +10,7 @@ export const lexicalTheme: EditorThemeClasses = {
     strikethrough: styles.strikethrough,
     subscript: styles.subscript,
     superscript: styles.superscript,
-    underlineStrikethrough: styles.underlineStrikethrough
+    underlineStrikethrough: styles.underlineStrikethrough,
   },
 
   list: {
@@ -18,8 +18,8 @@ export const lexicalTheme: EditorThemeClasses = {
     listitemChecked: styles.listItemChecked,
     listitemUnchecked: styles.listItemUnchecked,
     nested: {
-      listitem: styles.nestedListItem
-    }
+      listitem: styles.nestedListItem,
+    },
   },
 
   admonition: {
@@ -27,6 +27,6 @@ export const lexicalTheme: EditorThemeClasses = {
     info: styles.admonitionInfo,
     note: styles.admonitionNote,
     tip: styles.admonitionTip,
-    caution: styles.admonitionCaution
-  }
-}
+    caution: styles.admonitionCaution,
+  },
+};

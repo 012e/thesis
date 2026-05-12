@@ -7,7 +7,13 @@ import {
   useChatRuntime,
   AssistantChatTransport,
 } from "@assistant-ui/react-ai-sdk";
-import { useRef, useMemo, type FC, type MutableRefObject, type ReactNode } from "react";
+import {
+  useRef,
+  useMemo,
+  type FC,
+  type MutableRefObject,
+  type ReactNode,
+} from "react";
 import { useAtomValue } from "jotai";
 import { env } from "@/env";
 import { threadListAdapter } from "@/lib/chat/thread-list-adapter";

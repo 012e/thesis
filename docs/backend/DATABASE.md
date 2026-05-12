@@ -6,10 +6,10 @@ The backend uses **PostgreSQL** (≥ 14) with **Drizzle ORM** for query building
 
 There are two migration sets with separate lifecycles:
 
-| Set                    | Location                  | Managed by      | Purpose                                             |
-| ---------------------- | ------------------------- | --------------- | --------------------------------------------------- |
-| Application migrations | `apps/backend/drizzle/`   | `drizzle-kit`   | `posts`, `users_view`, `post_reactions`, other app tables |
-| Better Auth migrations | (managed by Better Auth)  | Better Auth CLI | `user`, `session`, `account`, `verification` tables |
+| Set                    | Location                 | Managed by      | Purpose                                                   |
+| ---------------------- | ------------------------ | --------------- | --------------------------------------------------------- |
+| Application migrations | `apps/backend/drizzle/`  | `drizzle-kit`   | `posts`, `users_view`, `post_reactions`, other app tables |
+| Better Auth migrations | (managed by Better Auth) | Better Auth CLI | `user`, `session`, `account`, `verification` tables       |
 
 Application (drizzle-kit) migrations and Better Auth migrations must both be applied before the app can start. Drizzle migration files are under `apps/backend/drizzle/`.
 

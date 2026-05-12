@@ -1,15 +1,15 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { Job } from '@wavezync/nestjs-pgboss';
-import type { JobWithMetadata } from 'pg-boss';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Job } from "@wavezync/nestjs-pgboss";
+import type { JobWithMetadata } from "pg-boss";
 
-import type { NotificationDto } from '@repo/shared-dto';
+import type { NotificationDto } from "@repo/shared-dto";
 
 import {
   NOTIFICATION_TRANSPORTS,
   type NotificationTransport,
-} from './transports/notification-transport.interface';
+} from "./transports/notification-transport.interface";
 
-export const DELIVER_NOTIFICATION_JOB = 'deliver-notification';
+export const DELIVER_NOTIFICATION_JOB = "deliver-notification";
 
 export interface DeliverNotificationJobData {
   notification: NotificationDto;

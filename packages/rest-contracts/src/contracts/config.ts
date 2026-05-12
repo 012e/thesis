@@ -11,7 +11,8 @@ export const configContract = c.router({
     responses: {
       200: AppConfigSchema,
     },
-    summary: "Get the full application configuration with schema defaults applied",
+    summary:
+      "Get the full application configuration with schema defaults applied",
   },
   getNamespace: {
     method: "GET",

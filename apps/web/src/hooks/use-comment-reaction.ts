@@ -22,7 +22,9 @@ export function useCommentReaction(postId: string) {
 
   return useMutation({
     mutationFn: ({ commentId, type }: CommentReactionVariables) =>
-      type === null ? unreactToComment(commentId) : reactToComment(commentId, type),
+      type === null
+        ? unreactToComment(commentId)
+        : reactToComment(commentId, type),
 
     onMutate: async ({ commentId, type }) => {
       // Cancel in-flight refetches so they don't overwrite the optimistic update
@@ -46,13 +48,19 @@ export function useCommentReaction(postId: string) {
 
           // Undo previous reaction
           if (prev === "upvote") upvoteCount = Math.max(0, upvoteCount - 1);
-          if (prev === "downvote") downvoteCount = Math.max(0, downvoteCount - 1);
+          if (prev === "downvote")
+            downvoteCount = Math.max(0, downvoteCount - 1);
 
           // Apply new reaction
           if (next === "upvote") upvoteCount += 1;
           if (next === "downvote") downvoteCount += 1;
 
-          return { ...c, upvoteCount, downvoteCount, currentUserReaction: next };
+          return {
+            ...c,
+            upvoteCount,
+            downvoteCount,
+            currentUserReaction: next,
+          };
         });
       });
 

@@ -15,9 +15,7 @@ function useStoryTheme() {
   useEffect(() => {
     const updateTheme = () => {
       setTheme(
-        document.documentElement.classList.contains("dark")
-          ? "dark"
-          : "light",
+        document.documentElement.classList.contains("dark") ? "dark" : "light",
       );
     };
 
@@ -41,24 +39,38 @@ function SonnerShowcase() {
       <Toaster theme={theme} />
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => toast.success("Saved", { description: "Profile updated" })}>
+        <Button
+          onClick={() =>
+            toast.success("Saved", { description: "Profile updated" })
+          }
+        >
           Success
         </Button>
         <Button
           variant="outline"
-          onClick={() => toast.error("Failed", { description: "Request could not be completed" })}
+          onClick={() =>
+            toast.error("Failed", {
+              description: "Request could not be completed",
+            })
+          }
         >
           Error
         </Button>
         <Button
           variant="outline"
-          onClick={() => toast.info("Heads up", { description: "New activity detected" })}
+          onClick={() =>
+            toast.info("Heads up", { description: "New activity detected" })
+          }
         >
           Info
         </Button>
         <Button
           variant="outline"
-          onClick={() => toast.warning("Warning", { description: "You are close to quota limit" })}
+          onClick={() =>
+            toast.warning("Warning", {
+              description: "You are close to quota limit",
+            })
+          }
         >
           Warning
         </Button>

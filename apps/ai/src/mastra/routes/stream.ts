@@ -79,11 +79,22 @@ export const streamRoute = registerApiRoute("/chat", {
 
       const agentStream = await orchestrator.stream(messages, {
         maxSteps: 20,
+        providerOptions:
+          resolvedMode === "thinking"
+            ? {
+                openai: {
+                  reasoningSummary: "detailed",
+                },
+              }
+            : undefined,
       });
 
       return createUIMessageStreamResponse({
         // Cast resolves Node.js vs Web Streams API ambient type mismatch; runtime is correct
-        stream: toAISdkStream(agentStream, { from: "agent" }) as any,
+        stream: toAISdkStream(agentStream, {
+          from: "agent",
+          sendReasoning: true,
+        }) as any,
       });
     } catch (error) {
       console.error("Stream route error:", error);

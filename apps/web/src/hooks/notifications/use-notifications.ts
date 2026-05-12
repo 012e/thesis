@@ -1,56 +1,55 @@
-import { useEffect, useRef } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
-import { useToast as toast } from '@/hooks/use-toast';
-import type { Socket } from 'socket.io-client';
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import { useToast as toast } from "@/hooks/use-toast";
+import type { Socket } from "socket.io-client";
 
-import bearerToken from '@/lib/atoms/bearer-token';
-import { env } from '@/env';
-import { getOrCreateNotificationsSocket } from '@/lib/socket/notifications-socket';
-import { getUnreadNotificationCount } from '@/lib/api/notifications';
-import type { NotificationDto } from '@repo/shared-dto';
+import bearerToken from "@/lib/atoms/bearer-token";
+import { env } from "@/env";
+import { getOrCreateNotificationsSocket } from "@/lib/socket/notifications-socket";
+import { getUnreadNotificationCount } from "@/lib/api/notifications";
+import type { NotificationDto } from "@repo/shared-dto";
 
 // ─── Event constant (mirrors notifications.gateway.ts) ───────────────────────
 
-const WS_NOTIFICATION = 'notification';
+const WS_NOTIFICATION = "notification";
 
 // ─── Query keys ──────────────────────────────────────────────────────────────
 
 export const notificationUnreadCountKey = [
-  'notifications',
-  'unread-count',
+  "notifications",
+  "unread-count",
 ] as const;
 
-export const notificationsListKey = ['notifications', 'list'] as const;
+export const notificationsListKey = ["notifications", "list"] as const;
 
 // ─── Toast renderer ──────────────────────────────────────────────────────────
 
 function showNotificationToast(notification: NotificationDto): void {
   const actor = notification.actor;
-  const actorName =
-    actor?.username ?? actor?.name ?? 'Someone';
+  const actorName = actor?.username ?? actor?.name ?? "Someone";
 
   switch (notification.type) {
-    case 'follow':
+    case "follow":
       toast.info(`${actorName} started following you`);
       break;
-    case 'comment':
+    case "comment":
       toast.info(`${actorName} commented on your post`);
       break;
-    case 'reply':
+    case "reply":
       toast.info(`${actorName} replied to your comment`);
       break;
-    case 'post_reaction':
+    case "post_reaction":
       toast.info(`${actorName} reacted to your post`);
       break;
-    case 'comment_reaction':
+    case "comment_reaction":
       toast.info(`${actorName} reacted to your comment`);
       break;
-    case 'direct_message':
+    case "direct_message":
       toast.info(`New message from ${actorName}`);
       break;
     default:
-      toast.info('You have a new notification');
+      toast.info("You have a new notification");
   }
 }
 
@@ -96,7 +95,9 @@ export function useNotifications(): UseNotificationsReturn {
       showNotificationToast(notification);
 
       // Invalidate the unread count and list so queries re-fetch.
-      void queryClient.invalidateQueries({ queryKey: notificationUnreadCountKey });
+      void queryClient.invalidateQueries({
+        queryKey: notificationUnreadCountKey,
+      });
       void queryClient.invalidateQueries({ queryKey: notificationsListKey });
     };
 

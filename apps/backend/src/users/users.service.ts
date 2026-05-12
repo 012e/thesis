@@ -104,7 +104,9 @@ export class UsersService implements OnApplicationBootstrap {
         } satisfies UserSearchResultDto;
       });
 
-      const totalRow = countResult.rows[0] as { total?: number | string } | undefined;
+      const totalRow = countResult.rows[0] as
+        | { total?: number | string }
+        | undefined;
       return {
         users,
         total:
@@ -171,7 +173,9 @@ export class UsersService implements OnApplicationBootstrap {
       } satisfies UserSearchResultDto;
     });
 
-    const totalRow = countResult.rows[0] as { total?: number | string } | undefined;
+    const totalRow = countResult.rows[0] as
+      | { total?: number | string }
+      | undefined;
     return {
       users,
       total:
@@ -237,7 +241,9 @@ export class UsersService implements OnApplicationBootstrap {
         displayUsername: user.displayUsername,
         email: user.email,
         name: user.name,
-        image: sql<string | null>`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
+        image: sql<
+          string | null
+        >`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
         coverPhoto: userProfiles.coverPhotoUrl,
         bio: userProfiles.bio,
         createdAt: user.createdAt,

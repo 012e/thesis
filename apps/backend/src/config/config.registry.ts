@@ -1,1 +1,5 @@
-export { AppConfigSchema, type AppConfig, type AppConfigNamespace } from "@repo/rest-contracts";
+export {
+  AppConfigSchema,
+  type AppConfig,
+  type AppConfigNamespace,
+} from "@repo/rest-contracts";

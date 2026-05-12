@@ -1,15 +1,15 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ─── Type enum ────────────────────────────────────────────────────────────────
 
 export const NotificationType = z.enum([
-  'follow',
-  'comment',
-  'reply',
-  'post_update',
-  'post_reaction',
-  'comment_reaction',
-  'direct_message',
+  "follow",
+  "comment",
+  "reply",
+  "post_update",
+  "post_reaction",
+  "comment_reaction",
+  "direct_message",
 ]);
 
 // ─── Payload schemas (per type) ───────────────────────────────────────────────
@@ -40,13 +40,13 @@ export const PostUpdateNotificationPayload = z.object({
 
 export const PostReactionNotificationPayload = z.object({
   postId: z.string().uuid(),
-  reactionType: z.enum(['upvote', 'downvote']),
+  reactionType: z.enum(["upvote", "downvote"]),
 });
 
 export const CommentReactionNotificationPayload = z.object({
   postId: z.string().uuid(),
   commentId: z.string().uuid(),
-  reactionType: z.enum(['upvote', 'downvote']),
+  reactionType: z.enum(["upvote", "downvote"]),
 });
 
 export const DirectMessageNotificationPayload = z.object({

@@ -1,34 +1,39 @@
-import { AdmonitionKind } from 'lexical'
-import React from 'react'
-import { EditorInFocus } from '../../core'
-import type { DirectiveNode } from '../../directives/DirectiveNode'
-import { ConditionalContents, Separator } from '../primitives/toolbar'
-import { BlockTypeSelect } from './BlockTypeSelect'
-import { BoldItalicUnderlineToggles, StrikeThroughSupSubToggles } from './BoldItalicUnderlineToggles'
-import { ChangeAdmonitionType } from './ChangeAdmonitionType'
-import { ChangeCodeMirrorLanguage } from './ChangeCodeMirrorLanguage'
-import { CodeToggle } from './CodeToggle'
-import { DiffSourceToggleWrapper } from './DiffSourceToggleWrapper'
-import { InsertAdmonition } from './InsertAdmonition'
-import { InsertCodeBlock } from './InsertCodeBlock'
-import { InsertFrontmatter } from './InsertFrontmatter'
-import { InsertImage } from './InsertImage'
-import { InsertSandpack } from './InsertSandpack'
-import { InsertTable } from './InsertTable'
-import { InsertThematicBreak } from './InsertThematicBreak'
-import { ListsToggle } from './ListsToggle'
-import { ShowSandpackInfo } from './ShowSandpackInfo'
-import { UndoRedo } from './UndoRedo'
-import { CreateLink } from './CreateLink'
-import { HighlightToggle } from './HighlightToggle'
+import { AdmonitionKind } from "lexical";
+import React from "react";
+import { EditorInFocus } from "../../core";
+import type { DirectiveNode } from "../../directives/DirectiveNode";
+import { ConditionalContents, Separator } from "../primitives/toolbar";
+import { BlockTypeSelect } from "./BlockTypeSelect";
+import {
+  BoldItalicUnderlineToggles,
+  StrikeThroughSupSubToggles,
+} from "./BoldItalicUnderlineToggles";
+import { ChangeAdmonitionType } from "./ChangeAdmonitionType";
+import { ChangeCodeMirrorLanguage } from "./ChangeCodeMirrorLanguage";
+import { CodeToggle } from "./CodeToggle";
+import { DiffSourceToggleWrapper } from "./DiffSourceToggleWrapper";
+import { InsertAdmonition } from "./InsertAdmonition";
+import { InsertCodeBlock } from "./InsertCodeBlock";
+import { InsertFrontmatter } from "./InsertFrontmatter";
+import { InsertImage } from "./InsertImage";
+import { InsertSandpack } from "./InsertSandpack";
+import { InsertTable } from "./InsertTable";
+import { InsertThematicBreak } from "./InsertThematicBreak";
+import { ListsToggle } from "./ListsToggle";
+import { ShowSandpackInfo } from "./ShowSandpackInfo";
+import { UndoRedo } from "./UndoRedo";
+import { CreateLink } from "./CreateLink";
+import { HighlightToggle } from "./HighlightToggle";
 
 function whenInAdmonition(editorInFocus: EditorInFocus | null) {
-  const node = editorInFocus?.rootNode
-  if (!node || node.getType() !== 'directive') {
-    return false
+  const node = editorInFocus?.rootNode;
+  if (!node || node.getType() !== "directive") {
+    return false;
   }
 
-  return ['note', 'tip', 'danger', 'info', 'caution'].includes((node as DirectiveNode).getMdastNode().name as AdmonitionKind)
+  return ["note", "tip", "danger", "info", "caution"].includes(
+    (node as DirectiveNode).getMdastNode().name as AdmonitionKind,
+  );
 }
 
 /**
@@ -42,8 +47,14 @@ export const KitchenSinkToolbar: React.FC = () => {
     <DiffSourceToggleWrapper>
       <ConditionalContents
         options={[
-          { when: (editor) => editor?.editorType === 'codeblock', contents: () => <ChangeCodeMirrorLanguage /> },
-          { when: (editor) => editor?.editorType === 'sandpack', contents: () => <ShowSandpackInfo /> },
+          {
+            when: (editor) => editor?.editorType === "codeblock",
+            contents: () => <ChangeCodeMirrorLanguage />,
+          },
+          {
+            when: (editor) => editor?.editorType === "sandpack",
+            contents: () => <ShowSandpackInfo />,
+          },
           {
             fallback: () => (
               <>
@@ -59,7 +70,13 @@ export const KitchenSinkToolbar: React.FC = () => {
                 <Separator />
 
                 <ConditionalContents
-                  options={[{ when: whenInAdmonition, contents: () => <ChangeAdmonitionType /> }, { fallback: () => <BlockTypeSelect /> }]}
+                  options={[
+                    {
+                      when: whenInAdmonition,
+                      contents: () => <ChangeAdmonitionType />,
+                    },
+                    { fallback: () => <BlockTypeSelect /> },
+                  ]}
                 />
 
                 <Separator />
@@ -85,18 +102,18 @@ export const KitchenSinkToolbar: React.FC = () => {
                           <Separator />
                           <InsertAdmonition />
                         </>
-                      )
-                    }
+                      ),
+                    },
                   ]}
                 />
 
                 <Separator />
                 <InsertFrontmatter />
               </>
-            )
-          }
+            ),
+          },
         ]}
       />
     </DiffSourceToggleWrapper>
-  )
-}
+  );
+};

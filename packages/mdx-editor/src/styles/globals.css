@@ -1,11 +1,11 @@
-@import url('@radix-ui/colors/blue.css');
-@import url('@radix-ui/colors/blue-dark.css');
-@import url('@radix-ui/colors/slate.css');
-@import url('@radix-ui/colors/slate-dark.css');
-@import url('@radix-ui/colors/grass.css');
-@import url('@radix-ui/colors/cyan.css');
-@import url('@radix-ui/colors/amber.css');
-@import url('@radix-ui/colors/red.css');
+@import url("@radix-ui/colors/blue.css");
+@import url("@radix-ui/colors/blue-dark.css");
+@import url("@radix-ui/colors/slate.css");
+@import url("@radix-ui/colors/slate-dark.css");
+@import url("@radix-ui/colors/grass.css");
+@import url("@radix-ui/colors/cyan.css");
+@import url("@radix-ui/colors/amber.css");
+@import url("@radix-ui/colors/red.css");
 
 .mdxeditor {
   /** Code mirror */
@@ -71,8 +71,7 @@
     background: var(--baseBgSubtle);
   }
 
-
-  hr[data-lexical-decorator=true].selected {
+  hr[data-lexical-decorator="true"].selected {
     outline: 2px solid highlight;
   }
 }

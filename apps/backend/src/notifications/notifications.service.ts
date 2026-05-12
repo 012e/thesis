@@ -1,23 +1,23 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PgBossService } from '@wavezync/nestjs-pgboss';
-import { and, count, desc, eq, isNull, lt } from 'drizzle-orm';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { PgBossService } from "@wavezync/nestjs-pgboss";
+import { and, count, desc, eq, isNull, lt } from "drizzle-orm";
 
 import type {
   NotificationDto,
   NotificationPayloadDto,
   NotificationTypeDto,
-} from '@repo/shared-dto';
+} from "@repo/shared-dto";
 
-import { DatabaseService } from '@/db/database.service';
-import { notifications, usersView } from '@/db/schema';
+import { DatabaseService } from "@/db/database.service";
+import { notifications, usersView } from "@/db/schema";
 import {
   NOTIFICATION_TRANSPORTS,
   type NotificationTransport,
-} from './transports/notification-transport.interface';
+} from "./transports/notification-transport.interface";
 import {
   DELIVER_NOTIFICATION_JOB,
   type DeliverNotificationJobData,
-} from './notification-jobs.service';
+} from "./notification-jobs.service";
 
 // ─── Input type for creating a notification ───────────────────────────────────
 
@@ -53,7 +53,7 @@ export class NotificationsService {
    */
   async deliver(
     data: CreateNotificationData,
-    channels: string[] = ['websocket'],
+    channels: string[] = ["websocket"],
   ): Promise<NotificationDto> {
     const notification = await this.persist(data);
 
@@ -150,7 +150,14 @@ export class NotificationsService {
     if (!updated) {
       // Either not found, not owned, or already read — fetch to check existence
       const [existing] = await this.databaseService.db
-        .select({ notification: notifications, actor: { id: usersView.id, username: usersView.username, name: usersView.name } })
+        .select({
+          notification: notifications,
+          actor: {
+            id: usersView.id,
+            username: usersView.username,
+            name: usersView.name,
+          },
+        })
         .from(notifications)
         .leftJoin(usersView, eq(notifications.actorId, usersView.id))
         .where(
@@ -168,7 +175,14 @@ export class NotificationsService {
 
     // Fetch actor for the DTO
     const [withActor] = await this.databaseService.db
-      .select({ notification: notifications, actor: { id: usersView.id, username: usersView.username, name: usersView.name } })
+      .select({
+        notification: notifications,
+        actor: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
       .from(notifications)
       .leftJoin(usersView, eq(notifications.actorId, usersView.id))
       .where(eq(notifications.id, updated.id))
@@ -194,7 +208,9 @@ export class NotificationsService {
 
   // ─── Private helpers ───────────────────────────────────────────────────────
 
-  private async persist(data: CreateNotificationData): Promise<NotificationDto> {
+  private async persist(
+    data: CreateNotificationData,
+  ): Promise<NotificationDto> {
     const [row] = await this.databaseService.db
       .insert(notifications)
       .values({
@@ -206,12 +222,19 @@ export class NotificationsService {
       .returning();
 
     // Eagerly resolve the actor for the DTO
-    let actor: { id: string; username: string | null; name: string | null } | null =
-      null;
+    let actor: {
+      id: string;
+      username: string | null;
+      name: string | null;
+    } | null = null;
 
     if (data.actorId) {
       const [actorRow] = await this.databaseService.db
-        .select({ id: usersView.id, username: usersView.username, name: usersView.name })
+        .select({
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        })
         .from(usersView)
         .where(eq(usersView.id, data.actorId))
         .limit(1);
@@ -230,7 +253,11 @@ export class NotificationsService {
     userId: row.userId,
     actorId: row.actorId ?? null,
     actor: actor
-      ? { id: actor.id, username: actor.username ?? null, name: actor.name ?? null }
+      ? {
+          id: actor.id,
+          username: actor.username ?? null,
+          name: actor.name ?? null,
+        }
       : null,
     type: row.type as NotificationTypeDto,
     payload: row.payload as NotificationPayloadDto,

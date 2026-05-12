@@ -191,7 +191,10 @@ export function ProfileView({
                 disabled={followPending}
               >
                 {followPending ? (
-                  <Spinner size="sm" className="border-current border-t-transparent" />
+                  <Spinner
+                    size="sm"
+                    className="border-current border-t-transparent"
+                  />
                 ) : profile.isFollowing ? (
                   "Unfollow"
                 ) : (

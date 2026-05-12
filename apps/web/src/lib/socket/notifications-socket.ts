@@ -1,4 +1,4 @@
-import { io, type Socket } from 'socket.io-client';
+import { io, type Socket } from "socket.io-client";
 
 /**
  * Module-level singleton socket cache, keyed by auth token.
@@ -24,7 +24,7 @@ export function getOrCreateNotificationsSocket(
 
   const socket = io(`${backendUrl}/notifications`, {
     auth: { token },
-    transports: ['websocket'],
+    transports: ["websocket"],
     autoConnect: true,
   });
 

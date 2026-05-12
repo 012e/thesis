@@ -4,7 +4,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { CommentEditor } from "./comment-editor";
 import { CommentTree } from "./comment-tree";
 import { useCreateComment } from "@/hooks/use-comments";
@@ -29,25 +28,33 @@ export function CommentsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex flex-col p-0 max-w-2xl max-h-[80vh]">
-        <DialogHeader className="px-4 pt-4 pb-3 border-b">
+      <DialogContent
+        className="flex h-[80dvh] max-h-[calc(100dvh-2rem)] flex-col gap-0 overflow-hidden p-0"
+        style={{
+          width: "min(calc(100dvw - 2rem), 44rem)",
+          maxWidth: "min(calc(100dvw - 2rem), 44rem)",
+        }}
+      >
+        <DialogHeader className="px-4 pt-4 pb-3 border-b shrink-0">
           <DialogTitle>Comments</DialogTitle>
         </DialogHeader>
 
-        <div className="flex overflow-hidden flex-col flex-1">
+        <div className="flex min-h-0 overflow-hidden flex-col flex-1">
           {/* Comment Editor at the top */}
-          <CommentEditor
-            onSubmit={handleCommentSubmit}
-            isPending={isPending}
-            placeholder="Write a comment..."
-          />
+          <div className="shrink-0">
+            <CommentEditor
+              onSubmit={handleCommentSubmit}
+              isPending={isPending}
+              placeholder="Write a comment..."
+            />
+          </div>
 
           {/* Comments list — loaded lazily when dialog opens */}
-          <ScrollArea className="flex-1 px-4">
-            <div className="pb-4">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4">
+            <div className="pt-5 pb-4">
               <CommentTree postId={post.id} isRoot />
             </div>
-          </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

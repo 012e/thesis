@@ -16,9 +16,9 @@ import {
   posts,
   comments,
   usersView,
-} from '@/db/schema';
-import { NotificationsService } from '@/notifications/notifications.service';
-import { PostsService } from '@/posts/posts.service';
+} from "@/db/schema";
+import { NotificationsService } from "@/notifications/notifications.service";
+import { PostsService } from "@/posts/posts.service";
 
 @Injectable()
 export class ReactionsService {
@@ -58,12 +58,15 @@ export class ReactionsService {
       .returning();
 
     void this.postsService
-      .notifySubscribers(postId, userId, 'post_reaction', {
+      .notifySubscribers(postId, userId, "post_reaction", {
         postId,
         reactionType: type,
       })
       .catch((err) =>
-        console.warn('[ReactionsService] Failed to deliver post reaction notification:', err),
+        console.warn(
+          "[ReactionsService] Failed to deliver post reaction notification:",
+          err,
+        ),
       );
 
     return this.toReactionDto(row);
@@ -78,7 +81,11 @@ export class ReactionsService {
     type: ReactionTypeDto,
   ): Promise<CommentReactionDto | null> {
     const [comment] = await this.databaseService.db
-      .select({ id: comments.id, authorId: comments.authorId, postId: comments.postId })
+      .select({
+        id: comments.id,
+        authorId: comments.authorId,
+        postId: comments.postId,
+      })
       .from(comments)
       .where(eq(comments.id, commentId))
       .limit(1);
@@ -103,13 +110,16 @@ export class ReactionsService {
           {
             userId: comment.authorId,
             actorId: userId,
-            type: 'comment_reaction',
+            type: "comment_reaction",
             payload: { commentId, postId: comment.postId, reactionType: type },
           },
-          ['websocket'],
+          ["websocket"],
         )
         .catch((err) =>
-          console.warn('[ReactionsService] Failed to deliver comment reaction notification:', err),
+          console.warn(
+            "[ReactionsService] Failed to deliver comment reaction notification:",
+            err,
+          ),
         );
     }
 

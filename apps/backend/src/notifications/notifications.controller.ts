@@ -1,11 +1,11 @@
-import { Controller, NotFoundException } from '@nestjs/common';
-import type { UserSession } from '@thallesp/nestjs-better-auth';
-import { Session } from '@thallesp/nestjs-better-auth';
-import { TsRestHandler, tsRestHandler } from '@ts-rest/nest';
+import { Controller, NotFoundException } from "@nestjs/common";
+import type { UserSession } from "@thallesp/nestjs-better-auth";
+import { Session } from "@thallesp/nestjs-better-auth";
+import { TsRestHandler, tsRestHandler } from "@ts-rest/nest";
 
-import { notificationsContract } from '@repo/rest-contracts';
+import { notificationsContract } from "@repo/rest-contracts";
 
-import { NotificationsService } from './notifications.service';
+import { NotificationsService } from "./notifications.service";
 
 @Controller()
 export class NotificationsController {
@@ -36,12 +36,15 @@ export class NotificationsController {
    */
   @TsRestHandler(notificationsContract.getNotificationUnreadCount)
   getUnreadCount(@Session() session: UserSession) {
-    return tsRestHandler(notificationsContract.getNotificationUnreadCount, async () => {
-      const count = await this.notificationsService.getUnreadCount(
-        session.user.id,
-      );
-      return { status: 200, body: { count } };
-    });
+    return tsRestHandler(
+      notificationsContract.getNotificationUnreadCount,
+      async () => {
+        const count = await this.notificationsService.getUnreadCount(
+          session.user.id,
+        );
+        return { status: 200, body: { count } };
+      },
+    );
   }
 
   /**
@@ -65,18 +68,15 @@ export class NotificationsController {
    */
   @TsRestHandler(notificationsContract.markRead)
   markRead(@Session() session: UserSession) {
-    return tsRestHandler(
-      notificationsContract.markRead,
-      async ({ params }) => {
-        const notification = await this.notificationsService.markRead(
-          params.id,
-          session.user.id,
-        );
-        if (!notification) {
-          throw new NotFoundException('Notification not found');
-        }
-        return { status: 200, body: notification };
-      },
-    );
+    return tsRestHandler(notificationsContract.markRead, async ({ params }) => {
+      const notification = await this.notificationsService.markRead(
+        params.id,
+        session.user.id,
+      );
+      if (!notification) {
+        throw new NotFoundException("Notification not found");
+      }
+      return { status: 200, body: notification };
+    });
   }
 }

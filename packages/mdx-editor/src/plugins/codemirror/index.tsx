@@ -1,21 +1,25 @@
-import { realmPlugin } from '../../RealmWithPlugins'
-import { Cell, Signal, map } from '@mdxeditor/gurx'
-import { CodeBlockEditorDescriptor, appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
-import { CodeMirrorEditor } from './CodeMirrorEditor'
-import type { Extension } from '@codemirror/state'
-import type { ReactNode } from 'react'
+import { realmPlugin } from "../../RealmWithPlugins";
+import { Cell, Signal, map } from "@mdxeditor/gurx";
+import {
+  CodeBlockEditorDescriptor,
+  appendCodeBlockEditorDescriptor$,
+  insertCodeBlock$,
+} from "../codeblock";
+import { CodeMirrorEditor } from "./CodeMirrorEditor";
+import type { Extension } from "@codemirror/state";
+import type { ReactNode } from "react";
 
 /**
  * @internal
  */
-export const EMPTY_VALUE = '__EMPTY_VALUE__'
+export const EMPTY_VALUE = "__EMPTY_VALUE__";
 
 /**
  * Compatible with CodeMirror `LanguageSupport` objects without exposing that package in the public API.
  * @group CodeMirror
  */
 export interface CodeBlockLanguageSupport {
-  extension: Extension
+  extension: Extension;
 }
 
 /**
@@ -25,15 +29,15 @@ export interface CodeBlockLanguageSupport {
  */
 export interface CodeBlockLanguage {
   /** Display name shown in the language select dropdown. */
-  name: string
+  name: string;
   /** Optional custom label shown in the language select dropdown. */
-  label?: ReactNode
+  label?: ReactNode;
   /** Alternative identifiers for this language (e.g. `["js"]` for JavaScript). */
-  alias?: readonly string[]
+  alias?: readonly string[];
   /** File extensions associated with this language (e.g. `["js", "mjs"]`). */
-  extensions?: readonly string[]
+  extensions?: readonly string[];
   /** Pre-loaded language support. When provided, this is used directly instead of auto-loading. */
-  support?: CodeBlockLanguageSupport
+  support?: CodeBlockLanguageSupport;
 }
 
 /**
@@ -42,59 +46,61 @@ export interface CodeBlockLanguage {
  */
 export interface NormalizedCodeBlockLanguages {
   /** Items for the language select dropdown. */
-  items: { value: string; label: ReactNode }[]
+  items: { value: string; label: ReactNode }[];
   /** Maps any known key (canonical, alias, extension) to the canonical key. */
-  keyMap: Record<string, string>
+  keyMap: Record<string, string>;
   /** Maps canonical keys to pre-loaded language support, when provided. */
-  supportMap: Partial<Record<string, CodeBlockLanguageSupport>>
+  supportMap: Partial<Record<string, CodeBlockLanguageSupport>>;
 }
 
 /**
  * Normalizes the `codeBlockLanguages` parameter into a canonical form.
  * Accepts either a `Record<string, string>` (legacy) or a `CodeBlockLanguage[]` array.
  */
-export function normalizeCodeBlockLanguages(input: Record<string, string> | CodeBlockLanguage[]): NormalizedCodeBlockLanguages {
-  const items: { value: string; label: ReactNode }[] = []
-  const keyMap: Record<string, string> = {}
-  const supportMap: Partial<Record<string, CodeBlockLanguageSupport>> = {}
+export function normalizeCodeBlockLanguages(
+  input: Record<string, string> | CodeBlockLanguage[],
+): NormalizedCodeBlockLanguages {
+  const items: { value: string; label: ReactNode }[] = [];
+  const keyMap: Record<string, string> = {};
+  const supportMap: Partial<Record<string, CodeBlockLanguageSupport>> = {};
 
   if (Array.isArray(input)) {
     for (const lang of input) {
       // The canonical key is the first alias, or the lowercased name.
       // Empty string canonical (e.g. Plain text with alias: ['']) is stored as EMPTY_VALUE
       // because Radix Select does not accept items with an empty string value.
-      const rawCanonical = lang.alias?.[0] ?? lang.name.toLowerCase()
-      const canonical = rawCanonical || EMPTY_VALUE
-      items.push({ value: canonical, label: lang.label ?? lang.name })
-      keyMap[rawCanonical] = canonical
+      const rawCanonical = lang.alias?.[0] ?? lang.name.toLowerCase();
+      const canonical = rawCanonical || EMPTY_VALUE;
+      items.push({ value: canonical, label: lang.label ?? lang.name });
+      keyMap[rawCanonical] = canonical;
       if (lang.alias) {
         for (const alias of lang.alias) {
-          keyMap[alias] = canonical
+          keyMap[alias] = canonical;
         }
       }
       if (lang.extensions) {
         for (const ext of lang.extensions) {
-          keyMap[ext] = canonical
+          keyMap[ext] = canonical;
         }
       }
       // Also map the lowercased name
-      keyMap[lang.name.toLowerCase()] = canonical
+      keyMap[lang.name.toLowerCase()] = canonical;
       if (lang.support) {
-        supportMap[canonical] = lang.support
+        supportMap[canonical] = lang.support;
       }
     }
   } else {
-    const firstKeyByLabel: Record<string, string> = {}
+    const firstKeyByLabel: Record<string, string> = {};
     for (const [key, label] of Object.entries(input)) {
       if (!(label in firstKeyByLabel)) {
-        firstKeyByLabel[label] = key
-        items.push({ value: key || EMPTY_VALUE, label })
+        firstKeyByLabel[label] = key;
+        items.push({ value: key || EMPTY_VALUE, label });
       }
-      keyMap[key] = firstKeyByLabel[label] || EMPTY_VALUE
+      keyMap[key] = firstKeyByLabel[label] || EMPTY_VALUE;
     }
   }
 
-  return { items, keyMap, supportMap }
+  return { items, keyMap, supportMap };
 }
 
 /**
@@ -103,17 +109,17 @@ export function normalizeCodeBlockLanguages(input: Record<string, string> | Code
  */
 export function getCodeBlockLanguageSelectData(
   normalized: NormalizedCodeBlockLanguages,
-  language: string
+  language: string,
 ): { value: string; items: { value: string; label: ReactNode }[] } {
-  const value = normalized.keyMap[language] ?? language
+  const value = normalized.keyMap[language] ?? language;
   if (!value || normalized.items.some((item) => item.value === value)) {
-    return { value, items: normalized.items }
+    return { value, items: normalized.items };
   }
 
   return {
     value,
-    items: [...normalized.items, { value, label: language }]
-  }
+    items: [...normalized.items, { value, label: language }],
+  };
 }
 
 /**
@@ -122,46 +128,48 @@ export function getCodeBlockLanguageSelectData(
  */
 export const codeBlockLanguages$ = Cell<NormalizedCodeBlockLanguages>(
   normalizeCodeBlockLanguages({
-    js: 'JavaScript',
-    ts: 'TypeScript',
-    tsx: 'TypeScript (React)',
-    jsx: 'JavaScript (React)',
-    css: 'CSS'
-  })
-)
+    js: "JavaScript",
+    ts: "TypeScript",
+    tsx: "TypeScript (React)",
+    jsx: "JavaScript (React)",
+    css: "CSS",
+  }),
+);
 
 /**
  * Inserts a new code mirror code block with the specified parameters.
  * @group CodeMirror
  */
-export const insertCodeMirror$ = Signal<{ language: string; code: string }>((r) => {
-  r.link(
-    r.pipe(
-      insertCodeMirror$,
-      map(({ language, code }) => {
-        return {
-          code: code,
-          language,
-          meta: ''
-        }
-      })
-    ),
-    insertCodeBlock$
-  )
-})
+export const insertCodeMirror$ = Signal<{ language: string; code: string }>(
+  (r) => {
+    r.link(
+      r.pipe(
+        insertCodeMirror$,
+        map(({ language, code }) => {
+          return {
+            code: code,
+            language,
+            meta: "",
+          };
+        }),
+      ),
+      insertCodeBlock$,
+    );
+  },
+);
 
 /**
  * The code mirror extensions for the coemirror code block editor.
  * @group CodeMirror
  */
-export const codeMirrorExtensions$ = Cell<Extension[]>([])
+export const codeMirrorExtensions$ = Cell<Extension[]>([]);
 
 /**
  * Whether or not to try to dynamically load the code block language support.
  * Disable if you want to manually pass the supported languages.
  * @group CodeMirror
  */
-export const codeMirrorAutoLoadLanguageSupport$ = Cell<boolean>(true)
+export const codeMirrorAutoLoadLanguageSupport$ = Cell<boolean>(true);
 
 /**
  * A plugin that adds lets users edit code blocks with CodeMirror.
@@ -174,43 +182,51 @@ export const codeMirrorPlugin = realmPlugin<{
    * or an array of {@link CodeBlockLanguage} objects (compatible with CodeMirror's `LanguageDescription`
    * from `@codemirror/language-data`), which supports aliases and file extensions.
    */
-  codeBlockLanguages: Record<string, string> | CodeBlockLanguage[]
+  codeBlockLanguages: Record<string, string> | CodeBlockLanguage[];
   /**
    * Optional, additional CodeMirror extensions to load in the diff/source mode.
    */
-  codeMirrorExtensions?: Extension[]
+  codeMirrorExtensions?: Extension[];
   /**
    * Whether or not to try to dynamically load the code block language support.
    * Disable if you want to manually pass the supported languages.
    * @group CodeMirror
    */
-  autoLoadLanguageSupport?: boolean
+  autoLoadLanguageSupport?: boolean;
 }>({
   update(r, params) {
     r.pubIn({
-      [codeBlockLanguages$]: normalizeCodeBlockLanguages(params?.codeBlockLanguages ?? {}),
+      [codeBlockLanguages$]: normalizeCodeBlockLanguages(
+        params?.codeBlockLanguages ?? {},
+      ),
       [codeMirrorExtensions$]: params?.codeMirrorExtensions ?? [],
-      [codeMirrorAutoLoadLanguageSupport$]: params?.autoLoadLanguageSupport ?? true
-    })
+      [codeMirrorAutoLoadLanguageSupport$]:
+        params?.autoLoadLanguageSupport ?? true,
+    });
   },
 
   init(r, params) {
-    const normalized = normalizeCodeBlockLanguages(params?.codeBlockLanguages ?? {})
+    const normalized = normalizeCodeBlockLanguages(
+      params?.codeBlockLanguages ?? {},
+    );
     r.pubIn({
       [codeBlockLanguages$]: normalized,
       [codeMirrorExtensions$]: params?.codeMirrorExtensions ?? [],
       [appendCodeBlockEditorDescriptor$]: buildCodeBlockDescriptor(normalized),
-      [codeMirrorAutoLoadLanguageSupport$]: params?.autoLoadLanguageSupport ?? true
-    })
-  }
-})
+      [codeMirrorAutoLoadLanguageSupport$]:
+        params?.autoLoadLanguageSupport ?? true,
+    });
+  },
+});
 
-function buildCodeBlockDescriptor(_normalized: NormalizedCodeBlockLanguages): CodeBlockEditorDescriptor {
+function buildCodeBlockDescriptor(
+  _normalized: NormalizedCodeBlockLanguages,
+): CodeBlockEditorDescriptor {
   return {
     match(_language, meta) {
-      return !meta
+      return !meta;
     },
     priority: 1,
-    Editor: CodeMirrorEditor
-  }
+    Editor: CodeMirrorEditor,
+  };
 }

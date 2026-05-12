@@ -9,7 +9,9 @@ Two client layers:
 
 ```ts
 // src/lib/api/index.ts
-export const client = initClient(appContract, { baseUrl: env.VITE_BACKEND_URL });
+export const client = initClient(appContract, {
+  baseUrl: env.VITE_BACKEND_URL,
+});
 
 // Usage pattern — always narrow on status
 const res = await client.listPosts({

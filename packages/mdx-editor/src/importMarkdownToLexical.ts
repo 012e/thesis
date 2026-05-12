@@ -1,38 +1,38 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ElementNode, LexicalNode } from 'lexical'
-import * as Mdast from 'mdast'
-import { fromMarkdown, type Options } from 'mdast-util-from-markdown'
-import { MdxjsEsm } from 'mdast-util-mdx'
-import { toMarkdown } from 'mdast-util-to-markdown'
-import { ParseOptions } from 'micromark-util-types'
-import { FORMAT } from './FormatConstants'
-import { CodeBlockEditorDescriptor } from './plugins/codeblock'
-import { DirectiveDescriptor } from './plugins/directives'
-import { JsxComponentDescriptor } from './plugins/jsx'
+import { ElementNode, LexicalNode } from "lexical";
+import * as Mdast from "mdast";
+import { fromMarkdown, type Options } from "mdast-util-from-markdown";
+import { MdxjsEsm } from "mdast-util-mdx";
+import { toMarkdown } from "mdast-util-to-markdown";
+import { ParseOptions } from "micromark-util-types";
+import { FORMAT } from "./FormatConstants";
+import { CodeBlockEditorDescriptor } from "./plugins/codeblock";
+import { DirectiveDescriptor } from "./plugins/directives";
+import { JsxComponentDescriptor } from "./plugins/jsx";
 
 export interface ImportStatement {
-  source: string
-  defaultExport: boolean
+  source: string;
+  defaultExport: boolean;
 }
 
 /**
  * Metadata that is provided to the visitors
  */
 interface MetaData {
-  importDeclarations: Record<string, ImportStatement>
+  importDeclarations: Record<string, ImportStatement>;
 }
 
 /**
  * The registered descriptors for composite nodes (jsx, directives, code blocks).
  */
 export interface Descriptors {
-  jsxComponentDescriptors: JsxComponentDescriptor[]
-  directiveDescriptors: DirectiveDescriptor[]
-  codeBlockEditorDescriptors: CodeBlockEditorDescriptor[]
+  jsxComponentDescriptors: JsxComponentDescriptor[];
+  directiveDescriptors: DirectiveDescriptor[];
+  codeBlockEditorDescriptors: CodeBlockEditorDescriptor[];
 }
 
 /** @internal */
-export type MdastExtensions = Options['mdastExtensions']
+export type MdastExtensions = Options["mdastExtensions"];
 
 /**
  * Implement this interface to convert certain mdast nodes into lexical nodes.
@@ -45,28 +45,30 @@ export interface MdastImportVisitor<UN extends Mdast.Nodes> {
    * As a convenience, you can also pass a string here, which will be compared to the node's type.
    * @param descriptors - the registered descriptors for composite nodes (jsx, directives, code blocks).
    */
-  testNode: ((mdastNode: Mdast.Nodes, descriptors: Descriptors) => boolean) | string
+  testNode:
+    | ((mdastNode: Mdast.Nodes, descriptors: Descriptors) => boolean)
+    | string;
   visitNode(params: {
     /**
      * The node that is currently being visited.
      */
-    mdastNode: UN
+    mdastNode: UN;
     /**
      * The MDAST parent of the node that is currently being visited.
      */
-    mdastParent: Mdast.Parent | null
+    mdastParent: Mdast.Parent | null;
     /**
      * The parent lexical node to which the results of the processing should be added.
      */
-    lexicalParent: LexicalNode
+    lexicalParent: LexicalNode;
     /**
      * The descriptors for composite nodes (jsx, directives, code blocks).
      */
-    descriptors: Descriptors
+    descriptors: Descriptors;
     /**
      * metaData: context data provided from the import visitor.
      */
-    metaData: MetaData
+    metaData: MetaData;
     /**
      * A set of convenience utilities that can be used to add nodes to the lexical tree.
      */
@@ -74,56 +76,56 @@ export interface MdastImportVisitor<UN extends Mdast.Nodes> {
       /**
        * Iterate the children of the node with the lexical node as the parent.
        */
-      visitChildren(node: Mdast.Parent, lexicalParent: LexicalNode): void
+      visitChildren(node: Mdast.Parent, lexicalParent: LexicalNode): void;
 
       /**
        * Add the given node to the lexical tree, and iterate the current mdast node's children with the newly created lexical node as a parent.
        */
-      addAndStepInto(lexicalNode: LexicalNode): void
+      addAndStepInto(lexicalNode: LexicalNode): void;
 
       /**
        * Adds formatting as a context for the current node and its children.
        * This is necessary due to mdast treating formatting as a node, while lexical considering it an attribute of a node.
        */
-      addFormatting(format: FORMAT, node?: Mdast.Parent | null): void
+      addFormatting(format: FORMAT, node?: Mdast.Parent | null): void;
 
       /**
        * Removes formatting as a context for the current node and its children.
        * This is necessary due to mdast treating formatting as a node, while lexical considering it an attribute of a node.
        */
-      removeFormatting(format: FORMAT, node?: Mdast.Parent | null): void
+      removeFormatting(format: FORMAT, node?: Mdast.Parent | null): void;
       /**
        * Access the current formatting context.
        */
-      getParentFormatting(): number
+      getParentFormatting(): number;
       /**
        * Adds styling as a context for the current node and its children.
        * This is necessary due to mdast treating styling as a node, while lexical considering it an attribute of a node.
        */
-      addStyle(style: string, node?: Mdast.Parent | null): void
+      addStyle(style: string, node?: Mdast.Parent | null): void;
       /**
        * Access the current style context.
        */
-      getParentStyle(): string
+      getParentStyle(): string;
       /**
        * Go to next visitor in the visitors chain for potential processing from a different visitor with a lower priority
        */
-      nextVisitor(): void
-    }
-  }): void
+      nextVisitor(): void;
+    };
+  }): void;
   /**
    * Default 0, optional, sets the priority of the visitor. The higher the number, the earlier it will be called.
    */
-  priority?: number
+  priority?: number;
 }
 
 function isParent(node: unknown): node is Mdast.Parent {
-  return (node as { children?: any[] }).children instanceof Array
+  return (node as { children?: any[] }).children instanceof Array;
 }
 
 export interface ImportPoint {
-  append(node: LexicalNode): void
-  getType(): string
+  append(node: LexicalNode): void;
+  getType(): string;
 }
 
 /**
@@ -131,29 +133,32 @@ export interface ImportPoint {
  * @internal
  */
 export interface MdastTreeImportOptions extends Descriptors {
-  root: ImportPoint
-  visitors: MdastImportVisitor<Mdast.RootContent>[]
-  mdastRoot: Mdast.Root
+  root: ImportPoint;
+  visitors: MdastImportVisitor<Mdast.RootContent>[];
+  mdastRoot: Mdast.Root;
 }
 
 /** @internal */
-export interface MarkdownParseOptions extends Omit<MdastTreeImportOptions, 'mdastRoot'> {
-  markdown: string
-  syntaxExtensions: NonNullable<ParseOptions['extensions']>
-  mdastExtensions: MdastExtensions
+export interface MarkdownParseOptions extends Omit<
+  MdastTreeImportOptions,
+  "mdastRoot"
+> {
+  markdown: string;
+  syntaxExtensions: NonNullable<ParseOptions["extensions"]>;
+  mdastExtensions: MdastExtensions;
 }
 
 /**
  * An extension for the `fromMarkdown` utility tree construction.
  * @internal
  */
-export type MdastExtension = NonNullable<MdastExtensions>[number]
+export type MdastExtension = NonNullable<MdastExtensions>[number];
 
 /**
  * An extension for the `fromMarkdown` utility markdown parse.
  * @internal
  */
-export type SyntaxExtension = MarkdownParseOptions['syntaxExtensions'][number]
+export type SyntaxExtension = MarkdownParseOptions["syntaxExtensions"][number];
 
 /**
  * An error that gets thrown when the Markdown parsing fails due to a syntax error.
@@ -161,9 +166,9 @@ export type SyntaxExtension = MarkdownParseOptions['syntaxExtensions'][number]
  */
 export class MarkdownParseError extends Error {
   constructor(message: string, cause: unknown) {
-    super(message)
-    this.name = 'MarkdownParseError'
-    this.cause = cause
+    super(message);
+    this.name = "MarkdownParseError";
+    this.cause = cause;
   }
 }
 
@@ -173,37 +178,37 @@ export class MarkdownParseError extends Error {
  */
 export class UnrecognizedMarkdownConstructError extends Error {
   constructor(message: string) {
-    super(message)
-    this.name = 'UnrecognizedMarkdownConstructError'
+    super(message);
+    this.name = "UnrecognizedMarkdownConstructError";
   }
 }
 
 function gatherMetadata(mdastNode: Mdast.RootContent | Mdast.Root): MetaData {
-  const importsMap = new Map<string, ImportStatement>()
-  if (mdastNode.type !== 'root') {
+  const importsMap = new Map<string, ImportStatement>();
+  if (mdastNode.type !== "root") {
     return {
-      importDeclarations: {}
-    }
+      importDeclarations: {},
+    };
   }
   const importStatements = mdastNode.children
-    .filter((n) => n.type === 'mdxjsEsm')
-    .filter((n) => (n as MdxjsEsm).value.startsWith('import ')) as MdxjsEsm[]
+    .filter((n) => n.type === "mdxjsEsm")
+    .filter((n) => (n as MdxjsEsm).value.startsWith("import ")) as MdxjsEsm[];
   importStatements.forEach((imp) => {
-    ;(imp.data?.estree?.body ?? []).forEach((declaration) => {
-      if (declaration.type !== 'ImportDeclaration') {
-        return
+    (imp.data?.estree?.body ?? []).forEach((declaration) => {
+      if (declaration.type !== "ImportDeclaration") {
+        return;
       }
       declaration.specifiers.forEach((specifier) => {
         importsMap.set(specifier.local.name, {
           source: `${declaration.source.value}`,
-          defaultExport: specifier.type === 'ImportDefaultSpecifier'
-        })
-      })
-    })
-  })
+          defaultExport: specifier.type === "ImportDefaultSpecifier",
+        });
+      });
+    });
+  });
   return {
-    importDeclarations: Object.fromEntries(importsMap.entries())
-  }
+    importDeclarations: Object.fromEntries(importsMap.entries()),
+  };
 }
 
 /** @internal */
@@ -215,73 +220,82 @@ export function importMarkdownToLexical({
   mdastExtensions,
   ...descriptors
 }: MarkdownParseOptions): void {
-  let mdastRoot: Mdast.Root
+  let mdastRoot: Mdast.Root;
   try {
     mdastRoot = fromMarkdown(markdown, {
       extensions: syntaxExtensions,
-      mdastExtensions
-    })
+      mdastExtensions,
+    });
   } catch (e: unknown) {
     if (e instanceof Error) {
-      throw new MarkdownParseError(`Error parsing markdown: ${e.message}`, e)
+      throw new MarkdownParseError(`Error parsing markdown: ${e.message}`, e);
     } else {
-      throw new MarkdownParseError(`Error parsing markdown: ${e}`, e)
+      throw new MarkdownParseError(`Error parsing markdown: ${e}`, e);
     }
   }
 
   if (mdastRoot.children.length === 0) {
-    mdastRoot.children.push({ type: 'paragraph', children: [] })
+    mdastRoot.children.push({ type: "paragraph", children: [] });
   }
 
   // leave empty paragraph, so that the user can start typing
-  if (mdastRoot.children.at(-1)?.type !== 'paragraph') {
-    mdastRoot.children.push({ type: 'paragraph', children: [] })
+  if (mdastRoot.children.at(-1)?.type !== "paragraph") {
+    mdastRoot.children.push({ type: "paragraph", children: [] });
   }
 
-  importMdastTreeToLexical({ root, mdastRoot, visitors, ...descriptors })
+  importMdastTreeToLexical({ root, mdastRoot, visitors, ...descriptors });
 }
 
-export function importMdastTreeToLexical({ root, mdastRoot, visitors, ...descriptors }: MdastTreeImportOptions): void {
-  const formattingMap = new WeakMap<Mdast.Parent, number>()
-  const styleMap = new WeakMap<Mdast.Parent, string>()
-  const metaData: MetaData = gatherMetadata(mdastRoot)
+export function importMdastTreeToLexical({
+  root,
+  mdastRoot,
+  visitors,
+  ...descriptors
+}: MdastTreeImportOptions): void {
+  const formattingMap = new WeakMap<Mdast.Parent, number>();
+  const styleMap = new WeakMap<Mdast.Parent, string>();
+  const metaData: MetaData = gatherMetadata(mdastRoot);
 
-  visitors = visitors.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+  visitors = visitors.sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
 
   function visitChildren(mdastNode: Mdast.Parent, lexicalParent: LexicalNode) {
     if (!isParent(mdastNode)) {
-      throw new Error('Attempting to visit children of a non-parent')
+      throw new Error("Attempting to visit children of a non-parent");
     }
     mdastNode.children.forEach((child) => {
-      visit(child, lexicalParent, mdastNode)
-    })
+      visit(child, lexicalParent, mdastNode);
+    });
   }
 
   function visit(
     mdastNode: Mdast.RootContent | Mdast.Root,
     lexicalParent: LexicalNode,
     mdastParent: Mdast.Parent | null,
-    skipVisitors: Set<number> | null = null
+    skipVisitors: Set<number> | null = null,
   ) {
     const visitor = visitors.find((visitor, index) => {
       if (skipVisitors?.has(index)) {
-        return false
+        return false;
       }
-      if (typeof visitor.testNode === 'string') {
-        return visitor.testNode === mdastNode.type
+      if (typeof visitor.testNode === "string") {
+        return visitor.testNode === mdastNode.type;
       }
-      return visitor.testNode(mdastNode, descriptors)
-    })
+      return visitor.testNode(mdastNode, descriptors);
+    });
     if (!visitor) {
       try {
-        throw new UnrecognizedMarkdownConstructError(`Unsupported markdown syntax: ${toMarkdown(mdastNode)}`)
+        throw new UnrecognizedMarkdownConstructError(
+          `Unsupported markdown syntax: ${toMarkdown(mdastNode)}`,
+        );
       } catch (_e) {
         throw new UnrecognizedMarkdownConstructError(
-          `Parsing of the following markdown structure failed: ${JSON.stringify({
-            type: mdastNode.type,
-            name: 'name' in mdastNode ? mdastNode.name : 'N/A'
-          })}`
-        )
+          `Parsing of the following markdown structure failed: ${JSON.stringify(
+            {
+              type: mdastNode.type,
+              name: "name" in mdastNode ? mdastNode.name : "N/A",
+            },
+          )}`,
+        );
       }
     }
 
@@ -295,53 +309,64 @@ export function importMdastTreeToLexical({ root, mdastRoot, visitors, ...descrip
       actions: {
         visitChildren,
         nextVisitor() {
-          visit(mdastNode, lexicalParent, mdastParent, (skipVisitors ?? new Set()).add(visitors.indexOf(visitor)))
+          visit(
+            mdastNode,
+            lexicalParent,
+            mdastParent,
+            (skipVisitors ?? new Set()).add(visitors.indexOf(visitor)),
+          );
         },
         addAndStepInto(lexicalNode) {
-          ;(lexicalParent as ElementNode).append(lexicalNode)
+          (lexicalParent as ElementNode).append(lexicalNode);
           if (isParent(mdastNode)) {
-            visitChildren(mdastNode, lexicalNode)
+            visitChildren(mdastNode, lexicalNode);
           }
         },
         addFormatting(format, node) {
           if (!node) {
             if (isParent(mdastNode)) {
-              node = mdastNode
+              node = mdastNode;
             }
           }
           if (node) {
-            formattingMap.set(node, format | (formattingMap.get(mdastParent!) ?? 0))
+            formattingMap.set(
+              node,
+              format | (formattingMap.get(mdastParent!) ?? 0),
+            );
           }
         },
         removeFormatting(format, node) {
           if (!node) {
             if (isParent(mdastNode)) {
-              node = mdastNode
+              node = mdastNode;
             }
           }
           if (node) {
-            formattingMap.set(node, format ^ (formattingMap.get(mdastParent!) ?? 0))
+            formattingMap.set(
+              node,
+              format ^ (formattingMap.get(mdastParent!) ?? 0),
+            );
           }
         },
         getParentFormatting() {
-          return formattingMap.get(mdastParent!) ?? 0
+          return formattingMap.get(mdastParent!) ?? 0;
         },
         addStyle(style, node) {
           if (!node) {
             if (isParent(mdastNode)) {
-              node = mdastNode
+              node = mdastNode;
             }
           }
           if (node) {
-            styleMap.set(node, style) // TODO: merge style,  | (styleMap.get(mdastParent!) ?? 0)
+            styleMap.set(node, style); // TODO: merge style,  | (styleMap.get(mdastParent!) ?? 0)
           }
         },
         getParentStyle() {
-          return styleMap.get(mdastParent!) ?? ''
-        }
-      }
-    })
+          return styleMap.get(mdastParent!) ?? "";
+        },
+      },
+    });
   }
 
-  visit(mdastRoot, root as unknown as LexicalNode, null)
+  visit(mdastRoot, root as unknown as LexicalNode, null);
 }
