@@ -15,7 +15,7 @@ pnpm --filter web lint
 | Concern       | Choice                                   | Notes                                                       |
 | ------------- | ---------------------------------------- | ----------------------------------------------------------- |
 | Routing       | TanStack Router (file-based)             | auto-generates `src/routeTree.gen.ts` — never edit          |
-| Server state  | TanStack Query                           | configured; not yet used in queries — add new ones here     |
+| Server state  | TanStack Query                           | configured and used across hooks/components via `useQuery`/`useMutation` |
 | Client state  | Jotai v2                                 | custom store for imperative access outside React            |
 | Forms         | TanStack Form + Zod                      | per-field `safeParse`, no global adapter                    |
 | Auth          | `better-auth` via `@repo/auth-client`    | JWT persisted via `atomWithStorage`                         |
@@ -48,7 +48,7 @@ src/
     auth.ts                 # login / register / logout / forgotPassword / resetPassword / updateProfile
     utils.ts                # cn() — clsx + twMerge
     query-client.ts         # QueryClient singleton (staleTime 5m, gcTime 10m, retry 1)
-    api/auth.ts             # ts-rest client init (baseUrl: "/")
+    api/index.ts            # ts-rest client init (baseUrl from `env.VITE_BACKEND_URL`)
     atoms/store.ts          # Jotai createStore() singleton
     atoms/bearer-token.ts   # atomWithStorage("bearer_token") — persisted JWT
 ```

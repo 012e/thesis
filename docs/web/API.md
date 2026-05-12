@@ -8,8 +8,8 @@ Two client layers:
 ## ts-rest Client
 
 ```ts
-// src/lib/api/auth.ts
-export const client = initClient(authContract, { baseUrl: "/" });
+// src/lib/api/index.ts
+export const client = initClient(appContract, { baseUrl: env.VITE_BACKEND_URL });
 
 // Usage pattern — always narrow on status
 const res = await client.listPosts({
@@ -35,7 +35,7 @@ authClient.resetPassword({ newPassword, token });
 authClient.updateUser({ name, image });
 ```
 
-Base URL hardcoded to `http://localhost:3000` in `packages/auth-client/src/auth-client.ts`.
+Base URL for the ts-rest client is read from `env.VITE_BACKEND_URL` (defaults to `http://localhost:3000`). The Better Auth client still uses `http://localhost:3000` by default in `packages/auth-client/src/auth-client.ts`.
 
 ## TanStack Query Integration Pattern
 
