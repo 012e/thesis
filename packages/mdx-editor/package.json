@@ -16,7 +16,7 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json",
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/mdx-editor.css"
   },
   "scripts": {
     "build": "vite build",
