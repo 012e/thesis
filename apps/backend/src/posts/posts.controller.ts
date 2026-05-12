@@ -56,6 +56,22 @@ export class PostsController {
     });
   }
 
+  @TsRestHandler(postsContract.listFollowingPosts)
+  listFollowingPosts(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.listFollowingPosts, async ({ query }) => {
+      const limit = query.limit ?? 20;
+      const result = await this.postsService.listByFollowing(
+        session.user.id,
+        limit,
+        query.cursor,
+      );
+      return {
+        status: 200,
+        body: postsContract.listFollowingPosts.responses[200].parse(result),
+      };
+    });
+  }
+
   @TsRestHandler(postsContract.getPost)
   getPost(@Session() session: UserSession) {
     return tsRestHandler(postsContract.getPost, async ({ params }) => {
