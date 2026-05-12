@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updatePost } from "@/lib/api/posts";
 import type { PostContentDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
+import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
 
 export function useUpdatePost() {
   const queryClient = useQueryClient();
@@ -16,6 +17,7 @@ export function useUpdatePost() {
     }) => updatePost(postId, content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+      queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
       toast.success("Post updated successfully!");
     },
     onError: (error: Error) => {

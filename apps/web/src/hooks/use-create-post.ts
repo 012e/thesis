@@ -3,6 +3,7 @@ import { createPost } from "@/lib/api/posts";
 import { addNewPost } from "@/lib/session-storage";
 import type { PostContentDto, PostDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
+import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
@@ -18,6 +19,7 @@ export function useCreatePost() {
 
       // Invalidate recommendations query to sync with server
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+      queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
 
       toast.success("Post created successfully!");
     },
