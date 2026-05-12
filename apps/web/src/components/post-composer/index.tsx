@@ -8,12 +8,13 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import {
-  MDXEditor,
-  type MDXEditorMethods,
-} from "@repo/mdx-editor";
+import { MDXEditor, type MDXEditorMethods } from "@repo/mdx-editor";
 import "@repo/mdx-editor/style.css";
-import type { PostContentDto, PollPostContentDto, PostImageDto } from "@repo/shared-dto";
+import type {
+  PostContentDto,
+  PollPostContentDto,
+  PostImageDto,
+} from "@repo/shared-dto";
 import {
   IconAlertCircle,
   IconLoader2,
@@ -64,11 +65,16 @@ interface PostComposerContextValue {
   handleRemoveUploadedImage: (index: number) => void;
 }
 
-const PostComposerContext = createContext<PostComposerContextValue | null>(null);
+const PostComposerContext = createContext<PostComposerContextValue | null>(
+  null,
+);
 
 export function usePostComposerContext(): PostComposerContextValue {
   const ctx = useContext(PostComposerContext);
-  if (!ctx) throw new Error("usePostComposerContext must be used inside PostComposerProvider");
+  if (!ctx)
+    throw new Error(
+      "usePostComposerContext must be used inside PostComposerProvider",
+    );
   return ctx;
 }
 
@@ -102,7 +108,8 @@ export function PostComposerProvider({
   children,
 }: PostComposerProviderProps) {
   const { mutate: createPost, isPending: isCreating } = useCreatePost();
-  const { mutateAsync: uploadImages, isPending: isUploading } = useUploadImages();
+  const { mutateAsync: uploadImages, isPending: isUploading } =
+    useUploadImages();
 
   const isPending = isCreating || isUploading;
   const characterCount = content.length;
@@ -166,12 +173,14 @@ export function PostComposerProvider({
     setPoll(undefined);
   };
 
-  const handlePollChange = (val: PollPostContentDto | undefined) => setPoll(val);
+  const handlePollChange = (val: PollPostContentDto | undefined) =>
+    setPoll(val);
 
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
-    const remainingSlots = MAX_IMAGES - selectedImages.length - uploadedImages.length;
+    const remainingSlots =
+      MAX_IMAGES - selectedImages.length - uploadedImages.length;
     const filesToAdd = Array.from(files).slice(0, remainingSlots);
     const newPreviews: ImagePreview[] = filesToAdd.map((file) => ({
       file,
@@ -234,18 +243,23 @@ type PostComposerEditorProps = {
   contentEditableClassName?: string;
 };
 
-export const PostComposerEditor = forwardRef<MDXEditorMethods, PostComposerEditorProps>(
+export const PostComposerEditor = forwardRef<
+  MDXEditorMethods,
+  PostComposerEditorProps
+>(
   (
     {
       plugins,
       wrapperClassName,
-      contentEditableClassName = "prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base font-sans",
+      contentEditableClassName = "post-composer-markdown p-4 outline-none bg-background",
     },
     ref,
   ) => {
     const { content, setContent } = usePostComposerContext();
     return (
-      <div className={`overflow-hidden rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}>
+      <div
+        className={`overflow-hidden rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
+      >
         <MDXEditor
           placeholder="What's happening"
           ref={ref}
@@ -263,9 +277,12 @@ PostComposerEditor.displayName = "PostComposerEditor";
 // ---- PostComposerPoll ------------------------------------------------------
 
 export function PostComposerPoll() {
-  const { showPollCreator, handlePollChange, handlePollClose } = usePostComposerContext();
+  const { showPollCreator, handlePollChange, handlePollClose } =
+    usePostComposerContext();
   if (!showPollCreator) return null;
-  return <PollCreator onPollChange={handlePollChange} onClose={handlePollClose} />;
+  return (
+    <PollCreator onPollChange={handlePollChange} onClose={handlePollClose} />
+  );
 }
 
 // ---- PostComposerImageGrid -------------------------------------------------
@@ -385,18 +402,22 @@ export function PostComposerActions() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-9 h-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10"
+          className="w-9 h-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMoreImages || isPending}
-          title={canAddMoreImages ? "Add images" : `Maximum ${MAX_IMAGES} images`}
+          title={
+            canAddMoreImages ? "Add images" : `Maximum ${MAX_IMAGES} images`
+          }
         >
           <IconPhoto className="w-5 h-5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
-          className={`w-9 h-9 rounded-full hover:text-primary hover:bg-primary/10 ${
-            showPollCreator ? "text-primary bg-primary/10" : "text-muted-foreground"
+          className={`w-9 h-9 hover:text-primary hover:bg-primary/10 ${
+            showPollCreator
+              ? "text-primary bg-primary/10"
+              : "text-muted-foreground"
           }`}
           onClick={handlePollToggle}
           title={showPollCreator ? "Remove poll" : "Add a poll"}
@@ -406,15 +427,15 @@ export function PostComposerActions() {
       </div>
       <div className="flex gap-2">
         <Button
-          variant="outline"
-          className="px-4 rounded-full"
+          variant="ghost"
+          className="px-4"
           onClick={handleClear}
           disabled={!hasContent || isPending}
         >
           Clear
         </Button>
         <Button
-          className="px-6 font-bold rounded-full"
+          className="px-6 font-bold"
           onClick={handlePost}
           disabled={!canPost || isPending}
         >

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deletePost } from "@/lib/api/posts";
 import { removeNewPost } from "@/lib/session-storage";
 import { useToast as toast } from "@/hooks/use-toast";
+import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
 
 export function useDeletePost() {
   const queryClient = useQueryClient();
@@ -11,6 +12,7 @@ export function useDeletePost() {
     onSuccess: (_post, postId) => {
       removeNewPost(postId);
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+      queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
       toast.success("Post deleted successfully!");
     },
     onError: (error: Error) => {

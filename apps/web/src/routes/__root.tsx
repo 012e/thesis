@@ -41,22 +41,24 @@ function RootComponent() {
         )}
       </AuthGuard>
       <Toaster richColors />
-      <TanStackDevtools
-        config={{
-          position: "bottom-left",
-          defaultOpen: false,
-        }}
-        plugins={[
-          {
-            name: "TanStack Query",
-            render: <ReactQueryDevtoolsPanel />,
-          },
-          {
-            name: "TanStack Router",
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
+      {import.meta.env.DEV ? (
+        <TanStackDevtools
+          config={{
+            position: "bottom-left",
+            defaultOpen: false,
+          }}
+          plugins={[
+            {
+              name: "TanStack Query",
+              render: <ReactQueryDevtoolsPanel />,
+            },
+            {
+              name: "TanStack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
+      ) : null}
     </>
   );
 }

@@ -11,7 +11,7 @@ import { useRef, useMemo, type FC, type MutableRefObject, type ReactNode } from 
 import { useAtomValue } from "jotai";
 import { env } from "@/env";
 import { threadListAdapter } from "@/lib/chat/thread-list-adapter";
-import { HistoryAdapterProvider } from "@/lib/chat/history-adapter";
+import { useThreadHistoryAdapter } from "@/lib/chat/history-adapter";
 import bearerToken from "@/lib/atoms/bearer-token";
 import threadModelModesAtom from "@/lib/atoms/thread-model-modes";
 import type { ModelMode } from "@/lib/atoms/model-mode";
@@ -44,17 +44,15 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
   // Shared ref written by ActiveModeSync and read by the transport body callback.
   const modeRef = useRef<ModelMode>("fast");
 
-  // Stable adapter reference — spreading threadListAdapter inline would create
-  // a new object on every render, causing useRemoteThreadListRuntime to call
-  // __internal_load() repeatedly.
-  const stableAdapter = useMemo(
-    () => ({ ...threadListAdapter, unstable_Provider: HistoryAdapterProvider }),
-    [],
-  );
+  // Stable adapter reference — recreating this object on every render would
+  // cause useRemoteThreadListRuntime to call __internal_load() repeatedly.
+  const stableAdapter = useMemo(() => threadListAdapter, []);
 
   const runtime = useRemoteThreadListRuntime({
     adapter: stableAdapter,
     runtimeHook: function useRuntimeHook() {
+      const history = useThreadHistoryAdapter();
+
       return useChatRuntime({
         transport: new AssistantChatTransport({
           api: env.VITE_MASTRA_CHAT_URL,
@@ -63,6 +61,7 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
           },
           body: () => ({ mode: modeRef.current }),
         }),
+        adapters: { history },
       });
     },
   });

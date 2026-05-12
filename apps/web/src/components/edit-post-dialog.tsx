@@ -7,8 +7,11 @@ import {
   thematicBreakPlugin,
   markdownShortcutPlugin,
   codeBlockPlugin,
+  codeMirrorPlugin,
 } from "@repo/mdx-editor";
 import "@repo/mdx-editor/style.css";
+import type { PostDto } from "@repo/shared-dto";
+import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,8 +21,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUpdatePost } from "@/hooks/use-update-post";
-import type { PostDto } from "@repo/shared-dto";
-import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
+import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
 import { POST_MAX_LENGTH } from "@/lib/constants";
 
 interface EditPostDialogProps {
@@ -88,9 +90,13 @@ export function EditPostDialog({
               quotePlugin(),
               thematicBreakPlugin(),
               codeBlockPlugin(),
+              codeMirrorPlugin({
+                autoLoadLanguageSupport: true,
+                codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
+              }),
               markdownShortcutPlugin(),
             ]}
-            contentEditableClassName="prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base bg-background font-sans min-h-[120px]"
+            contentEditableClassName="post-composer-markdown p-4 outline-none bg-background min-h-[120px]"
           />
         </div>
 
