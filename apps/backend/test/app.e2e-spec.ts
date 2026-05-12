@@ -18,11 +18,15 @@ describe("AppController (e2e)", () => {
     await runBetterAuthMigrations(containers.databaseUrl);
 
     testApp = await createTestApp(containers);
-  }, 120000);
+  }, 180000);
 
   afterAll(async () => {
-    await closeTestApp(testApp);
-    await stopPostgresContainer(containers);
+    if (testApp) {
+      await closeTestApp(testApp);
+    }
+    if (containers) {
+      await stopPostgresContainer(containers);
+    }
   });
 
   it("/ (GET)", () => {
