@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
@@ -130,8 +130,14 @@ export class PostsService {
     );
   }
 
-  async listByFollowing(userId: string): Promise<PostDto[]> {
-    const rows = await this.databaseService.db
+  async listByFollowing(
+    userId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
+    const parsed = cursor ? this.decodeFollowingCursor(cursor) : null;
+
+    let query = this.databaseService.db
       .select({
         id: posts.id,
         authorId: posts.authorId,
@@ -168,11 +174,39 @@ export class PostsService {
         usersView.name,
         usersView.image,
       )
-      .orderBy(desc(posts.createdAt));
+      .$dynamic();
 
-    return rows.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
+    if (parsed) {
+      const cursorDate = new Date(parsed.createdAt);
+      query = query.where(
+        or(
+          lt(posts.createdAt, cursorDate),
+          and(eq(posts.createdAt, cursorDate), gt(posts.id, parsed.postId)),
+        ),
+      );
+    }
+
+    const rows = await query
+      .orderBy(desc(posts.createdAt), asc(posts.id))
+      .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? this.encodeFollowingCursor({
+            createdAt: lastItem.createdAt.toISOString(),
+            postId: lastItem.id,
+          })
+        : null;
+
+    return {
+      items: items.map((row) =>
+        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+      ),
+      nextCursor,
+    };
   }
 
   async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
@@ -499,6 +533,37 @@ export class PostsService {
         typeof (decoded as { postId: unknown }).postId === "string"
       ) {
         return decoded as { reactionCount: number; postId: string };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  private encodeFollowingCursor(cursor: {
+    createdAt: string;
+    postId: string;
+  }): string {
+    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+  }
+
+  private decodeFollowingCursor(cursor: string): {
+    createdAt: string;
+    postId: string;
+  } | null {
+    try {
+      const decoded = JSON.parse(
+        Buffer.from(cursor, "base64url").toString("utf8"),
+      ) as unknown;
+      if (
+        typeof decoded === "object" &&
+        decoded !== null &&
+        "createdAt" in decoded &&
+        "postId" in decoded &&
+        typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
+        typeof (decoded as { postId: unknown }).postId === "string"
+      ) {
+        return decoded as { createdAt: string; postId: string };
       }
       return null;
     } catch {

@@ -81,16 +81,17 @@ describe("GET /posts/following integration", () => {
     await pool.query("TRUNCATE TABLE user_follows RESTART IDENTITY CASCADE");
   });
 
-  it("returns an empty array when the user follows nobody", async () => {
+  it("returns empty items and null nextCursor when the user follows nobody", async () => {
     const res = await request(testApp.app.getHttpServer())
       .get("/posts/following")
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toEqual([]);
+    expect(res.body.items).toEqual([]);
+    expect(res.body.nextCursor).toBeNull();
   });
 
-  it("returns an empty array when followed users have no posts", async () => {
+  it("returns empty items when followed users have no posts", async () => {
     const server = request(testApp.app.getHttpServer());
 
     // A follows B, but B has no posts
@@ -104,7 +105,8 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toEqual([]);
+    expect(res.body.items).toEqual([]);
+    expect(res.body.nextCursor).toBeNull();
   });
 
   it("returns posts only from followed users, not from unfollowed users", async () => {
@@ -135,9 +137,9 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toHaveLength(1);
-    expect(res.body[0].content.text).toBe("Post by B");
-    expect(res.body[0].authorId).toBe(userBId);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].content.text).toBe("Post by B");
+    expect(res.body.items[0].authorId).toBe(userBId);
   });
 
   it("returns posts from multiple followed users ordered by newest first", async () => {
@@ -170,10 +172,10 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toHaveLength(2);
+    expect(res.body.items).toHaveLength(2);
     // Newest first
-    expect(res.body[0].content.text).toBe("Newer post by C");
-    expect(res.body[1].content.text).toBe("Older post by B");
+    expect(res.body.items[0].content.text).toBe("Newer post by C");
+    expect(res.body.items[1].content.text).toBe("Older post by B");
   });
 
   it("does not include the current user's own posts", async () => {
@@ -204,8 +206,8 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toHaveLength(1);
-    expect(res.body[0].content.text).toBe("Post by B");
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].content.text).toBe("Post by B");
   });
 
   it("returns correct post shape with author and reaction counts", async () => {
@@ -227,8 +229,8 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userACookie)
       .expect(200);
 
-    expect(res.body).toHaveLength(1);
-    const post = res.body[0];
+    expect(res.body.items).toHaveLength(1);
+    const post = res.body.items[0];
     expect(post.id).toBeTruthy();
     expect(post.authorId).toBe(userBId);
     expect(post.content.text).toBe("Shaped post");
@@ -259,7 +261,7 @@ describe("GET /posts/following integration", () => {
       .get("/posts/following")
       .set("Cookie", userACookie)
       .expect(200);
-    expect(before.body).toHaveLength(1);
+    expect(before.body.items).toHaveLength(1);
 
     // Unfollow B
     await server
@@ -271,7 +273,7 @@ describe("GET /posts/following integration", () => {
       .get("/posts/following")
       .set("Cookie", userACookie)
       .expect(200);
-    expect(after.body).toEqual([]);
+    expect(after.body.items).toEqual([]);
   });
 
   it("returns 401 when not authenticated", async () => {
@@ -300,7 +302,141 @@ describe("GET /posts/following integration", () => {
       .set("Cookie", userBCookie)
       .expect(200);
 
-    expect(res.body).toHaveLength(1);
-    expect(res.body[0].content.text).toBe("Post by A for B's feed");
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.items[0].content.text).toBe("Post by A for B's feed");
+  });
+
+  describe("pagination", () => {
+    it("returns nextCursor when there are more posts than the limit", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post(`/users/${userBId}/follow`)
+        .set("Cookie", userACookie)
+        .expect(201);
+
+      // Create 3 posts
+      for (let i = 1; i <= 3; i++) {
+        await server
+          .post("/posts")
+          .set("Cookie", userBCookie)
+          .send({ content: { text: `Post ${i}` } })
+          .expect(201);
+      }
+
+      const res = await server
+        .get("/posts/following?limit=2")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body.items).toHaveLength(2);
+      expect(res.body.nextCursor).not.toBeNull();
+      expect(typeof res.body.nextCursor).toBe("string");
+    });
+
+    it("returns null nextCursor on the last page", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post(`/users/${userBId}/follow`)
+        .set("Cookie", userACookie)
+        .expect(201);
+
+      // Create 2 posts
+      for (let i = 1; i <= 2; i++) {
+        await server
+          .post("/posts")
+          .set("Cookie", userBCookie)
+          .send({ content: { text: `Post ${i}` } })
+          .expect(201);
+      }
+
+      const res = await server
+        .get("/posts/following?limit=2")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body.items).toHaveLength(2);
+      expect(res.body.nextCursor).toBeNull();
+    });
+
+    it("cursor fetches the next page without overlap or gap", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post(`/users/${userBId}/follow`)
+        .set("Cookie", userACookie)
+        .expect(201);
+
+      // Create 5 posts (newest last since inserts are sequential)
+      const texts = ["Post 1", "Post 2", "Post 3", "Post 4", "Post 5"];
+      for (const text of texts) {
+        await server
+          .post("/posts")
+          .set("Cookie", userBCookie)
+          .send({ content: { text } })
+          .expect(201);
+      }
+
+      // First page: limit=3 → should give 3 newest (Post 5, 4, 3)
+      const page1 = await server
+        .get("/posts/following?limit=3")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(page1.body.items).toHaveLength(3);
+      expect(page1.body.nextCursor).not.toBeNull();
+      const page1Texts = (page1.body.items as { content: { text: string } }[]).map(
+        (p) => p.content.text,
+      );
+      expect(page1Texts).toEqual(["Post 5", "Post 4", "Post 3"]);
+
+      // Second page using cursor → should give remaining 2 (Post 2, 1)
+      const page2 = await server
+        .get(`/posts/following?limit=3&cursor=${page1.body.nextCursor}`)
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(page2.body.items).toHaveLength(2);
+      expect(page2.body.nextCursor).toBeNull();
+      const page2Texts = (page2.body.items as { content: { text: string } }[]).map(
+        (p) => p.content.text,
+      );
+      expect(page2Texts).toEqual(["Post 2", "Post 1"]);
+
+      // No duplicate IDs across pages
+      const allIds = [
+        ...(page1.body.items as { id: string }[]).map((p) => p.id),
+        ...(page2.body.items as { id: string }[]).map((p) => p.id),
+      ];
+      expect(new Set(allIds).size).toBe(5);
+    });
+
+    it("default limit is 20", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      await server
+        .post(`/users/${userBId}/follow`)
+        .set("Cookie", userACookie)
+        .expect(201);
+
+      // Create 21 posts
+      for (let i = 1; i <= 21; i++) {
+        await server
+          .post("/posts")
+          .set("Cookie", userBCookie)
+          .send({ content: { text: `Post ${i}` } })
+          .expect(201);
+      }
+
+      const res = await server
+        .get("/posts/following")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body.items).toHaveLength(20);
+      expect(res.body.nextCursor).not.toBeNull();
+    });
   });
 });
+

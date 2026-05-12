@@ -5,6 +5,7 @@ import {
   CreatePostBody,
   UpdatePostBody,
   RecommendationPage,
+  FollowingFeedPage,
 } from "../schemas/post";
 
 const c = initContract();
@@ -42,11 +43,15 @@ export const postsContract = c.router({
   listFollowingPosts: {
     method: "GET",
     path: "/posts/following",
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
     responses: {
-      200: z.array(Post),
+      200: FollowingFeedPage,
     },
     summary:
-      "List newest posts from users followed by the current user, ordered by creation date descending.",
+      "List newest posts from users followed by the current user, ordered by creation date descending. Paginated with a keyset cursor encoding (createdAt, postId).",
   },
   getPost: {
     method: "GET",

@@ -58,15 +58,16 @@ export class PostsController {
 
   @TsRestHandler(postsContract.listFollowingPosts)
   listFollowingPosts(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.listFollowingPosts, async () => {
-      const followingPosts = await this.postsService.listByFollowing(
+    return tsRestHandler(postsContract.listFollowingPosts, async ({ query }) => {
+      const limit = query.limit ?? 20;
+      const result = await this.postsService.listByFollowing(
         session.user.id,
+        limit,
+        query.cursor,
       );
       return {
         status: 200,
-        body: postsContract.listFollowingPosts.responses[200].parse(
-          followingPosts,
-        ),
+        body: postsContract.listFollowingPosts.responses[200].parse(result),
       };
     });
   }
