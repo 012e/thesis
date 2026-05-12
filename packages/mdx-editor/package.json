@@ -16,7 +16,7 @@
       "default": "./dist/index.js"
     },
     "./package.json": "./package.json",
-    "./style.css": "./dist/style.css"
+    "./style.css": "./dist/mdx-editor.css"
   },
   "scripts": {
     "build": "vite build",
@@ -93,14 +93,14 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "@types/unist": "^3.0.2",
-    "@vitejs/plugin-react": "^4.0.0",
+    "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.4.14",
     "postcss-mixins": "^9.0.4",
     "postcss-nesting": "^11.2.2",
     "terser": "^5.26.0",
     "typescript": "^5.9.3",
     "user-agent-data-types": "^0.4.2",
-    "vite": "^5.0.10",
+    "vite": "^8.0.11",
     "vite-plugin-dts": "^5.0.0",
     "vite-plugin-svgr": "^5.2.0",
     "vite-tsconfig-paths": "^4.2.3"
