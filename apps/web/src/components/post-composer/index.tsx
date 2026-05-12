@@ -239,7 +239,7 @@ export const PostComposerEditor = forwardRef<MDXEditorMethods, PostComposerEdito
     {
       plugins,
       wrapperClassName,
-      contentEditableClassName = "prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base font-sans",
+      contentEditableClassName = "post-composer-markdown p-4 outline-none bg-background",
     },
     ref,
   ) => {
