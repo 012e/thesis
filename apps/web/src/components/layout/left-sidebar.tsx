@@ -10,12 +10,12 @@ import {
   IconZoom,
   IconZoomFilled,
   IconRobot,
-  IconCodeCircle2,
-  IconCodeCircle2Filled,
   IconFlask,
   IconFlaskFilled,
   IconShield,
   IconShieldFilled,
+  IconCodeCircle2,
+  IconCodeCircle2Filled,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";

@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import type { z } from "zod";
 
@@ -572,7 +572,12 @@ export class PostsService {
         ) &&
         PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
       ) {
-        return decoded as { createdAt: string; postId: string };
+        const parsed = decoded as { createdAt: string; postId: string };
+        const d = new Date(parsed.createdAt);
+        if (!isFinite(d.getTime())) {
+          throw new BadRequestException("Invalid date in cursor");
+        }
+        return parsed;
       }
       return null;
     } catch {

@@ -7,7 +7,7 @@ import {
   useChatRuntime,
   AssistantChatTransport,
 } from "@assistant-ui/react-ai-sdk";
-import { useRef, type FC, type MutableRefObject, type ReactNode } from "react";
+import { useRef, useMemo, type FC, type MutableRefObject, type ReactNode } from "react";
 import { useAtomValue } from "jotai";
 import { env } from "@/env";
 import { threadListAdapter } from "@/lib/chat/thread-list-adapter";
@@ -44,11 +44,16 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
   // Shared ref written by ActiveModeSync and read by the transport body callback.
   const modeRef = useRef<ModelMode>("fast");
 
+  // Stable adapter reference — spreading threadListAdapter inline would create
+  // a new object on every render, causing useRemoteThreadListRuntime to call
+  // __internal_load() repeatedly.
+  const stableAdapter = useMemo(
+    () => ({ ...threadListAdapter, unstable_Provider: HistoryAdapterProvider }),
+    [],
+  );
+
   const runtime = useRemoteThreadListRuntime({
-    adapter: {
-      ...threadListAdapter,
-      unstable_Provider: HistoryAdapterProvider,
-    },
+    adapter: stableAdapter,
     runtimeHook: function useRuntimeHook() {
       return useChatRuntime({
         transport: new AssistantChatTransport({

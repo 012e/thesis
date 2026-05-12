@@ -439,4 +439,3 @@ describe("GET /posts/following integration", () => {
     });
   });
 });
-
