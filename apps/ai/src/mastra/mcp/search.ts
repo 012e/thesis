@@ -6,7 +6,7 @@ function createSearchMcpClient() {
     servers: {
       duckduckgo: {
         command: "uvx",
-        args: ["duckduckgo-mcp-server"],
+        args: ["duckduckgo-mcp-server@0.3.0"],
       },
     },
   });

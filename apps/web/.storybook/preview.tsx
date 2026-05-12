@@ -7,7 +7,6 @@ import { setFaker, custom } from "zod-schema-faker/v4";
 import { PostContent } from "@repo/rest-contracts";
 import React from "react";
 import { Provider as JotaiProvider } from "jotai";
-import store from "../src/lib/atoms/store";
 import "../src/index.css";
 
 // Initialize zod-schema-faker with @faker-js/faker
@@ -56,7 +55,7 @@ const preview: Preview = {
     (Story) => {
       queryClient.clear();
 
-      return <JotaiProvider store={store}>
+      return <JotaiProvider>
         <QueryClientProvider client={queryClient}>
           <Story />
         </QueryClientProvider>
