@@ -43,25 +43,31 @@ function Index() {
         <div className="flex items-center">
           <button
             type="button"
-            className={`flex-1 py-4 text-center transition-colors hover:bg-accent ${
+            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
               activeTab === "for-you"
-                ? "font-bold"
+                ? "font-bold text-foreground"
                 : "font-semibold text-muted-foreground"
             }`}
             onClick={() => handleTabChange("for-you")}
           >
             For you
+            {activeTab === "for-you" && (
+              <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
+            )}
           </button>
           <button
             type="button"
-            className={`flex-1 py-4 text-center transition-colors hover:bg-accent ${
+            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
               activeTab === "following"
-                ? "font-bold"
+                ? "font-bold text-foreground"
                 : "font-semibold text-muted-foreground"
             }`}
             onClick={() => handleTabChange("following")}
           >
             Following
+            {activeTab === "following" && (
+              <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
+            )}
           </button>
         </div>
       </div>
