@@ -223,3 +223,36 @@
 .mdx-editor-wrapper .post-composer-markdown pre code {
   @apply border-0 bg-transparent p-0 text-xs;
 }
+
+.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] {
+  @apply min-h-8 rounded-md border border-border/60 bg-background px-2 text-sm text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground;
+}
+
+.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] svg {
+  @apply text-muted-foreground;
+}
+
+.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item]:hover svg {
+  @apply text-accent-foreground;
+}
+
+.mdx-editor-wrapper .post-composer-markdown button[title="Delete code block"] {
+  @apply rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground;
+}
+
+.mdx-editor-wrapper .post-composer-markdown button[title="Delete code block"] svg {
+  @apply size-5;
+}
+
+.mdx-editor-wrapper .mdxeditor-select-content {
+  @apply overflow-hidden rounded-md border border-border bg-popover text-popover-foreground shadow-md;
+}
+
+.mdx-editor-wrapper .mdxeditor-select-content [role="option"] {
+  @apply px-2 py-1.5 text-sm text-popover-foreground outline-none;
+}
+
+.mdx-editor-wrapper .mdxeditor-select-content [role="option"][data-highlighted],
+.mdx-editor-wrapper .mdxeditor-select-content [role="option"][data-state="checked"] {
+  @apply bg-accent text-accent-foreground;
+}
