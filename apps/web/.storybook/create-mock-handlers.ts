@@ -8,7 +8,9 @@ import { fake } from "zod-schema-faker/v4";
 interface TsRestRoute {
   method: string;
   path: string;
-  query?: { safeParse: (data: unknown) => { success: boolean; error?: unknown } };
+  query?: {
+    safeParse: (data: unknown) => { success: boolean; error?: unknown };
+  };
   responses?: Record<number, unknown>;
 }
 
@@ -31,7 +33,11 @@ function flattenContract(contract: Record<string, unknown>): TsRestRoute[] {
   for (const value of Object.values(contract)) {
     if (isRoute(value)) {
       routes.push(value);
-    } else if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+    } else if (
+      typeof value === "object" &&
+      value !== null &&
+      !Array.isArray(value)
+    ) {
       routes.push(...flattenContract(value as Record<string, unknown>));
     }
   }

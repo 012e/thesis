@@ -64,7 +64,9 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
             {initials}
           </AvatarFallback>
         </Avatar>
-        <div className={`flex items-center gap-3 flex-1 min-w-0 overflow-hidden transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-full opacity-100"}`}>
+        <div
+          className={`flex items-center gap-3 flex-1 min-w-0 overflow-hidden transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-full opacity-100"}`}
+        >
           <div className="flex-1 min-w-0">
             <div className="text-sm font-semibold truncate">{displayName}</div>
             <div className="text-sm text-muted-foreground truncate">

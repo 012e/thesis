@@ -404,7 +404,10 @@ export class SeedService {
       await this.databaseService.db.insert(userProfiles).values({
         userId: created.user.id,
         avatarUrl: faker.image.avatar(),
-        coverPhotoUrl: faker.image.urlPicsumPhotos({ width: 1600, height: 400 }),
+        coverPhotoUrl: faker.image.urlPicsumPhotos({
+          width: 1600,
+          height: 400,
+        }),
         bio: this.randomParagraph(1, 3),
       });
       users.push({ id: created.user.id, email: created.user.email });

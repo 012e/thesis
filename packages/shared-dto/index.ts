@@ -234,13 +234,13 @@ export interface ConversationDto {
 
 /** All possible notification trigger types. */
 export type NotificationTypeDto =
-  | 'follow'
-  | 'comment'
-  | 'reply'
-  | 'post_update'
-  | 'post_reaction'
-  | 'comment_reaction'
-  | 'direct_message';
+  | "follow"
+  | "comment"
+  | "reply"
+  | "post_update"
+  | "post_reaction"
+  | "comment_reaction"
+  | "direct_message";
 
 /** Someone followed the recipient. */
 export interface FollowNotificationPayload {

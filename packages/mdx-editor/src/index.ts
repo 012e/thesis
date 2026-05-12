@@ -28,103 +28,103 @@
  *
  * @packageDocumentation
  */
-import './styles/globals.css'
+import "./styles/globals.css";
 
-export * from '@mdxeditor/gurx'
+export * from "@mdxeditor/gurx";
 // editor component
-export * from './MDXEditor'
-export * from './defaultSvgIcons'
+export * from "./MDXEditor";
+export * from "./defaultSvgIcons";
 
 // import/export
-export * from './importMarkdownToLexical'
-export * from './exportMarkdownFromLexical'
+export * from "./importMarkdownToLexical";
+export * from "./exportMarkdownFromLexical";
 
 // core so that you can build your own plugins
-export * from './plugins/core'
+export * from "./plugins/core";
 
 // basics
-export * from './plugins/headings'
-export * from './plugins/thematic-break'
-export * from './plugins/lists'
-export * from './plugins/table'
-export * from './plugins/link'
-export * from './plugins/image'
-export * from './plugins/frontmatter'
-export * from './plugins/quote'
-export * from './plugins/maxlength'
+export * from "./plugins/headings";
+export * from "./plugins/thematic-break";
+export * from "./plugins/lists";
+export * from "./plugins/table";
+export * from "./plugins/link";
+export * from "./plugins/image";
+export * from "./plugins/frontmatter";
+export * from "./plugins/quote";
+export * from "./plugins/maxlength";
 
 // JSX
-export * from './plugins/jsx'
-export * from './jsx-editors/GenericJsxEditor'
+export * from "./plugins/jsx";
+export * from "./jsx-editors/GenericJsxEditor";
 
 // code blocks
-export * from './plugins/sandpack'
-export * from './plugins/sandpack/SandpackEditor'
-export * from './plugins/codemirror'
-export * from './plugins/codemirror/CodeMirrorEditor'
-export * from './plugins/codeblock'
+export * from "./plugins/sandpack";
+export * from "./plugins/sandpack/SandpackEditor";
+export * from "./plugins/codemirror";
+export * from "./plugins/codemirror/CodeMirrorEditor";
+export * from "./plugins/codeblock";
 
 // directives
-export * from './plugins/directives'
-export * from './directive-editors/AdmonitionDirectiveDescriptor'
-export * from './directive-editors/GenericDirectiveEditor'
+export * from "./plugins/directives";
+export * from "./directive-editors/AdmonitionDirectiveDescriptor";
+export * from "./directive-editors/GenericDirectiveEditor";
 
 // UI
-export * from './plugins/link-dialog'
+export * from "./plugins/link-dialog";
 
-export * from './plugins/toolbar'
+export * from "./plugins/toolbar";
 
-export * from './plugins/diff-source'
-export * from './plugins/markdown-shortcut'
+export * from "./plugins/diff-source";
+export * from "./plugins/markdown-shortcut";
 
-export * from './plugins/search'
+export * from "./plugins/search";
 
 // Toolbar components
-export * from './plugins/toolbar/components/BlockTypeSelect'
-export * from './plugins/toolbar/components/BoldItalicUnderlineToggles'
-export * from './plugins/toolbar/components/ChangeAdmonitionType'
-export * from './plugins/toolbar/components/ChangeCodeMirrorLanguage'
-export * from './plugins/toolbar/components/CodeToggle'
-export * from './plugins/toolbar/components/HighlightToggle'
-export * from './plugins/toolbar/components/CreateLink'
-export * from './plugins/toolbar/components/DiffSourceToggleWrapper'
-export * from './plugins/toolbar/components/InsertAdmonition'
-export * from './plugins/toolbar/components/InsertCodeBlock'
-export * from './plugins/toolbar/components/InsertFrontmatter'
-export * from './plugins/toolbar/components/InsertImage'
-export * from './plugins/toolbar/components/InsertSandpack'
-export * from './plugins/toolbar/components/InsertTable'
-export * from './plugins/toolbar/components/InsertThematicBreak'
-export * from './plugins/toolbar/components/ListsToggle'
-export * from './plugins/toolbar/components/ShowSandpackInfo'
-export * from './plugins/toolbar/components/UndoRedo'
-export * from './plugins/toolbar/components/KitchenSinkToolbar'
+export * from "./plugins/toolbar/components/BlockTypeSelect";
+export * from "./plugins/toolbar/components/BoldItalicUnderlineToggles";
+export * from "./plugins/toolbar/components/ChangeAdmonitionType";
+export * from "./plugins/toolbar/components/ChangeCodeMirrorLanguage";
+export * from "./plugins/toolbar/components/CodeToggle";
+export * from "./plugins/toolbar/components/HighlightToggle";
+export * from "./plugins/toolbar/components/CreateLink";
+export * from "./plugins/toolbar/components/DiffSourceToggleWrapper";
+export * from "./plugins/toolbar/components/InsertAdmonition";
+export * from "./plugins/toolbar/components/InsertCodeBlock";
+export * from "./plugins/toolbar/components/InsertFrontmatter";
+export * from "./plugins/toolbar/components/InsertImage";
+export * from "./plugins/toolbar/components/InsertSandpack";
+export * from "./plugins/toolbar/components/InsertTable";
+export * from "./plugins/toolbar/components/InsertThematicBreak";
+export * from "./plugins/toolbar/components/ListsToggle";
+export * from "./plugins/toolbar/components/ShowSandpackInfo";
+export * from "./plugins/toolbar/components/UndoRedo";
+export * from "./plugins/toolbar/components/KitchenSinkToolbar";
 
 // Build your own toolbar items
-export * from './plugins/toolbar/primitives/toolbar'
-export * from './plugins/toolbar/primitives/DialogButton'
-export * from './plugins/toolbar/primitives/TooltipWrap'
-export * from './plugins/toolbar/primitives/select'
+export * from "./plugins/toolbar/primitives/toolbar";
+export * from "./plugins/toolbar/primitives/DialogButton";
+export * from "./plugins/toolbar/primitives/TooltipWrap";
+export * from "./plugins/toolbar/primitives/select";
 
 // Build your own editor
-export * from './plugins/core/NestedLexicalEditor'
-export * from './plugins/core/PropertyPopover'
-export * from './plugins/remote'
+export * from "./plugins/core/NestedLexicalEditor";
+export * from "./plugins/core/PropertyPopover";
+export * from "./plugins/remote";
 
 // Helpers & utilities
-export * from './utils/detectMac'
-export * from './utils/fp'
-export * from './utils/isPartOftheEditorUI'
-export * from './utils/lexicalHelpers'
-export * from './utils/makeHslTransparent'
-export * from './utils/uuid4'
-export * from './utils/voidEmitter'
+export * from "./utils/detectMac";
+export * from "./utils/fp";
+export * from "./utils/isPartOftheEditorUI";
+export * from "./utils/lexicalHelpers";
+export * from "./utils/makeHslTransparent";
+export * from "./utils/uuid4";
+export * from "./utils/voidEmitter";
 
-export * from './RealmWithPlugins'
+export * from "./RealmWithPlugins";
 
-export * from './FormatConstants'
+export * from "./FormatConstants";
 
-export * from './styles/lexicalTheme'
+export * from "./styles/lexicalTheme";
 
-import * as lexical from 'lexical'
-export { lexical }
+import * as lexical from "lexical";
+export { lexical };

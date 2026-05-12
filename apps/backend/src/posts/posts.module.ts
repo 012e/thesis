@@ -11,7 +11,13 @@ import { PostsSearchService } from "./posts-search.service";
 import { PostsService } from "./posts.service";
 
 @Module({
-  imports: [DatabaseModule, StorageModule, UsersModule, EmbeddingModule, NotificationsModule],
+  imports: [
+    DatabaseModule,
+    StorageModule,
+    UsersModule,
+    EmbeddingModule,
+    NotificationsModule,
+  ],
   controllers: [PostsController],
   providers: [PostsService, PostsSearchService],
   exports: [PostsService, PostsSearchService],

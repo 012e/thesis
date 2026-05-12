@@ -89,4 +89,3 @@ export async function unfollowUser(userId: string): Promise<UserFollowDto> {
 
   throw new Error("Failed to unfollow user");
 }
-

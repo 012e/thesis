@@ -1,17 +1,19 @@
-import { $createParagraphNode } from 'lexical'
-import * as Mdast from 'mdast'
-import { MdastImportVisitor } from '../../importMarkdownToLexical'
+import { $createParagraphNode } from "lexical";
+import * as Mdast from "mdast";
+import { MdastImportVisitor } from "../../importMarkdownToLexical";
 
-const lexicalTypesThatShouldSkipParagraphs = ['listitem', 'admonition']
+const lexicalTypesThatShouldSkipParagraphs = ["listitem", "admonition"];
 
 export const MdastParagraphVisitor: MdastImportVisitor<Mdast.Paragraph> = {
-  testNode: 'paragraph',
+  testNode: "paragraph",
   visitNode: function ({ mdastNode, lexicalParent, actions }): void {
     // markdown inserts paragraphs in lists. lexical does not.
-    if (lexicalTypesThatShouldSkipParagraphs.includes(lexicalParent.getType())) {
-      actions.visitChildren(mdastNode, lexicalParent)
+    if (
+      lexicalTypesThatShouldSkipParagraphs.includes(lexicalParent.getType())
+    ) {
+      actions.visitChildren(mdastNode, lexicalParent);
     } else {
-      actions.addAndStepInto($createParagraphNode())
+      actions.addAndStepInto($createParagraphNode());
     }
-  }
-}
+  },
+};

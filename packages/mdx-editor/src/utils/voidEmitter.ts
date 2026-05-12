@@ -1,4 +1,4 @@
-import { noop } from './fp'
+import { noop } from "./fp";
 
 /**
  * An emitter object that has a single subscription that will be executed.
@@ -9,7 +9,7 @@ export interface VoidEmitter {
   /**
    * Subscribes to the emitter event
    */
-  subscribe: (cb: () => void) => void
+  subscribe: (cb: () => void) => void;
 }
 
 /**
@@ -17,13 +17,13 @@ export interface VoidEmitter {
  * @group Utils
  */
 export function voidEmitter() {
-  let subscription = noop
+  let subscription = noop;
   return {
     publish: () => {
-      subscription()
+      subscription();
     },
     subscribe: (cb: () => void) => {
-      subscription = cb
-    }
-  }
+      subscription = cb;
+    },
+  };
 }

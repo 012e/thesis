@@ -72,9 +72,7 @@ describe("ConfigController integration", () => {
     });
 
     it("returns 401 when not authenticated", async () => {
-      await request(testApp.app.getHttpServer())
-        .get("/config")
-        .expect(401);
+      await request(testApp.app.getHttpServer()).get("/config").expect(401);
     });
   });
 

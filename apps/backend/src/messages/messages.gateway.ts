@@ -10,10 +10,10 @@ import {
 } from "@nestjs/websockets";
 import type { Server, Socket } from "socket.io";
 
-import { auth } from '@/auth';
-import { MessagesService } from './messages.service';
-import { NotificationsService } from '@/notifications/notifications.service';
-import type { DirectMessageDto } from '@repo/shared-dto';
+import { auth } from "@/auth";
+import { MessagesService } from "./messages.service";
+import { NotificationsService } from "@/notifications/notifications.service";
+import type { DirectMessageDto } from "@repo/shared-dto";
 
 // ─── Event name constants (single source of truth) ──────────────────────────
 
@@ -117,7 +117,7 @@ export class MessagesGateway
       // Auto-join the per-user room for conversation-specific events.
       await client.join(`user:${session.user.id}`);
 
-      client.emit('authenticated');
+      client.emit("authenticated");
     } catch {
       this.disconnect(client, "Authentication error");
     }
@@ -202,13 +202,13 @@ export class MessagesGateway
         {
           userId: recipientId,
           actorId: userId,
-          type: 'direct_message',
+          type: "direct_message",
           payload: {
             conversationId,
             preview: content.slice(0, 100),
           },
         },
-        ['websocket'],
+        ["websocket"],
       );
     } catch {
       // Non-fatal: the message was already delivered.

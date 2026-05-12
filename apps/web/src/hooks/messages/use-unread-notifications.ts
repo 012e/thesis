@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAtomValue } from 'jotai';
-import bearerToken from '@/lib/atoms/bearer-token';
-import { getUnreadCount } from '@/lib/api/messages';
+import { useQuery } from "@tanstack/react-query";
+import { useAtomValue } from "jotai";
+import bearerToken from "@/lib/atoms/bearer-token";
+import { getUnreadCount } from "@/lib/api/messages";
 
 // ─── Query key ───────────────────────────────────────────────────────────────
 

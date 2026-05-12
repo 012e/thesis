@@ -147,7 +147,9 @@
   caret-color: var(--foreground);
 }
 
-.mdx-editor-wrapper .mdxeditor-root-contenteditable:focus-within > .post-composer-markdown:not([contenteditable]) {
+.mdx-editor-wrapper
+  .mdxeditor-root-contenteditable:focus-within
+  > .post-composer-markdown:not([contenteditable]) {
   opacity: 0;
 }
 
@@ -259,7 +261,10 @@
   width: fit-content !important;
 }
 
-.mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] [class*="selectDropdownArrow"] {
+.mdx-editor-wrapper
+  .post-composer-markdown
+  [data-toolbar-item]
+  [class*="selectDropdownArrow"] {
   @apply hidden;
 }
 
@@ -267,12 +272,21 @@
   @apply rounded-none p-0.5 text-muted-foreground/40 opacity-0 transition-colors hover:bg-accent hover:text-accent-foreground;
 }
 
-.mdx-editor-wrapper .post-composer-markdown button[title="Delete code block"] svg {
+.mdx-editor-wrapper
+  .post-composer-markdown
+  button[title="Delete code block"]
+  svg {
   @apply size-3.5;
 }
 
-.mdx-editor-wrapper .post-composer-markdown [class*="codeMirrorWrapper"]:hover button[title="Delete code block"],
-.mdx-editor-wrapper .post-composer-markdown [class*="codeMirrorToolbar"]:focus-within button[title="Delete code block"] {
+.mdx-editor-wrapper
+  .post-composer-markdown
+  [class*="codeMirrorWrapper"]:hover
+  button[title="Delete code block"],
+.mdx-editor-wrapper
+  .post-composer-markdown
+  [class*="codeMirrorToolbar"]:focus-within
+  button[title="Delete code block"] {
   @apply opacity-100;
 }
 
@@ -283,7 +297,7 @@
   border-color: var(--border) !important;
   width: auto !important;
   min-width: 8rem !important;
-  z-index: 50 !important;
+  z-index: 60 !important;
 }
 
 .mdxeditor-select-content [role="option"] {
@@ -303,8 +317,12 @@
   color: var(--popover-foreground) !important;
 }
 
-.mdxeditor-select-content [role="option"][data-highlighted] .code-language-badge,
-.mdxeditor-select-content [role="option"][data-state="checked"] .code-language-badge {
+.mdxeditor-select-content
+  [role="option"][data-highlighted]
+  .code-language-badge,
+.mdxeditor-select-content
+  [role="option"][data-state="checked"]
+  .code-language-badge {
   @apply text-accent-foreground;
   color: var(--accent-foreground) !important;
 }

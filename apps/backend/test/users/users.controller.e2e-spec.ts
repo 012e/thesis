@@ -354,7 +354,8 @@ describe("UsersController (e2e)", () => {
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       const userId = user.id as string;
-      const coverPhotoUrl = "https://cdn.example.com/covers/coverphototest.webp";
+      const coverPhotoUrl =
+        "https://cdn.example.com/covers/coverphototest.webp";
 
       const response = await request(testApp.app.getHttpServer())
         .patch("/users/me/cover-photo")
@@ -437,7 +438,9 @@ describe("UsersController (e2e)", () => {
         .expect(200);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(response.body.coverPhoto).toBe("https://cdn.example.com/covers/second.webp");
+      expect(response.body.coverPhoto).toBe(
+        "https://cdn.example.com/covers/second.webp",
+      );
 
       const { eq } = await import("drizzle-orm");
       const [profileRow] = await databaseService.db

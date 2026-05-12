@@ -188,10 +188,7 @@ export class InteractionTools {
     name: "list_comment_replies",
     description: "List all replies to a specific comment",
     parameters: z.object({
-      commentId: z
-        .string()
-        .uuid()
-        .describe("The UUID of the parent comment"),
+      commentId: z.string().uuid().describe("The UUID of the parent comment"),
     }),
   })
   async listCommentReplies(
@@ -222,10 +219,7 @@ export class InteractionTools {
     }),
   })
   async reactToComment(
-    {
-      commentId,
-      type,
-    }: { commentId: string; type: "upvote" | "downvote" },
+    { commentId, type }: { commentId: string; type: "upvote" | "downvote" },
     _context: Context,
     request: any,
   ) {

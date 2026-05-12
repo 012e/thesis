@@ -1,33 +1,33 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { PgBossModule } from '@wavezync/nestjs-pgboss';
+import { MiddlewareConsumer, Module, NestModule } from "@nestjs/common";
+import { PgBossModule } from "@wavezync/nestjs-pgboss";
 
-import { auth } from '@/auth';
-import { env } from '@/env';
-import { DatabaseModule } from '@/db/database.module';
-import { PostsModule } from '@/posts/posts.module';
-import { ReactionsModule } from '@/reactions/reactions.module';
-import { HealthModule } from '@/health/health.module';
-import { ThreadsModule } from '@/threads/threads.module';
-import { CommentsModule } from '@/comments/comments.module';
-import { UsersModule } from '@/users/users.module';
-import { FollowsModule } from '@/follows/follows.module';
-import { PollsModule } from '@/polls/polls.module';
-import { UploadsModule } from '@/uploads/uploads.module';
-import { PlaygroundModule } from '@/playground/playground.module';
-import { SeedModule } from '@/seed/seed.module';
-import { MessagesModule } from '@/messages/messages.module';
-import { NotificationsModule } from '@/notifications/notifications.module';
-import { ConfigModule } from '@/config/config.module';
-import { MigrateModule } from '@/migrate/migrate.module';
-import { IdentityMcpModule } from './mcp/identity/identity-mcp.module';
-import { PostsMcpModule } from './mcp/posts/posts-mcp.module';
-import { InteractionsMcpModule } from './mcp/interactions/interactions-mcp.module';
-import { AuthModule } from '@thallesp/nestjs-better-auth';
+import { auth } from "@/auth";
+import { env } from "@/env";
+import { DatabaseModule } from "@/db/database.module";
+import { PostsModule } from "@/posts/posts.module";
+import { ReactionsModule } from "@/reactions/reactions.module";
+import { HealthModule } from "@/health/health.module";
+import { ThreadsModule } from "@/threads/threads.module";
+import { CommentsModule } from "@/comments/comments.module";
+import { UsersModule } from "@/users/users.module";
+import { FollowsModule } from "@/follows/follows.module";
+import { PollsModule } from "@/polls/polls.module";
+import { UploadsModule } from "@/uploads/uploads.module";
+import { PlaygroundModule } from "@/playground/playground.module";
+import { SeedModule } from "@/seed/seed.module";
+import { MessagesModule } from "@/messages/messages.module";
+import { NotificationsModule } from "@/notifications/notifications.module";
+import { ConfigModule } from "@/config/config.module";
+import { MigrateModule } from "@/migrate/migrate.module";
+import { IdentityMcpModule } from "./mcp/identity/identity-mcp.module";
+import { PostsMcpModule } from "./mcp/posts/posts-mcp.module";
+import { InteractionsMcpModule } from "./mcp/interactions/interactions-mcp.module";
+import { AuthModule } from "@thallesp/nestjs-better-auth";
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
-import { AuthController } from './auth/auth.controller';
-import { LoggingMiddleware } from '@/common/middleware/logging.middleware';
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
+import { AuthController } from "./auth/auth.controller";
+import { LoggingMiddleware } from "@/common/middleware/logging.middleware";
 
 @Module({
   controllers: [AppController, AuthController],
@@ -62,8 +62,8 @@ import { LoggingMiddleware } from '@/common/middleware/logging.middleware';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    if (env.NODE_ENV === 'development') {
-      consumer.apply(LoggingMiddleware).forRoutes('*');
+    if (env.NODE_ENV === "development") {
+      consumer.apply(LoggingMiddleware).forRoutes("*");
     }
   }
 }

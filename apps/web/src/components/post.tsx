@@ -244,8 +244,11 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
     }
   };
 
-  const { userReaction: userVote, upvotes: upvoteCount, downvotes: downvoteCount } =
-    reactionSummary;
+  const {
+    userReaction: userVote,
+    upvotes: upvoteCount,
+    downvotes: downvoteCount,
+  } = reactionSummary;
 
   const handleVote = (voteType: ReactionTypeDto) => {
     if (isVoting) return;

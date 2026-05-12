@@ -2,8 +2,11 @@
  * Performs left to right composition of two functions.
  * @group Utils
  */
-export function compose<I, A, R>(a: (arg: A) => R, b: (arg: I) => A): (arg: I) => R {
-  return (arg: I) => a(b(arg))
+export function compose<I, A, R>(
+  a: (arg: A) => R,
+  b: (arg: I) => A,
+): (arg: I) => R {
+  return (arg: I) => a(b(arg));
 }
 
 /**
@@ -11,15 +14,18 @@ export function compose<I, A, R>(a: (arg: A) => R, b: (arg: I) => A): (arg: I) =
  * @group Utils
  */
 export function thrush<I, K>(arg: I, proc: (arg: I) => K) {
-  return proc(arg)
+  return proc(arg);
 }
 
 /**
  * Takes a 2 argument function and partially applies the first argument.
  * @group Utils
  */
-export function curry2to1<T, K, R>(proc: (arg1: T, arg2: K) => R, arg1: T): (arg2: K) => R {
-  return (arg2) => proc(arg1, arg2)
+export function curry2to1<T, K, R>(
+  proc: (arg1: T, arg2: K) => R,
+  arg1: T,
+): (arg2: K) => R {
+  return (arg2) => proc(arg1, arg2);
 }
 
 /**
@@ -27,7 +33,7 @@ export function curry2to1<T, K, R>(proc: (arg1: T, arg2: K) => R, arg1: T): (arg
  * @group Utils
  */
 export function curry1to0<T, R>(proc: (arg: T) => R, arg: T): () => R {
-  return () => proc(arg)
+  return () => proc(arg);
 }
 
 /**
@@ -35,7 +41,7 @@ export function curry1to0<T, R>(proc: (arg: T) => R, arg: T): () => R {
  * @group Utils
  */
 export function prop<T extends Record<string, unknown>>(property: keyof T) {
-  return (object: T) => object[property]
+  return (object: T) => object[property];
 }
 
 /**
@@ -43,8 +49,8 @@ export function prop<T extends Record<string, unknown>>(property: keyof T) {
  * @group Utils
  */
 export function tap<T>(arg: T, proc: (arg: T) => unknown): T {
-  proc(arg)
-  return arg
+  proc(arg);
+  return arg;
 }
 
 /**
@@ -52,7 +58,7 @@ export function tap<T>(arg: T, proc: (arg: T) => unknown): T {
  * @group Utils
  */
 export function call(proc: () => unknown) {
-  proc()
+  proc();
 }
 
 /**
@@ -60,7 +66,7 @@ export function call(proc: () => unknown) {
  * @group Utils
  */
 export function always<T>(value: T) {
-  return () => value
+  return () => value;
 }
 
 /**
@@ -70,8 +76,8 @@ export function always<T>(value: T) {
  */
 export function joinProc(...procs: (() => unknown)[]) {
   return () => {
-    procs.map(call)
-  }
+    procs.map(call);
+  };
 }
 
 /**
@@ -79,5 +85,5 @@ export function joinProc(...procs: (() => unknown)[]) {
  * @group Utils
  */
 export function noop() {
-  void 0
+  void 0;
 }

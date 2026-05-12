@@ -1,11 +1,11 @@
-@import url('@radix-ui/colors/blue.css');
-@import url('@radix-ui/colors/blue-dark.css');
-@import url('@radix-ui/colors/slate.css');
-@import url('@radix-ui/colors/slate-dark.css');
-@import url('@radix-ui/colors/grass.css');
-@import url('@radix-ui/colors/cyan.css');
-@import url('@radix-ui/colors/amber.css');
-@import url('@radix-ui/colors/red.css');
+@import url("@radix-ui/colors/blue.css");
+@import url("@radix-ui/colors/blue-dark.css");
+@import url("@radix-ui/colors/slate.css");
+@import url("@radix-ui/colors/slate-dark.css");
+@import url("@radix-ui/colors/grass.css");
+@import url("@radix-ui/colors/cyan.css");
+@import url("@radix-ui/colors/amber.css");
+@import url("@radix-ui/colors/red.css");
 
 .bold {
   font-weight: bold;
@@ -28,32 +28,32 @@
 }
 
 .underline {
-  text-decoration: underline
+  text-decoration: underline;
 }
 
 .strikethrough {
-  text-decoration: line-through
+  text-decoration: line-through;
 }
 
 .underlineStrikethrough {
-  text-decoration: underline line-through
+  text-decoration: underline line-through;
 }
 
 .subscript {
-  font-size: .8em;
-  vertical-align: sub !important
+  font-size: 0.8em;
+  vertical-align: sub !important;
 }
 
 .superscript {
-  font-size: .8em;
-  vertical-align: super
+  font-size: 0.8em;
+  vertical-align: super;
 }
 
 .code {
   background-color: var(--baseBg);
-  padding: 1px .25rem;
+  padding: 1px 0.25rem;
   font-family: var(--font-mono);
-  font-size: 94%
+  font-size: 94%;
 }
 
 .nestedListItem {
@@ -88,7 +88,7 @@
 
 .listItemUnchecked:before,
 .listItemChecked:before {
-  content: '';
+  content: "";
   width: var(--spacing-4);
   height: var(--spacing-4);
   top: 0;
@@ -99,8 +99,8 @@
   position: absolute;
 }
 
-.listItemUnchecked[dir='rtl']:before,
-.listItemChecked[dir='rtl']:before {
+.listItemUnchecked[dir="rtl"]:before,
+.listItemChecked[dir="rtl"]:before {
   left: auto;
   right: 0;
 }
@@ -124,7 +124,7 @@
 }
 
 .listItemChecked:after {
-  content: '';
+  content: "";
   cursor: pointer;
   border-color: var(--baseBase);
   border-style: solid;

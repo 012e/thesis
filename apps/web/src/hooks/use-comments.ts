@@ -8,7 +8,10 @@ import {
 import type { CreateCommentBodyType } from "@repo/rest-contracts";
 import { useToast as toast } from "@/hooks/use-toast";
 
-export function useComments(postId: string, { enabled = true }: { enabled?: boolean } = {}) {
+export function useComments(
+  postId: string,
+  { enabled = true }: { enabled?: boolean } = {},
+) {
   return useQuery({
     queryKey: ["comments", postId],
     queryFn: () => listComments(postId),

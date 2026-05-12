@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  subscribeToPost,
-  unsubscribeFromPost,
-} from "@/lib/api/posts";
+import { subscribeToPost, unsubscribeFromPost } from "@/lib/api/posts";
 import { useToast as toast } from "@/hooks/use-toast";
 
 interface UsePostSubscriptionOptions {

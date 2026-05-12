@@ -1,4 +1,4 @@
-import React, { JSX } from 'react'
+import React, { JSX } from "react";
 import type {
   DOMConversionMap,
   DOMConversionOutput,
@@ -8,20 +8,26 @@ import type {
   LexicalNode,
   NodeKey,
   SerializedLexicalNode,
-  Spread
-} from 'lexical'
+  Spread,
+} from "lexical";
 
-import { DecoratorNode } from 'lexical'
-import { ImageEditor } from './ImageEditor'
-import { MdxJsxAttribute, MdxJsxExpressionAttribute } from 'mdast-util-mdx-jsx'
+import { DecoratorNode } from "lexical";
+import { ImageEditor } from "./ImageEditor";
+import { MdxJsxAttribute, MdxJsxExpressionAttribute } from "mdast-util-mdx-jsx";
 
 function convertImageElement(domNode: Node): null | DOMConversionOutput {
   if (domNode instanceof HTMLImageElement) {
-    const { alt: altText, src, title, width, height } = domNode
-    const node = $createImageNode({ altText, src, title, width: width || undefined, height: height || undefined })
-    return { node }
+    const { alt: altText, src, title, width, height } = domNode;
+    const node = $createImageNode({
+      altText,
+      src,
+      title,
+      width: width || undefined,
+      height: height || undefined,
+    });
+    return { node };
   }
-  return null
+  return null;
 }
 
 /**
@@ -30,17 +36,17 @@ function convertImageElement(domNode: Node): null | DOMConversionOutput {
  */
 export type SerializedImageNode = Spread<
   {
-    altText: string
-    title?: string
-    width?: number
-    height?: number
-    src: string
-    rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
-    type: 'image'
-    version: 1
+    altText: string;
+    title?: string;
+    width?: number;
+    height?: number;
+    src: string;
+    rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
+    type: "image";
+    version: 1;
   },
   SerializedLexicalNode
->
+>;
 
 /**
  * A lexical node that represents an image. Use {@link "$createImageNode"} to construct one.
@@ -48,69 +54,77 @@ export type SerializedImageNode = Spread<
  */
 export class ImageNode extends DecoratorNode<JSX.Element> {
   /** @internal */
-  __src: string
+  __src: string;
   /** @internal */
-  __altText: string
+  __altText: string;
   /** @internal */
-  __title: string | undefined
+  __title: string | undefined;
   /** @internal */
-  __width: 'inherit' | number
+  __width: "inherit" | number;
   /** @internal */
-  __height: 'inherit' | number
+  __height: "inherit" | number;
 
   /** @internal */
-  __rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
+  __rest: (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
 
   /** @internal */
   static getType(): string {
-    return 'image'
+    return "image";
   }
 
   /** @internal */
   static clone(node: ImageNode): ImageNode {
-    return new ImageNode(node.__src, node.__altText, node.__title, node.__width, node.__height, node.__rest, node.__key)
+    return new ImageNode(
+      node.__src,
+      node.__altText,
+      node.__title,
+      node.__width,
+      node.__height,
+      node.__rest,
+      node.__key,
+    );
   }
 
   /** @internal */
   afterCloneFrom(prevNode: this): void {
-    super.afterCloneFrom(prevNode)
-    this.__src = prevNode.__src
-    this.__altText = prevNode.__altText
-    this.__title = prevNode.__title
-    this.__width = prevNode.__width
-    this.__height = prevNode.__height
-    this.__rest = prevNode.__rest
+    super.afterCloneFrom(prevNode);
+    this.__src = prevNode.__src;
+    this.__altText = prevNode.__altText;
+    this.__title = prevNode.__title;
+    this.__width = prevNode.__width;
+    this.__height = prevNode.__height;
+    this.__rest = prevNode.__rest;
   }
 
   /** @internal */
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
-    const { altText, title, src, width, rest, height } = serializedNode
+    const { altText, title, src, width, rest, height } = serializedNode;
     const node = $createImageNode({
       altText,
       title,
       src,
       height,
       width,
-      rest
-    })
-    return node
+      rest,
+    });
+    return node;
   }
 
   /** @internal */
   exportDOM(): DOMExportOutput {
-    const element = document.createElement('img')
-    element.setAttribute('src', this.__src)
-    element.setAttribute('alt', this.__altText)
+    const element = document.createElement("img");
+    element.setAttribute("src", this.__src);
+    element.setAttribute("alt", this.__altText);
     if (this.__title) {
-      element.setAttribute('title', this.__title)
+      element.setAttribute("title", this.__title);
     }
-    if (this.__width !== 'inherit' && this.__width) {
-      element.setAttribute('width', this.__width.toString())
+    if (this.__width !== "inherit" && this.__width) {
+      element.setAttribute("width", this.__width.toString());
     }
-    if (this.__height !== 'inherit' && this.__height) {
-      element.setAttribute('height', this.__height.toString())
+    if (this.__height !== "inherit" && this.__height) {
+      element.setAttribute("height", this.__height.toString());
     }
-    return { element }
+    return { element };
   }
 
   /** @internal */
@@ -118,9 +132,9 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return {
       img: () => ({
         conversion: convertImageElement,
-        priority: 0
-      })
-    }
+        priority: 0,
+      }),
+    };
   }
 
   /**
@@ -131,18 +145,18 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     src: string,
     altText: string,
     title: string | undefined,
-    width?: 'inherit' | number,
-    height?: 'inherit' | number,
+    width?: "inherit" | number,
+    height?: "inherit" | number,
     rest?: (MdxJsxAttribute | MdxJsxExpressionAttribute)[],
-    key?: NodeKey
+    key?: NodeKey,
   ) {
-    super(key)
-    this.__src = src
-    this.__title = title
-    this.__altText = altText
-    this.__width = width ?? 'inherit'
-    this.__height = height ?? 'inherit'
-    this.__rest = rest ?? []
+    super(key);
+    this.__src = src;
+    this.__title = title;
+    this.__altText = altText;
+    this.__width = width ?? "inherit";
+    this.__height = height ?? "inherit";
+    this.__rest = rest ?? [];
   }
 
   /** @internal */
@@ -150,79 +164,86 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     return {
       altText: this.getAltText(),
       title: this.getTitle(),
-      height: this.__height === 'inherit' ? undefined : this.__height,
-      width: this.__width === 'inherit' ? undefined : this.__width,
+      height: this.__height === "inherit" ? undefined : this.__height,
+      width: this.__width === "inherit" ? undefined : this.__width,
       src: this.getSrc(),
       rest: this.__rest,
-      type: 'image',
-      version: 1
-    }
+      type: "image",
+      version: 1,
+    };
   }
 
   /**
    * Sets the image dimensions
    */
-  setWidthAndHeight(width: 'inherit' | number, height: 'inherit' | number): void {
-    const writable = this.getWritable()
-    writable.__width = width
-    writable.__height = height
+  setWidthAndHeight(
+    width: "inherit" | number,
+    height: "inherit" | number,
+  ): void {
+    const writable = this.getWritable();
+    writable.__width = width;
+    writable.__height = height;
   }
 
   /** @internal */
   createDOM(config: EditorConfig, _editor: LexicalEditor): HTMLElement {
-    const span = document.createElement('span')
-    const theme = config.theme
-    const className = theme.image
+    const span = document.createElement("span");
+    const theme = config.theme;
+    const className = theme.image;
     if (className !== undefined) {
-      span.className = className
+      span.className = className;
     }
-    return span
+    return span;
   }
 
   /** @internal */
   updateDOM(): false {
-    return false
+    return false;
   }
 
   getSrc(): string {
-    return this.__src
+    return this.__src;
   }
 
   getAltText(): string {
-    return this.__altText
+    return this.__altText;
   }
 
   getTitle(): string | undefined {
-    return this.__title
+    return this.__title;
   }
 
-  getHeight(): 'inherit' | number {
-    return this.__height
+  getHeight(): "inherit" | number {
+    return this.__height;
   }
 
-  getWidth(): 'inherit' | number {
-    return this.__width
+  getWidth(): "inherit" | number {
+    return this.__width;
   }
 
   getRest(): (MdxJsxAttribute | MdxJsxExpressionAttribute)[] {
-    return this.__rest
+    return this.__rest;
   }
 
   setTitle(title: string | undefined): void {
-    this.getWritable().__title = title
+    this.getWritable().__title = title;
   }
 
   setSrc(src: string): void {
-    this.getWritable().__src = src
+    this.getWritable().__src = src;
   }
 
   setAltText(altText: string | undefined): void {
-    this.getWritable().__altText = altText ?? ''
+    this.getWritable().__altText = altText ?? "";
   }
 
   /** @internal */
   shouldBeSerializedAsElement(): boolean {
-    return this.__width !== 'inherit' || this.__height !== 'inherit' || this.__rest.length > 0
+    return (
+      this.__width !== "inherit" ||
+      this.__height !== "inherit" ||
+      this.__rest.length > 0
+    );
   }
 
   /** @internal */
@@ -237,7 +258,7 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
         alt={this.__altText}
         rest={this.__rest}
       />
-    )
+    );
   }
 }
 
@@ -246,13 +267,13 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
  * @group Image
  */
 export interface CreateImageNodeParameters {
-  altText: string
-  width?: number
-  height?: number
-  title?: string
-  key?: NodeKey
-  rest?: (MdxJsxAttribute | MdxJsxExpressionAttribute)[]
-  src: string
+  altText: string;
+  width?: number;
+  height?: number;
+  title?: string;
+  key?: NodeKey;
+  rest?: (MdxJsxAttribute | MdxJsxExpressionAttribute)[];
+  src: string;
 }
 
 /**
@@ -261,14 +282,16 @@ export interface CreateImageNodeParameters {
  * @group Image
  */
 export function $createImageNode(params: CreateImageNodeParameters): ImageNode {
-  const { altText, title, src, key, width, height, rest } = params
-  return new ImageNode(src, altText, title, width, height, rest, key)
+  const { altText, title, src, key, width, height, rest } = params;
+  return new ImageNode(src, altText, title, width, height, rest, key);
 }
 
 /**
  * Returns true if the node is an {@link ImageNode}.
  * @group Image
  */
-export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {
-  return node instanceof ImageNode
+export function $isImageNode(
+  node: LexicalNode | null | undefined,
+): node is ImageNode {
+  return node instanceof ImageNode;
 }

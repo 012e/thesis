@@ -70,7 +70,12 @@ export const Flat: Story = {
     isRoot: true,
   },
   parameters: {
-    msw: { handlers: [makeCommentsHandler(flatComments(STORY_UUIDS.POST_1)), ...baseHandlers] },
+    msw: {
+      handlers: [
+        makeCommentsHandler(flatComments(STORY_UUIDS.POST_1)),
+        ...baseHandlers,
+      ],
+    },
   },
 };
 
@@ -80,7 +85,12 @@ export const Nested: Story = {
     isRoot: true,
   },
   parameters: {
-    msw: { handlers: [makeCommentsHandler(nestedComments(STORY_UUIDS.POST_1)), ...baseHandlers] },
+    msw: {
+      handlers: [
+        makeCommentsHandler(nestedComments(STORY_UUIDS.POST_1)),
+        ...baseHandlers,
+      ],
+    },
   },
 };
 
@@ -90,7 +100,12 @@ export const SingleComment: Story = {
     isRoot: true,
   },
   parameters: {
-    msw: { handlers: [makeCommentsHandler(singleComment(STORY_UUIDS.POST_1)), ...baseHandlers] },
+    msw: {
+      handlers: [
+        makeCommentsHandler(singleComment(STORY_UUIDS.POST_1)),
+        ...baseHandlers,
+      ],
+    },
   },
 };
 

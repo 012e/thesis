@@ -27,7 +27,6 @@ jobs:
           node-version: 24.13.0
           cache: "pnpm"
 
-
       - name: Install dependencies
         run: pnpm i
 

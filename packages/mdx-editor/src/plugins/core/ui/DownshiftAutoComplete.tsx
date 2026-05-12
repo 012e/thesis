@@ -1,77 +1,106 @@
-import { useCombobox } from 'downshift'
-import React from 'react'
-import { Control, UseFormSetValue, Controller, UseFormRegister } from 'react-hook-form'
-import styles from '../../../styles/ui.module.css'
-import { iconComponentFor$ } from '..'
-import { useCellValue } from '@mdxeditor/gurx'
+import { useCombobox } from "downshift";
+import React from "react";
+import {
+  Control,
+  UseFormSetValue,
+  Controller,
+  UseFormRegister,
+} from "react-hook-form";
+import styles from "../../../styles/ui.module.css";
+import { iconComponentFor$ } from "..";
+import { useCellValue } from "@mdxeditor/gurx";
 
-const MAX_SUGGESTIONS = 20
+const MAX_SUGGESTIONS = 20;
 
 interface DownshiftAutoCompleteProps {
-  suggestions: string[]
-  control: Control<any>
-  setValue: UseFormSetValue<any>
-  register: UseFormRegister<any>
-  placeholder: string
-  inputName: string
-  autofocus?: boolean
-  initialInputValue: string
+  suggestions: string[];
+  control: Control<any>;
+  setValue: UseFormSetValue<any>;
+  register: UseFormRegister<any>;
+  placeholder: string;
+  inputName: string;
+  autofocus?: boolean;
+  initialInputValue: string;
 }
 
-export const DownshiftAutoComplete: React.FC<DownshiftAutoCompleteProps> = (props) => {
+export const DownshiftAutoComplete: React.FC<DownshiftAutoCompleteProps> = (
+  props,
+) => {
   if (props.suggestions.length > 0) {
-    return <DownshiftAutoCompleteWithSuggestions {...props} />
+    return <DownshiftAutoCompleteWithSuggestions {...props} />;
   } else {
-    return <input className={styles.textInput} size={40} autoFocus {...props.register(props.inputName)} />
+    return (
+      <input
+        className={styles.textInput}
+        size={40}
+        autoFocus
+        {...props.register(props.inputName)}
+      />
+    );
   }
-}
+};
 
-export const DownshiftAutoCompleteWithSuggestions: React.FC<DownshiftAutoCompleteProps> = ({
+export const DownshiftAutoCompleteWithSuggestions: React.FC<
+  DownshiftAutoCompleteProps
+> = ({
   autofocus,
   suggestions,
   control,
   inputName,
   placeholder,
   initialInputValue,
-  setValue
+  setValue,
 }) => {
-  const [items, setItems] = React.useState(suggestions.slice(0, MAX_SUGGESTIONS))
-  const iconComponentFor = useCellValue(iconComponentFor$)
+  const [items, setItems] = React.useState(
+    suggestions.slice(0, MAX_SUGGESTIONS),
+  );
+  const iconComponentFor = useCellValue(iconComponentFor$);
 
-  const enableAutoComplete = suggestions.length > 0
+  const enableAutoComplete = suggestions.length > 0;
 
-  const { isOpen, getToggleButtonProps, getMenuProps, getInputProps, highlightedIndex, getItemProps, selectedItem } = useCombobox({
+  const {
+    isOpen,
+    getToggleButtonProps,
+    getMenuProps,
+    getInputProps,
+    highlightedIndex,
+    getItemProps,
+    selectedItem,
+  } = useCombobox({
     initialInputValue,
-    onInputValueChange({ inputValue = '' }) {
-      setValue(inputName, inputValue)
-      inputValue = inputValue.toLowerCase() || ''
-      const matchingItems = []
+    onInputValueChange({ inputValue = "" }) {
+      setValue(inputName, inputValue);
+      inputValue = inputValue.toLowerCase() || "";
+      const matchingItems = [];
       for (const suggestion of suggestions) {
         if (suggestion.toLowerCase().includes(inputValue)) {
-          matchingItems.push(suggestion)
+          matchingItems.push(suggestion);
           if (matchingItems.length >= MAX_SUGGESTIONS) {
-            break
+            break;
           }
         }
       }
-      setItems(matchingItems)
+      setItems(matchingItems);
     },
     items,
     itemToString(item) {
-      return item ?? ''
-    }
-  })
+      return item ?? "";
+    },
+  });
 
-  const dropdownIsVisible = isOpen && items.length > 0
+  const dropdownIsVisible = isOpen && items.length > 0;
   return (
     <div className={styles.downshiftAutocompleteContainer}>
-      <div data-visible-dropdown={dropdownIsVisible} className={styles.downshiftInputWrapper}>
+      <div
+        data-visible-dropdown={dropdownIsVisible}
+        className={styles.downshiftInputWrapper}
+      >
         <Controller
           name={inputName}
           control={control}
           render={({ field }) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const downshiftSrcProps = getInputProps()
+            const downshiftSrcProps = getInputProps();
             return (
               <input
                 {...downshiftSrcProps}
@@ -82,12 +111,16 @@ export const DownshiftAutoCompleteWithSuggestions: React.FC<DownshiftAutoComplet
                 data-editor-dialog={true}
                 autoFocus={autofocus}
               />
-            )
+            );
           }}
         />
         {enableAutoComplete && (
-          <button aria-label="toggle menu" type="button" {...getToggleButtonProps()}>
-            {iconComponentFor('arrow_drop_down')}
+          <button
+            aria-label="toggle menu"
+            type="button"
+            {...getToggleButtonProps()}
+          >
+            {iconComponentFor("arrow_drop_down")}
           </button>
         )}
       </div>
@@ -107,5 +140,5 @@ export const DownshiftAutoCompleteWithSuggestions: React.FC<DownshiftAutoComplet
         </ul>
       </div>
     </div>
-  )
-}
+  );
+};

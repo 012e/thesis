@@ -104,7 +104,10 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "Learning JavaScript fundamentals" },
     });
 
-    const results = await postsSearchService.search("TypeScript", "search-author-1");
+    const results = await postsSearchService.search(
+      "TypeScript",
+      "search-author-1",
+    );
 
     expect(results.length).toBeGreaterThan(0);
     const texts = results.map((p) => p.content.text?.toLowerCase() ?? "");
@@ -143,13 +146,19 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "Go concurrency with goroutines and channels" },
     });
 
-    const results = await postsSearchService.search("kubernetes", "search-author-1");
+    const results = await postsSearchService.search(
+      "kubernetes",
+      "search-author-1",
+    );
 
     expect(results).toHaveLength(0);
   });
 
   it("returns an empty array when no posts exist", async () => {
-    const results = await postsSearchService.search("anything", "search-author-1");
+    const results = await postsSearchService.search(
+      "anything",
+      "search-author-1",
+    );
     expect(results).toHaveLength(0);
   });
 
@@ -158,7 +167,10 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "NestJS dependency injection patterns" },
     });
 
-    const results = await postsSearchService.search("NestJS", "search-author-1");
+    const results = await postsSearchService.search(
+      "NestJS",
+      "search-author-1",
+    );
 
     expect(results.length).toBeGreaterThan(0);
     const post = results[0];
@@ -179,9 +191,18 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "Docker containerization best practices" },
     });
 
-    const resultsLower = await postsSearchService.search("docker", "search-author-1");
-    const resultsUpper = await postsSearchService.search("DOCKER", "search-author-1");
-    const resultsMixed = await postsSearchService.search("Docker", "search-author-1");
+    const resultsLower = await postsSearchService.search(
+      "docker",
+      "search-author-1",
+    );
+    const resultsUpper = await postsSearchService.search(
+      "DOCKER",
+      "search-author-1",
+    );
+    const resultsMixed = await postsSearchService.search(
+      "Docker",
+      "search-author-1",
+    );
 
     expect(resultsLower.length).toBeGreaterThan(0);
     expect(resultsUpper.length).toBeGreaterThan(0);
@@ -204,7 +225,10 @@ describe("PostsSearchService.search integration", () => {
 
     // The poll question lives in content.poll.question, not content.text,
     // so the BM25 index (which indexes content->>'text') should not match it.
-    const results = await postsSearchService.search("favourite", "search-author-1");
+    const results = await postsSearchService.search(
+      "favourite",
+      "search-author-1",
+    );
 
     expect(results).toHaveLength(0);
   });
@@ -220,7 +244,10 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "Use a database for persistent storage" },
     });
 
-    const results = await postsSearchService.search("database", "search-author-1");
+    const results = await postsSearchService.search(
+      "database",
+      "search-author-1",
+    );
 
     expect(results.length).toBeGreaterThanOrEqual(2);
     // The post mentioning "database" more frequently should rank first (higher BM25 score)
@@ -232,7 +259,10 @@ describe("PostsSearchService.search integration", () => {
       content: { text: "Vitest is a fast unit testing framework" },
     });
 
-    const results = await postsSearchService.search("Vitest", "search-author-1");
+    const results = await postsSearchService.search(
+      "Vitest",
+      "search-author-1",
+    );
 
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].commentCount).toBe(0);
@@ -246,10 +276,17 @@ describe("PostsSearchService.search integration", () => {
     // Insert two comments directly via the DB to avoid needing CommentsService
     await databaseService.db.insert(comments).values([
       { postId: post.id, authorId: "search-author-1", content: "Great post!" },
-      { postId: post.id, authorId: "search-author-1", content: "Very helpful." },
+      {
+        postId: post.id,
+        authorId: "search-author-1",
+        content: "Very helpful.",
+      },
     ]);
 
-    const results = await postsSearchService.search("Drizzle", "search-author-1");
+    const results = await postsSearchService.search(
+      "Drizzle",
+      "search-author-1",
+    );
 
     expect(results.length).toBeGreaterThan(0);
     const found = results.find((p) => p.id === post.id);

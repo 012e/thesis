@@ -1,4 +1,10 @@
-import { useRef, useEffect, useMemo, type Dispatch, type SetStateAction } from "react";
+import {
+  useRef,
+  useEffect,
+  useMemo,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import { useAtom } from "jotai";
 import { produce } from "immer";
 import { formDraftsAtom } from "@/lib/atoms/form-drafts";
@@ -62,7 +68,8 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
     lastEditorContent.current = val;
     setDrafts(
       produce((d) => {
-        if (!d[threadId]) d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
         d[threadId]!.activeForm = "PostCreationForm";
         d[threadId]!.data.content = val;
       }),
@@ -73,7 +80,8 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
   const setShowPollCreator = (val: boolean) =>
     setDrafts(
       produce((d) => {
-        if (!d[threadId]) d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
         d[threadId]!.activeForm = "PostCreationForm";
         d[threadId]!.data.showPollCreator = val;
       }),
@@ -83,33 +91,44 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
   const setPoll = (val: PollPostContentDto | undefined) =>
     setDrafts(
       produce((d) => {
-        if (!d[threadId]) d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
         d[threadId]!.activeForm = "PostCreationForm";
         d[threadId]!.data.poll = val;
       }),
     );
 
   const selectedImages = (draft.selectedImages as ImagePreview[]) ?? [];
-  const setSelectedImages: Dispatch<SetStateAction<ImagePreview[]>> = (valOrUpdater) =>
+  const setSelectedImages: Dispatch<SetStateAction<ImagePreview[]>> = (
+    valOrUpdater,
+  ) =>
     setDrafts(
       produce((d) => {
-        if (!d[threadId]) d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
         d[threadId]!.activeForm = "PostCreationForm";
         const prev = (d[threadId]!.data.selectedImages as ImagePreview[]) ?? [];
         d[threadId]!.data.selectedImages =
-          typeof valOrUpdater === "function" ? valOrUpdater(prev) : valOrUpdater;
+          typeof valOrUpdater === "function"
+            ? valOrUpdater(prev)
+            : valOrUpdater;
       }),
     );
 
   const uploadedImages = (draft.uploadedImages as PostImageDto[]) ?? [];
-  const setUploadedImages: Dispatch<SetStateAction<PostImageDto[]>> = (valOrUpdater) =>
+  const setUploadedImages: Dispatch<SetStateAction<PostImageDto[]>> = (
+    valOrUpdater,
+  ) =>
     setDrafts(
       produce((d) => {
-        if (!d[threadId]) d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
         d[threadId]!.activeForm = "PostCreationForm";
         const prev = (d[threadId]!.data.uploadedImages as PostImageDto[]) ?? [];
         d[threadId]!.data.uploadedImages =
-          typeof valOrUpdater === "function" ? valOrUpdater(prev) : valOrUpdater;
+          typeof valOrUpdater === "function"
+            ? valOrUpdater(prev)
+            : valOrUpdater;
       }),
     );
 

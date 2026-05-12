@@ -174,7 +174,11 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
   );
 }
 
-export function CommentTree({ postId, isRoot = false, comments }: CommentTreeProps) {
+export function CommentTree({
+  postId,
+  isRoot = false,
+  comments,
+}: CommentTreeProps) {
   const query = useComments(postId, { enabled: isRoot });
 
   if (isRoot) {
