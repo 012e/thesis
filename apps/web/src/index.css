@@ -144,6 +144,11 @@
 
 .mdx-editor-wrapper [contenteditable] {
   @apply text-foreground border-0;
+  caret-color: var(--foreground);
+}
+
+.mdx-editor-wrapper .mdxeditor-root-contenteditable:focus-within > .post-composer-markdown:not([contenteditable]) {
+  opacity: 0;
 }
 
 .mdx-editor-wrapper .post-composer-markdown {
@@ -237,6 +242,14 @@
   top: 0.8rem !important;
   right: 0.8rem !important;
   width: fit-content !important;
+}
+
+.mdx-editor-wrapper .post-composer-markdown .cm-content {
+  caret-color: currentColor;
+}
+
+.mdx-editor-wrapper .post-composer-markdown .cm-cursor {
+  border-left-color: currentColor !important;
 }
 
 .mdx-editor-wrapper .post-composer-markdown [data-toolbar-item] {
