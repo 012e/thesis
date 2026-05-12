@@ -1,106 +1,102 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PostComposer } from "@/components/ui/post-composer";
-import { Post } from "@/components/post";
+import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
-import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useFollowingPosts } from "@/hooks/use-following-posts";
+import { useState } from "react";
+
+type FeedTab = "for-you" | "following";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    error,
-  } = useRecommendations({ limit: 20 });
+  const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
+  const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
+  const recommendations = useRecommendations({ limit: 20, enabled: activeTab === "for-you" });
+  const followingPosts = useFollowingPosts({ limit: 20, enabled: activeTab === "following" });
+  const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
+  const isSwitchingFeed = refreshingTab === activeTab;
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
+  const handleTabChange = (nextTab: FeedTab) => {
+    if (nextTab === activeTab) {
+      return;
     }
 
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+    const nextFeed = nextTab === "for-you" ? recommendations : followingPosts;
 
-  const allPosts = data?.pages.flatMap((page) => page.items) ?? [];
+    setActiveTab(nextTab);
+    setRefreshingTab(nextTab);
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    void nextFeed.refetch().finally(() => {
+      setRefreshingTab((currentTab) =>
+        currentTab === nextTab ? null : currentTab,
+      );
+    });
+  };
 
   return (
     <>
       <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <div className="flex items-center">
-          <button className="flex-1 py-4 font-bold text-center transition-colors hover:bg-accent">
+          <button
+            type="button"
+            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
+              activeTab === "for-you"
+                ? "font-bold text-foreground"
+                : "font-semibold text-muted-foreground"
+            }`}
+            onClick={() => handleTabChange("for-you")}
+          >
             For you
+            {activeTab === "for-you" && (
+              <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
+            )}
           </button>
-          <button className="flex-1 py-4 font-semibold text-center transition-colors text-muted-foreground hover:bg-accent">
+          <button
+            type="button"
+            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
+              activeTab === "following"
+                ? "font-bold text-foreground"
+                : "font-semibold text-muted-foreground"
+            }`}
+            onClick={() => handleTabChange("following")}
+          >
             Following
+            {activeTab === "following" && (
+              <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
+            )}
           </button>
         </div>
       </div>
       <PostComposer />
-      <div className="divide-y">
-        {isLoading && (
-          <div className="p-8 text-center text-muted-foreground">
-            Loading recommendations...
-          </div>
-        )}
-        {isError && (
-          <div className="p-8 text-center text-destructive">
-            Error loading recommendations: {error?.message}
-          </div>
-        )}
-        {allPosts.length === 0 && !isLoading && !isError && (
-          <div className="p-8 text-center text-muted-foreground">
-            No posts available yet
-          </div>
-        )}
-        {allPosts.map((post) => (
-          <Post key={post.id} post={post} />
-        ))}
-        {/* Infinite scroll trigger */}
-        <div ref={observerTarget} className="h-20">
-          {isFetchingNextPage && (
-            <div className="p-4 text-center text-muted-foreground">
-              Loading more posts...
-            </div>
-          )}
-          {!hasNextPage && allPosts.length > 0 && (
-            <div className="p-4 text-center text-muted-foreground">
-              You've reached the end
-            </div>
-          )}
-        </div>
-        {/* Manual load more button (optional fallback) */}
-        {hasNextPage && !isFetchingNextPage && (
-          <div className="p-4 text-center">
-            <Button onClick={() => fetchNextPage()} variant="outline">
-              Load more
-            </Button>
-          </div>
-        )}
-      </div>
+      <PostsFeed
+        key={activeTab}
+        data={isSwitchingFeed ? undefined : activeFeed.data}
+        fetchNextPage={activeFeed.fetchNextPage}
+        hasNextPage={activeFeed.hasNextPage}
+        isFetchingNextPage={activeFeed.isFetchingNextPage}
+        isLoading={activeFeed.isLoading || isSwitchingFeed}
+        isError={activeFeed.isError}
+        error={activeFeed.error}
+        loadingLabel={
+          activeTab === "for-you"
+            ? "Loading recommendations..."
+            : "Loading following posts..."
+        }
+        errorLabel={
+          activeTab === "for-you"
+            ? "Error loading recommendations"
+            : "Error loading following posts"
+        }
+        emptyLabel={
+          activeTab === "for-you"
+            ? "No posts available yet"
+            : "No posts from people you follow yet"
+        }
+      />
     </>
   );
 }

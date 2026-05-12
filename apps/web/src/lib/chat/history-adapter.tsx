@@ -1,7 +1,5 @@
 import { useMemo } from "react";
-import type { FC, ReactNode } from "react";
 import {
-  RuntimeAdapterProvider,
   useAui,
   type ThreadHistoryAdapter,
   type MessageFormatAdapter,
@@ -78,16 +76,7 @@ function makeHistoryAdapter(
   };
 }
 
-/** Provider component injected as `unstable_Provider` on the RemoteThreadListAdapter.
- *  Wraps each thread's runtime with a backend-backed history adapter. */
-export const HistoryAdapterProvider: FC<{ children: ReactNode }> = ({
-  children,
-}) => {
+export function useThreadHistoryAdapter(): ThreadHistoryAdapter {
   const aui = useAui();
-  const history = useMemo(() => makeHistoryAdapter(aui), [aui]);
-  const adapters = useMemo(() => ({ history }), [history]);
-
-  return (
-    <RuntimeAdapterProvider adapters={adapters}>{children}</RuntimeAdapterProvider>
-  );
-};
+  return useMemo(() => makeHistoryAdapter(aui), [aui]);
+}

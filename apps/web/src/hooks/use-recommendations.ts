@@ -7,10 +7,11 @@ export const RECOMMENDATIONS_QUERY_KEY = ["recommendations"] as const;
 
 export interface UseRecommendationsOptions {
   limit?: number;
+  enabled?: boolean;
 }
 
 export function useRecommendations(options: UseRecommendationsOptions = {}) {
-  const { limit = 20 } = options;
+  const { limit = 20, enabled = true } = options;
 
   const query = useInfiniteQuery({
     queryKey: [...RECOMMENDATIONS_QUERY_KEY, limit],
@@ -23,6 +24,7 @@ export function useRecommendations(options: UseRecommendationsOptions = {}) {
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled,
   });
 
   // Combine new posts from session storage with fetched posts

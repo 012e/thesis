@@ -3,6 +3,7 @@ import { Cell, Signal, map } from '@mdxeditor/gurx'
 import { CodeBlockEditorDescriptor, appendCodeBlockEditorDescriptor$, insertCodeBlock$ } from '../codeblock'
 import { CodeMirrorEditor } from './CodeMirrorEditor'
 import type { Extension } from '@codemirror/state'
+import type { ReactNode } from 'react'
 
 /**
  * @internal
@@ -25,6 +26,8 @@ export interface CodeBlockLanguageSupport {
 export interface CodeBlockLanguage {
   /** Display name shown in the language select dropdown. */
   name: string
+  /** Optional custom label shown in the language select dropdown. */
+  label?: ReactNode
   /** Alternative identifiers for this language (e.g. `["js"]` for JavaScript). */
   alias?: readonly string[]
   /** File extensions associated with this language (e.g. `["js", "mjs"]`). */
@@ -39,7 +42,7 @@ export interface CodeBlockLanguage {
  */
 export interface NormalizedCodeBlockLanguages {
   /** Items for the language select dropdown. */
-  items: { value: string; label: string }[]
+  items: { value: string; label: ReactNode }[]
   /** Maps any known key (canonical, alias, extension) to the canonical key. */
   keyMap: Record<string, string>
   /** Maps canonical keys to pre-loaded language support, when provided. */
@@ -51,7 +54,7 @@ export interface NormalizedCodeBlockLanguages {
  * Accepts either a `Record<string, string>` (legacy) or a `CodeBlockLanguage[]` array.
  */
 export function normalizeCodeBlockLanguages(input: Record<string, string> | CodeBlockLanguage[]): NormalizedCodeBlockLanguages {
-  const items: { value: string; label: string }[] = []
+  const items: { value: string; label: ReactNode }[] = []
   const keyMap: Record<string, string> = {}
   const supportMap: Partial<Record<string, CodeBlockLanguageSupport>> = {}
 
@@ -62,7 +65,7 @@ export function normalizeCodeBlockLanguages(input: Record<string, string> | Code
       // because Radix Select does not accept items with an empty string value.
       const rawCanonical = lang.alias?.[0] ?? lang.name.toLowerCase()
       const canonical = rawCanonical || EMPTY_VALUE
-      items.push({ value: canonical, label: lang.name })
+      items.push({ value: canonical, label: lang.label ?? lang.name })
       keyMap[rawCanonical] = canonical
       if (lang.alias) {
         for (const alias of lang.alias) {
@@ -101,7 +104,7 @@ export function normalizeCodeBlockLanguages(input: Record<string, string> | Code
 export function getCodeBlockLanguageSelectData(
   normalized: NormalizedCodeBlockLanguages,
   language: string
-): { value: string; items: { value: string; label: string }[] } {
+): { value: string; items: { value: string; label: ReactNode }[] } {
   const value = normalized.keyMap[language] ?? language
   if (!value || normalized.items.some((item) => item.value === value)) {
     return { value, items: normalized.items }

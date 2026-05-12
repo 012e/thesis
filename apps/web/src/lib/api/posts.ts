@@ -28,6 +28,31 @@ export async function fetchUserPosts(userId: string): Promise<PostDto[]> {
   throw new Error("Failed to fetch user posts");
 }
 
+export interface FollowingPostsParams {
+  limit?: number;
+  cursor?: string;
+}
+
+export async function fetchFollowingPosts(params: FollowingPostsParams) {
+  const response = await client.listFollowingPosts({
+    query: {
+      limit: params.limit,
+      cursor: params.cursor,
+    },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to fetch following posts");
+}
+
 export async function createPost(content: PostContentDto): Promise<PostDto> {
   const response = await client.createPost({
     body: {

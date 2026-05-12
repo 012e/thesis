@@ -1,4 +1,4 @@
-import React, { JSX } from 'react'
+import React, { type ReactNode } from 'react'
 import * as RadixSelect from '@radix-ui/react-select'
 import classNames from 'classnames'
 import styles from '../../../styles/ui.module.css'
@@ -94,7 +94,7 @@ export const Select = <T extends string>(props: {
   triggerTitle: string
   placeholder: string
   disabled?: boolean
-  items: ({ label: string | JSX.Element; value: T } | 'separator')[]
+  items: ({ label: ReactNode; value: T } | 'separator')[]
 }) => {
   return (
     <RadixSelect.Root value={props.value || ''} onValueChange={props.onChange} disabled={props.disabled}>

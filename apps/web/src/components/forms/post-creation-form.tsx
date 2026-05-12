@@ -10,8 +10,10 @@ import {
   thematicBreakPlugin,
   markdownShortcutPlugin,
   codeBlockPlugin,
+  codeMirrorPlugin,
 } from "@repo/mdx-editor";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
+import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
 import {
   PostComposerProvider,
   PostComposerEditor,
@@ -126,6 +128,10 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
       quotePlugin(),
       thematicBreakPlugin(),
       codeBlockPlugin(),
+      codeMirrorPlugin({
+        autoLoadLanguageSupport: true,
+        codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
+      }),
       markdownShortcutPlugin(),
     ],
     [],
@@ -154,7 +160,7 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
                 ref={editorRef}
                 plugins={editorPlugins}
                 wrapperClassName="bg-background"
-                contentEditableClassName="prose dark:prose-invert prose-sm max-w-none p-4 outline-none text-base bg-background font-sans"
+                contentEditableClassName="post-composer-markdown p-4 outline-none bg-background"
               />
               <PostComposerPoll />
               <PostComposerImageGrid />
