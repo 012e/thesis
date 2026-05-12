@@ -17,8 +17,11 @@ import {
 
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
+import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
+import { PgBossService } from "@wavezync/nestjs-pgboss";
 
 describe("PostsService integration", () => {
   let containers: PostgresContainerContext;
@@ -52,6 +55,17 @@ describe("PostsService integration", () => {
             resolveAvatarUrl: (image: string | null) => image,
           },
         },
+        {
+          provide: PgBossService,
+          useValue: {
+            scheduleJob: async () => ({}),
+          },
+        },
+        {
+          provide: NOTIFICATION_TRANSPORTS,
+          useValue: [],
+        },
+        NotificationsService,
         {
           provide: EMBEDDING_SERVICE,
           useClass: StubEmbeddingService,
@@ -98,7 +112,7 @@ describe("PostsService integration", () => {
       },
     });
 
-    const fetched = await postsService.getById(created.id);
+    const fetched = await postsService.getById(created.id, "author-1");
 
     expect(fetched).toEqual(created);
     expect(created.authorId).toBe("author-1");
@@ -111,6 +125,7 @@ describe("PostsService integration", () => {
     expect(created.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(created.upvoteCount).toBe(0);
     expect(created.downvoteCount).toBe(0);
+    expect(created.currentUserSubscribed).toBe(true);
   });
 
   it("lists posts in descending creation order", async () => {

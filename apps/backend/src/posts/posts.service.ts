@@ -1,12 +1,26 @@
 import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 import { BadRequestException, Inject, Injectable, Logger } from "@nestjs/common";
-import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
+import type {
+  NotificationPayloadDto,
+  NotificationTypeDto,
+  PostDto,
+  PostSubscriptionDto,
+  ReactionTypeDto,
+} from "@repo/shared-dto";
 import type { z } from "zod";
 
 import { DatabaseService } from "@/db/database.service";
-import { postReactions, posts, usersView, comments, userFollows } from "@/db/schema";
+import {
+  comments,
+  postReactions,
+  posts,
+  postSubscriptions,
+  userFollows,
+  usersView,
+} from "@/db/schema";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
+import { NotificationsService } from "@/notifications/notifications.service";
 import {
   EMBEDDING_SERVICE,
   type IEmbeddingService,
@@ -31,6 +45,14 @@ const getUserReactionType = (userId: string) => {
   >`MAX(CASE WHEN ${postReactions.userId} = ${sql.raw(`'${userId}'`)} THEN ${postReactions.type} END)`;
 };
 
+const getCurrentUserSubscribed = (userId: string) => {
+  return sql<boolean>`EXISTS (
+    SELECT 1 FROM ${postSubscriptions}
+    WHERE ${postSubscriptions.postId} = ${posts.id}
+      AND ${postSubscriptions.userId} = ${userId}
+  )`;
+};
+
 type CreatePostInput = z.infer<typeof createPostSchema>;
 type UpdatePostInput = z.infer<typeof updatePostSchema>;
 
@@ -50,6 +72,7 @@ export class PostsService {
     private readonly databaseService: DatabaseService,
     private readonly storageService: StorageService,
     private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
   ) {}
@@ -76,6 +99,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(requestingUserId),
+        currentUserSubscribed: getCurrentUserSubscribed(requestingUserId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -115,6 +139,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(userId),
+        currentUserSubscribed: getCurrentUserSubscribed(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -229,6 +254,11 @@ export class PostsService {
       })
       .returning();
 
+    await this.databaseService.db
+      .insert(postSubscriptions)
+      .values({ postId: createdPost.id, userId: authorId })
+      .onConflictDoNothing();
+
     const [row] = await this.databaseService.db
       .select({
         id: posts.id,
@@ -247,6 +277,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(authorId),
+        currentUserSubscribed: getCurrentUserSubscribed(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -286,6 +317,9 @@ export class PostsService {
         userReactionType: userId
           ? getUserReactionType(userId)
           : sql<string | null>`NULL`,
+        currentUserSubscribed: userId
+          ? getCurrentUserSubscribed(userId)
+          : sql<boolean>`false`,
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -340,6 +374,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(authorId),
+        currentUserSubscribed: getCurrentUserSubscribed(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -355,9 +390,20 @@ export class PostsService {
       )
       .limit(1);
 
-    return row
+    const dto = row
       ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
       : null;
+
+    if (dto) {
+      void this.deliverPostUpdateNotification(dto.id, authorId, dto.content.text).catch(
+        (error) =>
+          this.logger.warn(
+            `Failed to notify subscribers for post update ${dto.id}: ${(error as Error).message}`,
+          ),
+      );
+    }
+
+    return dto;
   }
 
   async recommendations(
@@ -388,6 +434,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(userId),
+        currentUserSubscribed: getCurrentUserSubscribed(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -456,6 +503,7 @@ export class PostsService {
         downvoteCount,
         commentCount,
         userReactionType: getUserReactionType(authorId),
+        currentUserSubscribed: getCurrentUserSubscribed(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -488,8 +536,89 @@ export class PostsService {
     return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
   }
 
+  async subscribe(
+    postId: string,
+    userId: string,
+  ): Promise<PostSubscriptionDto | null> {
+    const postExists = await this.postExists(postId);
+    if (!postExists) return null;
+
+    await this.databaseService.db
+      .insert(postSubscriptions)
+      .values({ postId, userId })
+      .onConflictDoNothing();
+
+    const [row] = await this.databaseService.db
+      .select()
+      .from(postSubscriptions)
+      .where(
+        and(
+          eq(postSubscriptions.postId, postId),
+          eq(postSubscriptions.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    return row ? this.toSubscriptionDto(row) : null;
+  }
+
+  async unsubscribe(
+    postId: string,
+    userId: string,
+  ): Promise<PostSubscriptionDto | null> {
+    const [post] = await this.databaseService.db
+      .select({ id: posts.id, authorId: posts.authorId })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+    if (!post) return null;
+
+    const [row] = await this.databaseService.db
+      .delete(postSubscriptions)
+      .where(
+        and(
+          eq(postSubscriptions.postId, postId),
+          eq(postSubscriptions.userId, userId),
+        ),
+      )
+      .returning();
+
+    return row ? this.toSubscriptionDto(row) : null;
+  }
+
+  async notifySubscribers(
+    postId: string,
+    actorId: string,
+    type: NotificationTypeDto,
+    payload: NotificationPayloadDto,
+    excludeUserIds: string[] = [],
+  ): Promise<void> {
+    const excluded = new Set([actorId, ...excludeUserIds]);
+    const subscribers = await this.databaseService.db
+      .select({ userId: postSubscriptions.userId })
+      .from(postSubscriptions)
+      .where(eq(postSubscriptions.postId, postId));
+
+    const recipientIds = [...new Set(subscribers.map((row) => row.userId))]
+      .filter((userId) => !excluded.has(userId));
+
+    await Promise.all(
+      recipientIds.map((userId) =>
+        this.notificationsService.deliver(
+          { userId, actorId, type, payload },
+          ["websocket"],
+        ),
+      ),
+    );
+  }
+
   readonly toDto = (
-    row: PostRow & { upvoteCount: number; downvoteCount: number; commentCount: number },
+    row: PostRow & {
+      upvoteCount: number;
+      downvoteCount: number;
+      commentCount: number;
+      currentUserSubscribed?: boolean;
+    },
     userReactionType?: ReactionTypeDto | null,
   ): PostDto => {
     return {
@@ -509,8 +638,40 @@ export class PostsService {
       downvoteCount: row.downvoteCount,
       commentCount: row.commentCount,
       currentUserReaction: userReactionType ?? null,
+      currentUserSubscribed: row.currentUserSubscribed ?? false,
     };
   };
+
+  private readonly toSubscriptionDto = (row: {
+    postId: string;
+    userId: string;
+    createdAt: Date;
+  }): PostSubscriptionDto => ({
+    postId: row.postId,
+    userId: row.userId,
+    createdAt: row.createdAt.toISOString(),
+  });
+
+  private async postExists(postId: string): Promise<boolean> {
+    const [row] = await this.databaseService.db
+      .select({ id: posts.id })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    return row !== undefined;
+  }
+
+  private async deliverPostUpdateNotification(
+    postId: string,
+    actorId: string,
+    text: string | undefined,
+  ): Promise<void> {
+    await this.notifySubscribers(postId, actorId, "post_update", {
+      postId,
+      preview: text ? text.slice(0, 100) : null,
+    });
+  }
 
   private encodeCursor(cursor: {
     reactionCount: number;

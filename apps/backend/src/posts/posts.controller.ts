@@ -152,6 +152,46 @@ export class PostsController {
     });
   }
 
+  @TsRestHandler(postsContract.subscribeToPost)
+  subscribeToPost(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.subscribeToPost, async ({ params }) => {
+      const subscription = await this.postsService.subscribe(
+        params.id,
+        session.user.id,
+      );
+
+      if (!subscription) {
+        return { status: 404, body: null };
+      }
+
+      return {
+        status: 200,
+        body: postsContract.subscribeToPost.responses[200].parse(subscription),
+      };
+    });
+  }
+
+  @TsRestHandler(postsContract.unsubscribeFromPost)
+  unsubscribeFromPost(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.unsubscribeFromPost, async ({ params }) => {
+      const subscription = await this.postsService.unsubscribe(
+        params.id,
+        session.user.id,
+      );
+
+      if (!subscription) {
+        return { status: 404, body: null };
+      }
+
+      return {
+        status: 200,
+        body: postsContract.unsubscribeFromPost.responses[200].parse(
+          subscription,
+        ),
+      };
+    });
+  }
+
   @TsRestHandler(postsContract.getRecommendations)
   getRecommendations(@Session() session: UserSession) {
     return tsRestHandler(

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { CommentDto, ReactionTypeDto } from '@repo/shared-dto';
 import { DatabaseService } from '@/db/database.service';
-import { comments, commentReactions, posts, usersView } from '@/db/schema';
+import { comments, commentReactions, usersView } from '@/db/schema';
 import { eq, desc, count, sql } from 'drizzle-orm';
 import { UsersService } from '@/users/users.service';
 import { NotificationsService } from '@/notifications/notifications.service';
+import { PostsService } from '@/posts/posts.service';
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
@@ -29,6 +30,7 @@ export class CommentsService {
     private readonly databaseService: DatabaseService,
     private readonly usersService: UsersService,
     private readonly notificationsService: NotificationsService,
+    private readonly postsService: PostsService,
   ) {}
 
   async list(postId: string, userId?: string): Promise<CommentDto[]> {
@@ -169,25 +171,21 @@ export class CommentsService {
           ['websocket'],
         );
       }
-    } else {
-      // Top-level comment — notify the post author
-      const [post] = await this.databaseService.db
-        .select({ authorId: posts.authorId })
-        .from(posts)
-        .where(eq(posts.id, postId))
-        .limit(1);
 
-      if (post && post.authorId !== authorId) {
-        await this.notificationsService.deliver(
-          {
-            userId: post.authorId,
-            actorId: authorId,
-            type: 'comment',
-            payload: { postId, commentId, preview },
-          },
-          ['websocket'],
-        );
-      }
+      await this.postsService.notifySubscribers(
+        postId,
+        authorId,
+        'reply',
+        { postId, parentCommentId: parentId, commentId, preview },
+        parentComment ? [parentComment.authorId] : [],
+      );
+    } else {
+      await this.postsService.notifySubscribers(
+        postId,
+        authorId,
+        'comment',
+        { postId, commentId, preview },
+      );
     }
   }
 

@@ -1,6 +1,7 @@
 import type {
   PostDto,
   PostContentDto,
+  PostSubscriptionDto,
   ReactionTypeDto,
 } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
@@ -123,6 +124,53 @@ export async function updatePost(
   }
 
   throw new Error("Failed to update post");
+}
+
+export async function subscribeToPost(
+  postId: string,
+): Promise<PostSubscriptionDto> {
+  const response = await client.subscribeToPost({
+    params: { id: postId },
+    body: {},
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to subscribe to post");
+}
+
+export async function unsubscribeFromPost(
+  postId: string,
+): Promise<PostSubscriptionDto> {
+  const response = await client.unsubscribeFromPost({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post subscription not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to unsubscribe from post");
 }
 
 export async function unreactToPost(postId: string): Promise<void> {
