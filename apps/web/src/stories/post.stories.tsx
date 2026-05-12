@@ -13,6 +13,7 @@ import {
   makeReplyHandler,
   deleteCommentHandler,
 } from "./msw/comments";
+import { withRouter } from "../../.storybook/create-router-decorator";
 
 const now = new Date().toISOString();
 const oneHourAgo = new Date(Date.now() - 3_600_000).toISOString();
@@ -176,6 +177,7 @@ const meta = {
     },
   },
   decorators: [
+    withRouter(),
     (Story) => (
       <div className="w-[600px] border rounded-lg bg-background text-foreground">
         <Story />
