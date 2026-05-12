@@ -1,6 +1,5 @@
-import { useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import {
-  MDXEditor,
   headingsPlugin,
   listsPlugin,
   quotePlugin,
@@ -9,9 +8,19 @@ import {
   codeBlockPlugin,
   codeMirrorPlugin,
 } from "@repo/mdx-editor";
-import "@repo/mdx-editor/style.css";
-import type { PostDto } from "@repo/shared-dto";
-import { IconAlertCircle, IconLoader2 } from "@tabler/icons-react";
+import { oneDark } from "@codemirror/theme-one-dark";
+import type {
+  PollPostContentDto,
+  PostDto,
+  PostImageDto,
+} from "@repo/shared-dto";
+import { IconLoader2 } from "@tabler/icons-react";
+import {
+  PostComposerCharCounter,
+  PostComposerEditor,
+  PostComposerProvider,
+  type ImagePreview,
+} from "@/components/post-composer";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,11 +45,30 @@ export function EditPostDialog({
   onOpenChange,
 }: EditPostDialogProps) {
   const [content, setContent] = useState(post.content.text ?? "");
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [poll, setPoll] = useState<PollPostContentDto | undefined>(undefined);
+  const [selectedImages, setSelectedImages] = useState<ImagePreview[]>([]);
+  const [uploadedImages, setUploadedImages] = useState<PostImageDto[]>([]);
   const { mutate: updatePost, isPending } = useUpdatePost();
-  const editorRef = useRef(null);
 
-  const maxCharacters = POST_MAX_LENGTH;
-  const isExceeded = content.length > maxCharacters;
+  const editorPlugins = useMemo(
+    () => [
+      headingsPlugin(),
+      listsPlugin(),
+      quotePlugin(),
+      thematicBreakPlugin(),
+      codeBlockPlugin(),
+      codeMirrorPlugin({
+        autoLoadLanguageSupport: true,
+        codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
+        codeMirrorExtensions: [oneDark],
+      }),
+      markdownShortcutPlugin(),
+    ],
+    [],
+  );
+
+  const isExceeded = content.length > POST_MAX_LENGTH;
   const canSave = content.trim().length > 0 && !isExceeded;
 
   const handleSave = () => {
@@ -73,56 +101,46 @@ export function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Edit post</DialogTitle>
-        </DialogHeader>
+      <PostComposerProvider
+        content={content}
+        setContent={setContent}
+        showPollCreator={showPollCreator}
+        setShowPollCreator={setShowPollCreator}
+        poll={poll}
+        setPoll={setPoll}
+        selectedImages={selectedImages}
+        setSelectedImages={setSelectedImages}
+        uploadedImages={uploadedImages}
+        setUploadedImages={setUploadedImages}
+        isSubmitting={isPending}
+      >
+        <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit post</DialogTitle>
+          </DialogHeader>
 
-        <div className="overflow-hidden rounded-lg bg-background mdx-editor-wrapper">
-          <MDXEditor
-            ref={editorRef}
+          <PostComposerEditor
             key={open ? "open" : "closed"}
-            markdown={content}
-            onChange={setContent}
-            plugins={[
-              headingsPlugin(),
-              listsPlugin(),
-              quotePlugin(),
-              thematicBreakPlugin(),
-              codeBlockPlugin(),
-              codeMirrorPlugin({
-                autoLoadLanguageSupport: true,
-                codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
-              }),
-              markdownShortcutPlugin(),
-            ]}
-            contentEditableClassName="post-composer-markdown p-4 outline-none bg-background min-h-[120px]"
+            plugins={editorPlugins}
+            wrapperClassName="overflow-hidden bg-background"
+            contentEditableClassName="post-composer-markdown p-4 outline-none bg-background min-h-[120px] max-h-[60dvh] overflow-y-auto"
           />
-        </div>
+          <PostComposerCharCounter />
 
-        <div className="flex justify-between items-center px-1">
-          <span className="text-xs text-muted-foreground">
-            {content.length} / {maxCharacters}
-          </span>
-          {isExceeded && (
-            <div className="flex gap-1 items-center text-xs text-destructive">
-              <IconAlertCircle className="w-3 h-3" />
-              <span>Exceeds character limit</span>
-            </div>
-          )}
-        </div>
-
-        <DialogFooter showCloseButton>
-          <Button
-            onClick={handleSave}
-            disabled={!canSave || isPending}
-            className="rounded-full px-6 font-bold"
-          >
-            {isPending && <IconLoader2 className="mr-2 w-4 h-4 animate-spin" />}
-            {isPending ? "Saving..." : "Save"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+          <DialogFooter showCloseButton>
+            <Button
+              onClick={handleSave}
+              disabled={!canSave || isPending}
+              className="px-6 font-bold"
+            >
+              {isPending && (
+                <IconLoader2 className="mr-2 w-4 h-4 animate-spin" />
+              )}
+              {isPending ? "Saving..." : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </PostComposerProvider>
     </Dialog>
   );
 }
