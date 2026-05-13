@@ -41,6 +41,7 @@
     "test:users": "vitest run --silent=true test/users/",
     "test:config": "vitest run --silent=true test/config/",
     "seed": "tsx seed.ts",
+    "seed:embeddings": "node --env-file=.env --import tsx src/seed/apply-reddit-embeddings.ts",
     "seed:watch": "tsx watch seed.ts"
   },
   "dependencies": {
