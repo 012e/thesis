@@ -6,7 +6,8 @@
     "deleteOutDir": true,
     "builder": "swc",
     "assets": [
-      { "include": "users/default-profile-image.jpg", "outDir": "./dist" }
+      { "include": "users/default-profile-image.jpg", "outDir": "./dist" },
+      { "include": "seed/*.jsonl.gz", "outDir": "./dist" }
     ]
   }
 }
