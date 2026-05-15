@@ -25,6 +25,8 @@
   },
   "include": ["src"],
   "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
     "**/*.stories.ts",
     "**/*.stories.js",
     "**/*.stories.jsx",

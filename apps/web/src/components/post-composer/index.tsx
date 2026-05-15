@@ -1,6 +1,8 @@
 import {
   createContext,
   useContext,
+  useEffect,
+  useImperativeHandle,
   useRef,
   forwardRef,
   type ReactNode,
@@ -269,13 +271,21 @@ export const PostComposerEditor = forwardRef<
     ref,
   ) => {
     const { content, setContent } = usePostComposerContext();
+    const editorRef = useRef<MDXEditorMethods>(null);
+
+    useImperativeHandle(ref, () => editorRef.current as MDXEditorMethods, []);
+
+    useEffect(() => {
+      editorRef.current?.setMarkdown(content);
+    }, [content]);
+
     return (
       <div
         className={`rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
           placeholder={placeholder}
-          ref={ref}
+          ref={editorRef}
           markdown={content}
           onChange={setContent}
           plugins={plugins}
