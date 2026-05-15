@@ -48,6 +48,7 @@ import type {
 } from "@/lib/atoms/playground-settings";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
+import { atomWithStorage } from "jotai/utils";
 
 export const Route = createFileRoute("/playground")({
   component: PlaygroundPage,
@@ -156,6 +157,10 @@ console.log("Timestamp:", result.timestamp);
 `,
 };
 
+const isOutputMinimizedAtom = atomWithStorage<boolean>(
+  "playground.isOutputMinimized",
+  false,
+);
 export function PlaygroundPage() {
   const isDark = useIsDark();
   const playgroundRef = useRef<HTMLDivElement>(null);
@@ -163,7 +168,9 @@ export function PlaygroundPage() {
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
   const [result, setResult] = useState<ExecutionResult | null>(null);
-  const [isOutputMinimized, setIsOutputMinimized] = useState(false);
+  const [isOutputMinimized, setIsOutputMinimized] = useAtom(
+    isOutputMinimizedAtom,
+  );
 
   const { mutate: runCode, isPending } = useMutation({
     mutationFn: executeCode,
@@ -502,7 +509,9 @@ export function PlaygroundPage() {
           {/* Output panel */}
           <div
             className="flex flex-col overflow-hidden shrink-0"
-            style={{ height: isOutputMinimized ? undefined : settings.outputHeight }}
+            style={{
+              height: isOutputMinimized ? undefined : settings.outputHeight,
+            }}
           >
             {/* Output header */}
             <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
@@ -563,17 +572,18 @@ export function PlaygroundPage() {
                 <button
                   onClick={handleToggleOutputMinimized}
                   className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                  title={isOutputMinimized ? "Restore output" : "Minimize output"}
+                  title={
+                    isOutputMinimized ? "Restore output" : "Minimize output"
+                  }
                   aria-label={
                     isOutputMinimized ? "Restore output" : "Minimize output"
                   }
                 >
                   {isOutputMinimized ? (
-                    <IconChevronUp className="w-3.5 h-3.5" />
+                    <IconChevronUp className="size-5" />
                   ) : (
-                    <IconChevronDown className="w-3.5 h-3.5" />
+                    <IconChevronDown className="size-5" />
                   )}
-                  {isOutputMinimized ? "Restore" : "Minimize"}
                 </button>
               </div>
             </div>
