@@ -46,6 +46,7 @@ import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { useAtomValue } from "jotai";
 import { FormRegistry } from "@/components/forms/registry";
 import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
+import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 
 interface ThreadProps {
   compact?: boolean;

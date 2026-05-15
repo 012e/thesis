@@ -502,7 +502,7 @@ export function PlaygroundPage() {
               className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center border-y bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               aria-label="Resize output panel"
             >
-              <IconGripHorizontal className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
+              <IconGripHorizontal className="size-3 text-muted-foreground transition-colors group-hover:text-foreground" />
             </button>
           )}
 
@@ -514,7 +514,7 @@ export function PlaygroundPage() {
             }}
           >
             {/* Output header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
+            <div className="flex items-center justify-between px-4 py-2 border-b shrink-0 bg-zinc-900/50">
               <div className="flex items-center gap-2">
                 {!hasOutput && (
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -590,7 +590,7 @@ export function PlaygroundPage() {
 
             {/* Output body */}
             <div
-              className="flex-1 overflow-auto px-4 py-3 font-mono text-sm"
+              className="flex-1 overflow-auto px-4 py-3 font-mono text-sm bg-zinc-900"
               hidden={isOutputMinimized}
             >
               {!hasOutput && !isPending && (
