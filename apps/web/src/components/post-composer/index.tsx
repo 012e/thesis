@@ -402,7 +402,7 @@ export function PostComposerActions() {
 
   return (
     <div className="flex gap-2 justify-between items-center">
-      <div className="flex gap-1">
+      <div className="flex">
         <input
           ref={fileInputRef}
           type="file"
@@ -415,7 +415,7 @@ export function PostComposerActions() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-9 h-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          className="w-9 h-9 text-muted-foreground hover:text-primary hover:bg-primary/10 border-0"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMoreImages || isPending}
           title={
@@ -427,7 +427,7 @@ export function PostComposerActions() {
         <Button
           variant="ghost"
           size="icon"
-          className={`w-9 h-9 hover:text-primary hover:bg-primary/10 ${
+          className={`w-9 h-9 hover:text-primary hover:bg-primary/10 border-0 ${
             showPollCreator
               ? "text-primary bg-primary/10"
               : "text-muted-foreground"

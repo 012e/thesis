@@ -105,7 +105,7 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
   const isValid = question.trim() !== "" && validOptions.length >= 2;
 
   return (
-    <div className="p-4 mt-3 rounded-xl border bg-muted/30">
+    <div className="p-4 mt-3 border bg-muted/30">
       <div className="flex justify-between items-center mb-4">
         <h4 className="font-semibold">Create a Poll</h4>
         <Button
@@ -174,7 +174,7 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
             type="checkbox"
             checked={allowsMultipleSelections}
             onChange={(e) => handleMultipleSelectionsChange(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300"
+            className="w-4 h-4 border-gray-300"
           />
           <span className="text-sm">Allow multiple selections</span>
         </label>
@@ -184,7 +184,7 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
             type="checkbox"
             checked={hasExpiration}
             onChange={(e) => handleExpirationChange(e.target.checked)}
-            className="w-4 h-4 rounded border-gray-300"
+            className="w-4 h-4 border-gray-300"
           />
           <span className="text-sm">Set poll duration</span>
         </label>
@@ -196,7 +196,7 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
               onChange={(e) =>
                 handleExpirationDaysChange(parseInt(e.target.value))
               }
-              className="px-3 py-1.5 text-sm rounded-md border bg-background"
+              className="px-3 py-1.5 text-sm border bg-background"
             >
               <option value={1}>1 day</option>
               <option value={2}>2 days</option>
