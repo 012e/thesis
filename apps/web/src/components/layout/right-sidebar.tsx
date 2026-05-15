@@ -50,7 +50,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
     <div className="overflow-y-auto sticky top-0 py-2 px-4 ml-auto h-screen w-87.5 transition-all duration-300">
       <div className="flex flex-col gap-4">
         {/* Search row with collapse toggle */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-card">
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
             <IconSearch className="absolute left-3 top-1/2 w-5 h-5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <Input
@@ -58,7 +58,7 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
               onChange={(e) => setSearchValue(e.target.value)}
               onKeyDown={handleSearchKeyDown}
               placeholder="Search"
-              className="pl-12 h-11 rounded-full border-0 bg-muted"
+              className="pl-12 h-11 border-0"
             />
           </form>
         </div>
