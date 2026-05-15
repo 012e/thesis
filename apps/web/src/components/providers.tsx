@@ -8,7 +8,7 @@ import { TooltipProvider } from "./ui/tooltip";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <TooltipProvider>
+    <TooltipProvider delay={1}>
       <QueryClientProvider client={queryClient}>
         <JotaiProvider store={store}>{children}</JotaiProvider>
       </QueryClientProvider>
