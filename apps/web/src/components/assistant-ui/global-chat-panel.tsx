@@ -13,16 +13,13 @@ import {
   IconTrash,
   IconSparkles,
 } from "@tabler/icons-react";
-import {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  type FC,
-} from "react";
+import { useEffect, useRef, useState, useCallback, type FC } from "react";
 import { useAtom } from "jotai";
 import { cn } from "@/lib/utils";
-import { isGlobalChatOpenAtom, globalChatSizeAtom } from "@/lib/atoms/global-chat";
+import {
+  isGlobalChatOpenAtom,
+  globalChatSizeAtom,
+} from "@/lib/atoms/global-chat";
 import type { GlobalChatSize } from "@/lib/atoms/global-chat";
 import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { Thread } from "@/components/assistant-ui/thread";
@@ -112,7 +109,7 @@ function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "flex items-center gap-1.5 w-full px-2 py-1.5 text-sm text-left rounded-md",
+          "flex items-center gap-1.5 w-full px-2 py-1.5 text-sm text-left",
           "hover:bg-accent transition-colors",
           "text-foreground",
         )}
@@ -130,7 +127,7 @@ function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
 
       {/* Dropdown panel */}
       {open && (
-        <div className="absolute top-full left-0 mt-1 w-64 z-20 bg-popover border border-border shadow-xl rounded-md overflow-hidden">
+        <div className="absolute top-full left-0 mt-1 w-64 z-20 bg-popover border border-border shadow-xl overflow-hidden">
           {/* New chat */}
           <div className="p-1 border-b border-border">
             <ThreadListPrimitive.New asChild>
@@ -140,7 +137,7 @@ function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
                   setOpen(false);
                   onNewChat?.();
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium hover:bg-accent transition-colors rounded-sm"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm font-medium hover:bg-accent transition-colors"
               >
                 <IconPlus className="size-4" />
                 New chat
@@ -221,7 +218,7 @@ export function GlobalChatPanel() {
         e.key.toLowerCase() === "k"
       ) {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        setIsOpen(!isOpen);
         return;
       }
       // Escape: close if open (handled here so it works even if panel not focused)
@@ -263,7 +260,7 @@ export function GlobalChatPanel() {
           onClose={handleClose}
         />
         <div className="flex-1 overflow-hidden min-h-0">
-          <Thread />
+          <Thread compact />
         </div>
       </ChatRuntimeProvider>
     </div>

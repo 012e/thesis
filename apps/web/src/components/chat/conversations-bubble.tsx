@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { useConversations } from "@/hooks/messages/use-conversations";
 import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
 import { openChatWindowAtom } from "@/lib/atoms/chat-windows";
+import {
+  isGlobalChatOpenAtom,
+  globalChatSizeAtom,
+} from "@/lib/atoms/global-chat";
 import type { ConversationDto } from "@repo/shared-dto";
 
 // ─── Conversation List Item ───────────────────────────────────────────────────
@@ -88,6 +92,17 @@ export function ConversationsBubble() {
   const { unreadCount } = useUnreadNotifications();
   const openWindow = useSetAtom(openChatWindowAtom);
 
+  // Shift right when the global AI chat panel is open so we don't sit inside it.
+  const isGlobalChatOpen = useAtomValue(isGlobalChatOpenAtom);
+  const globalChatSize = useAtomValue(globalChatSizeAtom);
+  const panelWidth = isGlobalChatOpen
+    ? globalChatSize === "normal"
+      ? 320
+      : 480
+    : 0;
+  // 16px = right-4 base offset; slide with the same 300ms curve as the panel.
+  const rightPx = panelWidth + 16;
+
   // Close panel on outside click
   useEffect(() => {
     if (!isOpen) return;
@@ -116,8 +131,13 @@ export function ConversationsBubble() {
   );
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
-      {/* ── Conversations panel ─────────────────────────────────────────── */}
+    <div
+      className="fixed bottom-4 z-50 flex flex-col items-end gap-2"
+      style={{
+        right: `${rightPx}px`,
+        transition: "right 300ms ease-in-out",
+      }}
+    >      {/* ── Conversations panel ─────────────────────────────────────────── */}
       {isOpen && (
         <div
           ref={panelRef}

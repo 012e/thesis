@@ -1,15 +1,15 @@
-import { ConversationsBubble } from "./conversations-bubble";
-import { ChatWindowList } from "./chat-window-list";
+import { DmSidebar } from "./dm-sidebar";
+import { DmToggleButton } from "./dm-toggle-button";
 
 /**
  * Root chat UI component. Mount once inside AppLayout.
- * Renders the floating messenger bubble and all open chat windows.
+ * Renders the DM sidebar panel and its floating toggle button.
  */
 export function ChatManager() {
   return (
     <>
-      <ChatWindowList />
-      <ConversationsBubble />
+      <DmSidebar />
+      <DmToggleButton />
     </>
   );
 }
