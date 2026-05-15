@@ -69,14 +69,12 @@ import { useAui, useAuiState } from "@assistant-ui/react";
 
 function FullyCustomThreadList() {
   const api = useAui();
-  const { threads, archivedThreads, mainThreadId, isLoading } = useAuiState(
-    (s) => ({
-      threads: s.threads.threadIds,
-      archivedThreads: s.threads.archivedThreadIds,
-      mainThreadId: s.threads.mainThreadId,
-      isLoading: s.threads.isLoading,
-    }),
-  );
+  const { threads, archivedThreads, mainThreadId, isLoading } = useAuiState((s) => ({
+    threads: s.threads.threadIds,
+    archivedThreads: s.threads.archivedThreadIds,
+    mainThreadId: s.threads.mainThreadId,
+    isLoading: s.threads.isLoading,
+  }));
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -251,7 +249,11 @@ function SearchableThreadList() {
           <p className="text-gray-500 text-center py-4">No results</p>
         ) : (
           filteredThreads.map((id) => (
-            <ThreadItem key={id} id={id} isActive={id === mainThreadId} />
+            <ThreadItem
+              key={id}
+              id={id}
+              isActive={id === mainThreadId}
+            />
           ))
         )}
       </div>
@@ -379,16 +381,13 @@ function CategorizedThreadList() {
   const { threads } = useAuiState((s) => ({ threads: s.threads.threadIds }));
 
   // Group by title first letter
-  const grouped = threads.reduce(
-    (acc, id) => {
-      const item = api.threads().item({ id }).getState();
-      const category = (item.title || "Untitled").charAt(0).toUpperCase();
-      if (!acc[category]) acc[category] = [];
-      acc[category].push(id);
-      return acc;
-    },
-    {} as Record<string, string[]>,
-  );
+  const grouped = threads.reduce((acc, id) => {
+    const item = api.threads().item({ id }).getState();
+    const category = (item.title || "Untitled").charAt(0).toUpperCase();
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(id);
+    return acc;
+  }, {} as Record<string, string[]>);
 
   return (
     <div>

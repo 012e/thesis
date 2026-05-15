@@ -38,9 +38,9 @@ interface ThreadSystemMessage {
 
 ```typescript
 type MessageStatus =
-  | "running" // Generation in progress
-  | "complete" // Finished successfully
-  | "incomplete" // Stopped early
+  | "running"          // Generation in progress
+  | "complete"         // Finished successfully
+  | "incomplete"       // Stopped early
   | "requires-action"; // Needs tool response
 ```
 
@@ -124,11 +124,11 @@ interface ThreadState {
 }
 
 interface ThreadCapabilities {
-  cancel: boolean; // Can cancel generation
-  edit: boolean; // Can edit messages
-  reload: boolean; // Can regenerate
-  copy: boolean; // Can copy messages
-  speak: boolean; // TTS support
+  cancel: boolean;      // Can cancel generation
+  edit: boolean;        // Can edit messages
+  reload: boolean;      // Can regenerate
+  copy: boolean;        // Can copy messages
+  speak: boolean;       // TTS support
   attachments: boolean; // File uploads
 }
 ```
@@ -137,10 +137,10 @@ interface ThreadCapabilities {
 
 ```typescript
 interface ThreadListState {
-  threadIds: readonly string[]; // Active thread IDs
+  threadIds: readonly string[];         // Active thread IDs
   archivedThreadIds: readonly string[]; // Archived thread IDs
   newThreadId: string | null; // Pending new thread ID
-  mainThreadId: string; // Current active thread
+  mainThreadId: string;      // Current active thread
   isLoading: boolean;
   threadItems: readonly ThreadListItemState[];
 }
@@ -170,10 +170,10 @@ interface ComposerState {
 
 ```typescript
 type ToolCallStatus =
-  | "running" // Tool executing
-  | "complete" // Finished
-  | "incomplete" // Stopped early
-  | "requires-action"; // Needs user input
+  | "running"         // Tool executing
+  | "complete"        // Finished
+  | "incomplete"      // Stopped early
+  | "requires-action" // Needs user input
 
 interface ToolUIProps<TArgs = unknown, TResult = unknown> {
   toolCallId: string;

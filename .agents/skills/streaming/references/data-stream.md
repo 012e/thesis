@@ -129,7 +129,6 @@ d:{"finishReason":"stop","usage":{"promptTokens":0,"completionTokens":0}}
 ```
 
 Each line:
-
 - `0:` - Text content
 - `9:` - Tool call
 - `b:` - Tool call start
@@ -145,10 +144,7 @@ Each line:
 ## Integration with useChatRuntime
 
 ```tsx
-import {
-  useChatRuntime,
-  AssistantChatTransport,
-} from "@assistant-ui/react-ai-sdk";
+import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 
