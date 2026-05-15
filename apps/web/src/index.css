@@ -122,11 +122,27 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply font-sans bg-background text-foreground;
+    @apply font-sans bg-background text-foreground overflow-x-hidden;
   }
   html {
     @apply font-sans;
   }
+}
+
+@keyframes chat-bubble-pop {
+  0% {
+    transform: scale(0.86);
+  }
+  62% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-chat-bubble-pop {
+  animation: chat-bubble-pop 220ms cubic-bezier(0.2, 0.9, 0.25, 1.25);
 }
 
 /* MDX Editor Styling */
