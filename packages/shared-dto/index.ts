@@ -2,6 +2,7 @@ export interface UserSearchResultDto {
   id: string;
   username: string | null;
   displayUsername: string | null;
+  email: string;
   name: string | null;
   image: string | null;
   role: string | null;

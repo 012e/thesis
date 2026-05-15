@@ -444,6 +444,7 @@ export function PostComposerActions() {
           className="px-4"
           onClick={handleClear}
           disabled={!hasContent || isPending}
+          hidden={!hasContent}
         >
           Clear
         </Button>

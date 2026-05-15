@@ -77,6 +77,7 @@ function AdminUsersPage() {
   const {
     data: listData,
     isLoading,
+    isFetching,
     error,
   } = useQuery({
     queryKey: ["admin", "users", debouncedSearch, pagination.pageIndex],
@@ -92,7 +93,7 @@ function AdminUsersPage() {
       const mappedUsers: AdminUser[] = searchResults.users.map((user) => ({
         id: user.id,
         name: user.name ?? user.displayUsername ?? user.username ?? "Unknown",
-        email: "—",
+        email: user.email,
         username: user.username,
         image: user.image,
         role: user.role,
@@ -141,7 +142,8 @@ function AdminUsersPage() {
     queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
   }
 
-  const users = listData?.users ?? [];
+  const showLoadingRows = isLoading || isFetching;
+  const users = showLoadingRows ? [] : (listData?.users ?? []);
   const total = listData?.total ?? 0;
 
   const columns = useMemo(
@@ -288,6 +290,7 @@ function AdminUsersPage() {
     getCoreRowModel: getCoreRowModel(),
     manualPagination: true,
     rowCount: total,
+    getRowId: (row) => row.id,
     state: { pagination },
     onPaginationChange: setPagination,
   });
@@ -331,7 +334,7 @@ function AdminUsersPage() {
 
         <UsersTable
           table={table}
-          isLoading={isLoading}
+          isLoading={showLoadingRows}
           error={error as Error | null}
           total={total}
           offset={offset}

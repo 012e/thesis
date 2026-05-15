@@ -79,6 +79,7 @@ export function Thread({ compact = false }: ThreadProps) {
         >
           <ThreadScrollToBottom />
           <ActiveVerticalForm />
+          <PlanProgressBar />
           <Composer compact={compact} />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
