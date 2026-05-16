@@ -11,6 +11,7 @@ import {
   MODEL_THINKING_SUB_AGENT,
 } from "../constants";
 import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
+import { createPlanTool, updatePlanItemTool } from "../tools/plan";
 
 /**
  * Creates a fully wired orchestrator agent for a single HTTP request.
@@ -164,6 +165,10 @@ Form Tools (Directly available to you):
 - set_form_field: Fill out fields in the active form.
 - submit_form: Submit the active form.
 
+Planning Tools (Directly available to you):
+- create_plan: Create a step-by-step plan and present it to the user for approval.
+- update_plan_item: Mark a plan step as in_progress, completed, or skipped.
+
 Delegation & Action strategy:
 1. If the user wants to use a UI form to draft or create a post, use your direct form tools to open the form and help fill it. Do NOT delegate UI tasks to a sub-agent.
 2. For social-platform operations that do not require a visible form, delegate to the single most appropriate sub-agent.
@@ -171,6 +176,18 @@ Delegation & Action strategy:
 4. Use search-agent whenever the user asks about topics outside the social platform, requests a web search, or provides a URL to inspect.
 5. Always synthesise the result into a concise, friendly response for the user.
 6. If a sub-agent fails, report the error clearly and suggest what the user can try next.
+
+Planning protocol:
+Use create_plan when the task requires 3 or more distinct steps, involves multiple agents or operations, or could benefit from the user reviewing the approach before execution begins (for example: bulk actions, multi-stage workflows, anything that could cause unintended side effects).
+
+When planning:
+1. Call create_plan with a clear title and one item per logical step. Each item id should be "step-1", "step-2", etc. Keep labels concise (under 60 characters).
+2. After calling create_plan, end your message with a short sentence asking the user to approve or reject the plan. Do NOT start executing yet.
+3. Once the user approves:
+   a. For each step in order: call update_plan_item with status "in_progress" before starting the step, then call update_plan_item with status "completed" once done.
+   b. If a step turns out to be unnecessary, call update_plan_item with status "skipped" and a brief note explaining why.
+4. If the user rejects the plan and provides feedback: acknowledge their feedback, then call create_plan again with a revised plan.
+5. Never call update_plan_item before the plan has been approved by the user.
 
 Success criteria:
 - The user's request is fully addressed.
@@ -188,6 +205,8 @@ Success criteria:
       open_form: openFormTool,
       set_form_field: setFormFieldTool,
       submit_form: submitFormTool,
+      create_plan: createPlanTool,
+      update_plan_item: updatePlanItemTool,
     },
   });
 

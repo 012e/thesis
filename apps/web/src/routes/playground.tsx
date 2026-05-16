@@ -13,6 +13,7 @@ import {
   IconTerminal2,
   IconTrash,
   IconChevronDown,
+  IconChevronUp,
   IconCheck,
   IconGripHorizontal,
   IconSettings,
@@ -47,6 +48,7 @@ import type {
 } from "@/lib/atoms/playground-settings";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
+import { atomWithStorage } from "jotai/utils";
 
 export const Route = createFileRoute("/playground")({
   component: PlaygroundPage,
@@ -155,6 +157,10 @@ console.log("Timestamp:", result.timestamp);
 `,
 };
 
+const isOutputMinimizedAtom = atomWithStorage<boolean>(
+  "playground.isOutputMinimized",
+  false,
+);
 export function PlaygroundPage() {
   const isDark = useIsDark();
   const playgroundRef = useRef<HTMLDivElement>(null);
@@ -162,6 +168,9 @@ export function PlaygroundPage() {
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
   const [result, setResult] = useState<ExecutionResult | null>(null);
+  const [isOutputMinimized, setIsOutputMinimized] = useAtom(
+    isOutputMinimizedAtom,
+  );
 
   const { mutate: runCode, isPending } = useMutation({
     mutationFn: executeCode,
@@ -196,6 +205,10 @@ export function PlaygroundPage() {
 
   const handleClearOutput = useCallback(() => {
     setResult(null);
+  }, []);
+
+  const handleToggleOutputMinimized = useCallback(() => {
+    setIsOutputMinimized((current) => !current);
   }, []);
 
   const handleResizeStart = useCallback(
@@ -482,22 +495,26 @@ export function PlaygroundPage() {
             />
           </div>
 
-          <button
-            type="button"
-            onPointerDown={handleResizeStart}
-            className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center border-y bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            aria-label="Resize output panel"
-          >
-            <IconGripHorizontal className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-foreground" />
-          </button>
+          {!isOutputMinimized && (
+            <button
+              type="button"
+              onPointerDown={handleResizeStart}
+              className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center border-y bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              aria-label="Resize output panel"
+            >
+              <IconGripHorizontal className="size-3 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </button>
+          )}
 
           {/* Output panel */}
           <div
             className="flex flex-col overflow-hidden shrink-0"
-            style={{ height: settings.outputHeight }}
+            style={{
+              height: isOutputMinimized ? undefined : settings.outputHeight,
+            }}
           >
             {/* Output header */}
-            <div className="flex items-center justify-between px-4 py-2 border-b shrink-0">
+            <div className="flex items-center justify-between px-4 py-2 border-b shrink-0 bg-zinc-900/50">
               <div className="flex items-center gap-2">
                 {!hasOutput && (
                   <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -540,20 +557,42 @@ export function PlaygroundPage() {
                 )}
               </div>
 
-              {hasOutput && (
+              <div className="flex items-center gap-3">
+                {hasOutput && (
+                  <button
+                    onClick={handleClearOutput}
+                    className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                    title="Clear output"
+                  >
+                    <IconTrash className="w-3.5 h-3.5" />
+                    Clear
+                  </button>
+                )}
+
                 <button
-                  onClick={handleClearOutput}
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                  title="Clear output"
+                  onClick={handleToggleOutputMinimized}
+                  className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                  title={
+                    isOutputMinimized ? "Restore output" : "Minimize output"
+                  }
+                  aria-label={
+                    isOutputMinimized ? "Restore output" : "Minimize output"
+                  }
                 >
-                  <IconTrash className="w-3.5 h-3.5" />
-                  Clear
+                  {isOutputMinimized ? (
+                    <IconChevronUp className="size-5" />
+                  ) : (
+                    <IconChevronDown className="size-5" />
+                  )}
                 </button>
-              )}
+              </div>
             </div>
 
             {/* Output body */}
-            <div className="flex-1 overflow-auto px-4 py-3 font-mono text-sm">
+            <div
+              className="flex-1 overflow-auto px-4 py-3 font-mono text-sm bg-zinc-900"
+              hidden={isOutputMinimized}
+            >
               {!hasOutput && !isPending && (
                 <p className="text-muted-foreground text-xs">
                   Run your code to see output here.

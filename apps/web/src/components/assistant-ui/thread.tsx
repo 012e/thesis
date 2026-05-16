@@ -46,8 +46,13 @@ import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { useAtomValue } from "jotai";
 import { FormRegistry } from "@/components/forms/registry";
 import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
+import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 
-export function Thread() {
+interface ThreadProps {
+  compact?: boolean;
+}
+
+export function Thread({ compact = false }: ThreadProps) {
   return (
     <ThreadPrimitive.Root className="flex flex-col h-full bg-background">
       <ThreadPrimitive.Viewport
@@ -55,7 +60,7 @@ export function Thread() {
         className="flex overflow-y-scroll flex-col flex-1 scroll-smooth"
       >
         <AuiIf condition={(s) => s.thread.isEmpty}>
-          <ThreadWelcome />
+          <ThreadWelcome compact={compact} />
         </AuiIf>
 
         <ThreadPrimitive.Messages
@@ -66,10 +71,16 @@ export function Thread() {
           }}
         />
 
-        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center px-4 pb-4 mt-auto w-full bg-background">
+        <ThreadPrimitive.ViewportFooter
+          className={cn(
+            "flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background",
+            compact ? "px-3 pb-3" : "px-4 pb-4",
+          )}
+        >
           <ThreadScrollToBottom />
           <ActiveVerticalForm />
-          <Composer />
+          <PlanProgressBar />
+          <Composer compact={compact} />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
@@ -93,7 +104,7 @@ function ActiveVerticalForm() {
   );
 }
 
-function ThreadWelcome() {
+function ThreadWelcome({ compact = false }: ThreadProps) {
   const focusComposer = () => {
     requestAnimationFrame(() => {
       const composerInput = document.getElementById("thread-composer-input");
@@ -104,18 +115,35 @@ function ThreadWelcome() {
   };
 
   return (
-    <div className="flex flex-col gap-4 justify-center items-center p-8 text-center grow">
-      <div className="p-4 rounded-full bg-primary/10">
-        <IconRobot className="size-8 text-primary" />
+    <div
+      className={cn(
+        "flex flex-col justify-center items-center text-center grow min-w-0",
+        compact ? "gap-3 px-4 py-6" : "gap-4 p-8",
+      )}
+    >
+      <div className={cn("rounded-full bg-primary/10", compact ? "p-3" : "p-4")}>
+        <IconRobot className={cn("text-primary", compact ? "size-6" : "size-8")} />
       </div>
       <div>
-        <h2 className="text-xl font-semibold">How can I help you?</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className={cn("font-semibold", compact ? "text-lg" : "text-xl")}>
+          How can I help you?
+        </h2>
+        <p
+          className={cn(
+            "mt-1 text-sm text-muted-foreground",
+            compact && "mx-auto max-w-[240px]",
+          )}
+        >
           Ask me anything — I can read posts, search content, and help you
           explore
         </p>
       </div>
-      <div className="grid gap-2 mt-4 w-full max-w-2xl md:grid-cols-2">
+      <div
+        className={cn(
+          "grid gap-2 w-full",
+          compact ? "mt-2 max-w-[260px] grid-cols-1" : "mt-4 max-w-2xl md:grid-cols-2",
+        )}
+      >
         <ThreadPrimitive.Suggestion
           prompt="What are the most upvoted posts right now?"
           asChild
@@ -123,10 +151,13 @@ function ThreadWelcome() {
           <Button
             variant="outline"
             onClick={focusComposer}
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+            className={cn(
+              "flex flex-col gap-1 justify-start items-start h-auto text-sm text-left hover:bg-accent min-w-0",
+              compact ? "px-3 py-2.5" : "px-5 py-4",
+            )}
           >
-            <span className="font-medium">What's trending?</span>
-            <span className="text-muted-foreground">
+            <span className="font-medium truncate max-w-full">What's trending?</span>
+            <span className="text-muted-foreground truncate max-w-full">
               Show me the most upvoted posts
             </span>
           </Button>
@@ -138,10 +169,13 @@ function ThreadWelcome() {
           <Button
             variant="outline"
             onClick={focusComposer}
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+            className={cn(
+              "flex flex-col gap-1 justify-start items-start h-auto text-sm text-left hover:bg-accent min-w-0",
+              compact ? "px-3 py-2.5" : "px-5 py-4",
+            )}
           >
-            <span className="font-medium">My feed summary</span>
-            <span className="text-muted-foreground">
+            <span className="font-medium truncate max-w-full">My feed summary</span>
+            <span className="text-muted-foreground truncate max-w-full">
               Summarize recent posts I follow
             </span>
           </Button>
@@ -153,10 +187,13 @@ function ThreadWelcome() {
           <Button
             variant="outline"
             onClick={focusComposer}
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+            className={cn(
+              "flex flex-col gap-1 justify-start items-start h-auto text-sm text-left hover:bg-accent min-w-0",
+              compact ? "px-3 py-2.5" : "px-5 py-4",
+            )}
           >
-            <span className="font-medium">Search posts</span>
-            <span className="text-muted-foreground">
+            <span className="font-medium truncate max-w-full">Search posts</span>
+            <span className="text-muted-foreground truncate max-w-full">
               Find posts about a topic
             </span>
           </Button>
@@ -168,10 +205,13 @@ function ThreadWelcome() {
           <Button
             variant="outline"
             onClick={focusComposer}
-            className="flex flex-col gap-1 justify-start items-start py-4 px-5 h-auto text-sm text-left hover:bg-accent"
+            className={cn(
+              "flex flex-col gap-1 justify-start items-start h-auto text-sm text-left hover:bg-accent min-w-0",
+              compact ? "px-3 py-2.5" : "px-5 py-4",
+            )}
           >
-            <span className="font-medium">Active users</span>
-            <span className="text-muted-foreground">
+            <span className="font-medium truncate max-w-full">Active users</span>
+            <span className="text-muted-foreground truncate max-w-full">
               See who's been most active
             </span>
           </Button>
@@ -181,7 +221,7 @@ function ThreadWelcome() {
   );
 }
 
-function Composer() {
+function Composer({ compact = false }: ThreadProps) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -193,7 +233,9 @@ function Composer() {
   }, []);
 
   return (
-    <ComposerPrimitive.Root className="flex flex-col w-full max-w-2xl">
+    <ComposerPrimitive.Root
+      className={cn("flex flex-col w-full", compact ? "max-w-none" : "max-w-2xl")}
+    >
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input

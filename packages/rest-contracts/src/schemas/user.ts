@@ -4,6 +4,7 @@ export const UserSearchResult = z.object({
   id: z.string(),
   username: z.string().nullable(),
   displayUsername: z.string().nullable(),
+  email: z.string(),
   name: z.string().nullable(),
   image: z.string().nullable(),
   role: z.string().nullable(),

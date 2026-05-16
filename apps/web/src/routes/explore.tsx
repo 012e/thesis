@@ -349,7 +349,7 @@ export function ExplorePageContent({
   return (
     <>
       {/* Sticky header: search bar */}
-      <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md px-4 py-3">
+      <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
         <form onSubmit={handleFormSubmit} className="relative">
           <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
           <Input
@@ -358,7 +358,7 @@ export function ExplorePageContent({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search posts and people..."
-            className="pl-10 pr-10 h-11 rounded-full bg-muted border-0 focus-visible:ring-1"
+            className="px-15 py-7 h-11 bg-muted border-0 focus-visible:ring-1"
           />
           {inputValue && (
             <button
@@ -375,7 +375,7 @@ export function ExplorePageContent({
 
       {/* Tab bar — only visible when there's a query */}
       {activeQ && (
-        <div className="sticky top-[67px] z-10 flex border-b bg-background/80 backdrop-blur-md">
+        <div className="sticky top-14 z-10 flex border-b bg-background/80 backdrop-blur-md">
           <button
             type="button"
             onClick={() => onTabChange("posts")}

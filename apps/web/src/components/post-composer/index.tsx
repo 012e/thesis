@@ -1,6 +1,8 @@
 import {
   createContext,
   useContext,
+  useEffect,
+  useImperativeHandle,
   useRef,
   forwardRef,
   type ReactNode,
@@ -269,13 +271,21 @@ export const PostComposerEditor = forwardRef<
     ref,
   ) => {
     const { content, setContent } = usePostComposerContext();
+    const editorRef = useRef<MDXEditorMethods>(null);
+
+    useImperativeHandle(ref, () => editorRef.current as MDXEditorMethods, []);
+
+    useEffect(() => {
+      editorRef.current?.setMarkdown(content);
+    }, [content]);
+
     return (
       <div
         className={`rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
           placeholder={placeholder}
-          ref={ref}
+          ref={editorRef}
           markdown={content}
           onChange={setContent}
           plugins={plugins}
@@ -402,7 +412,7 @@ export function PostComposerActions() {
 
   return (
     <div className="flex gap-2 justify-between items-center">
-      <div className="flex gap-1">
+      <div className="flex">
         <input
           ref={fileInputRef}
           type="file"
@@ -415,7 +425,7 @@ export function PostComposerActions() {
         <Button
           variant="ghost"
           size="icon"
-          className="w-9 h-9 text-muted-foreground hover:text-primary hover:bg-primary/10"
+          className="w-9 h-9 text-muted-foreground hover:text-primary hover:bg-primary/10 border-0"
           onClick={() => fileInputRef.current?.click()}
           disabled={!canAddMoreImages || isPending}
           title={
@@ -427,7 +437,7 @@ export function PostComposerActions() {
         <Button
           variant="ghost"
           size="icon"
-          className={`w-9 h-9 hover:text-primary hover:bg-primary/10 ${
+          className={`w-9 h-9 hover:text-primary hover:bg-primary/10 border-0 ${
             showPollCreator
               ? "text-primary bg-primary/10"
               : "text-muted-foreground"
@@ -444,6 +454,7 @@ export function PostComposerActions() {
           className="px-4"
           onClick={handleClear}
           disabled={!hasContent || isPending}
+          hidden={!hasContent}
         >
           Clear
         </Button>

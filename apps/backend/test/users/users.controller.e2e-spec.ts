@@ -205,7 +205,7 @@ describe("UsersController (e2e)", () => {
       expect(names).toContain("Zephyranthes");
     });
 
-    it("should find users by email (email is indexed but not returned)", async () => {
+    it("should find users by email and return the email", async () => {
       // Use a unique email local-part that differs from the username so we can
       // be sure the match is driven by the email field, not the username field.
       await request(testApp.app.getHttpServer())
@@ -228,9 +228,17 @@ describe("UsersController (e2e)", () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
       const usernames = response.body.users.map((u: any) => u.username);
       expect(usernames).toContain("emailsrchuser");
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const user = response.body.users.find(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        (u: any) => u.username === "emailsrchuser",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(user.email).toBe("zxqemailsrch@example.com");
     });
 
-    it("should not expose email in the response", async () => {
+    it("should expose email in list results", async () => {
       await createE2ETestUser(
         testApp.app,
         "srchprivacy@example.com",
@@ -238,17 +246,19 @@ describe("UsersController (e2e)", () => {
       );
 
       const response = await request(testApp.app.getHttpServer())
-        .get("/users/search?q=srchprivacy")
+        .get("/users/search")
         .set("Cookie", [authCookie])
         .expect(200);
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(response.body.users.length).toBeGreaterThan(0);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      response.body.users.forEach((u: any) => {
-        // email is used for indexing but must never appear in the response
-        expect(u).not.toHaveProperty("email");
-      });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      const user = response.body.users.find(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        (u: any) => u.username === "srchprivacy",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(user.email).toBe("srchprivacy@example.com");
     });
 
     it("should return results with the correct shape", async () => {
@@ -273,7 +283,7 @@ describe("UsersController (e2e)", () => {
       expect(u).toHaveProperty("displayUsername");
       expect(u).toHaveProperty("name");
       expect(u).toHaveProperty("image");
-      expect(u).not.toHaveProperty("email");
+      expect(u).toHaveProperty("email", "srchshape@example.com");
       expect(response.body).toHaveProperty("total");
     });
   });

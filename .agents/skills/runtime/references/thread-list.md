@@ -13,10 +13,10 @@ type ThreadListRuntime = {
   getState(): ThreadListState;
   subscribe(callback: () => void): Unsubscribe;
 
-  main: ThreadRuntime; // Current active thread
+  main: ThreadRuntime;              // Current active thread
   getById(threadId: string): ThreadRuntime;
 
-  mainItem: ThreadListItemRuntime; // Current thread item
+  mainItem: ThreadListItemRuntime;  // Current thread item
   getItemById(threadId: string): ThreadListItemRuntime;
   getItemByIndex(idx: number): ThreadListItemRuntime;
   getArchivedItemByIndex(idx: number): ThreadListItemRuntime;
@@ -33,9 +33,9 @@ For app-level state via `useAuiState((s) => s.threads)`, use the client `Threads
 
 ```typescript
 type ThreadListState = {
-  mainThreadId: string; // Current thread ID
-  newThreadId: string | undefined; // Pending new thread ID
-  threadIds: readonly string[]; // Regular thread IDs
+  mainThreadId: string;              // Current thread ID
+  newThreadId: string | undefined;     // Pending new thread ID
+  threadIds: readonly string[];        // Regular thread IDs
   archivedThreadIds: readonly string[];
   isLoading: boolean;
   threadItems: Record<string, Omit<ThreadListItemState, "isMain" | "threadId">>;
@@ -71,7 +71,7 @@ function ThreadListComponent() {
 
   // Get thread list state
   const { threadIds, archivedThreadIds, isLoading } = useAuiState(
-    (s) => s.threads,
+    (s) => s.threads
   );
 
   // Switch threads

@@ -227,7 +227,6 @@ export function ChatWindow({
           <button
             className="p-1 rounded-full hover:bg-primary-foreground/20 transition-colors"
             onClick={() => toggleMinimize(conversationId)}
-            title={minimized ? "Expand" : "Minimize"}
           >
             <IconMinus className="w-3.5 h-3.5" />
           </button>
