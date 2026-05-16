@@ -10,6 +10,7 @@
     "serve": "mastra dev"
   },
   "dependencies": {
+    "@repo/shared-dto": "workspace:*",
     "@mastra/ai-sdk": "^1.4.1",
     "@mastra/core": "1.31.0",
     "@mastra/mcp": "^1.6.0",

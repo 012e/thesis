@@ -47,6 +47,7 @@ import { useAtomValue } from "jotai";
 import { FormRegistry } from "@/components/forms/registry";
 import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
+import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
 
 interface ThreadProps {
   compact?: boolean;
@@ -78,6 +79,7 @@ export function Thread({ compact = false }: ThreadProps) {
           )}
         >
           <ThreadScrollToBottom />
+          <AIContextIndicator compact={compact} />
           <ActiveVerticalForm />
           <PlanProgressBar />
           <Composer compact={compact} />

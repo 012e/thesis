@@ -8,19 +8,22 @@
       "executor": "nx:run-script",
       "options": {
         "script": "dev"
-      }
+      },
+      "dependsOn": [{ "projects": ["shared-dto"], "target": "build" }]
     },
     "build": {
       "executor": "nx:run-script",
       "options": {
         "script": "build"
-      }
+      },
+      "dependsOn": [{ "projects": ["shared-dto"], "target": "build" }]
     },
     "serve": {
       "executor": "nx:run-script",
       "options": {
         "script": "serve"
-      }
+      },
+      "dependsOn": [{ "projects": ["shared-dto"], "target": "build" }]
     }
   },
   "tags": []

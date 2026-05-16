@@ -12,6 +12,7 @@ setup:
 
 # Start backend, frontend, and AI service in parallel
 dev:
+    pnpm --filter @repo/shared-dto build
     pnpm nx run-many --target=serve --projects=web,backend,ai,rest-contracts --parallel=10
 
 # Start Storybook for the web app

@@ -20,7 +20,8 @@ import type { ModelMode } from "../constants";
  * Body:
  *   {
  *     "messages": [{ "id": "1", "role": "user", "parts": [{ "type": "text", "text": "Hello" }] }],
- *     "mode": "fast" | "thinking"   // optional, defaults to "fast"
+ *     "mode": "fast" | "thinking",   // optional, defaults to "fast"
+ *     "context": { "type": "post", ... } // optional current UI context
  *   }
  *
  * Response: AI SDK-compatible UIMessage stream
@@ -39,6 +40,28 @@ const UIMessageSchema = z.object({
   metadata: z.any().optional(),
 });
 
+const AIContextPayloadSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("none") }),
+  z.object({
+    type: z.literal("page"),
+    page: z.string(),
+    label: z.string(),
+  }),
+  z.object({
+    type: z.literal("post"),
+    postId: z.string(),
+    authorUsername: z.string(),
+    contentPreview: z.string(),
+    createdAt: z.string(),
+  }),
+  z.object({
+    type: z.literal("user-profile"),
+    userId: z.string(),
+    username: z.string(),
+    displayName: z.string(),
+  }),
+]);
+
 const StreamRequestSchema = z.object({
   messages: z.array(UIMessageSchema).min(1, "At least one message is required"),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
@@ -47,6 +70,8 @@ const StreamRequestSchema = z.object({
   resumeData: z.record(z.string(), z.any()).optional(),
   /** Model interaction mode sent by the web client. Defaults to "fast". */
   mode: z.enum(["fast", "thinking"]).optional(),
+  /** Current UI context sent by the web client. */
+  context: AIContextPayloadSchema.optional(),
 });
 
 export const streamRoute = registerApiRoute("/chat", {
@@ -66,8 +91,8 @@ export const streamRoute = registerApiRoute("/chat", {
         );
       }
 
-      const { messages, mode } = parseResult.data;
-      const context = c.get("requestContext");
+      const { messages, mode, context: userContext } = parseResult.data;
+      const requestContext = c.get("requestContext");
 
       // Resolve model mode from the request body.
       // Defaults to "fast" if the field is absent or contains an unknown value.
@@ -75,7 +100,11 @@ export const streamRoute = registerApiRoute("/chat", {
 
       // Build a per-request orchestrator with auth-aware MCP tools baked into
       // each sub-agent at construction time.
-      const orchestrator = await createOrchestratorAgent(context, resolvedMode);
+      const orchestrator = await createOrchestratorAgent(
+        requestContext,
+        resolvedMode,
+        userContext,
+      );
 
       const agentStream = await orchestrator.stream(messages, {
         maxSteps: 20,

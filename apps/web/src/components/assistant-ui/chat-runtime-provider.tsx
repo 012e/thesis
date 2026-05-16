@@ -2,7 +2,9 @@ import {
   AssistantRuntimeProvider,
   useRemoteThreadListRuntime,
   useAuiState,
+  useAssistantInstructions,
 } from "@assistant-ui/react";
+import { formatContextHint } from "@repo/shared-dto";
 import {
   useChatRuntime,
   AssistantChatTransport,
@@ -21,6 +23,11 @@ import { useThreadHistoryAdapter } from "@/lib/chat/history-adapter";
 import bearerToken from "@/lib/atoms/bearer-token";
 import threadModelModesAtom from "@/lib/atoms/thread-model-modes";
 import type { ModelMode } from "@/lib/atoms/model-mode";
+import {
+  globalAIContextAtom,
+  serializeAIContext,
+} from "@/lib/atoms/ai-context";
+import store from "@/lib/atoms/store";
 
 const DEFAULT_MODE: ModelMode = "fast";
 
@@ -41,6 +48,15 @@ const ActiveModeSync: FC<{ modeRef: MutableRefObject<ModelMode> }> = ({
 
   return null;
 };
+
+function AIContextSync() {
+  const context = useAtomValue(globalAIContextAtom);
+  const hint = formatContextHint(serializeAIContext(context));
+
+  useAssistantInstructions(hint ?? "");
+
+  return null;
+}
 
 export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
   children,
@@ -65,7 +81,10 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          body: () => ({ mode: modeRef.current }),
+          body: () => ({
+            mode: modeRef.current,
+            context: serializeAIContext(store.get(globalAIContextAtom)),
+          }),
         }),
         adapters: { history },
       });
@@ -76,6 +95,7 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
     <AssistantRuntimeProvider runtime={runtime}>
       {/* Keeps modeRef in sync with the active thread's persisted mode. */}
       <ActiveModeSync modeRef={modeRef} />
+      <AIContextSync />
       {children}
     </AssistantRuntimeProvider>
   );

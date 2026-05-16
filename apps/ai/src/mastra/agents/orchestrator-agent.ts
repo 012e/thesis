@@ -1,5 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
+import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
 import { getSocialMcpToolsets } from "../mcp/social";
 import { getSearchMcpToolset } from "../mcp/search";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
@@ -12,6 +13,7 @@ import {
 } from "../constants";
 import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
 import { createPlanTool, updatePlanItemTool } from "../tools/plan";
+import { createGetContextTool } from "../tools/context";
 
 /**
  * Creates a fully wired orchestrator agent for a single HTTP request.
@@ -38,6 +40,7 @@ import { createPlanTool, updatePlanItemTool } from "../tools/plan";
 export async function createOrchestratorAgent(
   context: RequestContext,
   mode: ModelMode = "fast",
+  userContext?: AIContextPayload,
 ): Promise<Agent> {
   const orchestratorModel =
     mode === "thinking" ? MODEL_THINKING_ORCHESTRATOR : MODEL_FAST_ORCHESTRATOR;
@@ -48,6 +51,11 @@ export async function createOrchestratorAgent(
     await getSocialMcpToolsets(context);
 
   const searchToolset = await getSearchMcpToolset();
+  const getContextTool = createGetContextTool(userContext);
+  const contextHint = userContext ? formatContextHint(userContext) : null;
+  const contextInstruction = contextHint
+    ? `\n\nUser interface context note: ${contextHint}. Call get_current_context to retrieve full details when relevant to the user's request.`
+    : "";
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
@@ -165,6 +173,9 @@ Form Tools (Directly available to you):
 - set_form_field: Fill out fields in the active form.
 - submit_form: Submit the active form.
 
+Context Tool (Directly available to you):
+- get_current_context: Returns the current UI context, such as the post or page the user is viewing. Use this when the user refers to something on screen.
+
 Planning Tools (Directly available to you):
 - create_plan: Create a step-by-step plan and present it to the user for approval.
 - update_plan_item: Mark a plan step as in_progress, completed, or skipped.
@@ -192,7 +203,7 @@ When planning:
 Success criteria:
 - The user's request is fully addressed.
 - Write operations (create, update, delete, comment, react) are confirmed with IDs.
-- Read operations return the requested data in a clean, readable format.`,
+- Read operations return the requested data in a clean, readable format.${contextInstruction}`,
     model: orchestratorModel,
     agents: {
       identityAgent,
@@ -205,6 +216,7 @@ Success criteria:
       open_form: openFormTool,
       set_form_field: setFormFieldTool,
       submit_form: submitFormTool,
+      get_current_context: getContextTool,
       create_plan: createPlanTool,
       update_plan_item: updatePlanItemTool,
     },
