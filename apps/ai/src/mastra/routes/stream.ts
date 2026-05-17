@@ -1,6 +1,7 @@
 import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
+import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
 import { z } from "zod";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
 import type { ModelMode } from "../constants";
@@ -74,6 +75,57 @@ const StreamRequestSchema = z.object({
   context: AIContextPayloadSchema.optional(),
 });
 
+type UIMessage = z.infer<typeof UIMessageSchema>;
+
+function createContextMessage(
+  context: AIContextPayload | undefined,
+  lastMessageId: string,
+): UIMessage | null {
+  if (!context || context.type === "none") return null;
+
+  const hint = formatContextHint(context);
+  if (!hint) return null;
+
+  return {
+    id: `ui-context-${lastMessageId}`,
+    role: "system",
+    parts: [
+      {
+        type: "text",
+        text: `Ephemeral UI context for this request only: ${hint}. This message is not user-authored chat content. Call get_current_context for full structured details when relevant to the user's request.`,
+      },
+    ],
+    metadata: {
+      ephemeral: true,
+      source: "ui-context",
+    },
+  };
+}
+
+function injectContextMessage(
+  messages: UIMessage[],
+  context: AIContextPayload | undefined,
+): UIMessage[] {
+  let latestUserIndex = -1;
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === "user") {
+      latestUserIndex = i;
+      break;
+    }
+  }
+  const insertIndex = latestUserIndex === -1 ? messages.length : latestUserIndex;
+  const referenceMessage = messages[insertIndex] ?? messages[messages.length - 1];
+  const contextMessage = createContextMessage(context, referenceMessage.id);
+
+  if (!contextMessage) return messages;
+
+  return [
+    ...messages.slice(0, insertIndex),
+    contextMessage,
+    ...messages.slice(insertIndex),
+  ];
+}
+
 export const streamRoute = registerApiRoute("/chat", {
   method: "POST",
   handler: async (c) => {
@@ -106,7 +158,9 @@ export const streamRoute = registerApiRoute("/chat", {
         userContext,
       );
 
-      const agentStream = await orchestrator.stream(messages, {
+      const messagesWithContext = injectContextMessage(messages, userContext);
+
+      const agentStream = await orchestrator.stream(messagesWithContext, {
         maxSteps: 20,
         providerOptions:
           resolvedMode === "thinking"

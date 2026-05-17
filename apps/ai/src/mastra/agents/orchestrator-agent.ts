@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
-import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
+import type { AIContextPayload } from "@repo/shared-dto";
 import { getSocialMcpToolsets } from "../mcp/social";
 import { getSearchMcpToolset } from "../mcp/search";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
@@ -52,10 +52,6 @@ export async function createOrchestratorAgent(
 
   const searchToolset = await getSearchMcpToolset();
   const getContextTool = createGetContextTool(userContext);
-  const contextHint = userContext ? formatContextHint(userContext) : null;
-  const contextInstruction = contextHint
-    ? `\n\nUser interface context note: ${contextHint}. Call get_current_context to retrieve full details when relevant to the user's request.`
-    : "";
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
@@ -203,7 +199,7 @@ When planning:
 Success criteria:
 - The user's request is fully addressed.
 - Write operations (create, update, delete, comment, react) are confirmed with IDs.
-- Read operations return the requested data in a clean, readable format.${contextInstruction}`,
+- Read operations return the requested data in a clean, readable format.`,
     model: orchestratorModel,
     agents: {
       identityAgent,

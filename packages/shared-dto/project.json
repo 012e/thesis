@@ -11,6 +11,13 @@
         "script": "build"
       },
       "cache": true
+    },
+    "serve": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "build"
+      },
+      "cache": true
     }
   }
 }

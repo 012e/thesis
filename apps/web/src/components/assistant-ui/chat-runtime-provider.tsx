@@ -2,9 +2,7 @@ import {
   AssistantRuntimeProvider,
   useRemoteThreadListRuntime,
   useAuiState,
-  useAssistantInstructions,
 } from "@assistant-ui/react";
-import { formatContextHint } from "@repo/shared-dto";
 import {
   useChatRuntime,
   AssistantChatTransport,
@@ -49,15 +47,6 @@ const ActiveModeSync: FC<{ modeRef: MutableRefObject<ModelMode> }> = ({
   return null;
 };
 
-function AIContextSync() {
-  const context = useAtomValue(globalAIContextAtom);
-  const hint = formatContextHint(serializeAIContext(context));
-
-  useAssistantInstructions(hint ?? "");
-
-  return null;
-}
-
 export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -95,7 +84,6 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
     <AssistantRuntimeProvider runtime={runtime}>
       {/* Keeps modeRef in sync with the active thread's persisted mode. */}
       <ActiveModeSync modeRef={modeRef} />
-      <AIContextSync />
       {children}
     </AssistantRuntimeProvider>
   );
