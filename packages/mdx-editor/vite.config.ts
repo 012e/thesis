@@ -1,10 +1,9 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
 import { readFileSync } from "node:fs";
+import { fileURLToPath, URL } from "node:url";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import dts from "vite-plugin-dts";
-import svgr from "vite-plugin-svgr";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 const ext = {
   cjs: "cjs",
@@ -28,22 +27,19 @@ export default defineConfig({
   plugins: [
     react({ jsxRuntime: "classic" } as const),
     dts({
-      rollupTypes: true,
       staticImport: true,
       compilerOptions: {
         skipLibCheck: true,
       },
     }),
-    svgr({
-      svgrOptions: {
-        svgo: true,
-        replaceAttrValues: { black: "currentColor" },
-      },
-    }),
-    tsconfigPaths(),
   ],
+  resolve: {
+    alias: {
+      "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
   build: {
-    minify: "terser",
+    minify: false,
     cssMinify: false,
     lib: {
       entry: "src/index.ts",
