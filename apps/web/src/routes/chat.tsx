@@ -81,20 +81,29 @@ const SubmitFormToolUI = makeAssistantToolUI({
   },
 });
 
-// Renders null in the chat bubble — all plan UI lives in the sticky PlanProgressBar.
-// The plan state is derived entirely by the ChatWorkspace replay loop.
+// Keep a compact trace in the message so tool calls remain visible while the
+// sticky PlanProgressBar provides the richer live view.
 const CreatePlanToolUI = makeAssistantToolUI({
   toolName: "create_plan",
-  render: () => null,
+  render: ({ args, status }) => {
+    if (status.type === "running") {
+      return <div className="text-sm text-blue-500">Creating plan...</div>;
+    }
+
+    const title = typeof args.title === "string" ? args.title : "plan";
+    return <div className="text-sm text-green-600">Created {title}</div>;
+  },
 });
 
-// Minimal presence in the chat; the sticky bar is the live source of truth.
 const UpdatePlanItemToolUI = makeAssistantToolUI({
   toolName: "update_plan_item",
-  render: ({ status }) => {
-    if (status.type === "running")
+  render: ({ args, status }) => {
+    if (status.type === "running") {
       return <div className="text-sm text-blue-500">Updating step...</div>;
-    return null;
+    }
+
+    const label = typeof args.id === "string" ? args.id : "step";
+    return <div className="text-sm text-green-600">Updated {label}</div>;
   },
 });
 

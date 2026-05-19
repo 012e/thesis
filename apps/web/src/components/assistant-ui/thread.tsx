@@ -136,7 +136,7 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
         <p
           className={cn(
             "mt-1 text-sm text-muted-foreground",
-            compact && "mx-auto max-w-[240px]",
+            compact && "mx-auto max-w-60",
           )}
         >
           Ask me anything — I can read posts, search content, and help you
