@@ -254,9 +254,9 @@ function ThreadSelector() {
             </div>
 
             <div className="max-h-80 overflow-y-auto py-1">
-              <ThreadListPrimitive.Items
-                components={{ ThreadListItem: ThreadSelectorItem }}
-              />
+              <ThreadListPrimitive.Items>
+                {() => <ThreadSelectorItem />}
+              </ThreadListPrimitive.Items>
             </div>
           </div>
         ) : null}

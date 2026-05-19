@@ -31,9 +31,7 @@ export const ThreadList: FC<{ className?: string }> = ({ className }) => {
 
       {/* Thread items */}
       <div className="flex-1 overflow-y-auto py-2">
-        <ThreadListPrimitive.Items
-          components={{ ThreadListItem: ThreadListItem }}
-        />
+        <ThreadListPrimitive.Items>{() => <ThreadListItem />}</ThreadListPrimitive.Items>
       </div>
     </ThreadListPrimitive.Root>
   );

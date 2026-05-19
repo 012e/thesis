@@ -63,13 +63,13 @@ export function Thread({ compact = false }: ThreadProps) {
           <ThreadWelcome compact={compact} />
         </AuiIf>
 
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage,
-            EditComposer,
-            AssistantMessage,
+        <ThreadPrimitive.Messages>
+          {({ message }) => {
+            if (message.composer.isEditing) return <EditComposer />;
+            if (message.role === "user") return <UserMessage />;
+            return <AssistantMessage />;
           }}
-        />
+        </ThreadPrimitive.Messages>
 
         <ThreadPrimitive.ViewportFooter
           className={cn(
@@ -363,70 +363,16 @@ function EditComposer() {
   );
 }
 
-type GroupedMessagePart = {
-  type?: string;
-  status?: { type?: string };
-};
-
-function isChainOfThoughtPart(part: unknown) {
-  const type = (part as GroupedMessagePart | undefined)?.type;
-  return type === "reasoning";
-}
-
-function groupChainOfThoughtParts(parts: readonly unknown[]) {
-  const groups: { groupKey: string | undefined; indices: number[] }[] = [];
-  let chainIndices: number[] = [];
-  let chainIndex = 0;
-
-  const flushChain = () => {
-    if (chainIndices.length === 0) return;
-    groups.push({
-      groupKey: `chain-of-thought-${chainIndex}`,
-      indices: chainIndices,
-    });
-    chainIndex += 1;
-    chainIndices = [];
-  };
-
-  parts.forEach((part, index) => {
-    if (isChainOfThoughtPart(part)) {
-      chainIndices.push(index);
-      return;
-    }
-
-    flushChain();
-    groups.push({ groupKey: undefined, indices: [index] });
-  });
-
-  flushChain();
-  return groups;
-}
-
 function ChainOfThoughtGroup({
-  groupKey,
-  indices,
+  active,
+  count,
   children,
-}: PropsWithChildren<{ groupKey: string | undefined; indices: number[] }>) {
-  const isChainOfThought = groupKey?.startsWith("chain-of-thought-") ?? false;
-  const active = useAuiState((s) => {
-    if (!isChainOfThought || s.message.status?.type !== "running") return false;
-    const lastIndex = s.message.parts.length - 1;
-
-    if (indices.includes(lastIndex)) return true;
-
-    return indices.some((index) => {
-      const part = s.message.parts[index] as GroupedMessagePart | undefined;
-      return part?.status?.type === "running";
-    });
-  });
-
-  if (!isChainOfThought) return <>{children}</>;
-
+}: PropsWithChildren<{ active: boolean; count: number }>) {
   return (
     <ReasoningRoot defaultOpen={active} className="mb-2">
       <ReasoningTrigger
         active={active}
-        label={`Thinking (${indices.length} step${indices.length === 1 ? "" : "s"})`}
+        label={`Thinking (${count} step${count === 1 ? "" : "s"})`}
       />
       <ReasoningContent aria-busy={active}>
         <ReasoningText className="flex flex-col gap-2">
@@ -450,16 +396,37 @@ function AssistantMessage() {
           </div>
 
           <div className="flex flex-col gap-2 min-w-0 flex-1">
-            <MessagePrimitive.Unstable_PartsGrouped
-              groupingFunction={groupChainOfThoughtParts}
-              components={{
-                Text: MarkdownText,
-                tools: { Fallback: ToolFallback },
-                Reasoning,
-                Source: Sources,
-                Group: ChainOfThoughtGroup,
+            <MessagePrimitive.GroupedParts
+              groupBy={(part) =>
+                part.type === "reasoning" ? ["group-chain-of-thought"] : null
+              }
+            >
+              {({ part, children }) => {
+                switch (part.type) {
+                  case "group-chain-of-thought":
+                    return (
+                      <ChainOfThoughtGroup
+                        active={part.status.type === "running"}
+                        count={part.indices.length}
+                      >
+                        {children}
+                      </ChainOfThoughtGroup>
+                    );
+                  case "text":
+                    return <MarkdownText />;
+                  case "reasoning":
+                    return <Reasoning {...part} />;
+                  case "source":
+                    return <Sources {...part} />;
+                  case "tool-call":
+                    return part.toolUI ?? <ToolFallback {...part} />;
+                  case "data":
+                    return part.dataRendererUI ?? null;
+                  default:
+                    return null;
+                }
               }}
-            />
+            </MessagePrimitive.GroupedParts>
 
             <MessageError />
             <AuiIf
