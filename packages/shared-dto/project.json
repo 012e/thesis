@@ -13,11 +13,12 @@
       "cache": true
     },
     "serve": {
-      "executor": "nx:run-script",
+      "executor": "nx:run-commands",
       "options": {
-        "script": "build"
+        "command": "pnpm tsup --watch",
+        "cwd": "packages/shared-dto"
       },
-      "cache": true
+      "cache": false
     }
   }
 }
