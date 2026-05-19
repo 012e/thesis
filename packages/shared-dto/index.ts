@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface UserSearchResultDto {
   id: string;
   username: string | null;
@@ -303,6 +305,78 @@ export type NotificationPayloadDto =
   | PostReactionNotificationPayload
   | CommentReactionNotificationPayload
   | DirectMessageNotificationPayload;
+
+// ─── AI Context ──────────────────────────────────────────────────────────────
+
+/**
+ * JSON-safe serialized AI context payload.
+ * Shared between apps/web (serialization) and apps/ai (tool return value + Zod schema).
+ * Uses a discriminated union so switch statements are exhaustively checked at compile time.
+ */
+export type AIContextPayload =
+  | { readonly type: "none" }
+  | {
+      readonly type: "page";
+      readonly page: string;
+      readonly label: string;
+    }
+  | {
+      readonly type: "post";
+      readonly postId: string;
+      readonly authorUsername: string;
+      readonly contentPreview: string;
+      readonly createdAt: string;
+    }
+  | {
+      readonly type: "user-profile";
+      readonly userId: string;
+      readonly username: string;
+      readonly displayName: string;
+    };
+
+export const AIContextPayloadSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("none") }),
+  z.object({
+    type: z.literal("page"),
+    page: z.string(),
+    label: z.string(),
+  }),
+  z.object({
+    type: z.literal("post"),
+    postId: z.string(),
+    authorUsername: z.string(),
+    contentPreview: z.string(),
+    createdAt: z.string(),
+  }),
+  z.object({
+    type: z.literal("user-profile"),
+    userId: z.string(),
+    username: z.string(),
+    displayName: z.string(),
+  }),
+]);
+
+/**
+ * Converts an AIContextPayload to a brief one-line hint for LLM system instructions.
+ * Returns null when type is "none" (no context to inject).
+ *
+ * Examples:
+ *   "User context: He is currently viewing a post by @alice"
+ *   "User context: He is currently on the Playground page"
+ *   "User context: He is currently viewing @bob's profile"
+ */
+export function formatContextHint(ctx: AIContextPayload): string | null {
+  switch (ctx.type) {
+    case "none":
+      return null;
+    case "page":
+      return `User context: He is currently on the ${ctx.label} page`;
+    case "post":
+      return `User context: He is currently viewing a post by @${ctx.authorUsername}`;
+    case "user-profile":
+      return `User context: He is currently viewing @${ctx.username}'s profile`;
+  }
+}
 
 export interface NotificationDto {
   id: string;

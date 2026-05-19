@@ -21,6 +21,11 @@ import { useThreadHistoryAdapter } from "@/lib/chat/history-adapter";
 import bearerToken from "@/lib/atoms/bearer-token";
 import threadModelModesAtom from "@/lib/atoms/thread-model-modes";
 import type { ModelMode } from "@/lib/atoms/model-mode";
+import {
+  globalAIContextAtom,
+  serializeAIContext,
+} from "@/lib/atoms/ai-context";
+import store from "@/lib/atoms/store";
 
 const DEFAULT_MODE: ModelMode = "fast";
 
@@ -65,7 +70,10 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          body: () => ({ mode: modeRef.current }),
+          body: () => ({
+            mode: modeRef.current,
+            context: serializeAIContext(store.get(globalAIContextAtom)),
+          }),
         }),
         adapters: { history },
       });

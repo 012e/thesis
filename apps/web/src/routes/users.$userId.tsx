@@ -5,8 +5,12 @@ import { useSession } from "@/hooks/use-session";
 import { useFollow } from "@/hooks/use-follow";
 import { ProfileView } from "@/components/profile/profile-view";
 import { PageSpinner } from "@/components/ui/spinner";
+import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 
 export const Route = createFileRoute("/users/$userId")({
+  beforeLoad: () => {
+    setGlobalAIContext({ type: "none" });
+  },
   component: UserProfilePage,
 });
 

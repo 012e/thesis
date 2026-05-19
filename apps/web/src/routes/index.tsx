@@ -3,11 +3,15 @@ import { PostComposer } from "@/components/ui/post-composer";
 import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useFollowingPosts } from "@/hooks/use-following-posts";
+import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { useState } from "react";
 
 type FeedTab = "for-you" | "following";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    setGlobalAIContext({ type: "none" });
+  },
   component: Index,
 });
 

@@ -10,7 +10,6 @@ import {
   IconRefresh,
   IconRobot,
   IconDownload,
-  IconLoader2,
 } from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
@@ -47,6 +46,7 @@ import { useAtomValue } from "jotai";
 import { FormRegistry } from "@/components/forms/registry";
 import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
+import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
 
 interface ThreadProps {
   compact?: boolean;
@@ -63,13 +63,13 @@ export function Thread({ compact = false }: ThreadProps) {
           <ThreadWelcome compact={compact} />
         </AuiIf>
 
-        <ThreadPrimitive.Messages
-          components={{
-            UserMessage,
-            EditComposer,
-            AssistantMessage,
+        <ThreadPrimitive.Messages>
+          {({ message }) => {
+            if (message.composer.isEditing) return <EditComposer />;
+            if (message.role === "user") return <UserMessage />;
+            return <AssistantMessage />;
           }}
-        />
+        </ThreadPrimitive.Messages>
 
         <ThreadPrimitive.ViewportFooter
           className={cn(
@@ -78,6 +78,7 @@ export function Thread({ compact = false }: ThreadProps) {
           )}
         >
           <ThreadScrollToBottom />
+          <AIContextIndicator compact={compact} />
           <ActiveVerticalForm />
           <PlanProgressBar />
           <Composer compact={compact} />
@@ -121,8 +122,12 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
         compact ? "gap-3 px-4 py-6" : "gap-4 p-8",
       )}
     >
-      <div className={cn("rounded-full bg-primary/10", compact ? "p-3" : "p-4")}>
-        <IconRobot className={cn("text-primary", compact ? "size-6" : "size-8")} />
+      <div
+        className={cn("rounded-full bg-primary/10", compact ? "p-3" : "p-4")}
+      >
+        <IconRobot
+          className={cn("text-primary", compact ? "size-6" : "size-8")}
+        />
       </div>
       <div>
         <h2 className={cn("font-semibold", compact ? "text-lg" : "text-xl")}>
@@ -131,7 +136,7 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
         <p
           className={cn(
             "mt-1 text-sm text-muted-foreground",
-            compact && "mx-auto max-w-[240px]",
+            compact && "mx-auto max-w-60",
           )}
         >
           Ask me anything — I can read posts, search content, and help you
@@ -141,7 +146,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
       <div
         className={cn(
           "grid gap-2 w-full",
-          compact ? "mt-2 max-w-[260px] grid-cols-1" : "mt-4 max-w-2xl md:grid-cols-2",
+          compact
+            ? "mt-2 max-w-[260px] grid-cols-1"
+            : "mt-4 max-w-2xl md:grid-cols-2",
         )}
       >
         <ThreadPrimitive.Suggestion
@@ -156,7 +163,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">What's trending?</span>
+            <span className="font-medium truncate max-w-full">
+              What's trending?
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Show me the most upvoted posts
             </span>
@@ -174,7 +183,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">My feed summary</span>
+            <span className="font-medium truncate max-w-full">
+              My feed summary
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Summarize recent posts I follow
             </span>
@@ -192,7 +203,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">Search posts</span>
+            <span className="font-medium truncate max-w-full">
+              Search posts
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Find posts about a topic
             </span>
@@ -210,7 +223,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">Active users</span>
+            <span className="font-medium truncate max-w-full">
+              Active users
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               See who's been most active
             </span>
@@ -234,7 +249,10 @@ function Composer({ compact = false }: ThreadProps) {
 
   return (
     <ComposerPrimitive.Root
-      className={cn("flex flex-col w-full", compact ? "max-w-none" : "max-w-2xl")}
+      className={cn(
+        "flex flex-col w-full",
+        compact ? "max-w-none" : "max-w-2xl",
+      )}
     >
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
@@ -345,70 +363,16 @@ function EditComposer() {
   );
 }
 
-type GroupedMessagePart = {
-  type?: string;
-  status?: { type?: string };
-};
-
-function isChainOfThoughtPart(part: unknown) {
-  const type = (part as GroupedMessagePart | undefined)?.type;
-  return type === "reasoning" || type === "tool-call";
-}
-
-function groupChainOfThoughtParts(parts: readonly unknown[]) {
-  const groups: { groupKey: string | undefined; indices: number[] }[] = [];
-  let chainIndices: number[] = [];
-  let chainIndex = 0;
-
-  const flushChain = () => {
-    if (chainIndices.length === 0) return;
-    groups.push({
-      groupKey: `chain-of-thought-${chainIndex}`,
-      indices: chainIndices,
-    });
-    chainIndex += 1;
-    chainIndices = [];
-  };
-
-  parts.forEach((part, index) => {
-    if (isChainOfThoughtPart(part)) {
-      chainIndices.push(index);
-      return;
-    }
-
-    flushChain();
-    groups.push({ groupKey: undefined, indices: [index] });
-  });
-
-  flushChain();
-  return groups;
-}
-
 function ChainOfThoughtGroup({
-  groupKey,
-  indices,
+  active,
+  count,
   children,
-}: PropsWithChildren<{ groupKey: string | undefined; indices: number[] }>) {
-  const isChainOfThought = groupKey?.startsWith("chain-of-thought-") ?? false;
-  const active = useAuiState((s) => {
-    if (!isChainOfThought || s.message.status?.type !== "running") return false;
-    const lastIndex = s.message.parts.length - 1;
-
-    if (indices.includes(lastIndex)) return true;
-
-    return indices.some((index) => {
-      const part = s.message.parts[index] as GroupedMessagePart | undefined;
-      return part?.status?.type === "running";
-    });
-  });
-
-  if (!isChainOfThought) return <>{children}</>;
-
+}: PropsWithChildren<{ active: boolean; count: number }>) {
   return (
     <ReasoningRoot defaultOpen={active} className="mb-2">
       <ReasoningTrigger
         active={active}
-        label={`Thinking (${indices.length} step${indices.length === 1 ? "" : "s"})`}
+        label={`Thinking (${count} step${count === 1 ? "" : "s"})`}
       />
       <ReasoningContent aria-busy={active}>
         <ReasoningText className="flex flex-col gap-2">
@@ -432,16 +396,37 @@ function AssistantMessage() {
           </div>
 
           <div className="flex flex-col gap-2 min-w-0 flex-1">
-            <MessagePrimitive.Unstable_PartsGrouped
-              groupingFunction={groupChainOfThoughtParts}
-              components={{
-                Text: MarkdownText,
-                tools: { Fallback: ToolFallback },
-                Reasoning,
-                Source: Sources,
-                Group: ChainOfThoughtGroup,
+            <MessagePrimitive.GroupedParts
+              groupBy={(part) =>
+                part.type === "reasoning" ? ["group-chain-of-thought"] : null
+              }
+            >
+              {({ part, children }) => {
+                switch (part.type) {
+                  case "group-chain-of-thought":
+                    return (
+                      <ChainOfThoughtGroup
+                        active={part.status.type === "running"}
+                        count={part.indices.length}
+                      >
+                        {children}
+                      </ChainOfThoughtGroup>
+                    );
+                  case "text":
+                    return <MarkdownText />;
+                  case "reasoning":
+                    return <Reasoning {...part} />;
+                  case "source":
+                    return <Sources {...part} />;
+                  case "tool-call":
+                    return part.toolUI ?? <ToolFallback {...part} />;
+                  case "data":
+                    return part.dataRendererUI ?? null;
+                  default:
+                    return null;
+                }
               }}
-            />
+            </MessagePrimitive.GroupedParts>
 
             <MessageError />
             <AuiIf
@@ -450,7 +435,6 @@ function AssistantMessage() {
               }
             >
               <div className="flex gap-2 items-center text-muted-foreground">
-                <IconLoader2 className="animate-spin size-4" />
                 <span className="text-sm">Thinking...</span>
               </div>
             </AuiIf>

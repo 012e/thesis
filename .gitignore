@@ -417,3 +417,7 @@ test-results/
 
 storybook-static
 .vercel
+
+.nx/polygraph
+.claude/worktrees
+.claude/settings.local.json

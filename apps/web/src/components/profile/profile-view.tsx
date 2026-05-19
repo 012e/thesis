@@ -12,6 +12,7 @@ import { uploadImages } from "@/lib/api/uploads";
 import { updateCoverPhoto } from "@/lib/api/users";
 import { toast } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { usePostInViewTracker } from "@/hooks/use-post-in-view";
 
 export interface ProfileViewProps {
   profile: {
@@ -49,6 +50,9 @@ export function ProfileView({
   const queryClient = useQueryClient();
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const [isCoverUploading, setIsCoverUploading] = useState(false);
+
+  // Track which post is most visible and sync to the global AI context.
+  usePostInViewTracker(posts);
 
   const initials = profile.name
     ? profile.name
@@ -278,7 +282,9 @@ export function ProfileView({
           ) : (
             <div className="flex flex-col divide-y">
               {posts.map((post) => (
-                <Post key={post.id} post={post} />
+                <div key={post.id} data-post-id={post.id}>
+                  <Post post={post} />
+                </div>
               ))}
             </div>
           )}

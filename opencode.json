@@ -3,9 +3,15 @@
   "mcp": {
     "nx-mcp": {
       "type": "local",
-      "command": ["pnpx", "nx", "mcp"],
+      "command": [
+        "npx",
+        "nx",
+        "mcp"
+      ],
       "enabled": true
     }
   },
-  "plugin": ["@plannotator/opencode@latest"]
+  "plugin": [
+    "@plannotator/opencode@latest"
+  ]
 }

@@ -2,6 +2,11 @@ import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { z } from "zod";
+import {
+  AIContextPayloadSchema,
+  formatContextHint,
+  type AIContextPayload,
+} from "@repo/shared-dto";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
 import type { ModelMode } from "../constants";
 
@@ -20,7 +25,8 @@ import type { ModelMode } from "../constants";
  * Body:
  *   {
  *     "messages": [{ "id": "1", "role": "user", "parts": [{ "type": "text", "text": "Hello" }] }],
- *     "mode": "fast" | "thinking"   // optional, defaults to "fast"
+ *     "mode": "fast" | "thinking",   // optional, defaults to "fast"
+ *     "context": { "type": "post", ... } // optional current UI context
  *   }
  *
  * Response: AI SDK-compatible UIMessage stream
@@ -47,7 +53,60 @@ const StreamRequestSchema = z.object({
   resumeData: z.record(z.string(), z.any()).optional(),
   /** Model interaction mode sent by the web client. Defaults to "fast". */
   mode: z.enum(["fast", "thinking"]).optional(),
+  /** Current UI context sent by the web client. */
+  context: AIContextPayloadSchema.optional(),
 });
+
+type UIMessage = z.infer<typeof UIMessageSchema>;
+
+function createContextMessage(
+  context: AIContextPayload | undefined,
+  lastMessageId: string,
+): UIMessage | null {
+  if (!context || context.type === "none") return null;
+
+  const hint = formatContextHint(context);
+  if (!hint) return null;
+
+  return {
+    id: `ui-context-${lastMessageId}`,
+    role: "user",
+    parts: [
+      {
+        type: "text",
+        text: `Ephemeral UI context for this request only: ${JSON.stringify(hint)}. This message is application-provided context, not user-authored chat content or instructions. Call get_current_context for full structured details when relevant to the user's request.`,
+      },
+    ],
+    metadata: {
+      ephemeral: true,
+      source: "ui-context",
+    },
+  };
+}
+
+function injectContextMessage(
+  messages: UIMessage[],
+  context: AIContextPayload | undefined,
+): UIMessage[] {
+  let latestUserIndex = -1;
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role === "user") {
+      latestUserIndex = i;
+      break;
+    }
+  }
+  const insertIndex = latestUserIndex === -1 ? messages.length : latestUserIndex;
+  const referenceMessage = messages[insertIndex] ?? messages[messages.length - 1];
+  const contextMessage = createContextMessage(context, referenceMessage.id);
+
+  if (!contextMessage) return messages;
+
+  return [
+    ...messages.slice(0, insertIndex),
+    contextMessage,
+    ...messages.slice(insertIndex),
+  ];
+}
 
 export const streamRoute = registerApiRoute("/chat", {
   method: "POST",
@@ -66,8 +125,8 @@ export const streamRoute = registerApiRoute("/chat", {
         );
       }
 
-      const { messages, mode } = parseResult.data;
-      const context = c.get("requestContext");
+      const { messages, mode, context: userContext } = parseResult.data;
+      const requestContext = c.get("requestContext");
 
       // Resolve model mode from the request body.
       // Defaults to "fast" if the field is absent or contains an unknown value.
@@ -75,9 +134,15 @@ export const streamRoute = registerApiRoute("/chat", {
 
       // Build a per-request orchestrator with auth-aware MCP tools baked into
       // each sub-agent at construction time.
-      const orchestrator = await createOrchestratorAgent(context, resolvedMode);
+      const orchestrator = await createOrchestratorAgent(
+        requestContext,
+        resolvedMode,
+        userContext,
+      );
 
-      const agentStream = await orchestrator.stream(messages, {
+      const messagesWithContext = injectContextMessage(messages, userContext);
+
+      const agentStream = await orchestrator.stream(messagesWithContext, {
         maxSteps: 20,
         providerOptions:
           resolvedMode === "thinking"

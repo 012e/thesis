@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "@mastra/ai-sdk": "^1.4.1",
-    "@mastra/core": "1.31.0",
+    "@mastra/core": "1.35.0",
     "@mastra/mcp": "^1.6.0",
     "@mastra/memory": "^1.17.4",
     "@mastra/pg": "^1.9.4",
+    "@repo/shared-dto": "workspace:*",
     "@t3-oss/env-core": "^0.13.11",
     "ai": "^6.0.168",
     "zod": "^4.3.6"

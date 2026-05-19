@@ -4,6 +4,7 @@ import type { PostDto } from "@repo/shared-dto";
 import { Post } from "@/components/post";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { usePostInViewTracker } from "@/hooks/use-post-in-view";
 
 interface PostsPageData {
   items: PostDto[];
@@ -39,6 +40,12 @@ export function PostsFeed({
 }: PostsFeedProps) {
   const observerTarget = useRef<HTMLDivElement>(null);
 
+  const allPosts = data?.pages.flatMap((page) => page.items) ?? [];
+
+  // Track which post is most visible and sync to the global AI context.
+  usePostInViewTracker(allPosts);
+
+  // Infinite scroll — load next page when the sentinel div enters the viewport.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -61,8 +68,6 @@ export function PostsFeed({
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const allPosts = data?.pages.flatMap((page) => page.items) ?? [];
-
   if (isLoading) {
     return (
       <div className="flex justify-center p-12" aria-label={loadingLabel}>
@@ -84,7 +89,9 @@ export function PostsFeed({
         </div>
       )}
       {allPosts.map((post) => (
-        <Post key={post.id} post={post} />
+        <div key={post.id} data-post-id={post.id}>
+          <Post post={post} />
+        </div>
       ))}
       <div ref={observerTarget} className="min-h-px">
         {isFetchingNextPage && (
@@ -97,7 +104,7 @@ export function PostsFeed({
         )}
         {!hasNextPage && allPosts.length > 0 && (
           <div className="p-4 text-center text-muted-foreground">
-            You've reached the end
+            You&apos;ve reached the end
           </div>
         )}
       </div>
