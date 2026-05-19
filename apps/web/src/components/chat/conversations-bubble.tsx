@@ -137,7 +137,9 @@ export function ConversationsBubble() {
         right: `${rightPx}px`,
         transition: "right 300ms ease-in-out",
       }}
-    >      {/* ── Conversations panel ─────────────────────────────────────────── */}
+    >
+      {" "}
+      {/* ── Conversations panel ─────────────────────────────────────────── */}
       {isOpen && (
         <div
           ref={panelRef}
@@ -193,7 +195,6 @@ export function ConversationsBubble() {
           </div>
         </div>
       )}
-
       {/* ── Messenger button ────────────────────────────────────────────── */}
       <button
         ref={buttonRef}

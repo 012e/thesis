@@ -3,10 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/shared-dto",
   "projectType": "library",
-  "tags": [
-    "type:shared",
-    "scope:shared"
-  ],
+  "tags": ["type:shared", "scope:shared"],
   "targets": {
     "build": {
       "executor": "nx:run-script",

@@ -1,4 +1,9 @@
-import { IconArchive, IconMessage, IconPlus, IconTrash } from "@tabler/icons-react";
+import {
+  IconArchive,
+  IconMessage,
+  IconPlus,
+  IconTrash,
+} from "@tabler/icons-react";
 import {
   ThreadListItemPrimitive,
   ThreadListPrimitive,
@@ -94,7 +99,9 @@ function ThreadSelectorItem({ onSelect }: { onSelect: () => void }) {
 
   const updateTitleTruncation = () => {
     const title = titleRef.current;
-    setIsTitleTruncated(Boolean(title && title.scrollWidth > title.clientWidth));
+    setIsTitleTruncated(
+      Boolean(title && title.scrollWidth > title.clientWidth),
+    );
   };
 
   useLayoutEffect(() => {

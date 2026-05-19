@@ -24,7 +24,10 @@ export function GlobalChatToggleButton() {
   const dmPanelWidth = isDmOpen ? DM_SIDEBAR_WIDTH : 0;
   const aiPanelWidth = isOpen ? (aiSize === "normal" ? 320 : 480) : 0;
   const rightPx =
-    Math.max(dmPanelWidth, aiPanelWidth) + BASE_RIGHT + BUBBLE_SIZE + BUBBLE_GAP;
+    Math.max(dmPanelWidth, aiPanelWidth) +
+    BASE_RIGHT +
+    BUBBLE_SIZE +
+    BUBBLE_GAP;
 
   return (
     <button
@@ -41,8 +44,7 @@ export function GlobalChatToggleButton() {
       )}
       style={{
         right: `${rightPx}px`,
-        transition:
-          "right 300ms ease-in-out, transform 200ms ease-in-out",
+        transition: "right 300ms ease-in-out, transform 200ms ease-in-out",
       }}
     >
       <span

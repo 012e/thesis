@@ -39,9 +39,7 @@ After calling this tool:
           description: z
             .string()
             .optional()
-            .describe(
-              "Optional longer description of what this step involves",
-            ),
+            .describe("Optional longer description of what this step involves"),
         }),
       )
       .min(2)

@@ -49,7 +49,11 @@ function RouteContextSync() {
 
     // Named page contexts
     if (pathname.startsWith("/playground")) {
-      setGlobalAIContext({ type: "page", page: "playground", label: "Playground" });
+      setGlobalAIContext({
+        type: "page",
+        page: "playground",
+        label: "Playground",
+      });
       return;
     }
     if (pathname.startsWith("/explore")) {
@@ -57,7 +61,11 @@ function RouteContextSync() {
       return;
     }
     if (pathname.startsWith("/notifications")) {
-      setGlobalAIContext({ type: "page", page: "notifications", label: "Notifications" });
+      setGlobalAIContext({
+        type: "page",
+        page: "notifications",
+        label: "Notifications",
+      });
       return;
     }
 

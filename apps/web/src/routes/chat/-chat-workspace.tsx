@@ -174,7 +174,9 @@ function getToolCallParts(message: { content?: unknown }): ToolCallPart[] {
 
   return message.content.filter(
     (part): part is ToolCallPart =>
-      isRecord(part) && part.type === "tool-call" && typeof part.toolName === "string",
+      isRecord(part) &&
+      part.type === "tool-call" &&
+      typeof part.toolName === "string",
   );
 }
 

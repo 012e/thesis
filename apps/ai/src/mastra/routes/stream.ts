@@ -95,8 +95,10 @@ function injectContextMessage(
       break;
     }
   }
-  const insertIndex = latestUserIndex === -1 ? messages.length : latestUserIndex;
-  const referenceMessage = messages[insertIndex] ?? messages[messages.length - 1];
+  const insertIndex =
+    latestUserIndex === -1 ? messages.length : latestUserIndex;
+  const referenceMessage =
+    messages[insertIndex] ?? messages[messages.length - 1];
   const contextMessage = createContextMessage(context, referenceMessage.id);
 
   if (!contextMessage) return messages;

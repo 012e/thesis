@@ -2,7 +2,11 @@ import { atom } from "jotai";
 import { atomFamily } from "jotai-family";
 import { selectAtom } from "jotai/utils";
 
-export type PlanItemStatus = "pending" | "in_progress" | "completed" | "skipped";
+export type PlanItemStatus =
+  | "pending"
+  | "in_progress"
+  | "completed"
+  | "skipped";
 
 export type PlanItem = {
   id: string;

@@ -34,9 +34,7 @@ function ToolTrace({ icon: Icon, label, detail, state }: ToolTraceProps) {
       <span
         className={cn(
           "flex size-5 shrink-0 items-center justify-center border bg-primary/10 text-primary",
-          isRunning
-            ? "border-primary/40"
-            : "border-primary/30",
+          isRunning ? "border-primary/40" : "border-primary/30",
         )}
       >
         {isRunning ? (
@@ -151,7 +149,9 @@ export const UpdatePlanItemToolUI = makeAssistantToolUI({
   toolName: "update_plan_item",
   render: ({ args, status }) => {
     if (status.type === "running") {
-      return <ToolTrace icon={IconEdit} label="Updating step" state="running" />;
+      return (
+        <ToolTrace icon={IconEdit} label="Updating step" state="running" />
+      );
     }
 
     const label = typeof args.id === "string" ? args.id : "step";

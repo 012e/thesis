@@ -41,7 +41,7 @@ import { AssistantStream, AssistantTransportDecoder } from "assistant-stream";
 
 const stream = AssistantStream.fromResponse(
   response,
-  new AssistantTransportDecoder()
+  new AssistantTransportDecoder(),
 );
 
 for await (const chunk of stream) {
@@ -120,7 +120,7 @@ const runtime = useLocalRuntime({
 
       const stream = AssistantStream.fromResponse(
         response,
-        new AssistantTransportDecoder()
+        new AssistantTransportDecoder(),
       );
 
       for await (const chunk of stream) {

@@ -16,7 +16,10 @@ import {
   IconSearch,
 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { isDmChatOpenAtom, activeDmConversationAtom } from "@/lib/atoms/dm-chat";
+import {
+  isDmChatOpenAtom,
+  activeDmConversationAtom,
+} from "@/lib/atoms/dm-chat";
 import { useSession } from "@/hooks/use-session";
 import {
   useConversations,
@@ -487,10 +490,7 @@ export function DmSidebar() {
       {activeConversationId === null ? (
         <ListView onSelect={handleSelectConversation} onClose={handleClose} />
       ) : (
-        <DetailView
-          conversationId={activeConversationId}
-          onBack={handleBack}
-        />
+        <DetailView conversationId={activeConversationId} onBack={handleBack} />
       )}
     </div>
   );

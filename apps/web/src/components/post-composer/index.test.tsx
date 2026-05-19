@@ -1,16 +1,5 @@
-import {
-  afterEach,
-  describe,
-  expect,
-  it,
-  vi,
-  type Mock,
-} from "vitest";
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-} from "react";
+import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
@@ -116,9 +105,9 @@ describe("PostComposer", () => {
 
     expect(screen.getByText("5 characters")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Clear" })).toBeTruthy();
-    expect(screen.getByRole<HTMLButtonElement>("button", { name: "Post" }).disabled).toBe(
-      false,
-    );
+    expect(
+      screen.getByRole<HTMLButtonElement>("button", { name: "Post" }).disabled,
+    ).toBe(false);
   });
 
   it("clears both provider state and the mounted editor value", async () => {
@@ -126,13 +115,15 @@ describe("PostComposer", () => {
 
     render(<TestComposer initialContent="Draft text" />);
 
-    expect(screen.getByLabelText<HTMLTextAreaElement>("composer editor").value).toBe(
-      "Draft text",
-    );
+    expect(
+      screen.getByLabelText<HTMLTextAreaElement>("composer editor").value,
+    ).toBe("Draft text");
 
     await user.click(screen.getByRole("button", { name: "Clear" }));
 
-    expect(screen.getByLabelText<HTMLTextAreaElement>("composer editor").value).toBe("");
+    expect(
+      screen.getByLabelText<HTMLTextAreaElement>("composer editor").value,
+    ).toBe("");
     expect(screen.getByText("0 characters")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Clear" })).toBeNull();
   });
@@ -151,7 +142,9 @@ describe("PostComposer", () => {
     await user.click(screen.getByRole("button", { name: "Post" }));
 
     expect(onSubmitContent).toHaveBeenCalledWith("Post this");
-    expect(screen.getByLabelText<HTMLTextAreaElement>("composer editor").value).toBe("");
+    expect(
+      screen.getByLabelText<HTMLTextAreaElement>("composer editor").value,
+    ).toBe("");
     expect(screen.getByText("0 characters")).toBeTruthy();
   });
 });

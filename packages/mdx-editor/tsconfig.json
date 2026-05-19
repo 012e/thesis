@@ -11,10 +11,7 @@
     "skipLibCheck": true,
     "rootDir": "./src",
     "typeRoots": ["./node_modules/@types", "./src/@types", "./node_modules"],
-    "types": [
-      "vite/client",
-      "user-agent-data-types"
-    ],
+    "types": ["vite/client", "user-agent-data-types"],
     "paths": {
       "@/*": ["./src/*"]
     }

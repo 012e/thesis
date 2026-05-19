@@ -37,12 +37,12 @@ export function DmToggleButton() {
       title={isDmOpen ? "Close messages" : "Open messages"}
       className={cn(
         "fixed bottom-4 z-50 flex items-center justify-center w-12 h-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:scale-105 active:scale-95",
-        isDmOpen && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background",
+        isDmOpen &&
+          "ring-2 ring-primary/40 ring-offset-2 ring-offset-background",
       )}
       style={{
         right: `${rightPx}px`,
-        transition:
-          "right 300ms ease-in-out, transform 200ms ease-in-out",
+        transition: "right 300ms ease-in-out, transform 200ms ease-in-out",
       }}
     >
       <span

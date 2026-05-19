@@ -8,6 +8,7 @@ export function createGetContextTool(context: AIContextPayload | undefined) {
     description:
       "Returns the current UI context: what page or content the user is currently viewing. Call this when the user refers to something on screen, such as the current post or current page.",
     inputSchema: z.object({}),
-    execute: async () => context ?? ({ type: "none" } satisfies AIContextPayload),
+    execute: async () =>
+      context ?? ({ type: "none" } satisfies AIContextPayload),
   });
 }

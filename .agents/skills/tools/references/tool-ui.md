@@ -33,7 +33,7 @@ const WeatherToolUI = makeAssistantToolUI({
 <AssistantRuntimeProvider runtime={runtime}>
   <WeatherToolUI />
   <Thread />
-</AssistantRuntimeProvider>
+</AssistantRuntimeProvider>;
 ```
 
 ## Render Props
@@ -46,7 +46,7 @@ interface ToolUIRenderProps {
 
   // Arguments
   args: Record<string, unknown>;
-  argsText: string;  // Raw JSON string
+  argsText: string; // Raw JSON string
 
   // Result (undefined while running)
   result?: unknown;
@@ -59,10 +59,10 @@ interface ToolUIRenderProps {
 }
 
 type ToolCallStatus =
-  | "running"         // Tool executing
-  | "complete"        // Finished successfully
-  | "incomplete"      // Stopped early (cancelled)
-  | "requires-action" // Waiting for user input
+  | "running" // Tool executing
+  | "complete" // Finished successfully
+  | "incomplete" // Stopped early (cancelled)
+  | "requires-action"; // Waiting for user input
 ```
 
 ## useAssistantToolUI

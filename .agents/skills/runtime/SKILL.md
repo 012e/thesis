@@ -37,8 +37,8 @@ import { useAui, useAuiState, useAuiEvent } from "@assistant-ui/react";
 
 function ChatControls() {
   const api = useAui();
-  const messages = useAuiState(s => s.thread.messages);
-  const isRunning = useAuiState(s => s.thread.isRunning);
+  const messages = useAuiState((s) => s.thread.messages);
+  const isRunning = useAuiState((s) => s.thread.isRunning);
 
   useAuiEvent("composer.send", (e) => {
     console.log("Sent in thread:", e.threadId);
@@ -46,10 +46,14 @@ function ChatControls() {
 
   return (
     <div>
-      <button onClick={() => api.thread().append({
-        role: "user",
-        content: [{ type: "text", text: "Hello!" }],
-      })}>
+      <button
+        onClick={() =>
+          api.thread().append({
+            role: "user",
+            content: [{ type: "text", text: "Hello!" }],
+          })
+        }
+      >
         Send
       </button>
       {isRunning && (
@@ -73,13 +77,13 @@ thread.append({ role: "user", content: [{ type: "text", text: "Hello" }] });
 thread.cancelRun();
 
 // Get current state
-const state = thread.getState();  // { messages, isRunning, ... }
+const state = thread.getState(); // { messages, isRunning, ... }
 ```
 
 ## Message Operations
 
 ```tsx
-const message = api.thread().message(0);  // By index
+const message = api.thread().message(0); // By index
 
 message.edit({ role: "user", content: [{ type: "text", text: "Updated" }] });
 message.reload();
@@ -99,7 +103,7 @@ useAuiEvent("thread.modelContextUpdate", () => {});
 ## Capabilities
 
 ```tsx
-const caps = useAuiState(s => s.thread.capabilities);
+const caps = useAuiState((s) => s.thread.capabilities);
 // { cancel, edit, reload, copy, speak, attachments }
 ```
 
@@ -128,11 +132,14 @@ api.thread().message(index).reload();
 ## Common Gotchas
 
 **"Cannot read property of undefined"**
+
 - Ensure hooks are called inside `AssistantRuntimeProvider`
 
 **State not updating**
+
 - Use selectors with `useAuiState` to prevent unnecessary re-renders
 
 **Messages array empty**
+
 - Check runtime is configured
 - Verify API response format

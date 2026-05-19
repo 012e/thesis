@@ -9,7 +9,9 @@ import type { ReactNode } from "react";
 import { globalAIContextAtom, type AIContext } from "@/lib/atoms/ai-context";
 import { cn } from "@/lib/utils";
 
-function contextLabel(ctx: AIContext): { icon: ReactNode; text: string } | null {
+function contextLabel(
+  ctx: AIContext,
+): { icon: ReactNode; text: string } | null {
   switch (ctx.type) {
     case "none":
       return null;

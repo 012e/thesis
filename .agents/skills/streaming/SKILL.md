@@ -42,7 +42,10 @@ export async function POST(req: Request) {
     stream.appendText("world!");
 
     // Tool call example
-    const tool = stream.addToolCallPart({ toolCallId: "1", toolName: "get_weather" });
+    const tool = stream.addToolCallPart({
+      toolCallId: "1",
+      toolName: "get_weather",
+    });
     tool.argsText.append('{"city":"NYC"}');
     tool.argsText.close();
     tool.setResponse({ result: { temperature: 22 } });
@@ -111,12 +114,15 @@ for await (const event of stream) {
 ## Common Gotchas
 
 **Stream not updating UI**
+
 - Check Content-Type is `text/event-stream`
 - Check for CORS errors
 
 **Tool calls not rendering**
+
 - `addToolCallPart` needs both `toolCallId` and `toolName`
 - Register tool UI with `makeAssistantToolUI`
 
 **Partial text not showing**
+
 - Use `text-delta` events for streaming

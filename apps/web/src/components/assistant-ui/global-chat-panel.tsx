@@ -148,7 +148,9 @@ function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
           {/* Thread list */}
           <div className="max-h-72 overflow-y-auto py-1">
             <ThreadListPrimitive.Root className="block">
-              <ThreadListPrimitive.Items>{() => <DropdownItem />}</ThreadListPrimitive.Items>
+              <ThreadListPrimitive.Items>
+                {() => <DropdownItem />}
+              </ThreadListPrimitive.Items>
             </ThreadListPrimitive.Root>
           </div>
         </div>
