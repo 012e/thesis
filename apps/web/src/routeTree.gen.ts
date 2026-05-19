@@ -13,10 +13,10 @@ import { Route as TestingRouteImport } from './routes/testing'
 import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
-import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ApiRouteImport } from './routes/api'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as UsersUserIdRouteImport } from './routes/users.$userId'
 import { Route as ProfileFollowingRouteImport } from './routes/profile/following'
 import { Route as ProfileFollowersRouteImport } from './routes/profile/followers'
@@ -46,11 +46,6 @@ const ExploreRoute = ExploreRouteImport.update({
   path: '/explore',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ChatRoute = ChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiRoute = ApiRouteImport.update({
   id: '/api',
   path: '/api',
@@ -64,6 +59,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsersUserIdRoute = UsersUserIdRouteImport.update({
@@ -110,7 +110,6 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
-  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -123,12 +122,12 @@ export interface FileRoutesByFullPath {
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
-  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -141,13 +140,13 @@ export interface FileRoutesByTo {
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
+  '/chat': typeof ChatIndexRoute
   '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
-  '/chat': typeof ChatRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
@@ -160,6 +159,7 @@ export interface FileRoutesById {
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
@@ -167,7 +167,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/api'
-    | '/chat'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -180,12 +179,12 @@ export interface FileRouteTypes {
     | '/profile/followers'
     | '/profile/following'
     | '/users/$userId'
+    | '/chat/'
     | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api'
-    | '/chat'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -198,12 +197,12 @@ export interface FileRouteTypes {
     | '/profile/followers'
     | '/profile/following'
     | '/users/$userId'
+    | '/chat'
     | '/profile'
   id:
     | '__root__'
     | '/'
     | '/api'
-    | '/chat'
     | '/explore'
     | '/notifications'
     | '/playground'
@@ -216,13 +215,13 @@ export interface FileRouteTypes {
     | '/profile/followers'
     | '/profile/following'
     | '/users/$userId'
+    | '/chat/'
     | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiRoute: typeof ApiRoute
-  ChatRoute: typeof ChatRoute
   ExploreRoute: typeof ExploreRoute
   NotificationsRoute: typeof NotificationsRoute
   PlaygroundRoute: typeof PlaygroundRoute
@@ -235,6 +234,7 @@ export interface RootRouteChildren {
   ProfileFollowersRoute: typeof ProfileFollowersRoute
   ProfileFollowingRoute: typeof ProfileFollowingRoute
   UsersUserIdRoute: typeof UsersUserIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
@@ -268,13 +268,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExploreRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/chat': {
-      id: '/chat'
-      path: '/chat'
-      fullPath: '/chat'
-      preLoaderRoute: typeof ChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api': {
       id: '/api'
       path: '/api'
@@ -294,6 +287,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile/'
       preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/users/$userId': {
@@ -358,7 +358,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiRoute: ApiRoute,
-  ChatRoute: ChatRoute,
   ExploreRoute: ExploreRoute,
   NotificationsRoute: NotificationsRoute,
   PlaygroundRoute: PlaygroundRoute,
@@ -371,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileFollowersRoute: ProfileFollowersRoute,
   ProfileFollowingRoute: ProfileFollowingRoute,
   UsersUserIdRoute: UsersUserIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
 }
 export const routeTree = rootRouteImport
