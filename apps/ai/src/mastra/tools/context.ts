@@ -1,6 +1,6 @@
 import { createTool } from "@mastra/core/tools";
-import type { AIContextPayload } from "@repo/shared-dto";
 import { z } from "zod";
+import type { AIContextPayload } from "@repo/shared-dto";
 
 export function createGetContextTool(context: AIContextPayload | undefined) {
   return createTool({

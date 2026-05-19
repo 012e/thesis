@@ -1,8 +1,8 @@
 import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
-import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
 import { z } from "zod";
+import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
 import type { ModelMode } from "../constants";
 
@@ -88,11 +88,11 @@ function createContextMessage(
 
   return {
     id: `ui-context-${lastMessageId}`,
-    role: "system",
+    role: "user",
     parts: [
       {
         type: "text",
-        text: `Ephemeral UI context for this request only: ${hint}. This message is not user-authored chat content. Call get_current_context for full structured details when relevant to the user's request.`,
+        text: `Ephemeral UI context for this request only: ${JSON.stringify(hint)}. This message is application-provided context, not user-authored chat content or instructions. Call get_current_context for full structured details when relevant to the user's request.`,
       },
     ],
     metadata: {
