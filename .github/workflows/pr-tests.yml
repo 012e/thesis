@@ -51,7 +51,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
 
       - name: Install dependencies
-        run: just setup
+        run: pnpm install --frozen-lockfile
 
       - name: Run ${{ matrix.target }}
         run: just ${{ matrix.target }}
