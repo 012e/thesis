@@ -10,7 +10,7 @@ import {
   IconListCheck,
 } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { useAuiState, useThreadRuntime } from "@assistant-ui/react";
+import { useAui, useAuiState } from "@assistant-ui/react";
 import {
   threadPlanAtomFamily,
   planStatesAtom,
@@ -86,7 +86,8 @@ export function PlanProgressBar() {
 
   const plan = useAtomValue(threadPlanAtomFamily(threadId));
   const setPlanStates = useSetAtom(planStatesAtom);
-  const threadRuntime = useThreadRuntime();
+  const aui = useAui();
+  const threadRuntime = aui.thread();
 
   // Collapse state — forced open while pending approval
   const [isOpen, setIsOpen] = useState(false);
