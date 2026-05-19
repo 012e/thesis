@@ -36,9 +36,7 @@ function ItemStatusIcon({ status }: { status: PlanItemStatus }) {
         <IconLoader2 className="size-4 shrink-0 animate-spin text-primary" />
       );
     case "skipped":
-      return (
-        <IconMinus className="size-4 shrink-0 text-muted-foreground/50" />
-      );
+      return <IconMinus className="size-4 shrink-0 text-muted-foreground/50" />;
     default:
       return (
         <IconCircle className="size-4 shrink-0 text-muted-foreground/40" />
@@ -176,7 +174,7 @@ export function PlanProgressBar() {
     <button
       type="button"
       onClick={() => setIsOpen(true)}
-      className="flex w-full items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted/60"
+      className="flex w-full items-center gap-2 border border-border bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted/60"
     >
       <IconListCheck
         className={cn(
@@ -211,7 +209,7 @@ export function PlanProgressBar() {
   // ---------------------------------------------------------------------------
 
   const ExpandedPanel = (
-    <div className="w-full rounded-lg border border-border bg-background shadow-sm">
+    <div className="w-full border border-border bg-background shadow-sm">
       {/* Header */}
       <div
         className={cn(
@@ -252,7 +250,7 @@ export function PlanProgressBar() {
             <button
               type="button"
               onClick={() => setIsDismissed(true)}
-              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Dismiss"
             >
               <IconX className="size-3.5" />
@@ -263,7 +261,7 @@ export function PlanProgressBar() {
             <button
               type="button"
               onClick={() => setIsOpen(false)}
-              className="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              className="p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               title="Collapse"
             >
               <IconChevronUp className="size-3.5" />
@@ -278,8 +276,7 @@ export function PlanProgressBar() {
           <div
             key={item.id}
             className={cn(
-              idx < plan.items.length - 1 &&
-                "border-b border-border/50",
+              idx < plan.items.length - 1 && "border-b border-border/50",
             )}
           >
             <PlanItemRow item={item} />
@@ -299,7 +296,7 @@ export function PlanProgressBar() {
                 onChange={(e) => setRejectFeedback(e.target.value)}
                 placeholder="Optional: tell the AI what to change..."
                 rows={2}
-                className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full resize-none border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                     e.preventDefault();
@@ -315,7 +312,7 @@ export function PlanProgressBar() {
                 <button
                   type="button"
                   onClick={handleReject}
-                  className="flex items-center gap-1.5 rounded-md border border-destructive px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+                  className="flex items-center gap-1.5 border border-destructive px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
                 >
                   <IconX className="size-3.5" />
                   Send rejection
@@ -326,7 +323,7 @@ export function PlanProgressBar() {
                     setShowRejectInput(false);
                     setRejectFeedback("");
                   }}
-                  className="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
+                  className="px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent"
                 >
                   Cancel
                 </button>
@@ -340,7 +337,7 @@ export function PlanProgressBar() {
               <button
                 type="button"
                 onClick={handleApprove}
-                className="flex flex-1 items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                className="flex flex-1 items-center justify-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <IconCheck className="size-4" />
                 Approve &amp; start
@@ -348,7 +345,7 @@ export function PlanProgressBar() {
               <button
                 type="button"
                 onClick={() => setShowRejectInput(true)}
-                className="flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="flex items-center gap-1.5 border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 <IconX className="size-4" />
                 Reject

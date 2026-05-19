@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export interface UserSearchResultDto {
   id: string;
   username: string | null;
@@ -331,6 +333,28 @@ export type AIContextPayload =
       readonly username: string;
       readonly displayName: string;
     };
+
+export const AIContextPayloadSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("none") }),
+  z.object({
+    type: z.literal("page"),
+    page: z.string(),
+    label: z.string(),
+  }),
+  z.object({
+    type: z.literal("post"),
+    postId: z.string(),
+    authorUsername: z.string(),
+    contentPreview: z.string(),
+    createdAt: z.string(),
+  }),
+  z.object({
+    type: z.literal("user-profile"),
+    userId: z.string(),
+    username: z.string(),
+    displayName: z.string(),
+  }),
+]);
 
 /**
  * Converts an AIContextPayload to a brief one-line hint for LLM system instructions.

@@ -2,7 +2,11 @@ import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
 import { createUIMessageStreamResponse } from "ai";
 import { z } from "zod";
-import { formatContextHint, type AIContextPayload } from "@repo/shared-dto";
+import {
+  AIContextPayloadSchema,
+  formatContextHint,
+  type AIContextPayload,
+} from "@repo/shared-dto";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
 import type { ModelMode } from "../constants";
 
@@ -40,28 +44,6 @@ const UIMessageSchema = z.object({
   parts: z.array(z.any()), // Accept any part type
   metadata: z.any().optional(),
 });
-
-const AIContextPayloadSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("none") }),
-  z.object({
-    type: z.literal("page"),
-    page: z.string(),
-    label: z.string(),
-  }),
-  z.object({
-    type: z.literal("post"),
-    postId: z.string(),
-    authorUsername: z.string(),
-    contentPreview: z.string(),
-    createdAt: z.string(),
-  }),
-  z.object({
-    type: z.literal("user-profile"),
-    userId: z.string(),
-    username: z.string(),
-    displayName: z.string(),
-  }),
-]);
 
 const StreamRequestSchema = z.object({
   messages: z.array(UIMessageSchema).min(1, "At least one message is required"),

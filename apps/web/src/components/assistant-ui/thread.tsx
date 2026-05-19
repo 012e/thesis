@@ -10,7 +10,6 @@ import {
   IconRefresh,
   IconRobot,
   IconDownload,
-  IconLoader2,
 } from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
@@ -123,8 +122,12 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
         compact ? "gap-3 px-4 py-6" : "gap-4 p-8",
       )}
     >
-      <div className={cn("rounded-full bg-primary/10", compact ? "p-3" : "p-4")}>
-        <IconRobot className={cn("text-primary", compact ? "size-6" : "size-8")} />
+      <div
+        className={cn("rounded-full bg-primary/10", compact ? "p-3" : "p-4")}
+      >
+        <IconRobot
+          className={cn("text-primary", compact ? "size-6" : "size-8")}
+        />
       </div>
       <div>
         <h2 className={cn("font-semibold", compact ? "text-lg" : "text-xl")}>
@@ -143,7 +146,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
       <div
         className={cn(
           "grid gap-2 w-full",
-          compact ? "mt-2 max-w-[260px] grid-cols-1" : "mt-4 max-w-2xl md:grid-cols-2",
+          compact
+            ? "mt-2 max-w-[260px] grid-cols-1"
+            : "mt-4 max-w-2xl md:grid-cols-2",
         )}
       >
         <ThreadPrimitive.Suggestion
@@ -158,7 +163,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">What's trending?</span>
+            <span className="font-medium truncate max-w-full">
+              What's trending?
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Show me the most upvoted posts
             </span>
@@ -176,7 +183,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">My feed summary</span>
+            <span className="font-medium truncate max-w-full">
+              My feed summary
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Summarize recent posts I follow
             </span>
@@ -194,7 +203,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">Search posts</span>
+            <span className="font-medium truncate max-w-full">
+              Search posts
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               Find posts about a topic
             </span>
@@ -212,7 +223,9 @@ function ThreadWelcome({ compact = false }: ThreadProps) {
               compact ? "px-3 py-2.5" : "px-5 py-4",
             )}
           >
-            <span className="font-medium truncate max-w-full">Active users</span>
+            <span className="font-medium truncate max-w-full">
+              Active users
+            </span>
             <span className="text-muted-foreground truncate max-w-full">
               See who's been most active
             </span>
@@ -236,7 +249,10 @@ function Composer({ compact = false }: ThreadProps) {
 
   return (
     <ComposerPrimitive.Root
-      className={cn("flex flex-col w-full", compact ? "max-w-none" : "max-w-2xl")}
+      className={cn(
+        "flex flex-col w-full",
+        compact ? "max-w-none" : "max-w-2xl",
+      )}
     >
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
@@ -354,7 +370,7 @@ type GroupedMessagePart = {
 
 function isChainOfThoughtPart(part: unknown) {
   const type = (part as GroupedMessagePart | undefined)?.type;
-  return type === "reasoning" || type === "tool-call";
+  return type === "reasoning";
 }
 
 function groupChainOfThoughtParts(parts: readonly unknown[]) {
@@ -452,7 +468,6 @@ function AssistantMessage() {
               }
             >
               <div className="flex gap-2 items-center text-muted-foreground">
-                <IconLoader2 className="animate-spin size-4" />
                 <span className="text-sm">Thinking...</span>
               </div>
             </AuiIf>
