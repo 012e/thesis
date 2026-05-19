@@ -4,7 +4,9 @@
 # =============================================================================
 
 FROM node:24-alpine AS base
-RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+WORKDIR /app
+COPY package.json ./
+RUN corepack enable && corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
 # Install uv so that `uvx` is available at runtime for stdio MCP servers (e.g. duckduckgo-mcp-server)
 RUN apk add --no-cache uv
 
@@ -12,7 +14,6 @@ RUN apk add --no-cache uv
 # Stage: deps
 # -----------------------------------------------------------------------------
 FROM base AS deps
-WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 
