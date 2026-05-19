@@ -2,4 +2,18 @@ packages:
   - apps/*
   - packages/*
 
-onlyBuiltDependencies: "['sharp']"
+allowBuilds:
+  "@nestjs/core": true
+  "@swc/core": true
+  core-js: true
+  cpu-features: true
+  es5-ext: true
+  esbuild: true
+  microsandbox: true
+  msw: true
+  nx: true
+  protobufjs: true
+  sharp: true
+  ssh2: true
+  vue-demi: true
+minimumReleaseAge: 1440
