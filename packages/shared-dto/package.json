@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsdown",
-    "watch": "tsdown --watch",
+    "watch": "tsdown --watch --no-clean",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

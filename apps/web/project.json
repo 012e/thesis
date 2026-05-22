@@ -1,6 +1,13 @@
 {
   "name": "web",
   "targets": {
+    "dev": {
+      "executor": "nx:run-script",
+      "options": {
+        "script": "dev"
+      },
+      "dependsOn": ["^build"]
+    },
     "build-storybook": {
       "command": "storybook build",
       "options": {

@@ -11,6 +11,8 @@ import {
 } from "@assistant-ui/react";
 
 import { client } from "@/lib/api";
+import { queryClient } from "@/lib/query-client";
+import { threadTokenUsageQueryKey } from "@/lib/chat/token-usage-query";
 
 /** Builds a ThreadHistoryAdapter backed by the backend /threads/:id/messages API. */
 function makeHistoryAdapter(
@@ -69,6 +71,10 @@ function makeHistoryAdapter(
           await client.appendThreadMessage({
             params: { id: remoteId },
             body: { entry },
+          });
+
+          await queryClient.invalidateQueries({
+            queryKey: threadTokenUsageQueryKey(remoteId),
           });
         },
       };
