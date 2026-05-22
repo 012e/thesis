@@ -564,6 +564,99 @@ describe("ThreadsController integration", () => {
   });
 
   // ---------------------------------------------------------------------------
+  // GET /threads/:id/token-usage
+  // ---------------------------------------------------------------------------
+  describe("GET /threads/:id/token-usage", () => {
+    it("returns zero usage for a new thread", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/threads")
+        .set("Cookie", userACookie)
+        .send({})
+        .expect(201);
+
+      const res = await server
+        .get(`/threads/${created.body.id}/token-usage`)
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body).toEqual({
+        inputTokens: 0,
+        outputTokens: 0,
+        totalTokens: 0,
+        messageCount: 0,
+      });
+    });
+
+    it("counts visible persisted message text with the tokenizer", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/threads")
+        .set("Cookie", userACookie)
+        .send({})
+        .expect(201);
+
+      await server
+        .post(`/threads/${created.body.id}/messages`)
+        .set("Cookie", userACookie)
+        .send({
+          entry: {
+            id: "msg-1",
+            parent_id: null,
+            format: "ai-sdk/v6",
+            content: { role: "user", parts: [{ type: "text", text: "Hello" }] },
+          },
+        })
+        .expect(200);
+
+      await server
+        .post(`/threads/${created.body.id}/messages`)
+        .set("Cookie", userACookie)
+        .send({
+          entry: {
+            id: "msg-2",
+            parent_id: "msg-1",
+            format: "ai-sdk/v6",
+            content: {
+              role: "assistant",
+              parts: [{ type: "text", text: "Hi" }],
+            },
+          },
+        })
+        .expect(200);
+
+      const res = await server
+        .get(`/threads/${created.body.id}/token-usage`)
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body.inputTokens).toBeGreaterThan(0);
+      expect(res.body.outputTokens).toBeGreaterThan(0);
+      expect(res.body.totalTokens).toBe(
+        res.body.inputTokens + res.body.outputTokens,
+      );
+      expect(res.body.messageCount).toBe(2);
+    });
+
+    it("returns 404 for another user's thread", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const created = await server
+        .post("/threads")
+        .set("Cookie", userACookie)
+        .send({})
+        .expect(201);
+
+      await server
+        .get(`/threads/${created.body.id}/token-usage`)
+        .set("Cookie", userBCookie)
+        .expect(404);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
   // POST /threads/:id/messages
   // ---------------------------------------------------------------------------
   describe("POST /threads/:id/messages", () => {

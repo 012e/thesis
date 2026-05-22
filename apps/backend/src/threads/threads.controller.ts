@@ -185,6 +185,23 @@ export class ThreadsController {
     );
   }
 
+  @TsRestHandler(threadsContract.getThreadTokenUsage)
+  getTokenUsage(@Session() session: UserSession) {
+    return tsRestHandler(
+      threadsContract.getThreadTokenUsage,
+      async ({ params }) => {
+        const usage = await this.threadsService.getTokenUsage(
+          params.id,
+          session.user.id,
+        );
+        if (usage === null) {
+          return { status: 404, body: null };
+        }
+        return { status: 200, body: usage };
+      },
+    );
+  }
+
   @TsRestHandler(threadsContract.appendThreadMessage)
   appendMessage(@Session() session: UserSession) {
     return tsRestHandler(

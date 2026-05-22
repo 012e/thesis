@@ -21,9 +21,17 @@ export const GenerateThreadTitleBody = z.object({
   messages: z.array(z.unknown()),
 });
 
+export const ThreadTokenUsage = z.object({
+  inputTokens: z.number().int().nonnegative(),
+  outputTokens: z.number().int().nonnegative(),
+  totalTokens: z.number().int().nonnegative(),
+  messageCount: z.number().int().nonnegative(),
+});
+
 export type ThreadType = z.infer<typeof Thread>;
 export type CreateThreadBodyType = z.infer<typeof CreateThreadBody>;
 export type UpdateThreadTitleBodyType = z.infer<typeof UpdateThreadTitleBody>;
 export type GenerateThreadTitleBodyType = z.infer<
   typeof GenerateThreadTitleBody
 >;
+export type ThreadTokenUsageType = z.infer<typeof ThreadTokenUsage>;

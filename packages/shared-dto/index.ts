@@ -20,6 +20,13 @@ export interface UserDto {
   email: string;
 }
 
+export interface AITokenUsageDto {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  messageCount: number;
+}
+
 export interface PollPostOptionDto {
   id: string;
   label: string;

@@ -5,6 +5,7 @@ import {
   CreateThreadBody,
   UpdateThreadTitleBody,
   GenerateThreadTitleBody,
+  ThreadTokenUsage,
 } from "../schemas/thread";
 
 const c = initContract();
@@ -86,6 +87,16 @@ export const threadsContract = c.router({
       200: z.object({ title: z.string() }),
     },
     summary: "Generate a title for a thread based on messages",
+  },
+  getThreadTokenUsage: {
+    method: "GET",
+    path: "/threads/:id/token-usage",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: ThreadTokenUsage,
+      404: z.null(),
+    },
+    summary: "Get AI token usage for a thread's persisted messages",
   },
   listThreadMessages: {
     method: "GET",
