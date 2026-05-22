@@ -69,7 +69,9 @@ export const NotificationPayload = z.union([
 export const NotificationActor = z.object({
   id: z.string(),
   username: z.string().nullable(),
+  email: z.string().email(),
   name: z.string().nullable(),
+  image: z.string().nullable(),
 });
 
 // ─── Notification ─────────────────────────────────────────────────────────────

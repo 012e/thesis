@@ -95,7 +95,9 @@ export class NotificationsService {
         actor: {
           id: usersView.id,
           username: usersView.username,
+          email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
       })
       .from(notifications)
@@ -155,7 +157,9 @@ export class NotificationsService {
           actor: {
             id: usersView.id,
             username: usersView.username,
+            email: usersView.email,
             name: usersView.name,
+            image: usersView.image,
           },
         })
         .from(notifications)
@@ -180,7 +184,9 @@ export class NotificationsService {
         actor: {
           id: usersView.id,
           username: usersView.username,
+          email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         },
       })
       .from(notifications)
@@ -225,7 +231,9 @@ export class NotificationsService {
     let actor: {
       id: string;
       username: string | null;
+      email: string;
       name: string | null;
+      image: string | null;
     } | null = null;
 
     if (data.actorId) {
@@ -233,7 +241,9 @@ export class NotificationsService {
         .select({
           id: usersView.id,
           username: usersView.username,
+          email: usersView.email,
           name: usersView.name,
+          image: usersView.image,
         })
         .from(usersView)
         .where(eq(usersView.id, data.actorId))
@@ -247,7 +257,13 @@ export class NotificationsService {
 
   private readonly toDto = (
     row: typeof notifications.$inferSelect,
-    actor: { id: string; username: string | null; name: string | null } | null,
+    actor: {
+      id: string;
+      username: string | null;
+      email: string;
+      name: string | null;
+      image: string | null;
+    } | null,
   ): NotificationDto => ({
     id: row.id,
     userId: row.userId,
@@ -256,7 +272,9 @@ export class NotificationsService {
       ? {
           id: actor.id,
           username: actor.username ?? null,
+          email: actor.email,
           name: actor.name ?? null,
+          image: actor.image ?? null,
         }
       : null,
     type: row.type as NotificationTypeDto,

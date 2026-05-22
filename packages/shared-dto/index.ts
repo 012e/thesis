@@ -395,7 +395,9 @@ export interface NotificationDto {
   actor: {
     id: string;
     username: string | null;
+    email: string;
     name: string | null;
+    image: string | null;
   } | null;
   type: NotificationTypeDto;
   payload: NotificationPayloadDto;
