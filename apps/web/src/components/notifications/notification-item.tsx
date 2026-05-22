@@ -1,16 +1,13 @@
 import { IconBell } from "@tabler/icons-react";
 import type { NotificationDto } from "@repo/shared-dto";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import {
   formatNotificationTime,
   getNotificationActorInitial,
   getNotificationActorName,
+  getNotificationContextText,
   getNotificationText,
 } from "./notification-utils";
 
@@ -29,6 +26,7 @@ export function NotificationItem({
 }: NotificationItemProps) {
   const isUnread = notification.readAt === null;
   const isInteractive = Boolean(onActivate);
+  const contextText = getNotificationContextText(notification);
 
   const handleActivate = () => {
     onActivate?.(notification);
@@ -62,12 +60,24 @@ export function NotificationItem({
         >
           {getNotificationText(notification)}
         </p>
+        {contextText ? (
+          <p
+            className={cn(
+              "mt-1 text-xs text-muted-foreground",
+              compact && "line-clamp-2",
+            )}
+          >
+            {contextText}
+          </p>
+        ) : null}
         <p className="mt-0.5 text-xs text-muted-foreground">
           {formatNotificationTime(notification.createdAt)}
         </p>
       </div>
 
-      {isUnread && <div className="mt-2 size-2 shrink-0 rounded-full bg-primary" />}
+      {isUnread && (
+        <div className="mt-2 size-2 shrink-0 rounded-full bg-primary" />
+      )}
     </>
   );
 

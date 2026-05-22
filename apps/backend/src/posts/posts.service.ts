@@ -6,8 +6,10 @@ import {
   Logger,
 } from "@nestjs/common";
 import type {
+  NotificationPostContextDto,
   NotificationPayloadDto,
   NotificationTypeDto,
+  PostContentDto,
   PostDto,
   PostSubscriptionDto,
   ReactionTypeDto,
@@ -676,10 +678,50 @@ export class PostsService {
     actorId: string,
     text: string | undefined,
   ): Promise<void> {
+    const postContext = await this.getPostNotificationContext(postId);
+
     await this.notifySubscribers(postId, actorId, "post_update", {
       postId,
       preview: text ? text.slice(0, 100) : null,
+      post: postContext ?? undefined,
     });
+  }
+
+  private async getPostNotificationContext(
+    postId: string,
+  ): Promise<NotificationPostContextDto | null> {
+    const [row] = await this.databaseService.db
+      .select({
+        id: posts.id,
+        content: posts.content,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    return row
+      ? {
+          id: row.id,
+          preview: this.getPostPreview(row.content),
+          author: row.author,
+        }
+      : null;
+  }
+
+  private getPostPreview(content: PostContentDto): string | null {
+    if (content.text?.trim()) return content.text.slice(0, 100);
+    if (content.poll?.question.trim())
+      return content.poll.question.slice(0, 100);
+    if (content.visualization?.title.trim()) {
+      return content.visualization.title.slice(0, 100);
+    }
+    return null;
   }
 
   private encodeCursor(cursor: {

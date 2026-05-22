@@ -5,6 +5,9 @@ import type {
   PostReactionSummaryDto,
   CommentReactionDto,
   CommentReactionSummaryDto,
+  NotificationCommentContextDto,
+  NotificationPostContextDto,
+  PostContentDto,
   ReactorDto,
   ReactionTypeDto,
 } from "@repo/shared-dto";
@@ -57,11 +60,14 @@ export class ReactionsService {
       })
       .returning();
 
-    void this.postsService
-      .notifySubscribers(postId, userId, "post_reaction", {
-        postId,
-        reactionType: type,
-      })
+    void this.getPostNotificationContext(postId)
+      .then((postContext) =>
+        this.postsService.notifySubscribers(postId, userId, "post_reaction", {
+          postId,
+          reactionType: type,
+          post: postContext ?? undefined,
+        }),
+      )
       .catch((err) =>
         console.warn(
           "[ReactionsService] Failed to deliver post reaction notification:",
@@ -105,15 +111,26 @@ export class ReactionsService {
 
     // Notify comment author — skip self-reactions
     if (comment.authorId !== userId) {
-      void this.notificationsService
-        .deliver(
-          {
-            userId: comment.authorId,
-            actorId: userId,
-            type: "comment_reaction",
-            payload: { commentId, postId: comment.postId, reactionType: type },
-          },
-          ["websocket"],
+      void Promise.all([
+        this.getPostNotificationContext(comment.postId),
+        this.getCommentNotificationContext(commentId),
+      ])
+        .then(([postContext, commentContext]) =>
+          this.notificationsService.deliver(
+            {
+              userId: comment.authorId,
+              actorId: userId,
+              type: "comment_reaction",
+              payload: {
+                commentId,
+                postId: comment.postId,
+                reactionType: type,
+                post: postContext ?? undefined,
+                comment: commentContext ?? undefined,
+              },
+            },
+            ["websocket"],
+          ),
         )
         .catch((err) =>
           console.warn(
@@ -124,6 +141,70 @@ export class ReactionsService {
     }
 
     return this.toCommentReactionDto(row);
+  }
+
+  private async getPostNotificationContext(
+    postId: string,
+  ): Promise<NotificationPostContextDto | null> {
+    const [row] = await this.databaseService.db
+      .select({
+        id: posts.id,
+        content: posts.content,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    return row
+      ? {
+          id: row.id,
+          preview: this.getPostPreview(row.content),
+          author: row.author,
+        }
+      : null;
+  }
+
+  private async getCommentNotificationContext(
+    commentId: string,
+  ): Promise<NotificationCommentContextDto | null> {
+    const [row] = await this.databaseService.db
+      .select({
+        id: comments.id,
+        content: comments.content,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
+      .from(comments)
+      .innerJoin(usersView, eq(comments.authorId, usersView.id))
+      .where(eq(comments.id, commentId))
+      .limit(1);
+
+    return row
+      ? {
+          id: row.id,
+          preview: row.content.slice(0, 100),
+          author: row.author,
+        }
+      : null;
+  }
+
+  private getPostPreview(content: PostContentDto): string | null {
+    if (content.text?.trim()) return content.text.slice(0, 100);
+    if (content.poll?.question.trim())
+      return content.poll.question.slice(0, 100);
+    if (content.visualization?.title.trim()) {
+      return content.visualization.title.slice(0, 100);
+    }
+    return null;
   }
 
   /**

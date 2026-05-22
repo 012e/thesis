@@ -252,6 +252,24 @@ export type NotificationTypeDto =
   | "comment_reaction"
   | "direct_message";
 
+export interface NotificationUserContextDto {
+  id: string;
+  username: string | null;
+  name: string | null;
+}
+
+export interface NotificationPostContextDto {
+  id: string;
+  preview: string | null;
+  author: NotificationUserContextDto;
+}
+
+export interface NotificationCommentContextDto {
+  id: string;
+  preview: string;
+  author: NotificationUserContextDto;
+}
+
 /** Someone followed the recipient. */
 export interface FollowNotificationPayload {
   followerId: string;
@@ -265,6 +283,8 @@ export interface CommentNotificationPayload {
   commentId: string;
   /** First 100 characters of the comment content. */
   preview: string;
+  post?: NotificationPostContextDto;
+  comment?: NotificationCommentContextDto;
 }
 
 /** Someone replied to the recipient's comment. */
@@ -274,6 +294,9 @@ export interface ReplyNotificationPayload {
   commentId: string;
   /** First 100 characters of the reply content. */
   preview: string;
+  post?: NotificationPostContextDto;
+  parentComment?: NotificationCommentContextDto;
+  comment?: NotificationCommentContextDto;
 }
 
 /** A subscribed post was edited. */
@@ -281,12 +304,14 @@ export interface PostUpdateNotificationPayload {
   postId: string;
   /** First 100 characters of the updated post text, when available. */
   preview: string | null;
+  post?: NotificationPostContextDto;
 }
 
 /** Someone reacted to the recipient's post. */
 export interface PostReactionNotificationPayload {
   postId: string;
   reactionType: ReactionTypeDto;
+  post?: NotificationPostContextDto;
 }
 
 /** Someone reacted to the recipient's comment. */
@@ -294,6 +319,8 @@ export interface CommentReactionNotificationPayload {
   postId: string;
   commentId: string;
   reactionType: ReactionTypeDto;
+  post?: NotificationPostContextDto;
+  comment?: NotificationCommentContextDto;
 }
 
 /** Someone sent the recipient a direct message. */

@@ -13,13 +13,13 @@ const MODES = [
     value: "fast" as const,
     label: "Fast",
     icon: IconBolt,
-    description: "Quick responses with gpt-4o-mini",
+    description: "Quicker responses",
   },
   {
     value: "thinking" as const,
     label: "Thinking",
     icon: IconBrain,
-    description: "Deep reasoning with o4-mini",
+    description: "Deeper reasoning",
   },
 ];
 

@@ -1,7 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import type { CommentDto, ReactionTypeDto } from "@repo/shared-dto";
+import type {
+  CommentDto,
+  NotificationCommentContextDto,
+  NotificationPostContextDto,
+  PostContentDto,
+  ReactionTypeDto,
+} from "@repo/shared-dto";
 import { DatabaseService } from "@/db/database.service";
-import { comments, commentReactions, usersView } from "@/db/schema";
+import { comments, commentReactions, posts, usersView } from "@/db/schema";
 import { eq, desc, count, sql } from "drizzle-orm";
 import { UsersService } from "@/users/users.service";
 import { NotificationsService } from "@/notifications/notifications.service";
@@ -154,22 +160,30 @@ export class CommentsService {
   }): Promise<void> {
     const { authorId, postId, commentId, content, parentId } = opts;
     const preview = content.slice(0, 100);
+    const [postContext, commentContext] = await Promise.all([
+      this.getPostNotificationContext(postId),
+      this.getCommentNotificationContext(commentId),
+    ]);
 
     if (parentId) {
       // Reply to a comment — notify the parent comment author
-      const [parentComment] = await this.databaseService.db
-        .select({ authorId: comments.authorId })
-        .from(comments)
-        .where(eq(comments.id, parentId))
-        .limit(1);
+      const parentComment = await this.getCommentNotificationContext(parentId);
 
-      if (parentComment && parentComment.authorId !== authorId) {
+      if (parentComment && parentComment.author.id !== authorId) {
         await this.notificationsService.deliver(
           {
-            userId: parentComment.authorId,
+            userId: parentComment.author.id,
             actorId: authorId,
             type: "reply",
-            payload: { postId, parentCommentId: parentId, commentId, preview },
+            payload: {
+              postId,
+              parentCommentId: parentId,
+              commentId,
+              preview,
+              post: postContext ?? undefined,
+              parentComment,
+              comment: commentContext ?? undefined,
+            },
           },
           ["websocket"],
         );
@@ -179,16 +193,90 @@ export class CommentsService {
         postId,
         authorId,
         "reply",
-        { postId, parentCommentId: parentId, commentId, preview },
-        parentComment ? [parentComment.authorId] : [],
+        {
+          postId,
+          parentCommentId: parentId,
+          commentId,
+          preview,
+          post: postContext ?? undefined,
+          parentComment: parentComment ?? undefined,
+          comment: commentContext ?? undefined,
+        },
+        parentComment ? [parentComment.author.id] : [],
       );
     } else {
       await this.postsService.notifySubscribers(postId, authorId, "comment", {
         postId,
         commentId,
         preview,
+        post: postContext ?? undefined,
+        comment: commentContext ?? undefined,
       });
     }
+  }
+
+  private async getPostNotificationContext(
+    postId: string,
+  ): Promise<NotificationPostContextDto | null> {
+    const [row] = await this.databaseService.db
+      .select({
+        id: posts.id,
+        content: posts.content,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    return row
+      ? {
+          id: row.id,
+          preview: this.getPostPreview(row.content),
+          author: row.author,
+        }
+      : null;
+  }
+
+  private async getCommentNotificationContext(
+    commentId: string,
+  ): Promise<NotificationCommentContextDto | null> {
+    const [row] = await this.databaseService.db
+      .select({
+        id: comments.id,
+        content: comments.content,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          name: usersView.name,
+        },
+      })
+      .from(comments)
+      .innerJoin(usersView, eq(comments.authorId, usersView.id))
+      .where(eq(comments.id, commentId))
+      .limit(1);
+
+    return row
+      ? {
+          id: row.id,
+          preview: row.content.slice(0, 100),
+          author: row.author,
+        }
+      : null;
+  }
+
+  private getPostPreview(content: PostContentDto): string | null {
+    if (content.text?.trim()) return content.text.slice(0, 100);
+    if (content.poll?.question.trim())
+      return content.poll.question.slice(0, 100);
+    if (content.visualization?.title.trim()) {
+      return content.visualization.title.slice(0, 100);
+    }
+    return null;
   }
 
   async getById(id: string, userId?: string): Promise<CommentDto | null> {
