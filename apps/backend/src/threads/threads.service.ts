@@ -87,7 +87,10 @@ export class ThreadsService {
     return { headId, messages };
   }
 
-  async getTokenUsage(id: string, userId: string): Promise<AITokenUsageDto | null> {
+  async getTokenUsage(
+    id: string,
+    userId: string,
+  ): Promise<AITokenUsageDto | null> {
     const thread = await this.getById(id, userId);
     if (!thread) return null;
 

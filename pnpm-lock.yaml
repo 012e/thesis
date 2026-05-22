@@ -726,13 +726,13 @@ importers:
         version: 5.2.0(vite@8.0.11(@types/node@20.19.39)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       autoprefixer:
         specifier: ^10.4.14
-        version: 10.5.0(postcss@8.5.14)
+        version: 10.5.0(postcss@8.5.15)
       postcss-mixins:
         specifier: ^9.0.4
-        version: 9.0.4(postcss@8.5.14)
+        version: 9.0.4(postcss@8.5.15)
       postcss-nesting:
         specifier: ^11.2.2
-        version: 11.3.0(postcss@8.5.14)
+        version: 11.3.0(postcss@8.5.15)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -6748,9 +6748,6 @@ packages:
 
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
-
-  '@types/node@22.19.19':
-    resolution: {integrity: sha512-dyh/xO2Fh5bYrfWaaqGrRQQGkNdmYw6AmaAUvYeUMNTWQtvb796ikLdmTchRmOlOiIJ1TDXfWgVx1QkUlQ6Hew==}
 
   '@types/node@24.12.2':
     resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
@@ -13039,12 +13036,12 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.3.6
 
-  '@ai-sdk/gateway@3.0.13(zod@4.3.6)':
+  '@ai-sdk/gateway@3.0.13(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.2
-      '@ai-sdk/provider-utils': 4.0.5(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.5(zod@4.4.3)
       '@vercel/oidc': 3.1.0
-      zod: 4.3.6
+      zod: 4.4.3
 
   '@ai-sdk/provider-utils@2.2.8(zod@4.3.6)':
     dependencies:
@@ -13074,12 +13071,12 @@ snapshots:
       eventsource-parser: 3.0.8
       zod: 4.3.6
 
-  '@ai-sdk/provider-utils@4.0.5(zod@4.3.6)':
+  '@ai-sdk/provider-utils@4.0.5(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.2
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.8
-      zod: 4.3.6
+      zod: 4.4.3
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
@@ -13118,10 +13115,10 @@ snapshots:
       zod: 4.3.6
       zod-to-json-schema: 3.25.2(zod@4.3.6)
 
-  '@ai-sdk/vue@3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)':
+  '@ai-sdk/vue@3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.4.3)':
     dependencies:
-      '@ai-sdk/provider-utils': 4.0.5(zod@4.3.6)
-      ai: 6.0.33(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.5(zod@4.4.3)
+      ai: 6.0.33(zod@4.4.3)
       swrv: 1.2.0(vue@3.5.32(typescript@5.9.3))
       vue: 3.5.32(typescript@5.9.3)
     transitivePeerDependencies:
@@ -18146,7 +18143,7 @@ snapshots:
 
   '@scalar/agent-chat@0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
-      '@ai-sdk/vue': 3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.3.6)
+      '@ai-sdk/vue': 3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.4.3)
       '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.15.2)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/components': 0.22.1(typescript@5.9.3)
       '@scalar/helpers': 0.5.1
@@ -18158,12 +18155,12 @@ snapshots:
       '@scalar/use-toasts': 0.10.1(typescript@5.9.3)
       '@scalar/workspace-store': 0.46.1(typescript@5.9.3)
       '@vueuse/core': 13.9.0(vue@3.5.32(typescript@5.9.3))
-      ai: 6.0.33(zod@4.3.6)
+      ai: 6.0.33(zod@4.4.3)
       js-base64: 3.7.8
       neverpanic: 0.0.7(typescript@5.9.3)
       truncate-json: 3.0.1
       vue: 3.5.32(typescript@5.9.3)
-      zod: 4.3.6
+      zod: 4.4.3
     transitivePeerDependencies:
       - '@pinia/colada'
       - '@vue/compiler-sfc'
@@ -18221,7 +18218,7 @@ snapshots:
       vue: 3.5.32(typescript@5.9.3)
       vue-router: 5.0.4(@vue/compiler-sfc@3.5.32)(vue@3.5.32(typescript@5.9.3))
       yaml: 2.8.3
-      zod: 4.3.6
+      zod: 4.4.3
     transitivePeerDependencies:
       - '@pinia/colada'
       - '@vue/compiler-sfc'
@@ -18451,7 +18448,7 @@ snapshots:
       cva: 1.0.0-beta.2(typescript@5.9.3)
       tailwind-merge: 3.4.0
       vue: 3.5.32(typescript@5.9.3)
-      zod: 4.3.6
+      zod: 4.4.3
     transitivePeerDependencies:
       - typescript
 
@@ -19650,7 +19647,7 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 22.19.19
+      '@types/node': 25.6.0
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -19669,10 +19666,6 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/node@22.19.17':
-    dependencies:
-      undici-types: 6.21.0
-
-  '@types/node@22.19.19':
     dependencies:
       undici-types: 6.21.0
 
@@ -20359,13 +20352,13 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       zod: 4.3.6
 
-  ai@6.0.33(zod@4.3.6):
+  ai@6.0.33(zod@4.4.3):
     dependencies:
-      '@ai-sdk/gateway': 3.0.13(zod@4.3.6)
+      '@ai-sdk/gateway': 3.0.13(zod@4.4.3)
       '@ai-sdk/provider': 3.0.2
-      '@ai-sdk/provider-utils': 4.0.5(zod@4.3.6)
+      '@ai-sdk/provider-utils': 4.0.5(zod@4.4.3)
       '@opentelemetry/api': 1.9.0
-      zod: 4.3.6
+      zod: 4.4.3
 
   ajv-formats@2.1.1(ajv@8.20.0):
     optionalDependencies:
@@ -20544,13 +20537,13 @@ snapshots:
 
   atomic-sleep@1.0.0: {}
 
-  autoprefixer@10.5.0(postcss@8.5.14):
+  autoprefixer@10.5.0(postcss@8.5.15):
     dependencies:
       browserslist: 4.28.2
       caniuse-lite: 1.0.30001788
       fraction.js: 5.3.4
       picocolors: 1.1.1
-      postcss: 8.5.14
+      postcss: 8.5.15
       postcss-value-parser: 4.2.0
 
   axios@1.12.0:
@@ -24468,23 +24461,23 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  postcss-js@4.1.0(postcss@8.5.14):
+  postcss-js@4.1.0(postcss@8.5.15):
     dependencies:
       camelcase-css: 2.0.1
-      postcss: 8.5.14
+      postcss: 8.5.15
 
-  postcss-mixins@9.0.4(postcss@8.5.14):
+  postcss-mixins@9.0.4(postcss@8.5.15):
     dependencies:
       fast-glob: 3.3.3
-      postcss: 8.5.14
-      postcss-js: 4.1.0(postcss@8.5.14)
-      postcss-simple-vars: 7.0.1(postcss@8.5.14)
-      sugarss: 4.0.1(postcss@8.5.14)
+      postcss: 8.5.15
+      postcss-js: 4.1.0(postcss@8.5.15)
+      postcss-simple-vars: 7.0.1(postcss@8.5.15)
+      sugarss: 4.0.1(postcss@8.5.15)
 
-  postcss-nesting@11.3.0(postcss@8.5.14):
+  postcss-nesting@11.3.0(postcss@8.5.15):
     dependencies:
       '@csstools/selector-specificity': 2.2.0(postcss-selector-parser@6.0.10)
-      postcss: 8.5.14
+      postcss: 8.5.15
       postcss-selector-parser: 6.0.10
 
   postcss-selector-parser@6.0.10:
@@ -24497,9 +24490,9 @@ snapshots:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-simple-vars@7.0.1(postcss@8.5.14):
+  postcss-simple-vars@7.0.1(postcss@8.5.15):
     dependencies:
-      postcss: 8.5.14
+      postcss: 8.5.15
 
   postcss-value-parser@4.2.0: {}
 
@@ -24721,7 +24714,7 @@ snapshots:
       aria-hidden: 1.2.6
       defu: 6.1.7
       fast-deep-equal: 3.1.3
-      nanoid: 5.1.9
+      nanoid: 5.1.11
       vue: 3.5.32(typescript@5.9.3)
     transitivePeerDependencies:
       - '@vue/composition-api'
@@ -25773,9 +25766,9 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.7
 
-  sugarss@4.0.1(postcss@8.5.14):
+  sugarss@4.0.1(postcss@8.5.15):
     dependencies:
-      postcss: 8.5.14
+      postcss: 8.5.15
 
   super-regex@1.1.0:
     dependencies:
