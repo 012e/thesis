@@ -24,6 +24,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@repo/rest-contracts": path.resolve(
+        __dirname,
+        "../../packages/rest-contracts/src/index.ts",
+      ),
     },
   },
 });

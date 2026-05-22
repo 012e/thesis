@@ -9,6 +9,7 @@ import { env } from "@/env";
 import { getOrCreateNotificationsSocket } from "@/lib/socket/notifications-socket";
 import { getUnreadNotificationCount } from "@/lib/api/notifications";
 import type { NotificationDto } from "@repo/shared-dto";
+import { getNotificationText } from "@/components/notifications/notification-utils";
 
 // ─── Event constant (mirrors notifications.gateway.ts) ───────────────────────
 
@@ -26,31 +27,7 @@ export const notificationsListKey = ["notifications", "list"] as const;
 // ─── Toast renderer ──────────────────────────────────────────────────────────
 
 function showNotificationToast(notification: NotificationDto): void {
-  const actor = notification.actor;
-  const actorName = actor?.username ?? actor?.name ?? "Someone";
-
-  switch (notification.type) {
-    case "follow":
-      toast.info(`${actorName} started following you`);
-      break;
-    case "comment":
-      toast.info(`${actorName} commented on your post`);
-      break;
-    case "reply":
-      toast.info(`${actorName} replied to your comment`);
-      break;
-    case "post_reaction":
-      toast.info(`${actorName} reacted to your post`);
-      break;
-    case "comment_reaction":
-      toast.info(`${actorName} reacted to your comment`);
-      break;
-    case "direct_message":
-      toast.info(`New message from ${actorName}`);
-      break;
-    default:
-      toast.info("You have a new notification");
-  }
+  toast.info(getNotificationText(notification));
 }
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

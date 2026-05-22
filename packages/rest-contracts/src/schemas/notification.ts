@@ -14,6 +14,24 @@ export const NotificationType = z.enum([
 
 // ─── Payload schemas (per type) ───────────────────────────────────────────────
 
+const NotificationUserContext = z.object({
+  id: z.string(),
+  username: z.string().nullable(),
+  name: z.string().nullable(),
+});
+
+const NotificationPostContext = z.object({
+  id: z.string().uuid(),
+  preview: z.string().nullable(),
+  author: NotificationUserContext,
+});
+
+const NotificationCommentContext = z.object({
+  id: z.string().uuid(),
+  preview: z.string(),
+  author: NotificationUserContext,
+});
+
 export const FollowNotificationPayload = z.object({
   followerId: z.string(),
   followerUsername: z.string().nullable(),
@@ -24,6 +42,8 @@ export const CommentNotificationPayload = z.object({
   postId: z.string().uuid(),
   commentId: z.string().uuid(),
   preview: z.string(),
+  post: NotificationPostContext.optional(),
+  comment: NotificationCommentContext.optional(),
 });
 
 export const ReplyNotificationPayload = z.object({
@@ -31,22 +51,29 @@ export const ReplyNotificationPayload = z.object({
   parentCommentId: z.string().uuid(),
   commentId: z.string().uuid(),
   preview: z.string(),
+  post: NotificationPostContext.optional(),
+  parentComment: NotificationCommentContext.optional(),
+  comment: NotificationCommentContext.optional(),
 });
 
 export const PostUpdateNotificationPayload = z.object({
   postId: z.string().uuid(),
   preview: z.string().nullable(),
+  post: NotificationPostContext.optional(),
 });
 
 export const PostReactionNotificationPayload = z.object({
   postId: z.string().uuid(),
   reactionType: z.enum(["upvote", "downvote"]),
+  post: NotificationPostContext.optional(),
 });
 
 export const CommentReactionNotificationPayload = z.object({
   postId: z.string().uuid(),
   commentId: z.string().uuid(),
   reactionType: z.enum(["upvote", "downvote"]),
+  post: NotificationPostContext.optional(),
+  comment: NotificationCommentContext.optional(),
 });
 
 export const DirectMessageNotificationPayload = z.object({
@@ -69,7 +96,9 @@ export const NotificationPayload = z.union([
 export const NotificationActor = z.object({
   id: z.string(),
   username: z.string().nullable(),
+  email: z.string().email(),
   name: z.string().nullable(),
+  image: z.string().nullable(),
 });
 
 // ─── Notification ─────────────────────────────────────────────────────────────

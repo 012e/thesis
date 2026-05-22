@@ -4,9 +4,10 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query";
+import { IconBell, IconCheck } from "@tabler/icons-react";
 import { useEffect, useRef } from "react";
+import { NotificationItem } from "@/components/notifications/notification-item";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   listNotifications,
   markNotificationRead,
@@ -16,103 +17,10 @@ import {
   notificationsListKey,
   notificationUnreadCountKey,
 } from "@/hooks/notifications";
-import type { NotificationDto } from "@repo/shared-dto";
-import { IconBell, IconCheck } from "@tabler/icons-react";
 
 export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
 });
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getNotificationText(notification: NotificationDto): string {
-  const actorName =
-    notification.actor?.username ?? notification.actor?.name ?? "Someone";
-
-  switch (notification.type) {
-    case "follow":
-      return `${actorName} started following you`;
-    case "comment":
-      return `${actorName} commented on your post`;
-    case "reply":
-      return `${actorName} replied to your comment`;
-    case "post_update":
-      return `${actorName} updated a post you subscribe to`;
-    case "post_reaction":
-      return `${actorName} reacted to your post`;
-    case "comment_reaction":
-      return `${actorName} reacted to your comment`;
-    case "direct_message":
-      return `New message from ${actorName}`;
-    default:
-      return "New notification";
-  }
-}
-
-function formatRelativeTime(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d`;
-  return new Date(dateStr).toLocaleDateString();
-}
-
-// ─── Notification Item ───────────────────────────────────────────────────────
-
-interface NotificationItemProps {
-  notification: NotificationDto;
-  onMarkRead: (id: string) => void;
-}
-
-function NotificationItem({ notification, onMarkRead }: NotificationItemProps) {
-  const isUnread = notification.readAt === null;
-  const actorLabel =
-    notification.actor?.username ?? notification.actor?.name ?? "?";
-  const initial = actorLabel.charAt(0).toUpperCase();
-
-  return (
-    <>
-      <div
-        className={`flex items-start gap-3 px-4 py-3 hover:bg-accent cursor-pointer transition-colors${isUnread ? " bg-primary/5" : ""}`}
-        role="button"
-        tabIndex={0}
-        onClick={() => {
-          if (isUnread) onMarkRead(notification.id);
-        }}
-        onKeyDown={(e) => {
-          if ((e.key === "Enter" || e.key === " ") && isUnread) {
-            onMarkRead(notification.id);
-          }
-        }}
-      >
-        {/* Actor avatar */}
-        <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground text-sm font-bold">
-          {initial}
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm${isUnread ? " font-semibold" : ""}`}>
-            {getNotificationText(notification)}
-          </p>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {formatRelativeTime(notification.createdAt)}
-          </p>
-        </div>
-
-        {/* Unread dot */}
-        {isUnread && (
-          <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-primary" />
-        )}
-      </div>
-      <Separator />
-    </>
-  );
-}
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
@@ -222,7 +130,9 @@ function NotificationsPage() {
           <NotificationItem
             key={notification.id}
             notification={notification}
-            onMarkRead={(id) => markReadMutation.mutate(id)}
+            onActivate={(item) => {
+              if (item.readAt === null) markReadMutation.mutate(item.id);
+            }}
           />
         ))}
 
