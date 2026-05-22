@@ -47,6 +47,10 @@ const UIMessageSchema = z.object({
 
 const StreamRequestSchema = z.object({
   messages: z.array(UIMessageSchema).min(1, "At least one message is required"),
+  /** System instructions forwarded by assistant-ui model context providers. */
+  system: z.string().optional(),
+  /** Browser/client tools forwarded by AssistantChatTransport. */
+  tools: z.record(z.string(), z.unknown()).optional(),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messageId: z.string().optional(),
   metadata: z.any().optional(),
@@ -127,7 +131,13 @@ export const streamRoute = registerApiRoute("/chat", {
         );
       }
 
-      const { messages, mode, context: userContext } = parseResult.data;
+      const {
+        messages,
+        system,
+        tools: clientTools,
+        mode,
+        context: userContext,
+      } = parseResult.data;
       const requestContext = c.get("requestContext");
 
       // Resolve model mode from the request body.
@@ -147,6 +157,8 @@ export const streamRoute = registerApiRoute("/chat", {
 
       const agentStream = await orchestrator.stream(messagesWithContext, {
         maxSteps: 20,
+        system,
+        clientTools,
         providerOptions: orchestratorModelConfig.reasoningEffort
           ? {
               openai: {

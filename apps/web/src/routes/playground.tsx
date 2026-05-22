@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import type { FC, PointerEvent } from "react";
 import Editor from "@monaco-editor/react";
 import { useMutation } from "@tanstack/react-query";
 import { useAtom } from "jotai";
+import { useAssistantInstructions, useAssistantTool } from "@assistant-ui/react";
+import { z } from "zod";
 import {
   IconPlayerPlay,
   IconLoader2,
@@ -49,6 +51,13 @@ import type {
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
 import { atomWithStorage } from "jotai/utils";
+import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
+import { Thread } from "@/components/assistant-ui/thread";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 
 export const Route = createFileRoute("/playground")({
   component: PlaygroundPage,
@@ -58,6 +67,35 @@ type Language = "javascript" | "typescript";
 
 const MIN_EDITOR_HEIGHT = 220;
 const MIN_OUTPUT_HEIGHT = 120;
+
+const PlaygroundLanguageSchema = z.enum(["javascript", "typescript"]);
+
+const GetPlaygroundCodeInput = z.object({
+  includeOutput: z.boolean().optional(),
+});
+
+const SetPlaygroundCodeInput = z.object({
+  code: z.string().max(102400),
+  language: PlaygroundLanguageSchema.optional(),
+});
+
+const SetPlaygroundLanguageInput = z.object({
+  language: PlaygroundLanguageSchema,
+});
+
+const RunPlaygroundCodeInput = z.object({
+  timeout: z.number().int().positive().max(60000).optional(),
+});
+
+type PlaygroundAssistantToolsProps = {
+  code: string;
+  language: Language;
+  result: ExecutionResult | null;
+  setCode: (code: string) => void;
+  setLanguage: (language: Language) => void;
+  setResult: (result: ExecutionResult | null) => void;
+  setIsOutputMinimized: (value: boolean) => void;
+};
 
 // Watch the `dark` class on <html> directly so this works both in the app
 // (next-themes sets the class) and in Storybook (addon-themes sets the class).
@@ -78,6 +116,137 @@ function useIsDark() {
     return () => observer.disconnect();
   }, []);
   return isDark;
+}
+
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches,
+  );
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mediaQuery.matches);
+
+    update();
+    mediaQuery.addEventListener("change", update);
+    return () => mediaQuery.removeEventListener("change", update);
+  }, []);
+
+  return isDesktop;
+}
+
+function PlaygroundAssistantTools({
+  code,
+  language,
+  result,
+  setCode,
+  setLanguage,
+  setResult,
+  setIsOutputMinimized,
+}: PlaygroundAssistantToolsProps) {
+  const stateRef = useRef({ code, language, result });
+  stateRef.current = { code, language, result };
+
+  useAssistantInstructions(
+    `The user is on the code playground. You have page-scoped tools that can read the current editor, replace the editor contents, change the playground language, and run the code. Use those tools for playground code edits and execution. Do not say code was changed or run unless the corresponding tool call succeeds. Current language: ${language}. Current code length: ${code.length} characters.`,
+  );
+
+  const getCodeTool = useMemo(
+    () => ({
+      toolName: "get_playground_code",
+      description:
+        "Read the current playground editor contents, selected language, and optionally the latest execution output.",
+      parameters: GetPlaygroundCodeInput,
+      execute: ({ includeOutput }: z.infer<typeof GetPlaygroundCodeInput>) => {
+        const current = stateRef.current;
+        return {
+          language: current.language,
+          code: current.code,
+          output: includeOutput ? current.result : undefined,
+        };
+      },
+    }),
+    [],
+  );
+
+  const setCodeTool = useMemo(
+    () => ({
+      toolName: "set_playground_code",
+      description:
+        "Replace the current playground editor contents. Optionally also switch the editor language.",
+      parameters: SetPlaygroundCodeInput,
+      execute: ({
+        code: nextCode,
+        language: nextLanguage,
+      }: z.infer<typeof SetPlaygroundCodeInput>) => {
+        setCode(nextCode);
+        if (nextLanguage) setLanguage(nextLanguage);
+
+        return {
+          status: "updated",
+          language: nextLanguage ?? stateRef.current.language,
+          codeLength: nextCode.length,
+        };
+      },
+    }),
+    [setCode, setLanguage],
+  );
+
+  const setLanguageTool = useMemo(
+    () => ({
+      toolName: "set_playground_language",
+      description:
+        "Switch the playground language without changing the current editor contents.",
+      parameters: SetPlaygroundLanguageInput,
+      execute: ({ language: nextLanguage }: z.infer<typeof SetPlaygroundLanguageInput>) => {
+        setLanguage(nextLanguage);
+        return { status: "updated", language: nextLanguage };
+      },
+    }),
+    [setLanguage],
+  );
+
+  const runCodeTool = useMemo(
+    () => ({
+      toolName: "run_playground_code",
+      description:
+        "Run the current playground editor code and update the visible output panel.",
+      parameters: RunPlaygroundCodeInput,
+      execute: async ({ timeout }: z.infer<typeof RunPlaygroundCodeInput>) => {
+        const current = stateRef.current;
+        let executionResult: ExecutionResult;
+
+        try {
+          executionResult = await executeCode({
+            code: current.code,
+            language: current.language,
+            timeout,
+          });
+        } catch (error) {
+          executionResult = {
+            stdout: "",
+            stderr: error instanceof Error ? error.message : String(error),
+            exitCode: -1,
+            executionTime: 0,
+          };
+        }
+
+        setIsOutputMinimized(false);
+        setResult(executionResult);
+        return executionResult;
+      },
+    }),
+    [setIsOutputMinimized, setResult],
+  );
+
+  useAssistantTool(getCodeTool);
+  useAssistantTool(setCodeTool);
+  useAssistantTool(setLanguageTool);
+  useAssistantTool(runCodeTool);
+
+  return null;
 }
 
 // Inline brand icons for JS and TS
@@ -163,6 +332,7 @@ const isOutputMinimizedAtom = atomWithStorage<boolean>(
 );
 export function PlaygroundPage() {
   const isDark = useIsDark();
+  const isDesktop = useIsDesktop();
   const playgroundRef = useRef<HTMLDivElement>(null);
   const [settings, setSettings] = useAtom(playgroundSettingsAtom);
   const [language, setLanguage] = useState<Language>("javascript");
@@ -258,19 +428,39 @@ export function PlaygroundPage() {
         : "vs";
   const { Icon: CurrentLanguageIcon, label: currentLanguageLabel } =
     LANGUAGE_CONFIG[language];
+  const panelOrientation = isDesktop ? "horizontal" : "vertical";
 
   const hasOutput = result !== null;
   const isSuccess = hasOutput && result.exitCode === 0;
   const isError = hasOutput && result.exitCode !== 0;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <LeftSidebar />
+    <ChatRuntimeProvider>
+      <PlaygroundAssistantTools
+        code={code}
+        language={language}
+        result={result}
+        setCode={setCode}
+        setLanguage={setLanguage}
+        setResult={setResult}
+        setIsOutputMinimized={setIsOutputMinimized}
+      />
+      <div className="flex h-screen overflow-hidden">
+        <LeftSidebar />
 
-      {/* Main playground area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar */}
-        <div className="flex items-center justify-between gap-3 border-b px-4 py-2 shrink-0">
+        <ResizablePanelGroup
+          orientation={panelOrientation}
+          className="min-w-0 flex-1"
+        >
+          <ResizablePanel
+            defaultSize={isDesktop ? 68 : 60}
+            minSize={isDesktop ? 45 : 35}
+            className="min-h-0 min-w-0"
+          >
+            {/* Main playground area */}
+            <div className="flex h-full flex-col overflow-hidden border-l">
+              {/* Top bar */}
+              <div className="flex items-center justify-between gap-3 border-b px-4 py-2 shrink-0">
           <div className="flex items-center gap-2">
             <IconTerminal2 className="w-5 h-5 text-muted-foreground" />
             <span className="font-semibold text-sm">Playground</span>
@@ -460,12 +650,12 @@ export function PlaygroundPage() {
               {isPending ? "Running..." : "Run"}
             </button>
           </div>
-        </div>
+              </div>
 
-        <div
-          ref={playgroundRef}
-          className="flex min-h-0 flex-1 flex-col overflow-hidden"
-        >
+              <div
+                ref={playgroundRef}
+                className="flex min-h-0 flex-1 flex-col overflow-hidden"
+              >
           {/* Editor panel */}
           <div
             className="flex-1 overflow-hidden"
@@ -624,8 +814,33 @@ export function PlaygroundPage() {
               )}
             </div>
           </div>
-        </div>
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel
+            defaultSize={isDesktop ? 32 : 40}
+            minSize={isDesktop ? 24 : 25}
+            className="min-h-0 min-w-0"
+          >
+            <aside className="flex h-full min-h-0 flex-col border-l bg-background max-lg:border-l-0 max-lg:border-t">
+              <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
+                <div>
+                  <p className="text-sm font-semibold">AI Code Assistant</p>
+                  <p className="text-xs text-muted-foreground">
+                    Can inspect, edit, and run this playground
+                  </p>
+                </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-hidden">
+                <Thread compact />
+              </div>
+            </aside>
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
-    </div>
+    </ChatRuntimeProvider>
   );
 }
