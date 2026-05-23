@@ -27,7 +27,6 @@ import {
   PostComposerImageGrid,
   PostComposerCharCounter,
   PostComposerActions,
-  PostComposerCloseButton,
   type ImagePreview,
 } from "@/components/post-composer";
 import { usePostComposerContext } from "@/components/post-composer/context";

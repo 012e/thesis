@@ -1,10 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuiState } from "@assistant-ui/react";
-import { useQuery } from "@tanstack/react-query";
-import { millify } from "millify";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
-import { client } from "@/lib/api";
-import { threadTokenUsageQueryKey } from "@/lib/chat/token-usage-query";
 import { ChatWorkspace } from "./-chat-workspace";
 import {
   CreatePlanToolUI,
@@ -42,34 +38,8 @@ export function ChatPage() {
 
 function ThreadTokenUsage() {
   const remoteId = useAuiState((s) => s.threadListItem.remoteId);
-  const messageCount = useAuiState((s) => s.thread.messages?.length ?? 0);
-
-  const { data } = useQuery({
-    queryKey: [...threadTokenUsageQueryKey(remoteId), messageCount],
-    enabled: Boolean(remoteId),
-    queryFn: async () => {
-      if (!remoteId) return null;
-
-      const response = await client.getThreadTokenUsage({
-        params: { id: remoteId },
-      });
-
-      if (response.status === 404) return null;
-      if (response.status !== 200) {
-        throw new Error(`Failed to load token usage: ${response.status}`);
-      }
-
-      return response.body;
-    },
-  });
 
   if (!remoteId) return null;
 
-  // TODO: Why are we doing this?
   return null;
-  // return (
-  //   <div className="absolute top-4 right-4 z-20 border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
-  //     {data ? `${millify(data.totalTokens)} tokens` : "0 tokens"}
-  //   </div>
-  // );
 }

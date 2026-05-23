@@ -27,6 +27,7 @@ import {
   IconTrash,
   IconEdit,
   IconBell,
+  IconFlag,
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
@@ -37,6 +38,7 @@ import { usePostSubscription } from "@/hooks/use-post-subscription";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
+import { ReportDialog } from "./report-dialog";
 import { UserAvatar } from "./user-avatar";
 import { useToast as toast } from "@/hooks/use-toast";
 
@@ -202,6 +204,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const { data: session } = useSession();
   const openChat = useOpenChat();
@@ -395,7 +398,23 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                     {subscriptionMenuItem}
                   </>
                 ) : (
-                  subscriptionMenuItem
+                  <>
+                    {subscriptionMenuItem}
+                    <DropdownMenuItem
+                      className="gap-3 py-3 px-3 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReportOpen(true);
+                      }}
+                    >
+                      <MenuItemCard
+                        icon={<IconFlag className="w-4 h-4" />}
+                        iconClassName="bg-red-500/10"
+                        label="Report"
+                        description="Flag this post for moderator review"
+                      />
+                    </DropdownMenuItem>
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -489,6 +508,9 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
 
       {/* Edit Post Dialog */}
       <EditPostDialog post={post} open={editOpen} onOpenChange={setEditOpen} />
+
+      {/* Report Dialog */}
+      <ReportDialog postId={post.id} open={reportOpen} onOpenChange={setReportOpen} />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

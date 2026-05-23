@@ -13,6 +13,8 @@ import {
   IconFlask,
   IconFlaskFilled,
   IconShield,
+  IconShieldCheck,
+  IconShieldCheckFilled,
   IconShieldFilled,
   IconCodeCircle2,
   IconCodeCircle2Filled,
@@ -70,6 +72,12 @@ export function LeftSidebar() {
               selectedIcon: IconShieldFilled,
               label: "User Management",
               href: "/admin/users",
+            },
+            {
+              icon: IconShieldCheck,
+              selectedIcon: IconShieldCheckFilled,
+              label: "Moderation",
+              href: "/admin/moderation",
             },
             {
               icon: IconFlask,
