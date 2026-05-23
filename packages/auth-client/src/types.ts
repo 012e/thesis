@@ -29,3 +29,9 @@ export interface ResetPasswordParams {
   newPassword: string;
   token: string;
 }
+
+export interface ChangePasswordParams {
+  currentPassword: string;
+  newPassword: string;
+  revokeOtherSessions?: boolean;
+}

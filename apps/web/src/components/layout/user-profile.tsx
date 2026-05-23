@@ -11,7 +11,6 @@ import {
   IconUser,
   IconSettings,
   IconLogout,
-  IconHelp,
 } from "@tabler/icons-react";
 import { logout } from "@/lib/auth";
 import { useRouter } from "@tanstack/react-router";
@@ -36,6 +35,10 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
     router.navigate({ to: "/profile" });
   };
 
+  const handleSettings = () => {
+    router.navigate({ to: "/settings" });
+  };
+
   const user = session?.user;
   const displayName = user?.name || user?.email?.split("@")[0] || "User";
   const displayEmail = user?.email || "";
@@ -51,11 +54,11 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className={`flex gap-3 items-center w-full text-left transition-all duration-300 hover:bg-accent py-3 ${isCollapsed ? "pl-[20px]" : "px-3"}`}
+        className={`flex gap-3 items-center w-full text-left transition-all duration-300 hover:bg-accent py-3 ${isCollapsed ? "pl-5" : "px-3"}`}
         title={isCollapsed ? displayName : undefined}
         aria-label={isCollapsed ? displayName : undefined}
       >
-        <Avatar className="w-10 h-10 flex-shrink-0">
+        <Avatar className="w-10 h-10 shrink-0">
           <AvatarImage
             src={profile?.image ?? undefined}
             alt={user?.name || undefined}
@@ -73,7 +76,7 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
               {displayEmail}
             </div>
           </div>
-          <IconDotsCircleHorizontal className="w-5 h-5 flex-shrink-0" />
+          <IconDotsCircleHorizontal className="w-5 h-5 shrink-0" />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60">
@@ -81,13 +84,9 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
           <IconUser />
           View Profile
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSettings}>
           <IconSettings />
           Settings
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <IconHelp />
-          Help & Support
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={handleLogout}>
