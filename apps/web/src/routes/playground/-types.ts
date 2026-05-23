@@ -12,6 +12,7 @@ export const MIN_OUTPUT_HEIGHT = 120;
 export const MIN_DESKTOP_PANEL_WIDTH = 320;
 export const MIN_MOBILE_PANEL_HEIGHT = 280;
 export const OUTER_RESIZE_HANDLE_SIZE = 12;
+export const COLLAPSED_CHAT_STRIP_SIZE = 28;
 
 export const isOutputMinimizedAtom = atomWithStorage<boolean>(
   "playground.isOutputMinimized",

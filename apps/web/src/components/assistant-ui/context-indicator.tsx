@@ -61,7 +61,7 @@ export function AIContextIndicator({ compact = false }: { compact?: boolean }) {
         compact ? "max-w-none px-0" : "max-w-2xl",
       )}
     >
-      <div className="flex items-center gap-1.5 min-w-0 flex-1 px-2.5 py-1.5 rounded-md bg-muted/60 border border-border/60 text-muted-foreground text-xs">
+      <div className="flex items-center gap-1.5 min-w-0 flex-1 px-2.5 py-1.5 bg-muted/60 border border-border/60 text-muted-foreground text-xs">
         {label.icon}
         <span className="truncate min-w-0 flex-1">{label.text}</span>
       </div>
@@ -69,7 +69,7 @@ export function AIContextIndicator({ compact = false }: { compact?: boolean }) {
         type="button"
         title="Dismiss context"
         onClick={() => setCtx({ type: "none" })}
-        className="shrink-0 p-1 rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="shrink-0 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground p-2"
       >
         <IconX className="size-3" />
       </button>

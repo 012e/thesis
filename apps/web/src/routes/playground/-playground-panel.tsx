@@ -35,7 +35,6 @@ type PlaygroundPanelProps = {
   onCodeChange: (code: string) => void;
   onLanguageChange: (lang: Language) => void;
   onRun: () => void;
-  onToggleChatCollapsed: () => void;
   onToggleOutputMinimized: () => void;
   onClearOutput: () => void;
 };
@@ -50,7 +49,6 @@ export function PlaygroundPanel({
   onCodeChange,
   onLanguageChange,
   onRun,
-  onToggleChatCollapsed,
   onToggleOutputMinimized,
   onClearOutput,
 }: PlaygroundPanelProps) {
@@ -170,14 +168,6 @@ export function PlaygroundPanel({
               <IconPlayerPlay className="h-4 w-4" />
             )}
             {isPending ? "Running..." : "Run"}
-          </button>
-
-          <button
-            type="button"
-            onClick={onToggleChatCollapsed}
-            className="border px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent"
-          >
-            {isChatCollapsed ? "Show chat" : "Hide chat"}
           </button>
         </div>
       </div>
