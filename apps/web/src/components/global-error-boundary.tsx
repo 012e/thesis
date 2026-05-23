@@ -12,15 +12,15 @@ type GlobalErrorBoundaryProps = {
   children: ReactNode;
 };
 
-function GlobalErrorFallback({ resetErrorBoundary }: FallbackProps) {
+export function GlobalErrorPage({ onRetry }: { onRetry: () => void }) {
   return (
     <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-background px-6 py-10 text-foreground">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,var(--color-primary)/0.22,transparent_34%),radial-gradient(circle_at_bottom_right,var(--color-destructive)/0.16,transparent_32%)]" />
-      <div className="absolute top-12 left-1/2 -z-10 h-48 w-48 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+      <div className="absolute inset-0 -z-10" />
+      <div className="absolute top-12 left-1/2 -z-10 h-48 w-48 -translate-x-1/2 blur-3xl" />
 
-      <section className="w-full max-w-xl rounded-3xl border border-border/70 bg-card/85 p-6 shadow-2xl shadow-primary/10 backdrop-blur sm:p-8">
+      <section className="w-full max-w-xl p-6 backdrop-blur sm:p-8">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive">
+          <div className="flex size-12 items-center justify-center border border-destructive/20 bg-destructive/10 text-destructive">
             <AlertTriangle className="size-6" aria-hidden="true" />
           </div>
           <div>
@@ -40,7 +40,7 @@ function GlobalErrorFallback({ resetErrorBoundary }: FallbackProps) {
         </p>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <Button className="h-11 gap-2" onClick={resetErrorBoundary}>
+          <Button className="h-11 gap-2" onClick={onRetry}>
             <RotateCcw className="size-4" aria-hidden="true" />
             Try again
           </Button>
@@ -53,21 +53,20 @@ function GlobalErrorFallback({ resetErrorBoundary }: FallbackProps) {
             Reload page
           </Button>
         </div>
-
-        <div className="mt-8 rounded-2xl border border-border/70 bg-muted/40 p-4 text-xs leading-5 text-muted-foreground">
-          If reloading does not help, retry later. Your browser session is still
-          intact, but unsaved changes on this page may need to be entered again.
-        </div>
       </section>
     </main>
   );
+}
+
+function GlobalErrorFallback({ resetErrorBoundary }: FallbackProps) {
+  return <GlobalErrorPage onRetry={resetErrorBoundary} />;
 }
 
 const handleGlobalError: ErrorBoundaryPropsWithFallback["onError"] = (
   error,
   errorInfo,
 ) => {
-    console.error("Unhandled React error", error, errorInfo.componentStack);
+  console.error("Unhandled React error", error, errorInfo.componentStack);
 };
 
 export function GlobalErrorBoundary({ children }: GlobalErrorBoundaryProps) {

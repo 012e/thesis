@@ -12,6 +12,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
+import { GlobalErrorPage } from "@/components/global-error-boundary";
 
 export function ThemeSync() {
   useTheme();
@@ -126,4 +127,5 @@ export function RootComponent() {
 
 export const Route = createRootRoute({
   component: RootComponent,
+  errorComponent: ({ reset }) => <GlobalErrorPage onRetry={reset} />,
 });
