@@ -32,6 +32,8 @@ import {
   EMBEDDING_SERVICE,
   type IEmbeddingService,
 } from "@/embedding/embedding.interface";
+import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
+import { ContentHashService } from "@/moderation/content-hash.service";
 
 import { createPostSchema, updatePostSchema } from "./posts.schemas";
 
@@ -83,6 +85,8 @@ export class PostsService {
     private readonly notificationsService: NotificationsService,
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
+    private readonly moderationPipelineService: ModerationPipelineService,
+    private readonly contentHashService: ContentHashService,
   ) {}
 
   async listByUser(
@@ -259,6 +263,7 @@ export class PostsService {
         authorId,
         content: input.content,
         embedding: embedding ?? null,
+        contentHash: this.contentHashService.hash(textToEmbed) ?? null,
       })
       .returning();
 
@@ -266,6 +271,15 @@ export class PostsService {
       .insert(postSubscriptions)
       .values({ postId: createdPost.id, userId: authorId })
       .onConflictDoNothing();
+
+    // Run moderation pipeline asynchronously (fire-and-forget)
+    this.moderationPipelineService
+      .runPipeline(createdPost.id, input.content.text ?? null)
+      .catch((err) =>
+        this.logger.error(
+          `Moderation pipeline failed for post ${createdPost.id}: ${err}`,
+        ),
+      );
 
     const [row] = await this.databaseService.db
       .select({
