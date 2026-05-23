@@ -4,6 +4,7 @@ import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 import { Providers } from "./components/providers";
+import { GlobalErrorBoundary } from "./components/global-error-boundary";
 
 // Create a new router instance
 const router = createRouter({ routeTree });
@@ -21,9 +22,11 @@ if (!rootElement.innerHTML) {
   const root = createRoot(rootElement);
   root.render(
     <StrictMode>
-      <Providers>
-        <RouterProvider router={router} />
-      </Providers>
+      <GlobalErrorBoundary>
+        <Providers>
+          <RouterProvider router={router} />
+        </Providers>
+      </GlobalErrorBoundary>
     </StrictMode>,
   );
 }
