@@ -1,55 +1,16 @@
-import type { CSSProperties } from "react";
 import type { Components } from "react-markdown";
-import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
-import css from "react-syntax-highlighter/dist/esm/languages/prism/css";
-import docker from "react-syntax-highlighter/dist/esm/languages/prism/docker";
-import go from "react-syntax-highlighter/dist/esm/languages/prism/go";
-import java from "react-syntax-highlighter/dist/esm/languages/prism/java";
-import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
-import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
-import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
-import markup from "react-syntax-highlighter/dist/esm/languages/prism/markup";
-import python from "react-syntax-highlighter/dist/esm/languages/prism/python";
-import rust from "react-syntax-highlighter/dist/esm/languages/prism/rust";
-import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
-import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
-import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
-import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
-import {
-  oneDark,
-  oneLight,
-} from "react-syntax-highlighter/dist/esm/styles/prism";
+import ShikiHighlighter from "react-shiki";
 
 import { CodeLanguageBadge } from "@/lib/code-language-meta";
 import { cn } from "@/lib/utils";
 
-SyntaxHighlighter.registerLanguage("bash", bash);
-SyntaxHighlighter.registerLanguage("sh", bash);
-SyntaxHighlighter.registerLanguage("shell", bash);
-SyntaxHighlighter.registerLanguage("css", css);
-SyntaxHighlighter.registerLanguage("dockerfile", docker);
-SyntaxHighlighter.registerLanguage("go", go);
-SyntaxHighlighter.registerLanguage("golang", go);
-SyntaxHighlighter.registerLanguage("java", java);
-SyntaxHighlighter.registerLanguage("javascript", javascript);
-SyntaxHighlighter.registerLanguage("js", javascript);
-SyntaxHighlighter.registerLanguage("json", json);
-SyntaxHighlighter.registerLanguage("jsx", jsx);
-SyntaxHighlighter.registerLanguage("html", markup);
-SyntaxHighlighter.registerLanguage("markup", markup);
-SyntaxHighlighter.registerLanguage("python", python);
-SyntaxHighlighter.registerLanguage("py", python);
-SyntaxHighlighter.registerLanguage("rust", rust);
-SyntaxHighlighter.registerLanguage("rs", rust);
-SyntaxHighlighter.registerLanguage("sql", sql);
-SyntaxHighlighter.registerLanguage("tsx", tsx);
-SyntaxHighlighter.registerLanguage("typescript", typescript);
-SyntaxHighlighter.registerLanguage("ts", typescript);
-SyntaxHighlighter.registerLanguage("yaml", yaml);
-SyntaxHighlighter.registerLanguage("yml", yaml);
-
-export const createMarkdownComponents = (isDark: boolean): Components => ({
+/**
+ * Shared markdown component overrides for both ReactMarkdown (posts) and
+ * MarkdownTextPrimitive (AI chat). react-shiki is used in the `pre` handler
+ * for ReactMarkdown code blocks; for MarkdownTextPrimitive the SyntaxHighlighter
+ * key is provided separately via shiki-highlighter.tsx.
+ */
+export const createMarkdownComponents = (): Components => ({
   h1: ({ className: cls, ...props }) => (
     <h1
       className={cn(
@@ -155,10 +116,7 @@ export const createMarkdownComponents = (isDark: boolean): Components => ({
   ),
   th: ({ className: cls, ...props }) => (
     <th
-      className={cn(
-        "bg-muted px-2 py-1 text-left font-medium first:rounded-tl-md last:rounded-tr-md",
-        cls,
-      )}
+      className={cn("bg-muted px-2 py-1 text-left font-medium", cls)}
       {...props}
     />
   ),
@@ -172,18 +130,16 @@ export const createMarkdownComponents = (isDark: boolean): Components => ({
     />
   ),
   tr: ({ className: cls, ...props }) => (
-    <tr
-      className={cn(
-        "m-0 border-b p-0 first:border-t [&:last-child>td:first-child]:rounded-bl-md [&:last-child>td:last-child]:rounded-br-md",
-        cls,
-      )}
-      {...props}
-    />
+    <tr className={cn("m-0 border-b p-0 first:border-t", cls)} {...props} />
   ),
   li: ({ className: cls, ...props }) => (
     <li className={cn("leading-normal", cls)} {...props} />
   ),
-  pre: ({ children, ...props }) => {
+  /**
+   * Fenced code blocks in ReactMarkdown context.
+   * Renders with react-shiki; falls back to a plain <pre> for unknown languages.
+   */
+  pre: ({ children }) => {
     const codeChild = Array.isArray(children) ? children[0] : children;
     if (codeChild && typeof codeChild === "object" && "props" in codeChild) {
       const { className: codeClass, children: codeText } = codeChild.props as {
@@ -191,49 +147,37 @@ export const createMarkdownComponents = (isDark: boolean): Components => ({
         children?: unknown;
       };
       const match = /language-([\w-]+)/.exec(codeClass || "");
-      if (match) {
+      if (match && typeof codeText === "string") {
         const lang = match[1].toLowerCase();
         return (
-          <div className="group overflow-x-auto relative my-2 text-xs leading-relaxed rounded-none border border-border/50 bg-muted/30">
-            <div className="absolute top-0 right-0 z-10 pointer-events-auto">
+          <div className="my-2 overflow-hidden border border-border/50">
+            <div className="flex items-center border-b border-border/50 bg-muted/30 px-1">
               <CodeLanguageBadge language={lang} />
             </div>
-            <SyntaxHighlighter
-              language={match[1]}
-              style={
-                (isDark ? oneDark : oneLight) as unknown as Record<
-                  string,
-                  CSSProperties
-                >
-              }
-              customStyle={{
-                margin: 0,
-                padding: "0.625rem",
-                background: "transparent",
-                fontSize: "0.75rem",
-                lineHeight: "1.5",
-              }}
-              codeTagProps={{ style: {} }}
+            <ShikiHighlighter
+              language={lang}
+              theme={{ dark: "one-dark-pro", light: "one-light" }}
+              addDefaultStyles={false}
+              showLanguage={false}
+              defaultColor="light-dark()"
+              className="[&_pre]:overflow-x-auto [&_pre]:p-3 [&_pre]:text-xs [&_pre]:leading-relaxed [&_pre]:bg-muted/30!"
             >
-              {String(codeText).replace(/\n$/, "")}
-            </SyntaxHighlighter>
+              {codeText.replace(/\n$/, "")}
+            </ShikiHighlighter>
           </div>
         );
       }
     }
     return (
-      <pre
-        className="overflow-x-auto p-2.5 my-2 text-xs leading-relaxed rounded-md border border-border/50 bg-muted/30"
-        {...props}
-      >
+      <pre className="overflow-x-auto p-2.5 my-2 text-xs leading-relaxed border border-border/50 bg-muted/30">
         {children}
       </pre>
     );
   },
-  code: ({ className: cls, ...props }) => (
+  code: ({ className: cls, node: _node, ...props }) => (
     <code
       className={cn(
-        "rounded-md border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
+        "border border-border/50 bg-muted/50 px-1.5 py-0.5 font-mono text-[0.85em]",
         cls,
       )}
       {...props}

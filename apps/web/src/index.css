@@ -6,6 +6,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Class-based color-scheme for react-shiki light-dark() theme switching */
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
@@ -341,4 +350,17 @@
   .code-language-badge {
   @apply text-accent-foreground;
   color: var(--accent-foreground) !important;
+}
+
+/* Fix CodeMirror base theme (.ͼo) overriding custom theme (e.g. oneDark) due to
+   CSS injection order. Our selector has higher specificity (0,2,0) vs (0,1,0). */
+.mdx-editor-wrapper .cm-editor {
+  background-color: #282c34;
+  color: #abb2bf;
+}
+
+.mdx-editor-wrapper .cm-gutters {
+  background-color: #282c34;
+  color: #7d8799;
+  border-right: none;
 }
