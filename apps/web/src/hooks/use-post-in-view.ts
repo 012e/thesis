@@ -22,8 +22,12 @@ export function usePostInViewTracker(posts: PostDto[]): void {
     postsRef.current = posts;
   });
 
+  // Derive a stable string key so the observer is only re-created when the
+  // set of post IDs actually changes (new page loaded, feed switched, etc.).
+  const postIds = posts.map((p) => p.id).join(",");
+
   useEffect(() => {
-    if (posts.length === 0) {
+    if (postIds === "") {
       setGlobalAIContext({ type: "none" });
       return;
     }
@@ -78,7 +82,5 @@ export function usePostInViewTracker(posts: PostDto[]): void {
       observer.disconnect();
       setGlobalAIContext({ type: "none" });
     };
-    // Re-run only when the post IDs actually change (new page loaded, feed switched, etc.)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [posts.map((p) => p.id).join(",")]);
+  }, [postIds]);
 }

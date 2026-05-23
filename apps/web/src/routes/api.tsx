@@ -9,7 +9,7 @@ export const Route = createFileRoute("/api")({
   component: RouteComponent,
 });
 
-function RouteComponent() {
+export function RouteComponent() {
   const token = useAtomValue(bearerToken);
   return (
     <ApiReferenceReact

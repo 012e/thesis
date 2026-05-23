@@ -13,7 +13,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 
-function ThemeSync() {
+export function ThemeSync() {
   useTheme();
   return null;
 }
@@ -27,7 +27,7 @@ function ThemeSync() {
  *
  * All other content routes receive a page-level context.
  */
-function RouteContextSync() {
+export function RouteContextSync() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
@@ -76,7 +76,7 @@ function RouteContextSync() {
   return null;
 }
 
-function RootComponent() {
+export function RootComponent() {
   const router = useRouterState();
   const isAuthRoute = router.location.pathname.startsWith("/auth");
   const isChatRoute = router.location.pathname.startsWith("/chat");

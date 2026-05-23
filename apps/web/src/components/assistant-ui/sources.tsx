@@ -127,5 +127,4 @@ Sources.Icon = SourceIcon;
 Sources.Title = SourceTitle;
 
 export { Sources, Source, SourceIcon, SourceTitle };
-// eslint-disable-next-line react-refresh/only-export-components
 export { badgeVariants as sourceVariants };

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/notifications")({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-function NotificationsPage() {
+export function NotificationsPage() {
   const queryClient = useQueryClient();
   const observerTarget = useRef<HTMLDivElement>(null);
 

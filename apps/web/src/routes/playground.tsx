@@ -209,7 +209,7 @@ export function PlaygroundPage() {
 
   const handleToggleOutputMinimized = useCallback(() => {
     setIsOutputMinimized((current) => !current);
-  }, []);
+  }, [setIsOutputMinimized]);
 
   const handleResizeStart = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {

@@ -109,6 +109,13 @@ export default defineConfig({
           "error",
           {
             allowConstantExport: true,
+            allowExportNames: [
+              "Route",
+              "toast",
+              "badgeVariants",
+              "sourceVariants",
+              "reasoningVariants"
+            ],
           },
         ],
       },

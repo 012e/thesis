@@ -19,7 +19,7 @@ type ToolTraceProps = {
   state: "running" | "complete";
 };
 
-function ToolTrace({ icon: Icon, label, detail, state }: ToolTraceProps) {
+export function ToolTrace({ icon: Icon, label, detail, state }: ToolTraceProps) {
   const isRunning = state === "running";
 
   return (
@@ -51,7 +51,7 @@ function ToolTrace({ icon: Icon, label, detail, state }: ToolTraceProps) {
   );
 }
 
-export const OpenFormToolUI = makeAssistantToolUI({
+const OpenFormToolUIImpl = makeAssistantToolUI({
   toolName: "open_form",
   render: ({ args, status }) => {
     const formName = typeof args.formName === "string" ? args.formName : "form";
@@ -76,7 +76,11 @@ export const OpenFormToolUI = makeAssistantToolUI({
   },
 });
 
-export const SetFormFieldToolUI = makeAssistantToolUI({
+export function OpenFormToolUI() {
+  return <OpenFormToolUIImpl />;
+}
+
+const SetFormFieldToolUIImpl = makeAssistantToolUI({
   toolName: "set_form_field",
   render: ({ args, status }) => {
     const field = typeof args.field === "string" ? args.field : "field";
@@ -101,7 +105,11 @@ export const SetFormFieldToolUI = makeAssistantToolUI({
   },
 });
 
-export const SubmitFormToolUI = makeAssistantToolUI({
+export function SetFormFieldToolUI() {
+  return <SetFormFieldToolUIImpl />;
+}
+
+const SubmitFormToolUIImpl = makeAssistantToolUI({
   toolName: "submit_form",
   render: ({ status }) => {
     if (status.type === "running")
@@ -122,9 +130,13 @@ export const SubmitFormToolUI = makeAssistantToolUI({
   },
 });
 
+export function SubmitFormToolUI() {
+  return <SubmitFormToolUIImpl />;
+}
+
 // Keep a compact trace in the message so tool calls remain visible while the
 // sticky PlanProgressBar provides the richer live view.
-export const CreatePlanToolUI = makeAssistantToolUI({
+const CreatePlanToolUIImpl = makeAssistantToolUI({
   toolName: "create_plan",
   render: ({ args, status }) => {
     if (status.type === "running") {
@@ -145,7 +157,11 @@ export const CreatePlanToolUI = makeAssistantToolUI({
   },
 });
 
-export const UpdatePlanItemToolUI = makeAssistantToolUI({
+export function CreatePlanToolUI() {
+  return <CreatePlanToolUIImpl />;
+}
+
+const UpdatePlanItemToolUIImpl = makeAssistantToolUI({
   toolName: "update_plan_item",
   render: ({ args, status }) => {
     if (status.type === "running") {
@@ -165,3 +181,7 @@ export const UpdatePlanItemToolUI = makeAssistantToolUI({
     );
   },
 });
+
+export function UpdatePlanItemToolUI() {
+  return <UpdatePlanItemToolUIImpl />;
+}

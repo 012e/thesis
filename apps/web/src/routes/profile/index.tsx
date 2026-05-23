@@ -13,7 +13,7 @@ export const Route = createFileRoute("/profile/")({
   component: ProfilePage,
 });
 
-function ProfilePage() {
+export function ProfilePage() {
   const { data: session, isPending, refetch } = useSession();
 
   if (isPending || !session) {
@@ -27,7 +27,7 @@ function ProfilePage() {
   );
 }
 
-function ProfileContent({
+export function ProfileContent({
   session,
   refetch,
 }: {

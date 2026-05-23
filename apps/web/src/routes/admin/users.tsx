@@ -59,7 +59,7 @@ export const Route = createFileRoute("/admin/users")({
 
 const columnHelper = createColumnHelper<AdminUser>();
 
-function AdminUsersPage() {
+export function AdminUsersPage() {
   const navigate = useNavigate();
   const { isPending: sessionPending } = useSession();
   const isAdmin = useIsAdmin();
@@ -280,8 +280,7 @@ function AdminUsersPage() {
         },
       }),
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setDialog, unbanMutation.mutate],
+    [setDialog, unbanMutation],
   );
 
   const table = useReactTable({

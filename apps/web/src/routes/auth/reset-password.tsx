@@ -5,7 +5,7 @@ export const Route = createFileRoute("/auth/reset-password")({
   component: RouteComponent,
 });
 
-function RouteComponent() {
+export function RouteComponent() {
   return (
     <div className="flex items-center justify-center min-h-screen">
       <ResetPasswordForm className="w-full max-w-md" />

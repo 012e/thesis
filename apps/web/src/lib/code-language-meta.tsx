@@ -45,9 +45,9 @@ import {
   SiYaml,
 } from "react-icons/si";
 
-export type CodeLanguageMeta = [IconType, string, string];
+type CodeLanguageMeta = [IconType, string, string];
 
-export const CODE_LANGUAGE_META: Record<string, CodeLanguageMeta> = {
+const CODE_LANGUAGE_META: Record<string, CodeLanguageMeta> = {
   java: [GrJava, "#ED8B00", "Java"],
   python: [SiPython, "#3776AB", "Python"],
   py: [SiPython, "#3776AB", "Python"],
@@ -118,7 +118,7 @@ export const CODE_LANGUAGE_META: Record<string, CodeLanguageMeta> = {
   sqlite: [SiSqlite, "#003B57", "SQLite"],
 };
 
-export function getCodeLanguageMeta(language: string) {
+function getCodeLanguageMeta(language: string) {
   return CODE_LANGUAGE_META[language.toLowerCase()];
 }
 
