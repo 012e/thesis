@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Shared config for the search agent. Exported so the orchestrator factory can
@@ -36,5 +36,5 @@ Guidelines:
  */
 export const searchAgent = new Agent({
   ...SEARCH_AGENT_CONFIG,
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.SEARCH_AGENT.model,
 });

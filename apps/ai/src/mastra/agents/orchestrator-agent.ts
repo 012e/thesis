@@ -3,13 +3,12 @@ import { RequestContext } from "@mastra/core/request-context";
 import type { AIContextPayload } from "@repo/shared-dto";
 import { getSocialMcpToolsets } from "../mcp/social";
 import { getSearchMcpToolset } from "../mcp/search";
+import { REASONING_AGENT_CONFIG } from "./reasoning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
 import {
-  ModelMode,
-  MODEL_FAST_ORCHESTRATOR,
-  MODEL_FAST_SUB_AGENT,
-  MODEL_THINKING_ORCHESTRATOR,
-  MODEL_THINKING_SUB_AGENT,
+  getOrchestratorModelConfig,
+  MODEL_CONFIG,
+  type ModelMode,
 } from "../constants";
 import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
 import { createPlanTool, updatePlanItemTool } from "../tools/plan";
@@ -23,29 +22,26 @@ import { createGetContextTool } from "../tools/context";
  *
  * 1. Fetches all three MCP toolsets (identity, posts, interactions) using the
  *    current request's auth context.
- * 2. Constructs five specialised sub-agents, each receiving only the subset of
+ * 2. Constructs specialised sub-agents, each receiving only the subset of
  *    tools that belongs to its domain.
- * 3. Returns an orchestrator (supervisor) agent that has all five sub-agents
+ * 3. Returns an orchestrator (supervisor) agent that has all sub-agents
  *    registered. Use `stepJudgeAgent` separately to evaluate whether the
  *    orchestrator fully completed the user's requested steps.
  *
- * The orchestrator uses GPT-4o for stronger multi-step reasoning and delegates
- * autonomously based on each sub-agent's `description`.
+ * The orchestrator delegates autonomously based on each sub-agent's
+ * `description`.
  *
  * @param context - The per-request context carrying auth tokens.
- * @param mode - Interaction mode: "fast" uses cheap/quick models; "thinking"
- *   uses o4-mini (reasoning) for the orchestrator and gpt-4o for sub-agents.
- *   Defaults to "fast".
+ * @param mode - Interaction mode: "fast" uses the fast orchestrator model;
+ *   "thinking" uses the reasoning orchestrator model. Sub-agent models are
+ *   dedicated per agent and do not change by mode. Defaults to "fast".
  */
 export async function createOrchestratorAgent(
   context: RequestContext,
   mode: ModelMode = "fast",
   userContext?: AIContextPayload,
 ): Promise<Agent> {
-  const orchestratorModel =
-    mode === "thinking" ? MODEL_THINKING_ORCHESTRATOR : MODEL_FAST_ORCHESTRATOR;
-  const subAgentModel =
-    mode === "thinking" ? MODEL_THINKING_SUB_AGENT : MODEL_FAST_SUB_AGENT;
+  const orchestratorModelConfig = getOrchestratorModelConfig(mode);
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
@@ -73,7 +69,7 @@ Guidelines:
 - Be concise — return only the information requested
 - When listing followers/following, present them as a clean list
 - Do not attempt to create, read, update, or delete posts; delegate that elsewhere`,
-    model: subAgentModel,
+    model: MODEL_CONFIG.IDENTITY_AGENT.model,
     tools: identityToolset,
   });
 
@@ -95,7 +91,7 @@ Guidelines:
 - After creating or updating a post, confirm success and return the post ID
 - After deleting a post, confirm the deletion by post ID
 - Do not read or list posts, fetch threads, or handle comments/reactions; delegate that elsewhere`,
-    model: subAgentModel,
+    model: MODEL_CONFIG.POST_CREATION_AGENT.model,
     tools: postsToolset,
   });
 
@@ -117,7 +113,7 @@ Guidelines:
 - If the user wants to react to or comment on a post, delegate that to the interactions agent
 - If the user wants to create, update, or delete a post, delegate that to the post-creation agent
 - Be concise — summarise long content instead of dumping raw text`,
-    model: subAgentModel,
+    model: MODEL_CONFIG.POST_DISCOVERY_AGENT.model,
     tools: postsToolset,
   });
 
@@ -140,14 +136,19 @@ Guidelines:
 - When reacting, confirm whether the reaction was created or replaced a previous one
 - Do not read or list posts; if the user needs to see a thread first, ask the orchestrator to use the post-discovery agent
 - Do not create or modify posts; delegate that to the post-creation agent`,
-    model: subAgentModel,
+    model: MODEL_CONFIG.INTERACTIONS_AGENT.model,
     tools: interactionsToolset,
   });
 
   const searchAgent = new Agent({
     ...SEARCH_AGENT_CONFIG,
-    model: subAgentModel,
+    model: MODEL_CONFIG.SEARCH_AGENT.model,
     tools: searchToolset,
+  });
+
+  const reasoningAgent = new Agent({
+    ...REASONING_AGENT_CONFIG,
+    model: MODEL_CONFIG.REASONING_AGENT.model,
   });
 
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
@@ -155,7 +156,7 @@ Guidelines:
   const orchestrator = new Agent({
     id: "orchestrator",
     name: "Orchestrator",
-    instructions: `You are the orchestrator for a social media AI assistant. You coordinate five specialised agents to fulfil the user's requests. You can also interact directly with UI forms on the user's screen. You do NOT call social media tools yourself — always delegate platform operations to the right agent.
+    instructions: `You are the orchestrator for a social media AI assistant. You coordinate specialised agents to fulfil the user's requests. You can also interact directly with UI forms on the user's screen. You do NOT call social media tools yourself — always delegate platform operations to the right agent.
 
 Available agents:
 - identity-agent: user identity, profile lookups, follow/unfollow, listing followers/following
@@ -163,6 +164,7 @@ Available agents:
 - post-discovery-agent: reading the feed and fetching post threads with comments
 - interactions-agent: commenting on posts, upvoting/downvoting, and removing reactions
 - search-agent: web search via DuckDuckGo for current events, external information, or URL content
+- reasoning-agent: complex reasoning, planning, trade-off analysis, debugging hypotheses, and synthesis that benefits from the strongest model
 
 Form Tools (Directly available to you):
 - open_form: Use to open PostCreationForm on the user's screen.
@@ -181,8 +183,9 @@ Delegation & Action strategy:
 2. For social-platform operations that do not require a visible form, delegate to the single most appropriate sub-agent.
 3. For compound tasks (for example, finding a post and then commenting on it), delegate sequentially to the right agents.
 4. Use search-agent whenever the user asks about topics outside the social platform, requests a web search, or provides a URL to inspect.
-5. Always synthesise the result into a concise, friendly response for the user.
-6. If a sub-agent fails, report the error clearly and suggest what the user can try next.
+5. Use reasoning-agent for complex analysis that does not require direct platform tools, or after other agents return data that needs careful synthesis.
+6. Always synthesise the result into a concise, friendly response for the user.
+7. If a sub-agent fails, report the error clearly and suggest what the user can try next.
 
 Planning protocol:
 Use create_plan when the task requires 3 or more distinct steps, involves multiple agents or operations, or could benefit from the user reviewing the approach before execution begins (for example: bulk actions, multi-stage workflows, anything that could cause unintended side effects).
@@ -200,13 +203,14 @@ Success criteria:
 - The user's request is fully addressed.
 - Write operations (create, update, delete, comment, react) are confirmed with IDs.
 - Read operations return the requested data in a clean, readable format.`,
-    model: orchestratorModel,
+    model: orchestratorModelConfig.model,
     agents: {
       identityAgent,
       postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
       searchAgent,
+      reasoningAgent,
     },
     tools: {
       open_form: openFormTool,

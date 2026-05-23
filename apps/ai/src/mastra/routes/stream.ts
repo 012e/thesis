@@ -8,7 +8,7 @@ import {
   type AIContextPayload,
 } from "@repo/shared-dto";
 import { createOrchestratorAgent } from "../agents/orchestrator-agent";
-import type { ModelMode } from "../constants";
+import { getOrchestratorModelConfig, type ModelMode } from "../constants";
 
 /**
  * Chat stream route for the assistant agent with authenticated MCP clients.
@@ -133,6 +133,7 @@ export const streamRoute = registerApiRoute("/chat", {
       // Resolve model mode from the request body.
       // Defaults to "fast" if the field is absent or contains an unknown value.
       const resolvedMode: ModelMode = mode ?? "fast";
+      const orchestratorModelConfig = getOrchestratorModelConfig(resolvedMode);
 
       // Build a per-request orchestrator with auth-aware MCP tools baked into
       // each sub-agent at construction time.
@@ -146,14 +147,14 @@ export const streamRoute = registerApiRoute("/chat", {
 
       const agentStream = await orchestrator.stream(messagesWithContext, {
         maxSteps: 20,
-        providerOptions:
-          resolvedMode === "thinking"
-            ? {
-                openai: {
-                  reasoningSummary: "detailed",
-                },
-              }
-            : undefined,
+        providerOptions: orchestratorModelConfig.reasoningEffort
+          ? {
+              openai: {
+                reasoningEffort: orchestratorModelConfig.reasoningEffort,
+                reasoningSummary: "detailed",
+              },
+            }
+          : undefined,
       });
 
       return createUIMessageStreamResponse({

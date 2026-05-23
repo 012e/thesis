@@ -63,7 +63,7 @@ export function serializeAIContext(ctx: AIContext): AIContextPayload {
         type: "post",
         postId: post.id,
         authorUsername: post.author.username ?? post.author.email,
-        contentPreview: textPreview.slice(0, 150),
+        contentPreview: textPreview,
         createdAt: post.createdAt,
       };
     }

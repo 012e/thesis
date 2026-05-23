@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Post-creation agent — owns all write operations on posts.
@@ -30,5 +30,5 @@ Guidelines:
 - After creating or updating a post, confirm success and return the post ID
 - After deleting a post, confirm the deletion by post ID
 - Do not read or list posts, fetch threads, or handle comments/reactions; delegate that elsewhere`,
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.POST_CREATION_AGENT.model,
 });

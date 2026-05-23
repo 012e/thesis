@@ -5,8 +5,8 @@ export type ModelMode = "fast" | "thinking";
 /**
  * Persisted atom for the selected AI interaction mode.
  *
- * - "fast"     → gpt-4o-mini orchestrator + gpt-4o-mini sub-agents
- * - "thinking" → o4-mini orchestrator (reasoning) + gpt-4o sub-agents
+ * - "fast"     → lower-latency orchestration for everyday requests
+ * - "thinking" → higher-quality orchestration for complex requests
  *
  * Defaults to "fast". Persisted in localStorage so the choice survives
  * page refreshes.
