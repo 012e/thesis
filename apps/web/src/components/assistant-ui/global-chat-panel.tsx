@@ -21,7 +21,6 @@ import {
   globalChatSizeAtom,
 } from "@/lib/atoms/global-chat";
 import type { GlobalChatSize } from "@/lib/atoms/global-chat";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { Thread } from "@/components/assistant-ui/thread";
 
 // ─── Thread Switcher Dropdown ─────────────────────────────────────────────────
@@ -254,17 +253,14 @@ export function GlobalChatPanel() {
         isOpen ? "translate-x-0" : "translate-x-full",
       )}
     >
-      {/* Only mount the runtime when panel has been opened at least once */}
-      <ChatRuntimeProvider>
-        <PanelHeader
-          size={size}
-          onSizeToggle={handleSizeToggle}
-          onClose={handleClose}
-        />
-        <div className="flex-1 overflow-hidden min-h-0">
-          <Thread />
-        </div>
-      </ChatRuntimeProvider>
+      <PanelHeader
+        size={size}
+        onSizeToggle={handleSizeToggle}
+        onClose={handleClose}
+      />
+      <div className="flex-1 overflow-hidden min-h-0">
+        <Thread />
+      </div>
     </div>
   );
 }

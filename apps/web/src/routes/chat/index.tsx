@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuiState } from "@assistant-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { millify } from "millify";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { client } from "@/lib/api";
 import { threadTokenUsageQueryKey } from "@/lib/chat/token-usage-query";
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/chat/")({
 
 export function ChatPage() {
   return (
-    <ChatRuntimeProvider>
+    <>
       <OpenFormToolUI />
       <SetFormFieldToolUI />
       <SubmitFormToolUI />
@@ -37,7 +36,7 @@ export function ChatPage() {
           <ChatWorkspace />
         </div>
       </div>
-    </ChatRuntimeProvider>
+    </>
   );
 }
 

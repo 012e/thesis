@@ -144,8 +144,8 @@ const AttachmentUI: FC = () => {
     <Tooltip>
       <AttachmentPrimitive.Root
         className={cn(
-          "aui-attachment-root relative",
-          isImage && "aui-attachment-root-composer only:*:first:size-24",
+          "group/attachment aui-attachment-root relative",
+          isImage && "aui-attachment-root-composer",
         )}
       >
         <AttachmentPreviewDialog>
@@ -170,12 +170,12 @@ const AttachmentUI: FC = () => {
   );
 };
 
-const AttachmentRemove: FC = () => {
+const AttachmentRemove: FC = ({ className }: { className?: string }) => {
   return (
-    <AttachmentPrimitive.Remove asChild>
+    <AttachmentPrimitive.Remove asChild className={cn(className)}>
       <TooltipIconButton
         tooltip="Remove file"
-        className="aui-attachment-tile-remove absolute top-1.5 right-1.5 size-3.5 rounded-full bg-white text-muted-foreground opacity-100 shadow-sm hover:bg-white! [&_svg]:text-black hover:[&_svg]:text-destructive"
+        className="aui-attachment-tile-remove absolute group/attachment top-1.5 right-1.5 size-3.5 rounded-full bg-white text-muted-foreground shadow-sm hover:bg-white! [&_svg]:text-black hover:[&_svg]:text-destructive group-hover/attachment:opacity-100 opacity-0"
         side="top"
       >
         <XIcon className="aui-attachment-remove-icon size-3 dark:stroke-[2.5px]" />

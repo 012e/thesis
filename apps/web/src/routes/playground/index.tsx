@@ -10,7 +10,6 @@ import {
   IconChevronRight,
   IconChevronUp,
 } from "@tabler/icons-react";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { PlaygroundAssistantTools } from "./-assistant-tools";
 import { ChatPanel } from "./-chat-panel";
@@ -40,11 +39,9 @@ export const Route = createFileRoute("/playground/")({
 
 export function PlaygroundPage() {
   return (
-    <ChatRuntimeProvider>
-      <PlaygroundStateProvider>
-        <PlaygroundContent />
-      </PlaygroundStateProvider>
-    </ChatRuntimeProvider>
+    <PlaygroundStateProvider>
+      <PlaygroundContent />
+    </PlaygroundStateProvider>
   );
 }
 
