@@ -1,49 +1,17 @@
-import type { FC } from "react";
+import { getCodeLanguageLabel } from "@/lib/code-language-meta";
 import type { Language } from "./-types";
 
-export function JavaScriptIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" fill="#F7DF1E" rx="2" />
-      <text
-        x="4"
-        y="26"
-        fontFamily="Arial, sans-serif"
-        fontWeight="bold"
-        fontSize="16"
-        fill="#000"
-      >
-        JS
-      </text>
-    </svg>
-  );
-}
+export const PLAYGROUND_LANGUAGES = [
+  "javascript",
+  "typescript",
+] as const satisfies readonly Language[];
 
-export function TypeScriptIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" fill="#3178C6" rx="2" />
-      <text
-        x="3"
-        y="26"
-        fontFamily="Arial, sans-serif"
-        fontWeight="bold"
-        fontSize="16"
-        fill="#fff"
-      >
-        TS
-      </text>
-    </svg>
-  );
-}
-
-export const LANGUAGE_CONFIG: Record<
-  Language,
-  { label: string; Icon: FC<{ size?: number }> }
-> = {
-  javascript: { label: "JavaScript", Icon: JavaScriptIcon },
-  typescript: { label: "TypeScript", Icon: TypeScriptIcon },
-};
+export const PLAYGROUND_LANGUAGE_LABELS = Object.fromEntries(
+  PLAYGROUND_LANGUAGES.map((language) => [
+    language,
+    getCodeLanguageLabel(language),
+  ]),
+) as Record<Language, string>;
 
 export const DEFAULT_CODE: Record<Language, string> = {
   javascript: `// JavaScript Playground

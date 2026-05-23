@@ -9,7 +9,7 @@ type ChatPanelProps = {
 export function ChatPanel({ onToggleChatCollapsed }: ChatPanelProps) {
   return (
     <aside className="flex h-full min-h-0 flex-col border-l bg-background max-lg:border-l-0 max-lg:border-t">
-      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background">
+      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background h-12">
         <button
           type="button"
           data-swapy-handle

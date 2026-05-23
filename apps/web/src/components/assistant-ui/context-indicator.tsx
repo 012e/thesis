@@ -40,6 +40,11 @@ function contextLabel(
   }
 }
 
+// This is fairly obvious, we don't need to show this to the user
+function isPlaygroundPage(ctx?: AIContext) {
+  return ctx && ctx.type === "page" && ctx.page === "playground";
+}
+
 /**
  * A small pill displayed just above the AI chat composer that shows the
  * current user context (which post / page the user is viewing).
@@ -51,7 +56,7 @@ export function AIContextIndicator() {
   const setCtx = useSetAtom(globalAIContextAtom);
 
   const label = contextLabel(ctx);
-  if (!label) return null;
+  if (!label || isPlaygroundPage(ctx)) return null;
 
   return (
     <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl">

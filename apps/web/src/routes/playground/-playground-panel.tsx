@@ -17,10 +17,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import playgroundSettingsAtom from "@/lib/atoms/playground-settings";
+import { CodeLanguageIcon } from "@/lib/code-language-meta";
 import type { ExecutionResult } from "@repo/rest-contracts";
 import type { Language } from "./-types";
 import { MIN_EDITOR_HEIGHT, MIN_OUTPUT_HEIGHT } from "./-types";
-import { LANGUAGE_CONFIG } from "./-language-config";
+import {
+  PLAYGROUND_LANGUAGES,
+  PLAYGROUND_LANGUAGE_LABELS,
+} from "./-language-config";
 import { PlaygroundSettingsDialog } from "./-settings-dialog";
 import { OutputPanel } from "./-output-panel";
 import { useIsDark } from "./-hooks";
@@ -65,8 +69,7 @@ export function PlaygroundPanel({
         ? "vs-dark"
         : "vs";
 
-  const { Icon: CurrentLanguageIcon, label: currentLanguageLabel } =
-    LANGUAGE_CONFIG[language];
+  const currentLanguageLabel = PLAYGROUND_LANGUAGE_LABELS[language];
 
   const handleResizeStart = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
@@ -107,7 +110,7 @@ export function PlaygroundPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden border-l bg-background">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b px-4 py-2 h-12">
         <div className="flex items-center gap-2">
           {!isChatCollapsed && (
             <button
@@ -130,20 +133,24 @@ export function PlaygroundPanel({
               disabled={isPending}
               className="flex items-center gap-2 border px-3 py-1.5 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <CurrentLanguageIcon size={16} />
+              <CodeLanguageIcon language={language} size={16} />
               <span>{currentLanguageLabel}</span>
               <IconChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="start" className="min-w-40">
-              {(Object.keys(LANGUAGE_CONFIG) as Language[]).map((lang) => {
-                const { Icon, label } = LANGUAGE_CONFIG[lang];
+            <DropdownMenuContent
+              side="bottom"
+              align="start"
+              className="min-w-40"
+            >
+              {PLAYGROUND_LANGUAGES.map((lang) => {
+                const label = PLAYGROUND_LANGUAGE_LABELS[lang];
                 return (
                   <DropdownMenuItem
                     key={lang}
                     className="cursor-pointer gap-2 px-3 py-2"
                     onClick={() => onLanguageChange(lang)}
                   >
-                    <Icon size={16} />
+                    <CodeLanguageIcon language={lang} size={16} />
                     <span>{label}</span>
                     {language === lang && (
                       <IconCheck className="ml-auto h-3.5 w-3.5 text-primary" />
@@ -172,8 +179,14 @@ export function PlaygroundPanel({
         </div>
       </div>
 
-      <div ref={playgroundRef} className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="flex-1 overflow-hidden" style={{ minHeight: MIN_EDITOR_HEIGHT }}>
+      <div
+        ref={playgroundRef}
+        className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      >
+        <div
+          className="flex-1 overflow-hidden"
+          style={{ minHeight: MIN_EDITOR_HEIGHT }}
+        >
           <Editor
             height="100%"
             language={language}

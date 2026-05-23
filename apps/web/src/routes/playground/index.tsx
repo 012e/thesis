@@ -29,6 +29,7 @@ import {
   OUTER_RESIZE_HANDLE_SIZE,
   COLLAPSED_CHAT_STRIP_SIZE,
   panelSlotsAtom,
+  primaryPanelSizeAtom,
 } from "./-types";
 import type { Language } from "./-types";
 import { useIsDesktop } from "./-hooks";
@@ -46,7 +47,7 @@ export function PlaygroundPage() {
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
   const [result, setResult] = useState<ExecutionResult | null>(null);
-  const [primaryPanelSize, setPrimaryPanelSize] = useState(68);
+  const [primaryPanelSize, setPrimaryPanelSize] = useAtom(primaryPanelSizeAtom);
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   // Tracks whether the chat swapy item is physically in the first grid column
   // (i.e. the user swapped panels so chat moved to the playground slot).
@@ -334,18 +335,18 @@ export function PlaygroundPage() {
             <button
               type="button"
               onPointerDown={handleOuterResizeStart}
-              className="group flex min-h-0 min-w-0 shrink-0 items-center justify-center border bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-lg:cursor-row-resize lg:cursor-col-resize"
+              className="group flex w-0 border bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring max-lg:cursor-row-resize lg:cursor-col-resize"
               aria-label="Resize playground panels"
-            >
-              <IconGripHorizontal className="size-4 text-muted-foreground transition-colors group-hover:text-foreground lg:rotate-90" />
-            </button>
+            ></button>
           )}
 
           <div
             data-swapy-slot="chat"
             className="relative min-h-0 min-w-0 overflow-visible"
           >
-            {initialPanelSlots.chat === "playground" ? playgroundItem : chatItem}
+            {initialPanelSlots.chat === "playground"
+              ? playgroundItem
+              : chatItem}
           </div>
         </div>
       </div>

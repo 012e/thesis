@@ -40,11 +40,9 @@ export function OutputPanel({
         <button
           type="button"
           onPointerDown={onResizeStart}
-          className="group flex h-3 shrink-0 cursor-row-resize items-center justify-center border-y bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="group flex shrink-0 cursor-row-resize items-center justify-center border-y bg-muted/30 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring h-0.5"
           aria-label="Resize output panel"
-        >
-          <IconGripHorizontal className="size-3 text-muted-foreground transition-colors group-hover:text-foreground" />
-        </button>
+        ></button>
       )}
 
       <div
@@ -61,7 +59,9 @@ export function OutputPanel({
             {isPending && (
               <>
                 <IconLoader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Executing...</span>
+                <span className="text-xs text-muted-foreground">
+                  Executing...
+                </span>
               </>
             )}
             {isSuccess && (
@@ -110,7 +110,9 @@ export function OutputPanel({
               onClick={onToggleMinimized}
               className="flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
               title={isOutputMinimized ? "Restore output" : "Minimize output"}
-              aria-label={isOutputMinimized ? "Restore output" : "Minimize output"}
+              aria-label={
+                isOutputMinimized ? "Restore output" : "Minimize output"
+              }
             >
               {isOutputMinimized ? (
                 <IconChevronUp className="size-5" />

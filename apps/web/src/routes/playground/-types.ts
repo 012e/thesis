@@ -18,7 +18,7 @@ export const MIN_EDITOR_HEIGHT = 220;
 export const MIN_OUTPUT_HEIGHT = 120;
 export const MIN_DESKTOP_PANEL_WIDTH = 320;
 export const MIN_MOBILE_PANEL_HEIGHT = 280;
-export const OUTER_RESIZE_HANDLE_SIZE = 12;
+export const OUTER_RESIZE_HANDLE_SIZE = 2;
 export const COLLAPSED_CHAT_STRIP_SIZE = 28;
 
 export const isOutputMinimizedAtom = atomWithStorage<boolean>(
@@ -29,6 +29,11 @@ export const isOutputMinimizedAtom = atomWithStorage<boolean>(
 export const panelSlotsAtom = atomWithStorage<PanelSlots>(
   PANEL_SLOTS_STORAGE_KEY,
   DEFAULT_PANEL_SLOTS,
+);
+
+export const primaryPanelSizeAtom = atomWithStorage<number>(
+  "playground.primaryPanelSize",
+  68,
 );
 
 export function parsePanelSlots(value: unknown): PanelSlots | null {

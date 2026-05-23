@@ -45,9 +45,9 @@ import {
   SiYaml,
 } from "react-icons/si";
 
-type CodeLanguageMeta = [IconType, string, string];
+type CodeLanguageMeta = readonly [IconType, string, string];
 
-const CODE_LANGUAGE_META: Record<string, CodeLanguageMeta> = {
+const CODE_LANGUAGE_META = {
   java: [GrJava, "#ED8B00", "Java"],
   python: [SiPython, "#3776AB", "Python"],
   py: [SiPython, "#3776AB", "Python"],
@@ -116,26 +116,60 @@ const CODE_LANGUAGE_META: Record<string, CodeLanguageMeta> = {
   xml: [SiXml, "#005FAD", "XML"],
   toml: [SiToml, "#9C4121", "TOML"],
   sqlite: [SiSqlite, "#003B57", "SQLite"],
-};
+} as const;
 
-function getCodeLanguageMeta(language: string) {
-  return CODE_LANGUAGE_META[language.toLowerCase()];
+export type SupportedLanguage = keyof typeof CODE_LANGUAGE_META;
+
+export function isSupportedCodeLanguage(
+  language: string,
+): language is SupportedLanguage {
+  return language in CODE_LANGUAGE_META;
 }
 
-export function CodeLanguageBadge({ language }: { language: string }) {
+export function getCodeLanguageMeta(
+  language: string,
+): CodeLanguageMeta | undefined {
+  const normalizedLanguage = language.toLowerCase();
+
+  return isSupportedCodeLanguage(normalizedLanguage)
+    ? CODE_LANGUAGE_META[normalizedLanguage]
+    : undefined;
+}
+
+export function getCodeLanguageLabel(language: string) {
+  return getCodeLanguageMeta(language)?.[2] ?? language;
+}
+
+export function CodeLanguageIcon({
+  language,
+  size,
+  className,
+}: {
+  language: string;
+  size?: number | string;
+  className?: string;
+}) {
   const meta = getCodeLanguageMeta(language);
   const LangIcon = meta?.[0];
   const iconColor = meta?.[1];
-  const label = meta?.[2] ?? language;
+
+  if (!LangIcon) return null;
+
+  return (
+    <LangIcon size={size} style={{ color: iconColor }} className={className} />
+  );
+}
+
+export function CodeLanguageBadge({
+  language,
+}: {
+  language: string;
+}) {
+  const label = getCodeLanguageLabel(language);
 
   return (
     <span className="code-language-badge">
-      {LangIcon && (
-        <LangIcon
-          style={{ color: iconColor }}
-          className="code-language-badge-icon"
-        />
-      )}
+      <CodeLanguageIcon language={language} className="code-language-badge-icon" />
       <span>{label}</span>
     </span>
   );
