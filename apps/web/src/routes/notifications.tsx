@@ -17,6 +17,7 @@ import {
   notificationsListKey,
   notificationUnreadCountKey,
 } from "@/hooks/notifications";
+import { Spinner } from "@/components/ui/spinner";
 
 export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
@@ -111,8 +112,8 @@ export function NotificationsPage() {
       {/* Notifications list */}
       <div>
         {isLoading && (
-          <div className="p-8 text-center text-muted-foreground">
-            Loading notifications...
+          <div className="flex justify-center items-center p-8 text-center text-muted-foreground">
+            <Spinner />
           </div>
         )}
         {isError && (
@@ -139,8 +140,8 @@ export function NotificationsPage() {
         {/* Infinite scroll trigger */}
         <div ref={observerTarget} className="h-10">
           {isFetchingNextPage && (
-            <div className="p-4 text-center text-muted-foreground text-sm">
-              Loading more...
+            <div className="flex justify-center items-center p-4 text-center text-muted-foreground text-sm">
+              <Spinner />
             </div>
           )}
         </div>
