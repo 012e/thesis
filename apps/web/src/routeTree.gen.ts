@@ -11,12 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestingRouteImport } from './routes/testing'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as ApiRouteImport } from './routes/api'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as UsersUserIdRouteImport } from './routes/users.$userId'
 import { Route as ProfileFollowingRouteImport } from './routes/profile/following'
@@ -35,11 +35,6 @@ const TestingRoute = TestingRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlaygroundRoute = PlaygroundRouteImport.update({
-  id: '/playground',
-  path: '/playground',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -65,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
 const ProfileIndexRoute = ProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlaygroundIndexRoute = PlaygroundIndexRouteImport.update({
+  id: '/playground/',
+  path: '/playground/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatIndexRoute = ChatIndexRouteImport.update({
@@ -118,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/api': typeof ApiRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
-  '/playground': typeof PlaygroundRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -130,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat/': typeof ChatIndexRoute
+  '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
@@ -137,7 +137,6 @@ export interface FileRoutesByTo {
   '/api': typeof ApiRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
-  '/playground': typeof PlaygroundRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -149,6 +148,7 @@ export interface FileRoutesByTo {
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat': typeof ChatIndexRoute
+  '/playground': typeof PlaygroundIndexRoute
   '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
@@ -157,7 +157,6 @@ export interface FileRoutesById {
   '/api': typeof ApiRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
-  '/playground': typeof PlaygroundRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -169,6 +168,7 @@ export interface FileRoutesById {
   '/profile/following': typeof ProfileFollowingRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat/': typeof ChatIndexRoute
+  '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
@@ -178,7 +178,6 @@ export interface FileRouteTypes {
     | '/api'
     | '/explore'
     | '/notifications'
-    | '/playground'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -190,6 +189,7 @@ export interface FileRouteTypes {
     | '/profile/following'
     | '/users/$userId'
     | '/chat/'
+    | '/playground/'
     | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -197,7 +197,6 @@ export interface FileRouteTypes {
     | '/api'
     | '/explore'
     | '/notifications'
-    | '/playground'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -209,6 +208,7 @@ export interface FileRouteTypes {
     | '/profile/following'
     | '/users/$userId'
     | '/chat'
+    | '/playground'
     | '/profile'
   id:
     | '__root__'
@@ -216,7 +216,6 @@ export interface FileRouteTypes {
     | '/api'
     | '/explore'
     | '/notifications'
-    | '/playground'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -228,6 +227,7 @@ export interface FileRouteTypes {
     | '/profile/following'
     | '/users/$userId'
     | '/chat/'
+    | '/playground/'
     | '/profile/'
   fileRoutesById: FileRoutesById
 }
@@ -236,7 +236,6 @@ export interface RootRouteChildren {
   ApiRoute: typeof ApiRoute
   ExploreRoute: typeof ExploreRoute
   NotificationsRoute: typeof NotificationsRoute
-  PlaygroundRoute: typeof PlaygroundRoute
   SettingsRoute: typeof SettingsRoute
   TestingRoute: typeof TestingRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -248,6 +247,7 @@ export interface RootRouteChildren {
   ProfileFollowingRoute: typeof ProfileFollowingRoute
   UsersUserIdRoute: typeof UsersUserIdRoute
   ChatIndexRoute: typeof ChatIndexRoute
+  PlaygroundIndexRoute: typeof PlaygroundIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
@@ -265,13 +265,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/playground': {
-      id: '/playground'
-      path: '/playground'
-      fullPath: '/playground'
-      preLoaderRoute: typeof PlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -307,6 +300,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile/'
       preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/playground/': {
+      id: '/playground/'
+      path: '/playground'
+      fullPath: '/playground/'
+      preLoaderRoute: typeof PlaygroundIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/': {
@@ -380,7 +380,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRoute: ApiRoute,
   ExploreRoute: ExploreRoute,
   NotificationsRoute: NotificationsRoute,
-  PlaygroundRoute: PlaygroundRoute,
   SettingsRoute: SettingsRoute,
   TestingRoute: TestingRoute,
   AdminUsersRoute: AdminUsersRoute,
@@ -392,6 +391,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileFollowingRoute: ProfileFollowingRoute,
   UsersUserIdRoute: UsersUserIdRoute,
   ChatIndexRoute: ChatIndexRoute,
+  PlaygroundIndexRoute: PlaygroundIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
 }
 export const routeTree = rootRouteImport

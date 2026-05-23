@@ -13,6 +13,12 @@
       "skillPath": "assistant-ui/skills/cloud/SKILL.md",
       "computedHash": "cf6312de5be25e06c83c5a7012499686f6f2bb542594087c681cc67f9902b30c"
     },
+    "context7-cli": {
+      "source": "upstash/context7",
+      "sourceType": "github",
+      "skillPath": "skills/context7-cli/SKILL.md",
+      "computedHash": "6077b3c638fb7efb31d9b2c815436650de4aef73e7b671edec2f1c63f6a1e105"
+    },
     "mastra": {
       "source": "mastra-ai/skills",
       "sourceType": "github",
