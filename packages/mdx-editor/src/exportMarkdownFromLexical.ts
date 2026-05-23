@@ -386,11 +386,9 @@ function convertUnderlineJsxToHtml(node: Mdast.Parent | Mdast.RootContent) {
     nodeAsParent.children.forEach((child) => {
       if (child.type === "mdxJsxTextElement" && child.name === "u") {
         newChildren.push(
-          ...[
-            { type: "html", value: "<u>" } as const,
+          { type: "html", value: "<u>" } as const,
             ...child.children,
             { type: "html", value: "</u>" } as const,
-          ],
         );
       } else {
         newChildren.push(child);

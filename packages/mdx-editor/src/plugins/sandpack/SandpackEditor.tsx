@@ -76,10 +76,13 @@ export const SandpackEditor = ({
         files={{
           [preset.snippetFileName]: code,
           ...Object.entries(preset.files ?? {}).reduce(
-            (acc, [filePath, fileContents]) => ({
-              ...acc,
-              ...{ [filePath]: { code: fileContents, readOnly: true } },
-            }),
+            (acc, [filePath, fileContents]) => (({
+	...acc,
+	[filePath]: {
+		code: fileContents,
+		readOnly: true
+	}
+})),
             {},
           ),
         }}
