@@ -65,9 +65,11 @@ function ThreadTokenUsage() {
 
   if (!remoteId) return null;
 
-  return (
-    <div className="absolute top-4 right-4 z-20 border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
-      {data ? `${millify(data.totalTokens)} tokens` : "0 tokens"}
-    </div>
-  );
+  // TODO: Why are we doing this?
+  return null;
+  // return (
+  //   <div className="absolute top-4 right-4 z-20 border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
+  //     {data ? `${millify(data.totalTokens)} tokens` : "0 tokens"}
+  //   </div>
+  // );
 }

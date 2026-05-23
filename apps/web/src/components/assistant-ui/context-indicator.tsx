@@ -59,8 +59,8 @@ export function AIContextIndicator() {
   if (!label || isPlaygroundPage(ctx)) return null;
 
   return (
-    <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl">
-      <div className="flex items-center gap-1.5 min-w-0 flex-1 px-2.5 py-1.5 bg-muted/60 border border-border/60 text-muted-foreground text-xs">
+    <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl bg-muted/60 ">
+      <div className="flex items-center gap-1.5 min-w-0 flex-1 pl-2.5 py-1.5 text-muted-foreground text-xs">
         {label.icon}
         <span className="truncate min-w-0 flex-1">{label.text}</span>
       </div>
@@ -68,7 +68,7 @@ export function AIContextIndicator() {
         type="button"
         title="Dismiss context"
         onClick={() => setCtx({ type: "none" })}
-        className="shrink-0 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground p-2"
+        className="shrink-0 text-muted-foreground transition-colors p-2 hover:bg-accent/60"
       >
         <IconX className="size-3" />
       </button>

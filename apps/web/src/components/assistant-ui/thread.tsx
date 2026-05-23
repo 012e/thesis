@@ -52,6 +52,7 @@ import { FormRegistry } from "@/components/forms/registry";
 import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
+import { Separator } from "@/components/ui/separator";
 
 interface ThreadProps {
   scrollToEndKey?: unknown;
@@ -100,9 +101,7 @@ export function Thread({ scrollToEndKey }: ThreadProps) {
           }}
         </ThreadPrimitive.Messages>
 
-        <ThreadPrimitive.ViewportFooter
-          className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background px-3 pb-3 @md/thread:px-4 @md/thread:pb-4"
-        >
+        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
           <ThreadScrollToBottom />
           <AIContextIndicator />
           <ActiveVerticalForm />
@@ -142,9 +141,7 @@ function ThreadWelcome() {
   };
 
   return (
-    <div
-      className="flex flex-col justify-center items-center text-center grow min-w-0 gap-3 px-4 py-6 @md/thread:gap-4 @md/thread:p-8"
-    >
+    <div className="flex flex-col justify-center items-center text-center grow min-w-0 gap-3 px-4 py-6 @md/thread:gap-4 @md/thread:p-8">
       <div className="rounded-full bg-primary/10 p-3 @md/thread:p-4">
         <IconRobot className="size-6 text-primary @md/thread:size-8" />
       </div>
@@ -157,7 +154,7 @@ function ThreadWelcome() {
           explore
         </p>
       </div>
-      <div className="mt-2 grid w-full max-w-[260px] grid-cols-1 gap-2 @md/thread:mt-4 @md/thread:max-w-2xl @md/thread:grid-cols-2">
+      <div className="mt-2 grid w-full max-w-65 grid-cols-1 gap-2 @md/thread:mt-4 @md/thread:max-w-2xl @md/thread:grid-cols-2">
         <ThreadPrimitive.Suggestion
           prompt="What are the most upvoted posts right now?"
           asChild
@@ -251,9 +248,7 @@ function Composer() {
   }, []);
 
   return (
-    <ComposerPrimitive.Root
-      className="flex flex-col w-full max-w-none @md/thread:max-w-2xl"
-    >
+    <ComposerPrimitive.Root className="flex flex-col w-full max-w-none @md/thread:max-w-2xl">
       <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
@@ -316,7 +311,7 @@ function UserMessage() {
       <UserActionBar />
       <div className="col-start-2 max-w-xl wrap-break-word">
         <UserMessageAttachments />
-        <div className="py-2.5 px-5 rounded-sm bg-muted text-foreground">
+        <div className="py-2.5 px-5 bg-muted text-foreground">
           <MessagePrimitive.Parts />
         </div>
       </div>
@@ -332,7 +327,7 @@ function UserActionBar() {
       className="flex flex-col col-start-1 row-start-1 items-end pr-2 mt-2.5 opacity-0 transition-opacity group-hover:opacity-100"
     >
       <ActionBarPrimitive.Edit asChild>
-        <button className="p-1.5 rounded-md transition-colors text-muted-foreground hover:bg-accent">
+        <button className="p-1.5 transition-colors text-muted-foreground hover:bg-accent">
           <IconEdit className="size-4" />
         </button>
       </ActionBarPrimitive.Edit>
@@ -342,19 +337,20 @@ function UserActionBar() {
 
 function EditComposer() {
   return (
-    <MessagePrimitive.Root className="flex flex-col gap-2 px-4 pt-2 pb-3 my-4 mx-auto w-full max-w-2xl rounded-xl bg-muted">
+    <MessagePrimitive.Root className="flex flex-col gap-4 px-4 pt-2 pb-3 my-4 mx-auto w-full max-w-2xl bg-muted">
       <ComposerPrimitive.Input
         className="flex w-full h-8 text-sm bg-transparent outline-none resize-none text-foreground"
         autoFocus
       />
-      <div className="flex gap-2 justify-center items-center">
+      <Separator />
+      <div className="flex gap-2 justify-end items-center">
         <ComposerPrimitive.Cancel asChild>
-          <button className="py-2 px-4 text-sm font-medium rounded-full border transition-colors border-border hover:bg-accent">
+          <button className="py-2 px-4 text-sm font-medium transition-colors border-border hover:bg-accent">
             Cancel
           </button>
         </ComposerPrimitive.Cancel>
         <ComposerPrimitive.Send asChild>
-          <button className="py-2 px-4 text-sm font-medium rounded-full transition-colors bg-primary text-primary-foreground hover:bg-primary/90">
+          <button className="py-2 px-4 text-sm font-medium transition-colors bg-primary text-primary-foreground hover:bg-primary/90">
             Send
           </button>
         </ComposerPrimitive.Send>
