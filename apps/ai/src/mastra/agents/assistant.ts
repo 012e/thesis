@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Assistant agent for social media interactions.
@@ -16,5 +16,5 @@ export const assistantAgent = new Agent({
   name: "Assistant",
   instructions:
     "You are a helpful AI assistant connected to a social media platform. You can read posts, create posts, update, delete, and reply to posts. Be concise and helpful.",
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.ASSISTANT.model,
 });

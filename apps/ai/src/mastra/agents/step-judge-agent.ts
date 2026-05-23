@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_JUDGE } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Step-judge agent — an LLM judge that evaluates whether the orchestrator has
@@ -74,5 +74,5 @@ or:
 
 VERDICT: INCOMPLETE
 REASON: <one or two sentences listing which step(s) are missing or unconfirmed>`,
-  model: MODEL_JUDGE,
+  model: MODEL_CONFIG.STEP_JUDGE_AGENT.model,
 });

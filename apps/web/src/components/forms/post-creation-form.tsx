@@ -187,7 +187,6 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
             </div>
             <PostComposerActions />
           </div>
-          <PostComposerCloseButton />
         </div>
       </div>
     </PostComposerProvider>

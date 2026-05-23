@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useAuiState } from "@assistant-ui/react";
 import { useQuery } from "@tanstack/react-query";
 import { millify } from "millify";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { client } from "@/lib/api";
 import { threadTokenUsageQueryKey } from "@/lib/chat/token-usage-query";
@@ -22,7 +21,7 @@ export const Route = createFileRoute("/chat/")({
 
 export function ChatPage() {
   return (
-    <ChatRuntimeProvider>
+    <>
       <OpenFormToolUI />
       <SetFormFieldToolUI />
       <SubmitFormToolUI />
@@ -37,7 +36,7 @@ export function ChatPage() {
           <ChatWorkspace />
         </div>
       </div>
-    </ChatRuntimeProvider>
+    </>
   );
 }
 
@@ -66,9 +65,11 @@ function ThreadTokenUsage() {
 
   if (!remoteId) return null;
 
-  return (
-    <div className="absolute top-4 right-4 z-20 border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
-      {data ? `${millify(data.totalTokens)} tokens` : "0 tokens"}
-    </div>
-  );
+  // TODO: Why are we doing this?
+  return null;
+  // return (
+  //   <div className="absolute top-4 right-4 z-20 border bg-background/90 px-3 py-1.5 text-xs text-muted-foreground shadow-sm backdrop-blur">
+  //     {data ? `${millify(data.totalTokens)} tokens` : "0 tokens"}
+  //   </div>
+  // );
 }

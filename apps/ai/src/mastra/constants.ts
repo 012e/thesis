@@ -1,37 +1,68 @@
+import { openai as openaiHelper } from "@ai-sdk/openai";
+function openai(string: Parameters<typeof openaiHelper>[0]) {
+  return "openai/" + string;
+}
+function reasoning(
+  string: "none" | "minimal" | "low" | "medium" | "high" | "xhigh" | undefined,
+) {
+  return string;
+}
+
 /**
- * Model name constants for all Mastra agents.
- *
- * Centralise model strings here so that switching models requires a single
- * edit rather than hunting for hardcoded strings across every agent file.
+ * Dedicated model configuration for every Mastra agent.
  *
  * Format: "provider/model-name" as required by Mastra's model router.
  */
+export const MODEL_CONFIG = {
+  ORCHESTRATOR: {
+    FAST_MODEL: {
+      model: openai("gpt-5.4-mini"),
+      reasoningEffort: reasoning("none"),
+    },
+    THINKING_MODEL: {
+      model: openai("gpt-5.5"),
+      reasoningEffort: reasoning("medium"),
+    },
+  },
+  REASONING_AGENT: {
+    model: openai("gpt-5.5"),
+    reasoningEffort: reasoning("high"),
+  },
+  ASSISTANT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
+  IDENTITY_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
+  POST_CREATION_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
+  POST_DISCOVERY_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
+  INTERACTIONS_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
+  SEARCH_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("minimal"),
+  },
+  STEP_JUDGE_AGENT: {
+    model: openai("gpt-5.5"),
+    reasoningEffort: reasoning("low"),
+  },
+} as const;
 
-/** Lightweight model used by domain-specialist sub-agents. */
-export const MODEL_SUB_AGENT = "openai/gpt-4o-mini" as const;
-
-/** Stronger model used by the orchestrator for multi-step reasoning. */
-export const MODEL_ORCHESTRATOR = "openai/gpt-4o" as const;
-
-/** Model used by the step-judge agent for structured evaluation. */
-export const MODEL_JUDGE = "openai/gpt-4o" as const;
-
-// ── Mode-specific model constants ──────────────────────────────────────────
-
-/**
- * Fast mode: cheap and quick models for both orchestrator and sub-agents.
- * Suitable for simple queries where latency matters more than depth.
- */
-export const MODEL_FAST_ORCHESTRATOR = "openai/gpt-4o-mini" as const;
-export const MODEL_FAST_SUB_AGENT = "openai/gpt-4o-mini" as const;
-
-/**
- * Thinking mode: reasoning-capable orchestrator with stronger sub-agents.
- * o4-mini provides chain-of-thought reasoning at the orchestration layer;
- * gpt-4o handles domain tasks with higher quality than the mini variant.
- */
-export const MODEL_THINKING_ORCHESTRATOR = "openai/o4-mini" as const;
-export const MODEL_THINKING_SUB_AGENT = "openai/gpt-4o" as const;
+export function getOrchestratorModelConfig(mode: ModelMode) {
+  return mode === "thinking"
+    ? MODEL_CONFIG.ORCHESTRATOR.THINKING_MODEL
+    : MODEL_CONFIG.ORCHESTRATOR.FAST_MODEL;
+}
 
 /** Union type for the two available interaction modes. */
 export type ModelMode = "fast" | "thinking";

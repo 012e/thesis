@@ -21,7 +21,6 @@ import {
   globalChatSizeAtom,
 } from "@/lib/atoms/global-chat";
 import type { GlobalChatSize } from "@/lib/atoms/global-chat";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 import { Thread } from "@/components/assistant-ui/thread";
 
 // ─── Thread Switcher Dropdown ─────────────────────────────────────────────────
@@ -30,7 +29,7 @@ interface ThreadSwitcherProps {
   onNewChat?: () => void;
 }
 
-function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
+export function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -109,14 +108,16 @@ function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "flex items-center gap-1.5 w-full px-2 py-1.5 text-sm text-left",
+          "flex items-center gap-1.5 w-full text-sm text-left p-2 py-3",
           "hover:bg-accent transition-colors",
           "text-foreground",
         )}
         title="Switch thread"
       >
         <IconSparkles className="size-4 shrink-0 text-primary" />
-        <span className="font-medium text-xs truncate flex-1">Chats</span>
+        <span className="font-medium text-xs truncate flex-1 w-full h-full">
+          Chats
+        </span>
         <IconChevronDown
           className={cn(
             "size-3.5 shrink-0 text-muted-foreground transition-transform duration-150",
@@ -169,7 +170,7 @@ interface PanelHeaderProps {
 
 function PanelHeader({ size, onSizeToggle, onClose }: PanelHeaderProps) {
   return (
-    <div className="flex items-center gap-1 px-2 py-2 border-b border-border shrink-0 bg-background">
+    <div className="flex items-center gap-1 border-b border-border shrink-0 bg-background">
       {/* Thread switcher takes up available space */}
       <ThreadSwitcher />
 
@@ -179,7 +180,7 @@ function PanelHeader({ size, onSizeToggle, onClose }: PanelHeaderProps) {
         onClick={onSizeToggle}
         title={size === "normal" ? "Expand panel" : "Shrink panel"}
         aria-label={size === "normal" ? "Expand panel" : "Shrink panel"}
-        className="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        className="shrink-0 flex items-center justify-center w-7 h-7 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
       >
         {size === "normal" ? (
           <IconLayoutSidebarRightExpand className="size-4" />
@@ -194,7 +195,7 @@ function PanelHeader({ size, onSizeToggle, onClose }: PanelHeaderProps) {
         onClick={onClose}
         title="Close AI chat (Esc)"
         aria-label="Close AI chat"
-        className="shrink-0 flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+        className="shrink-0 flex items-center justify-center w-7 h-7 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
       >
         <IconX className="size-4" />
       </button>
@@ -252,17 +253,14 @@ export function GlobalChatPanel() {
         isOpen ? "translate-x-0" : "translate-x-full",
       )}
     >
-      {/* Only mount the runtime when panel has been opened at least once */}
-      <ChatRuntimeProvider>
-        <PanelHeader
-          size={size}
-          onSizeToggle={handleSizeToggle}
-          onClose={handleClose}
-        />
-        <div className="flex-1 overflow-hidden min-h-0">
-          <Thread compact />
-        </div>
-      </ChatRuntimeProvider>
+      <PanelHeader
+        size={size}
+        onSizeToggle={handleSizeToggle}
+        onClose={handleClose}
+      />
+      <div className="flex-1 overflow-hidden min-h-0">
+        <Thread scrollToEndKey={isOpen} />
+      </div>
     </div>
   );
 }

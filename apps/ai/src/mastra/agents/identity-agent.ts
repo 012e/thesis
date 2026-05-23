@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Identity agent — owns the social graph domain.
@@ -31,5 +31,5 @@ Guidelines:
 - Be concise — return only the information requested
 - When listing followers/following, present them as a clean list
 - Do not attempt to create, read, update, or delete posts; delegate that elsewhere`,
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.IDENTITY_AGENT.model,
 });

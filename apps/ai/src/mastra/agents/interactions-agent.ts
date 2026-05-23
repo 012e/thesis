@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Interactions agent — owns all engagement operations.
@@ -31,5 +31,5 @@ Guidelines:
 - When reacting, confirm whether the reaction was created or replaced a previous one
 - Do not read or list posts; if the user needs to see a thread first, ask the orchestrator to use the post-discovery agent
 - Do not create or modify posts; delegate that to the post-creation agent`,
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.INTERACTIONS_AGENT.model,
 });

@@ -112,7 +112,7 @@ const AttachmentThumb: FC = () => {
       <AvatarImage
         src={src}
         alt="Attachment preview"
-        className="aui-attachment-tile-image object-cover"
+        className="aui-attachment-tile-image object-cover rounded-none"
       />
       <AvatarFallback delay={isImage ? 200 : 0}>
         <FileText className="aui-attachment-tile-fallback-icon size-8 text-muted-foreground" />
@@ -144,15 +144,15 @@ const AttachmentUI: FC = () => {
     <Tooltip>
       <AttachmentPrimitive.Root
         className={cn(
-          "aui-attachment-root relative",
-          isImage && "aui-attachment-root-composer only:*:first:size-24",
+          "group/attachment aui-attachment-root relative",
+          isImage && "aui-attachment-root-composer",
         )}
       >
         <AttachmentPreviewDialog>
           <TooltipTrigger
             render={
               <div
-                className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75"
+                className="aui-attachment-tile size-14 cursor-pointer overflow-hidden border bg-muted transition-opacity hover:opacity-75"
                 role="button"
                 aria-label={`${typeLabel} attachment`}
               />
@@ -170,12 +170,12 @@ const AttachmentUI: FC = () => {
   );
 };
 
-const AttachmentRemove: FC = () => {
+const AttachmentRemove: FC = ({ className }: { className?: string }) => {
   return (
-    <AttachmentPrimitive.Remove asChild>
+    <AttachmentPrimitive.Remove asChild className={cn(className)}>
       <TooltipIconButton
         tooltip="Remove file"
-        className="aui-attachment-tile-remove absolute top-1.5 right-1.5 size-3.5 rounded-full bg-white text-muted-foreground opacity-100 shadow-sm hover:bg-white! [&_svg]:text-black hover:[&_svg]:text-destructive"
+        className="aui-attachment-tile-remove absolute group/attachment top-1.5 right-1.5 size-3.5 rounded-full bg-white text-muted-foreground shadow-sm hover:bg-white! [&_svg]:text-black hover:[&_svg]:text-destructive group-hover/attachment:opacity-100 opacity-0"
         side="top"
       >
         <XIcon className="aui-attachment-remove-icon size-3 dark:stroke-[2.5px]" />

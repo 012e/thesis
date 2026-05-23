@@ -1,9 +1,9 @@
-import { LeftSidebar } from "./left-sidebar";
-import { RightSidebar } from "./right-sidebar";
-import { MainContent } from "./main-content";
 import { ChatManager } from "@/components/chat";
 import { GlobalChatPanel } from "@/components/assistant-ui/global-chat-panel";
 import { GlobalChatToggleButton } from "@/components/assistant-ui/global-chat-toggle-button";
+import { LeftSidebar } from "./left-sidebar";
+import { RightSidebar } from "./right-sidebar";
+import { MainContent } from "./main-content";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (

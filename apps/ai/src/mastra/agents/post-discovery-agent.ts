@@ -1,5 +1,5 @@
 import { Agent } from "@mastra/core/agent";
-import { MODEL_SUB_AGENT } from "../constants";
+import { MODEL_CONFIG } from "../constants";
 
 /**
  * Post-discovery agent — owns all read operations on posts.
@@ -29,5 +29,5 @@ Guidelines:
 - If the user wants to react to or comment on a post, delegate that to the interactions agent
 - If the user wants to create, update, or delete a post, delegate that to the post-creation agent
 - Be concise — summarise long content instead of dumping raw text`,
-  model: MODEL_SUB_AGENT,
+  model: MODEL_CONFIG.POST_DISCOVERY_AGENT.model,
 });
