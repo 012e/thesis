@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import type { PointerEvent } from "react";
 import Editor from "@monaco-editor/react";
-import { useAtom } from "jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   IconPlayerPlay,
   IconLoader2,
@@ -18,8 +18,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import playgroundSettingsAtom from "@/lib/atoms/playground-settings";
 import { CodeLanguageIcon } from "@/lib/code-language-meta";
-import type { ExecutionResult } from "@repo/rest-contracts";
-import type { Language } from "./-types";
 import { MIN_EDITOR_HEIGHT, MIN_OUTPUT_HEIGHT } from "./-types";
 import {
   PLAYGROUND_LANGUAGES,
@@ -28,34 +26,31 @@ import {
 import { PlaygroundSettingsDialog } from "./-settings-dialog";
 import { OutputPanel } from "./-output-panel";
 import { useIsDark } from "./-hooks";
+import {
+  changeLanguageAtom,
+  codeAtom,
+  isChatCollapsedAtom,
+  languageAtom,
+  resultAtom,
+  setCodeAtom,
+  setResultAtom,
+  toggleOutputMinimizedAtom,
+  useRunPlaygroundCode,
+} from "./-playground-state";
+import { isOutputMinimizedAtom } from "./-types";
+import { Spinner } from "@/components/ui/spinner";
 
-type PlaygroundPanelProps = {
-  code: string;
-  language: Language;
-  result: ExecutionResult | null;
-  isPending: boolean;
-  isOutputMinimized: boolean;
-  isChatCollapsed: boolean;
-  onCodeChange: (code: string) => void;
-  onLanguageChange: (lang: Language) => void;
-  onRun: () => void;
-  onToggleOutputMinimized: () => void;
-  onClearOutput: () => void;
-};
-
-export function PlaygroundPanel({
-  code,
-  language,
-  result,
-  isPending,
-  isOutputMinimized,
-  isChatCollapsed,
-  onCodeChange,
-  onLanguageChange,
-  onRun,
-  onToggleOutputMinimized,
-  onClearOutput,
-}: PlaygroundPanelProps) {
+export function PlaygroundPanel() {
+  const code = useAtomValue(codeAtom);
+  const language = useAtomValue(languageAtom);
+  const result = useAtomValue(resultAtom);
+  const isOutputMinimized = useAtomValue(isOutputMinimizedAtom);
+  const isChatCollapsed = useAtomValue(isChatCollapsedAtom);
+  const setCode = useSetAtom(setCodeAtom);
+  const setResult = useSetAtom(setResultAtom);
+  const changeLanguage = useSetAtom(changeLanguageAtom);
+  const toggleOutputMinimized = useSetAtom(toggleOutputMinimizedAtom);
+  const { isPending, run } = useRunPlaygroundCode();
   const isDark = useIsDark();
   const [settings, setSettings] = useAtom(playgroundSettingsAtom);
   const playgroundRef = useRef<HTMLDivElement>(null);
@@ -148,7 +143,7 @@ export function PlaygroundPanel({
                   <DropdownMenuItem
                     key={lang}
                     className="cursor-pointer gap-2 px-3 py-2"
-                    onClick={() => onLanguageChange(lang)}
+                    onClick={() => changeLanguage(lang)}
                   >
                     <CodeLanguageIcon language={lang} size={16} />
                     <span>{label}</span>
@@ -165,7 +160,7 @@ export function PlaygroundPanel({
 
           <button
             type="button"
-            onClick={onRun}
+            onClick={run}
             disabled={isPending || !code.trim()}
             className="flex items-center gap-1.5 bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -192,7 +187,8 @@ export function PlaygroundPanel({
             language={language}
             value={code}
             theme={editorTheme}
-            onChange={(value) => onCodeChange(value ?? "")}
+            onChange={(value) => setCode(value ?? "")}
+            loading={<Spinner />}
             options={{
               fontSize: settings.fontSize,
               fontFamily: "'JetBrains Mono Variable', 'Courier New', monospace",
@@ -215,8 +211,8 @@ export function PlaygroundPanel({
           isPending={isPending}
           isOutputMinimized={isOutputMinimized}
           outputHeight={settings.outputHeight}
-          onClearOutput={onClearOutput}
-          onToggleMinimized={onToggleOutputMinimized}
+          onClearOutput={() => setResult(null)}
+          onToggleMinimized={toggleOutputMinimized}
           onResizeStart={handleResizeStart}
         />
       </div>

@@ -1,62 +1,67 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useCallback, useEffect, useRef } from "react";
-import type { CSSProperties, PointerEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useAtom, useSetAtom } from "jotai";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { CSSProperties, PointerEvent, ReactNode } from "react";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { createSwapy } from "swapy";
 import type { Swapy } from "swapy";
 import {
-  IconGripHorizontal,
+  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronUp,
-  IconChevronDown,
 } from "@tabler/icons-react";
-import { LeftSidebar } from "@/components/layout/left-sidebar";
-import { executeCode } from "@/lib/api/playground";
-import type { ExecutionResult } from "@repo/rest-contracts";
 import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
+import { LeftSidebar } from "@/components/layout/left-sidebar";
 import { PlaygroundAssistantTools } from "./-assistant-tools";
-import { PlaygroundPanel } from "./-playground-panel";
 import { ChatPanel } from "./-chat-panel";
+import { useIsDesktop } from "./-hooks";
+import { PlaygroundPanel } from "./-playground-panel";
 import {
+  isChatCollapsedAtom,
+  PlaygroundStateProvider,
+  setBeforeChatCollapseAtom,
+  toggleChatCollapsedAtom,
+} from "./-playground-state";
+import {
+  COLLAPSED_CHAT_STRIP_SIZE,
   DEFAULT_PANEL_SLOTS,
-  isOutputMinimizedAtom,
   getPanelSlots,
   getStoredPanelSlots,
   MIN_DESKTOP_PANEL_WIDTH,
   MIN_MOBILE_PANEL_HEIGHT,
   OUTER_RESIZE_HANDLE_SIZE,
-  COLLAPSED_CHAT_STRIP_SIZE,
   panelSlotsAtom,
   primaryPanelSizeAtom,
 } from "./-types";
-import type { Language } from "./-types";
-import { useIsDesktop } from "./-hooks";
-import { DEFAULT_CODE } from "./-language-config";
 
 export const Route = createFileRoute("/playground/")({
   component: PlaygroundPage,
 });
 
 export function PlaygroundPage() {
+  return (
+    <ChatRuntimeProvider>
+      <PlaygroundStateProvider>
+        <PlaygroundContent />
+      </PlaygroundStateProvider>
+    </ChatRuntimeProvider>
+  );
+}
+
+function PlaygroundContent() {
   const isDesktop = useIsDesktop();
   const containerRef = useRef<HTMLDivElement>(null);
   const swapyRef = useRef<Swapy | null>(null);
   const initialPanelSlotsRef = useRef(getStoredPanelSlots());
-  const [language, setLanguage] = useState<Language>("javascript");
-  const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
-  const [result, setResult] = useState<ExecutionResult | null>(null);
   const [primaryPanelSize, setPrimaryPanelSize] = useAtom(primaryPanelSizeAtom);
-  const [isChatCollapsed, setIsChatCollapsed] = useState(false);
+  const isChatCollapsed = useAtomValue(isChatCollapsedAtom);
+  const setBeforeChatCollapse = useSetAtom(setBeforeChatCollapseAtom);
+  const toggleChatCollapsed = useSetAtom(toggleChatCollapsedAtom);
+  const setPanelSlots = useSetAtom(panelSlotsAtom);
   // Tracks whether the chat swapy item is physically in the first grid column
   // (i.e. the user swapped panels so chat moved to the playground slot).
   const [chatIsInFirstColumn, setChatIsInFirstColumn] = useState(
     initialPanelSlotsRef.current.playground === "chat",
-  );
-  const setPanelSlots = useSetAtom(panelSlotsAtom);
-  const [isOutputMinimized, setIsOutputMinimized] = useAtom(
-    isOutputMinimizedAtom,
   );
 
   useEffect(() => {
@@ -90,68 +95,39 @@ export function PlaygroundPage() {
     swapyRef.current?.update();
   }, [isDesktop]);
 
-  const { mutate: runCode, isPending } = useMutation({
-    mutationFn: executeCode,
-    onSuccess: (data) => {
-      setResult(data);
-    },
-    onError: (err: Error) => {
-      setResult({
-        stdout: "",
-        stderr: err.message,
-        exitCode: -1,
-        executionTime: 0,
-      });
-    },
-  });
+  const handleBeforeChatCollapse = useCallback(() => {
+    // Detect which grid column the chat item is physically in before collapsing.
+    // Swapy moves DOM nodes but React's vDOM doesn't track this. We must
+    // destroy swapy (listener cleanup only – it does NOT restore DOM positions)
+    // and keep both swapy slot/item wrappers in the DOM so React never tries
+    // to removeChild a node that swapy moved to a different parent.
+    const container = containerRef.current;
+    if (container) {
+      const chatInFirstSlot = container.querySelector(
+        '[data-swapy-slot="playground"] [data-swapy-item="chat"]',
+      );
+      setChatIsInFirstColumn(chatInFirstSlot !== null);
+      setPanelSlots(
+        chatInFirstSlot
+          ? { playground: "chat", chat: "playground" }
+          : DEFAULT_PANEL_SLOTS,
+      );
+    }
+    swapyRef.current?.destroy();
+    swapyRef.current = null;
+  }, [setPanelSlots]);
 
-  const handleRun = useCallback(() => {
-    if (!code.trim()) return;
-    runCode({ code, language });
-  }, [code, language, runCode]);
+  useEffect(() => {
+    setBeforeChatCollapse(handleBeforeChatCollapse);
 
-  const handleLanguageChange = useCallback(
-    (newLang: Language) => {
-      setLanguage(newLang);
-      if (code === DEFAULT_CODE[language]) {
-        setCode(DEFAULT_CODE[newLang]);
-      }
-    },
-    [code, language],
-  );
-
-  const handleClearOutput = useCallback(() => {
-    setResult(null);
-  }, []);
-
-  const handleToggleOutputMinimized = useCallback(() => {
-    setIsOutputMinimized((current) => !current);
-  }, [setIsOutputMinimized]);
+    return () => {
+      setBeforeChatCollapse(null);
+    };
+  }, [handleBeforeChatCollapse, setBeforeChatCollapse]);
 
   const handleToggleChatCollapsed = useCallback(() => {
-    if (!isChatCollapsed) {
-      // Detect which grid column the chat item is physically in before collapsing.
-      // Swapy moves DOM nodes but React's vDOM doesn't track this. We must
-      // destroy swapy (listener cleanup only – it does NOT restore DOM positions)
-      // and keep both swapy slot/item wrappers in the DOM so React never tries
-      // to removeChild a node that swapy moved to a different parent.
-      const container = containerRef.current;
-      if (container) {
-        const chatInFirstSlot = container.querySelector(
-          '[data-swapy-slot="playground"] [data-swapy-item="chat"]',
-        );
-        setChatIsInFirstColumn(chatInFirstSlot !== null);
-        setPanelSlots(
-          chatInFirstSlot
-            ? { playground: "chat", chat: "playground" }
-            : DEFAULT_PANEL_SLOTS,
-        );
-      }
-      swapyRef.current?.destroy();
-      swapyRef.current = null;
-    }
-    setIsChatCollapsed((current) => !current);
-  }, [isChatCollapsed, setPanelSlots]);
+    toggleChatCollapsed();
+  }, [toggleChatCollapsed]);
 
   const handleOuterResizeStart = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
@@ -194,7 +170,7 @@ export function PlaygroundPage() {
       window.addEventListener("pointermove", handlePointerMove);
       window.addEventListener("pointerup", handlePointerUp, { once: true });
     },
-    [isChatCollapsed, isDesktop, primaryPanelSize],
+    [isChatCollapsed, isDesktop, primaryPanelSize, setPrimaryPanelSize],
   );
 
   // Grid template:
@@ -241,19 +217,7 @@ export function PlaygroundPage() {
       data-swapy-item="playground"
       className="relative z-0 h-full min-h-0 min-w-0 overflow-hidden transition-opacity duration-150 data-swapy-dragging:z-50 data-swapy-dragging:opacity-80"
     >
-      <PlaygroundPanel
-        code={code}
-        language={language}
-        result={result}
-        isPending={isPending}
-        isOutputMinimized={isOutputMinimized}
-        isChatCollapsed={isChatCollapsed}
-        onCodeChange={setCode}
-        onLanguageChange={handleLanguageChange}
-        onRun={handleRun}
-        onToggleOutputMinimized={handleToggleOutputMinimized}
-        onClearOutput={handleClearOutput}
-      />
+      <PlaygroundPanel />
     </div>
   );
 
@@ -287,23 +251,15 @@ export function PlaygroundPage() {
           )}
         </button>
       ) : (
-        <ChatPanel onToggleChatCollapsed={handleToggleChatCollapsed} />
+        <ChatPanel />
       )}
     </div>
   );
   const initialPanelSlots = initialPanelSlotsRef.current;
 
   return (
-    <ChatRuntimeProvider>
-      <PlaygroundAssistantTools
-        code={code}
-        language={language}
-        result={result}
-        setCode={setCode}
-        setLanguage={setLanguage}
-        setResult={setResult}
-        setIsOutputMinimized={setIsOutputMinimized}
-      />
+    <>
+      <PlaygroundAssistantTools />
       <div className="flex h-screen overflow-hidden">
         <LeftSidebar />
         <div
@@ -311,23 +267,12 @@ export function PlaygroundPage() {
           className="grid min-h-0 min-w-0 flex-1 overflow-hidden"
           style={panelGridStyle}
         >
-          {/*
-           * Both swapy slot/item wrappers are ALWAYS in the DOM.
-           * Swapy.destroy() only removes event listeners — it never restores
-           * moved DOM nodes. If we conditionally unmount these wrappers while
-           * swapy has physically moved an item to a different slot, React's
-           * removeChild call targets the wrong parent and throws a DOMException.
-           * Keeping the wrappers mounted and only changing their inner content
-           * (ChatPanel ↔ collapsed strip) avoids this entirely.
-           */}
-          <div
-            data-swapy-slot="playground"
-            className="relative min-h-0 min-w-0 overflow-visible"
-          >
-            {initialPanelSlots.playground === "playground"
-              ? playgroundItem
-              : chatItem}
-          </div>
+          {resolveInitialPanelItem(
+            "playground",
+            initialPanelSlots.playground,
+            playgroundItem,
+            chatItem,
+          )}
 
           {/* Resize handle — only when expanded. Safe to toggle because it is
               not a swapy slot/item, so React can add/remove it freely. */}
@@ -340,16 +285,27 @@ export function PlaygroundPage() {
             ></button>
           )}
 
-          <div
-            data-swapy-slot="chat"
-            className="relative min-h-0 min-w-0 overflow-visible"
-          >
-            {initialPanelSlots.chat === "playground"
-              ? playgroundItem
-              : chatItem}
-          </div>
+          {resolveInitialPanelItem(
+            "chat",
+            initialPanelSlots.chat,
+            playgroundItem,
+            chatItem,
+          )}
         </div>
       </div>
-    </ChatRuntimeProvider>
+    </>
+  );
+}
+
+function resolveInitialPanelItem(
+  slot: "playground" | "chat",
+  item: "playground" | "chat",
+  playgroundItem: ReactNode,
+  chatItem: ReactNode,
+) {
+  return (
+    <div data-swapy-slot={slot} className="relative min-h-0 min-w-0 overflow-visible">
+      {item === "playground" ? playgroundItem : chatItem}
+    </div>
   );
 }

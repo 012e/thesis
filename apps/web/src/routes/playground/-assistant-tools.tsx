@@ -1,9 +1,18 @@
 import { useMemo, useRef } from "react";
 import { useAssistantInstructions, useAssistantTool } from "@assistant-ui/react";
 import { z } from "zod";
+import { useAtomValue, useSetAtom } from "jotai";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
-import type { Language } from "./-types";
+import { isOutputMinimizedAtom } from "./-types";
+import {
+  codeAtom,
+  languageAtom,
+  resultAtom,
+  setCodeAtom,
+  setLanguageAtom,
+  setResultAtom,
+} from "./-playground-state";
 
 const PlaygroundLanguageSchema = z.enum(["javascript", "typescript"]);
 
@@ -24,25 +33,14 @@ const RunPlaygroundCodeInput = z.object({
   timeout: z.number().int().positive().max(60000).optional(),
 });
 
-export type PlaygroundAssistantToolsProps = {
-  code: string;
-  language: Language;
-  result: ExecutionResult | null;
-  setCode: (code: string) => void;
-  setLanguage: (language: Language) => void;
-  setResult: (result: ExecutionResult | null) => void;
-  setIsOutputMinimized: (value: boolean) => void;
-};
-
-export function PlaygroundAssistantTools({
-  code,
-  language,
-  result,
-  setCode,
-  setLanguage,
-  setResult,
-  setIsOutputMinimized,
-}: PlaygroundAssistantToolsProps) {
+export function PlaygroundAssistantTools() {
+  const code = useAtomValue(codeAtom);
+  const language = useAtomValue(languageAtom);
+  const result = useAtomValue(resultAtom);
+  const setCode = useSetAtom(setCodeAtom);
+  const setLanguage = useSetAtom(setLanguageAtom);
+  const setResult = useSetAtom(setResultAtom);
+  const setIsOutputMinimized = useSetAtom(isOutputMinimizedAtom);
   const stateRef = useRef({ code, language, result });
   stateRef.current = { code, language, result };
 

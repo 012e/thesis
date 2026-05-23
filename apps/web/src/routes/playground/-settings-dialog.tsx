@@ -8,16 +8,28 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+  FieldTitle,
+} from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import playgroundSettingsAtom from "@/lib/atoms/playground-settings";
-import type { PlaygroundKeybinding, PlaygroundTheme } from "@/lib/atoms/playground-settings";
+import type {
+  PlaygroundKeybinding,
+  PlaygroundTheme,
+} from "@/lib/atoms/playground-settings";
 
 export function PlaygroundSettingsDialog() {
   const [settings, setSettings] = useAtom(playgroundSettingsAtom);
@@ -35,122 +47,140 @@ export function PlaygroundSettingsDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="playground-theme">Theme</Label>
-            <Select
-              value={settings.theme}
-              onValueChange={(value) =>
-                value !== null &&
-                setSettings((current) => ({
-                  ...current,
-                  theme: value as PlaygroundTheme,
-                }))
-              }
-            >
-              <SelectTrigger id="playground-theme" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="auto">Follow app theme</SelectItem>
-                <SelectItem value="light">Light</SelectItem>
-                <SelectItem value="dark">Dark</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="playground-keybinding">Keybinding</Label>
-            <Select
-              value={settings.keybinding}
-              onValueChange={(value) =>
-                value !== null &&
-                setSettings((current) => ({
-                  ...current,
-                  keybinding: value as PlaygroundKeybinding,
-                }))
-              }
-            >
-              <SelectTrigger id="playground-keybinding" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="default">
-                  Default multi-cursor (Alt)
-                </SelectItem>
-                <SelectItem value="alternate">
-                  Alternate multi-cursor (Ctrl/Cmd)
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="playground-font-size">Font size</Label>
-              <input
-                id="playground-font-size"
-                type="number"
-                min={11}
-                max={24}
-                value={settings.fontSize}
-                onChange={(event) =>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <FieldGroup>
+            <Field>
+              <FieldLabel htmlFor="playground-theme">Theme</FieldLabel>
+              <Select
+                value={settings.theme}
+                onValueChange={(value) =>
+                  value !== null &&
                   setSettings((current) => ({
                     ...current,
-                    fontSize: Number(event.target.value),
+                    theme: value as PlaygroundTheme,
                   }))
                 }
-                className="h-8 border bg-background px-2 text-sm outline-none focus:border-ring"
-              />
-            </div>
+              >
+                <SelectTrigger id="playground-theme" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="auto">Follow app theme</SelectItem>
+                    <SelectItem value="light">Light</SelectItem>
+                    <SelectItem value="dark">Dark</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
 
-            <div className="grid gap-1.5">
-              <Label htmlFor="playground-tab-size">Tab size</Label>
-              <input
-                id="playground-tab-size"
-                type="number"
-                min={2}
-                max={8}
-                value={settings.tabSize}
-                onChange={(event) =>
+            <Field>
+              <FieldLabel htmlFor="playground-keybinding">
+                Keybinding
+              </FieldLabel>
+              <Select
+                value={settings.keybinding}
+                onValueChange={(value) =>
+                  value !== null &&
                   setSettings((current) => ({
                     ...current,
-                    tabSize: Number(event.target.value),
+                    keybinding: value as PlaygroundKeybinding,
                   }))
                 }
-                className="h-8 border bg-background px-2 text-sm outline-none focus:border-ring"
-              />
+              >
+                <SelectTrigger id="playground-keybinding" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="default">
+                      Default multi-cursor (Alt)
+                    </SelectItem>
+                    <SelectItem value="alternate">
+                      Alternate multi-cursor (Ctrl/Cmd)
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+
+            <div className="grid grid-cols-2 gap-3">
+              <Field>
+                <FieldLabel htmlFor="playground-font-size">
+                  Font size
+                </FieldLabel>
+                <Input
+                  id="playground-font-size"
+                  name="fontSize"
+                  type="number"
+                  min={11}
+                  max={24}
+                  value={settings.fontSize}
+                  onChange={(event) =>
+                    setSettings((current) => ({
+                      ...current,
+                      fontSize: Number(event.target.value),
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="playground-tab-size">Tab size</FieldLabel>
+                <Input
+                  id="playground-tab-size"
+                  name="tabSize"
+                  type="number"
+                  min={2}
+                  max={8}
+                  value={settings.tabSize}
+                  onChange={(event) =>
+                    setSettings((current) => ({
+                      ...current,
+                      tabSize: Number(event.target.value),
+                    }))
+                  }
+                />
+              </Field>
             </div>
-          </div>
 
-          <label className="flex items-center justify-between gap-3 border px-3 py-2 text-sm">
-            <span>Word wrap</span>
-            <input
-              type="checkbox"
-              checked={settings.wordWrap === "on"}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  wordWrap: event.target.checked ? "on" : "off",
-                }))
-              }
-            />
-          </label>
+            <Field orientation="horizontal" className="justify-between border p-3">
+              <FieldContent>
+                <FieldTitle>Word wrap</FieldTitle>
+              </FieldContent>
+              <Switch
+                aria-label="Toggle word wrap"
+                checked={settings.wordWrap === "on"}
+                onCheckedChange={(checked) =>
+                  setSettings((current) => ({
+                    ...current,
+                    wordWrap: checked ? "on" : "off",
+                  }))
+                }
+              />
+            </Field>
 
-          <label className="flex items-center justify-between gap-3 border px-3 py-2 text-sm">
-            <span>Minimap</span>
-            <input
-              type="checkbox"
-              checked={settings.minimap}
-              onChange={(event) =>
-                setSettings((current) => ({
-                  ...current,
-                  minimap: event.target.checked,
-                }))
-              }
-            />
-          </label>
-        </div>
+            <Field orientation="horizontal" className="justify-between border p-3">
+              <FieldContent>
+                <FieldTitle>Minimap</FieldTitle>
+              </FieldContent>
+              <Switch
+                aria-label="Toggle minimap"
+                checked={settings.minimap}
+                onCheckedChange={(checked) =>
+                  setSettings((current) => ({
+                    ...current,
+                    minimap: checked,
+                  }))
+                }
+              />
+            </Field>
+          </FieldGroup>
+        </form>
       </DialogContent>
     </Dialog>
   );

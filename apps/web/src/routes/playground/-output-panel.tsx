@@ -7,7 +7,6 @@ import {
   IconTrash,
   IconChevronDown,
   IconChevronUp,
-  IconGripHorizontal,
 } from "@tabler/icons-react";
 import type { ExecutionResult } from "@repo/rest-contracts";
 
