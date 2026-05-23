@@ -259,7 +259,7 @@ export function GlobalChatPanel() {
         onClose={handleClose}
       />
       <div className="flex-1 overflow-hidden min-h-0">
-        <Thread />
+        <Thread scrollToEndKey={isOpen} />
       </div>
     </div>
   );

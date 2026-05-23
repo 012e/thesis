@@ -1,3 +1,6 @@
+import { ChatManager } from "@/components/chat";
+import { GlobalChatPanel } from "@/components/assistant-ui/global-chat-panel";
+import { GlobalChatToggleButton } from "@/components/assistant-ui/global-chat-toggle-button";
 import { LeftSidebar } from "./left-sidebar";
 import { RightSidebar } from "./right-sidebar";
 import { MainContent } from "./main-content";
@@ -9,6 +12,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <LeftSidebar />
         <MainContent>{children}</MainContent>
       </div>
+      <ChatManager />
+      <GlobalChatToggleButton />
+      <GlobalChatPanel />
     </div>
   );
 }
@@ -21,6 +27,9 @@ export function HomeLayout({ children }: { children: React.ReactNode }) {
         <MainContent>{children}</MainContent>
         <RightSidebar />
       </div>
+      <ChatManager />
+      <GlobalChatToggleButton />
+      <GlobalChatPanel />
     </div>
   );
 }

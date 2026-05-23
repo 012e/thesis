@@ -68,7 +68,7 @@ export function AIContextIndicator() {
         type="button"
         title="Dismiss context"
         onClick={() => setCtx({ type: "none" })}
-        className="shrink-0 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground p-2"
+        className="shrink-0 text-muted-foreground transition-colors hover:bg-muted/60 hover:text-foreground p-2"
       >
         <IconX className="size-3" />
       </button>

@@ -21,7 +21,12 @@ import {
   ThreadPrimitive,
   useAuiState,
 } from "@assistant-ui/react";
-import { useEffect, useRef, type PropsWithChildren } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type PropsWithChildren,
+} from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
 import { Button } from "@/components/ui/button";
@@ -48,12 +53,40 @@ import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
 
-export function Thread() {
+interface ThreadProps {
+  scrollToEndKey?: unknown;
+}
+
+export function Thread({ scrollToEndKey }: ThreadProps) {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const threadId = useAuiState(
+    (s) => s.threadListItem.remoteId ?? s.threadListItem.id,
+  );
+  const messageCount = useAuiState((s) => s.thread.messages?.length ?? 0);
+
+  useLayoutEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+
+    const scrollToEnd = () => {
+      const previousScrollBehavior = viewport.style.scrollBehavior;
+      viewport.style.scrollBehavior = "auto";
+      viewport.scrollTop = viewport.scrollHeight;
+      viewport.style.scrollBehavior = previousScrollBehavior;
+    };
+
+    scrollToEnd();
+    const frame = requestAnimationFrame(scrollToEnd);
+
+    return () => cancelAnimationFrame(frame);
+  }, [threadId, messageCount, scrollToEndKey]);
+
   return (
     <ThreadPrimitive.Root className="flex flex-col h-full bg-background @container/thread">
       <ThreadPrimitive.Viewport
+        ref={viewportRef}
         turnAnchor="top"
-        className="flex overflow-y-scroll flex-col flex-1 scroll-smooth"
+        className="flex overflow-y-scroll flex-col flex-1"
       >
         <AuiIf condition={(s) => s.thread.isEmpty}>
           <ThreadWelcome />

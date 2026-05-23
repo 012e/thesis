@@ -13,10 +13,6 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { GlobalErrorPage } from "@/components/global-error-boundary";
-import { ChatManager } from "@/components/chat";
-import { GlobalChatPanel } from "@/components/assistant-ui/global-chat-panel";
-import { GlobalChatToggleButton } from "@/components/assistant-ui/global-chat-toggle-button";
-import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 
 export function ThemeSync() {
   useTheme();
@@ -93,48 +89,21 @@ export function RootComponent() {
   const isPlaygroundRoute = router.location.pathname.startsWith("/playground");
   const isHomeRoute = router.location.pathname === "/";
 
-  // ChatRuntimeProvider is mounted once at the root for protected app routes so
-  // the assistant runtime survives route transitions.
-  const showChatRuntime = !isAuthRoute && !isApiRoute;
-
-  // Overlay chat components are mounted here at the root level so they persist
-  // across normal route transitions. /chat and /playground provide their own
-  // full-screen chat UI, so only the overlay shell is hidden there.
-  const showOverlays =
-    !isAuthRoute && !isChatRoute && !isApiRoute && !isPlaygroundRoute;
-
-  const content = (
-    <>
-      {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
-        <Outlet />
-      ) : isHomeRoute ? (
-        <HomeLayout>
-          <Outlet />
-        </HomeLayout>
-      ) : (
-        <AppLayout>
-          <Outlet />
-        </AppLayout>
-      )}
-      {showOverlays && (
-        <>
-          <ChatManager />
-          <GlobalChatToggleButton />
-          <GlobalChatPanel />
-        </>
-      )}
-    </>
-  );
-
   return (
     <>
       <ThemeSync />
       <RouteContextSync />
       <AuthGuard>
-        {showChatRuntime ? (
-          <ChatRuntimeProvider>{content}</ChatRuntimeProvider>
+        {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
+          <Outlet />
+        ) : isHomeRoute ? (
+          <HomeLayout>
+            <Outlet />
+          </HomeLayout>
         ) : (
-          content
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
         )}
       </AuthGuard>
       <Toaster richColors />
