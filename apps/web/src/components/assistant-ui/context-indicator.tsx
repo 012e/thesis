@@ -7,7 +7,6 @@ import {
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { globalAIContextAtom, type AIContext } from "@/lib/atoms/ai-context";
-import { cn } from "@/lib/utils";
 
 function contextLabel(
   ctx: AIContext,
@@ -47,7 +46,7 @@ function contextLabel(
  *
  * Renders nothing when context is { type: "none" }.
  */
-export function AIContextIndicator({ compact = false }: { compact?: boolean }) {
+export function AIContextIndicator() {
   const ctx = useAtomValue(globalAIContextAtom);
   const setCtx = useSetAtom(globalAIContextAtom);
 
@@ -55,12 +54,7 @@ export function AIContextIndicator({ compact = false }: { compact?: boolean }) {
   if (!label) return null;
 
   return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 w-full",
-        compact ? "max-w-none px-0" : "max-w-2xl",
-      )}
-    >
+    <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl">
       <div className="flex items-center gap-1.5 min-w-0 flex-1 px-2.5 py-1.5 bg-muted/60 border border-border/60 text-muted-foreground text-xs">
         {label.icon}
         <span className="truncate min-w-0 flex-1">{label.text}</span>

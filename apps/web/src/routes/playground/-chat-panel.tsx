@@ -1,5 +1,6 @@
-import { IconGripHorizontal } from "@tabler/icons-react";
+import { IconGripHorizontal, IconX } from "@tabler/icons-react";
 import { Thread } from "@/components/assistant-ui/thread";
+import { ThreadSwitcher } from "@/components/assistant-ui/global-chat-panel";
 
 type ChatPanelProps = {
   onToggleChatCollapsed: () => void;
@@ -8,35 +9,31 @@ type ChatPanelProps = {
 export function ChatPanel({ onToggleChatCollapsed }: ChatPanelProps) {
   return (
     <aside className="flex h-full min-h-0 flex-col border-l bg-background max-lg:border-l-0 max-lg:border-t">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b px-3 py-2">
-        <div className="flex min-w-0 items-start gap-2">
-          <button
-            type="button"
-            data-swapy-handle
-            className="mt-0.5 cursor-grab touch-none p-1 text-muted-foreground transition-colors hover:text-foreground active:cursor-grabbing"
-            aria-label="Move chat panel"
-            title="Move chat panel"
-          >
-            <IconGripHorizontal className="size-4" />
-          </button>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">AI Code Assistant</p>
-            <p className="truncate text-xs text-muted-foreground">
-              Can inspect, edit, and run this playground
-            </p>
-          </div>
-        </div>
+      <div className="flex shrink-0 items-center gap-1 border-b border-border bg-background">
+        <button
+          type="button"
+          data-swapy-handle
+          className="flex h-7 w-7 shrink-0 cursor-grab touch-none items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground active:cursor-grabbing"
+          aria-label="Move chat panel"
+          title="Move chat panel"
+        >
+          <IconGripHorizontal className="size-4" />
+        </button>
+
+        <ThreadSwitcher />
 
         <button
           type="button"
           onClick={onToggleChatCollapsed}
-          className="shrink-0 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          title="Close AI chat"
+          aria-label="Close AI chat"
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
-          Hide
+          <IconX className="size-4" />
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-hidden">
-        <Thread compact />
+        <Thread />
       </div>
     </aside>
   );

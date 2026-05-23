@@ -30,7 +30,7 @@ interface ThreadSwitcherProps {
   onNewChat?: () => void;
 }
 
-function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
+export function ThreadSwitcher({ onNewChat }: ThreadSwitcherProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -262,7 +262,7 @@ export function GlobalChatPanel() {
           onClose={handleClose}
         />
         <div className="flex-1 overflow-hidden min-h-0">
-          <Thread compact />
+          <Thread />
         </div>
       </ChatRuntimeProvider>
     </div>
