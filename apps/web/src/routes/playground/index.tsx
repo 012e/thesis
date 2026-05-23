@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { CSSProperties, PointerEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { createSwapy } from "swapy";
 import type { Swapy } from "swapy";
 import {
@@ -20,11 +20,15 @@ import { PlaygroundAssistantTools } from "./-assistant-tools";
 import { PlaygroundPanel } from "./-playground-panel";
 import { ChatPanel } from "./-chat-panel";
 import {
+  DEFAULT_PANEL_SLOTS,
   isOutputMinimizedAtom,
+  getPanelSlots,
+  getStoredPanelSlots,
   MIN_DESKTOP_PANEL_WIDTH,
   MIN_MOBILE_PANEL_HEIGHT,
   OUTER_RESIZE_HANDLE_SIZE,
   COLLAPSED_CHAT_STRIP_SIZE,
+  panelSlotsAtom,
 } from "./-types";
 import type { Language } from "./-types";
 import { useIsDesktop } from "./-hooks";
@@ -38,6 +42,7 @@ export function PlaygroundPage() {
   const isDesktop = useIsDesktop();
   const containerRef = useRef<HTMLDivElement>(null);
   const swapyRef = useRef<Swapy | null>(null);
+  const initialPanelSlotsRef = useRef(getStoredPanelSlots());
   const [language, setLanguage] = useState<Language>("javascript");
   const [code, setCode] = useState<string>(DEFAULT_CODE.javascript);
   const [result, setResult] = useState<ExecutionResult | null>(null);
@@ -45,7 +50,10 @@ export function PlaygroundPage() {
   const [isChatCollapsed, setIsChatCollapsed] = useState(false);
   // Tracks whether the chat swapy item is physically in the first grid column
   // (i.e. the user swapped panels so chat moved to the playground slot).
-  const [chatIsInFirstColumn, setChatIsInFirstColumn] = useState(false);
+  const [chatIsInFirstColumn, setChatIsInFirstColumn] = useState(
+    initialPanelSlotsRef.current.playground === "chat",
+  );
+  const setPanelSlots = useSetAtom(panelSlotsAtom);
   const [isOutputMinimized, setIsOutputMinimized] = useAtom(
     isOutputMinimizedAtom,
   );
@@ -57,16 +65,25 @@ export function PlaygroundPage() {
       return;
     }
 
-    swapyRef.current = createSwapy(container, {
+    const swapy = createSwapy(container, {
       animation: "none",
       swapMode: "drop",
     });
+    swapy.onSwapEnd((event) => {
+      if (!event.hasChanged) return;
+
+      const nextPanelSlots = getPanelSlots(event.slotItemMap);
+      if (nextPanelSlots) {
+        setPanelSlots(nextPanelSlots);
+      }
+    });
+    swapyRef.current = swapy;
 
     return () => {
       swapyRef.current?.destroy();
       swapyRef.current = null;
     };
-  }, [isChatCollapsed]);
+  }, [isChatCollapsed, setPanelSlots]);
 
   useEffect(() => {
     swapyRef.current?.update();
@@ -123,12 +140,17 @@ export function PlaygroundPage() {
           '[data-swapy-slot="playground"] [data-swapy-item="chat"]',
         );
         setChatIsInFirstColumn(chatInFirstSlot !== null);
+        setPanelSlots(
+          chatInFirstSlot
+            ? { playground: "chat", chat: "playground" }
+            : DEFAULT_PANEL_SLOTS,
+        );
       }
       swapyRef.current?.destroy();
       swapyRef.current = null;
     }
     setIsChatCollapsed((current) => !current);
-  }, [isChatCollapsed]);
+  }, [isChatCollapsed, setPanelSlots]);
 
   const handleOuterResizeStart = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
@@ -213,6 +235,63 @@ export function PlaygroundPage() {
       ? "border-b"
       : "border-t";
 
+  const playgroundItem = (
+    <div
+      data-swapy-item="playground"
+      className="relative z-0 h-full min-h-0 min-w-0 overflow-hidden transition-opacity duration-150 data-swapy-dragging:z-50 data-swapy-dragging:opacity-80"
+    >
+      <PlaygroundPanel
+        code={code}
+        language={language}
+        result={result}
+        isPending={isPending}
+        isOutputMinimized={isOutputMinimized}
+        isChatCollapsed={isChatCollapsed}
+        onCodeChange={setCode}
+        onLanguageChange={handleLanguageChange}
+        onRun={handleRun}
+        onToggleOutputMinimized={handleToggleOutputMinimized}
+        onClearOutput={handleClearOutput}
+      />
+    </div>
+  );
+
+  const chatItem = (
+    <div
+      data-swapy-item="chat"
+      className="relative z-0 h-full min-h-0 min-w-0 overflow-hidden transition-opacity duration-150 data-swapy-dragging:z-50 data-swapy-dragging:opacity-80"
+    >
+      {isChatCollapsed ? (
+        <button
+          type="button"
+          onClick={handleToggleChatCollapsed}
+          className={`group flex h-full w-full flex-col items-center justify-center gap-1.5 bg-muted/20 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring max-lg:flex-row ${stripBorderClass}`}
+          aria-label="Show AI chat"
+          title="Show AI chat"
+        >
+          {/* Desktop chevron */}
+          {chatIsInFirstColumn ? (
+            <IconChevronRight className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:hidden" />
+          ) : (
+            <IconChevronLeft className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:hidden" />
+          )}
+          <span className="text-[10px] font-medium tracking-wide text-muted-foreground transition-colors group-hover:text-foreground max-lg:text-xs lg:[writing-mode:vertical-rl] lg:rotate-180">
+            AI Chat
+          </span>
+          {/* Mobile chevron */}
+          {chatIsInFirstColumn ? (
+            <IconChevronDown className="hidden size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:block" />
+          ) : (
+            <IconChevronUp className="hidden size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:block" />
+          )}
+        </button>
+      ) : (
+        <ChatPanel onToggleChatCollapsed={handleToggleChatCollapsed} />
+      )}
+    </div>
+  );
+  const initialPanelSlots = initialPanelSlotsRef.current;
+
   return (
     <ChatRuntimeProvider>
       <PlaygroundAssistantTools
@@ -244,24 +323,9 @@ export function PlaygroundPage() {
             data-swapy-slot="playground"
             className="relative min-h-0 min-w-0 overflow-visible"
           >
-            <div
-              data-swapy-item="playground"
-              className="relative z-0 h-full min-h-0 min-w-0 overflow-hidden transition-opacity duration-150 data-swapy-dragging:z-50 data-swapy-dragging:opacity-80"
-            >
-              <PlaygroundPanel
-                code={code}
-                language={language}
-                result={result}
-                isPending={isPending}
-                isOutputMinimized={isOutputMinimized}
-                isChatCollapsed={isChatCollapsed}
-                onCodeChange={setCode}
-                onLanguageChange={handleLanguageChange}
-                onRun={handleRun}
-                onToggleOutputMinimized={handleToggleOutputMinimized}
-                onClearOutput={handleClearOutput}
-              />
-            </div>
+            {initialPanelSlots.playground === "playground"
+              ? playgroundItem
+              : chatItem}
           </div>
 
           {/* Resize handle — only when expanded. Safe to toggle because it is
@@ -281,38 +345,7 @@ export function PlaygroundPage() {
             data-swapy-slot="chat"
             className="relative min-h-0 min-w-0 overflow-visible"
           >
-            <div
-              data-swapy-item="chat"
-              className="relative z-0 h-full min-h-0 min-w-0 overflow-hidden transition-opacity duration-150 data-swapy-dragging:z-50 data-swapy-dragging:opacity-80"
-            >
-              {isChatCollapsed ? (
-                <button
-                  type="button"
-                  onClick={handleToggleChatCollapsed}
-                  className={`group flex h-full w-full flex-col items-center justify-center gap-1.5 bg-muted/20 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring max-lg:flex-row ${stripBorderClass}`}
-                  aria-label="Show AI chat"
-                  title="Show AI chat"
-                >
-                  {/* Desktop chevron */}
-                  {chatIsInFirstColumn ? (
-                    <IconChevronRight className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:hidden" />
-                  ) : (
-                    <IconChevronLeft className="size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:hidden" />
-                  )}
-                  <span className="text-[10px] font-medium tracking-wide text-muted-foreground transition-colors group-hover:text-foreground max-lg:text-xs lg:[writing-mode:vertical-rl] lg:rotate-180">
-                    AI Chat
-                  </span>
-                  {/* Mobile chevron */}
-                  {chatIsInFirstColumn ? (
-                    <IconChevronDown className="hidden size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:block" />
-                  ) : (
-                    <IconChevronUp className="hidden size-3.5 text-muted-foreground transition-colors group-hover:text-foreground max-lg:block" />
-                  )}
-                </button>
-              ) : (
-                <ChatPanel onToggleChatCollapsed={handleToggleChatCollapsed} />
-              )}
-            </div>
+            {initialPanelSlots.chat === "playground" ? playgroundItem : chatItem}
           </div>
         </div>
       </div>

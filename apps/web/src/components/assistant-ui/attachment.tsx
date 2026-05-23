@@ -112,7 +112,7 @@ const AttachmentThumb: FC = () => {
       <AvatarImage
         src={src}
         alt="Attachment preview"
-        className="aui-attachment-tile-image object-cover"
+        className="aui-attachment-tile-image object-cover rounded-none"
       />
       <AvatarFallback delay={isImage ? 200 : 0}>
         <FileText className="aui-attachment-tile-fallback-icon size-8 text-muted-foreground" />
@@ -152,7 +152,7 @@ const AttachmentUI: FC = () => {
           <TooltipTrigger
             render={
               <div
-                className="aui-attachment-tile size-14 cursor-pointer overflow-hidden rounded-[calc(var(--composer-radius)-var(--composer-padding))] border bg-muted transition-opacity hover:opacity-75"
+                className="aui-attachment-tile size-14 cursor-pointer overflow-hidden border bg-muted transition-opacity hover:opacity-75"
                 role="button"
                 aria-label={`${typeLabel} attachment`}
               />
