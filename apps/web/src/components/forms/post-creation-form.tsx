@@ -28,9 +28,9 @@ import {
   PostComposerCharCounter,
   PostComposerActions,
   PostComposerCloseButton,
-  usePostComposerContext,
   type ImagePreview,
 } from "@/components/post-composer";
+import { usePostComposerContext } from "@/components/post-composer/context";
 
 /**
  * Watches the submitRequest flag set by the submit_form AI tool and triggers

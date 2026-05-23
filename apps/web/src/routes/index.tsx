@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-function Index() {
+export function Index() {
   const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
   const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
   const recommendations = useRecommendations({

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/profile/following")({
   component: FollowingPage,
 });
 
-function FollowingPage() {
+export function FollowingPage() {
   const { data: session, isPending } = useSession();
 
   if (isPending || !session) {
@@ -24,7 +24,7 @@ function FollowingPage() {
   );
 }
 
-function FollowingContent({ userId }: { userId: string }) {
+export function FollowingContent({ userId }: { userId: string }) {
   const { data: following } = useFollowingSuspense(userId);
 
   return (

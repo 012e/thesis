@@ -1,6 +1,7 @@
 import type { RemoteThreadListAdapter } from "@assistant-ui/react";
 import { client } from "@/lib/api";
 import { createAssistantStream } from "assistant-stream";
+import type { ThreadType } from "@repo/rest-contracts";
 
 export const threadListAdapter: RemoteThreadListAdapter = {
   async list() {
@@ -9,7 +10,7 @@ export const threadListAdapter: RemoteThreadListAdapter = {
       throw new Error(`Failed to list threads: ${status}`);
     }
     return {
-      threads: body.map((thread) => ({
+      threads: body.map((thread: ThreadType) => ({
         remoteId: thread.id,
         externalId: thread.externalId ?? undefined,
         status: thread.isArchived ? "archived" : "regular",

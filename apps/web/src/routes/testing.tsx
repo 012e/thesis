@@ -9,7 +9,7 @@ export const Route = createFileRoute("/testing")({
   component: TestingPage,
 });
 
-function TestingPage() {
+export function TestingPage() {
   const navigate = useNavigate();
   const { isPending: sessionPending } = useSession();
   const isAdmin = useIsAdmin();

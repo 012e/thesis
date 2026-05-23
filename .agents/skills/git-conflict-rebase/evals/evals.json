@@ -1,0 +1,23 @@
+{
+  "skill_name": "git-conflict-rebase",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm halfway through a rebase and Git says there are conflicts. Please resolve them and keep going until the rebase is done. Don't open an editor for commit messages.",
+      "expected_output": "The assistant detects a rebase, resolves conflicted files, stages only resolved files, runs `GIT_EDITOR=true git rebase --continue`, repeats if new conflicts appear, and reports the final Git state.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Can you fix this merge conflict for me? I merged main into my branch and there are unmerged files. Resolve the conflicts but don't commit anything yet.",
+      "expected_output": "The assistant detects a merge, resolves and stages conflicts, does not create a merge commit, and reports validation plus current status.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "git rebase --continue failed again after I fixed one file. Please inspect the repo and finish the conflict/rebase process safely.",
+      "expected_output": "The assistant checks whether a rebase is active, identifies any remaining unmerged files, avoids destructive commands, continues with `GIT_EDITOR=true git rebase --continue`, and asks before skipping commits if Git indicates an empty patch.",
+      "files": []
+    }
+  ]
+}

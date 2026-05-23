@@ -20,7 +20,7 @@ export const Route = createFileRoute("/chat/")({
   component: ChatPage,
 });
 
-function ChatPage() {
+export function ChatPage() {
   return (
     <ChatRuntimeProvider>
       <OpenFormToolUI />

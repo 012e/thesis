@@ -1,5 +1,6 @@
 import { http, HttpResponse, type RequestHandler } from "msw";
 import { fake } from "zod-schema-faker/v4";
+import type * as core from "zod/v4/core";
 
 /**
  * Minimal view of a ts-rest AppRoute as it exists at runtime.
@@ -96,8 +97,7 @@ export function createMockHandlers(
     const fullPath = `${baseUrl}${route.path}`;
     const method = route.method.toLowerCase();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return (http as any)[method](
+    return (http as Record<string, typeof http.get>)[method](
       fullPath,
       async ({ request }: { request: Request }) => {
         // Validate query params if the route defines a query schema
@@ -106,16 +106,14 @@ export function createMockHandlers(
           const rawParams = Object.fromEntries(url.searchParams);
           const result = route.query.safeParse(rawParams);
           if (!result.success) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            return HttpResponse.json(result.error as any, { status: 400 });
+            return HttpResponse.json(result.error, { status: 400 });
           }
         }
 
         // Use a custom override if one is registered for this route path
         if (overrides[route.path]) {
           const data = await overrides[route.path](request);
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return HttpResponse.json(data as any);
+          return HttpResponse.json(data);
         }
 
         // Auto-generate a response from the success schema (200 takes priority over 201)
@@ -128,8 +126,7 @@ export function createMockHandlers(
         }
 
         try {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          return HttpResponse.json(fake(responseSchema as any));
+          return HttpResponse.json(fake(responseSchema as core.$ZodType));
         } catch {
           // zod-schema-faker cannot handle some schema types (e.g. z.null(), empty unions).
           // Return a 500 rather than crashing the story.

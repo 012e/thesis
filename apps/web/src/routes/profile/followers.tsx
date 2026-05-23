@@ -10,7 +10,7 @@ export const Route = createFileRoute("/profile/followers")({
   component: FollowersPage,
 });
 
-function FollowersPage() {
+export function FollowersPage() {
   const { data: session, isPending } = useSession();
 
   if (isPending || !session) {
@@ -24,7 +24,7 @@ function FollowersPage() {
   );
 }
 
-function FollowersContent({ userId }: { userId: string }) {
+export function FollowersContent({ userId }: { userId: string }) {
   const { data: followers } = useFollowersSuspense(userId);
 
   return (

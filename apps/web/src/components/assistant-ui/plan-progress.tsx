@@ -112,7 +112,7 @@ export function PlanProgressBar() {
       setRejectFeedback("");
     }
     prevApprovalStatus.current = plan.approvalStatus;
-  }, [plan?.approvalStatus]);
+  }, [plan]);
 
   // Focus reject textarea when it appears
   useEffect(() => {

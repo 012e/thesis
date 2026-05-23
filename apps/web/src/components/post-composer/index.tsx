@@ -1,6 +1,4 @@
 import {
-  createContext,
-  useContext,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -29,56 +27,17 @@ import { PollCreator } from "@/components/poll-creator";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
 import { POST_MAX_LENGTH } from "@/lib/constants";
+import {
+  PostComposerContext,
+  usePostComposerContext,
+  type ImagePreview,
+} from "./context";
 
 // ---- Types -----------------------------------------------------------------
 
-export interface ImagePreview {
-  file: File;
-  previewUrl: string;
-}
+export type { ImagePreview };
 
 export const MAX_IMAGES = 4;
-
-// ---- Context ---------------------------------------------------------------
-
-interface PostComposerContextValue {
-  content: string;
-  setContent: (val: string) => void;
-  showPollCreator: boolean;
-  poll: PollPostContentDto | undefined;
-  selectedImages: ImagePreview[];
-  uploadedImages: PostImageDto[];
-  isCreating: boolean;
-  isUploading: boolean;
-  isPending: boolean;
-  characterCount: number;
-  isExceeded: boolean;
-  hasContent: boolean;
-  canPost: boolean;
-  totalImages: number;
-  canAddMoreImages: boolean;
-  handlePost: () => Promise<void>;
-  handleClear: () => void;
-  handlePollToggle: () => void;
-  handlePollClose: () => void;
-  handlePollChange: (poll: PollPostContentDto | undefined) => void;
-  handleImageSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleRemoveSelectedImage: (index: number) => void;
-  handleRemoveUploadedImage: (index: number) => void;
-}
-
-const PostComposerContext = createContext<PostComposerContextValue | null>(
-  null,
-);
-
-export function usePostComposerContext(): PostComposerContextValue {
-  const ctx = useContext(PostComposerContext);
-  if (!ctx)
-    throw new Error(
-      "usePostComposerContext must be used inside PostComposerProvider",
-    );
-  return ctx;
-}
 
 // ---- Provider --------------------------------------------------------------
 

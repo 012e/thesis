@@ -17,9 +17,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   PostComposerEditor,
   PostComposerProvider,
-  usePostComposerContext,
   type ImagePreview,
 } from "@/components/post-composer";
+import { usePostComposerContext } from "@/components/post-composer/context";
 import { getUserProfile } from "@/lib/api/users";
 import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
 import { useSession } from "@/hooks/use-session";
