@@ -11,7 +11,6 @@ import {
   IconUser,
   IconSettings,
   IconLogout,
-  IconHelp,
 } from "@tabler/icons-react";
 import { logout } from "@/lib/auth";
 import { useRouter } from "@tanstack/react-router";
@@ -34,6 +33,10 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
 
   const handleViewProfile = () => {
     router.navigate({ to: "/profile" });
+  };
+
+  const handleSettings = () => {
+    router.navigate({ to: "/settings" });
   };
 
   const user = session?.user;
@@ -81,7 +84,7 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
           <IconUser />
           View Profile
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSettings}>
           <IconSettings />
           Settings
         </DropdownMenuItem>

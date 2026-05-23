@@ -69,6 +69,10 @@ export function RouteContextSync() {
       });
       return;
     }
+    if (pathname.startsWith("/settings")) {
+      setGlobalAIContext({ type: "page", page: "settings", label: "Settings" });
+      return;
+    }
 
     // Unknown route — clear context
     setGlobalAIContext({ type: "none" });

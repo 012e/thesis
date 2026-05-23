@@ -36,7 +36,7 @@ export function DmToggleButton() {
       aria-label={isDmOpen ? "Close messages" : "Open messages"}
       title={isDmOpen ? "Close messages" : "Open messages"}
       className={cn(
-        "fixed bottom-4 z-50 flex items-center justify-center w-12 h-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:scale-105 active:scale-95",
+        "fixed bottom-4 z-50 flex items-center justify-center w-12 h-12 rounded-full border border-white/20 bg-black text-white shadow-[0_10px_28px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.18)] hover:scale-105 hover:border-white/35 hover:bg-neutral-950 active:scale-95 dark:border-white/25",
         isDmOpen &&
           "ring-2 ring-primary/40 ring-offset-2 ring-offset-background",
       )}

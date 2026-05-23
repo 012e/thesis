@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestingRouteImport } from './routes/testing'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PlaygroundRouteImport } from './routes/playground'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
@@ -29,6 +30,11 @@ import { Route as AdminUsersRouteImport } from './routes/admin/users'
 const TestingRoute = TestingRouteImport.update({
   id: '/testing',
   path: '/testing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaygroundRoute = PlaygroundRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -150,6 +158,7 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/playground': typeof PlaygroundRoute
+  '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/notifications'
     | '/playground'
+    | '/settings'
     | '/testing'
     | '/admin/users'
     | '/auth/forgot-password'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/notifications'
     | '/playground'
+    | '/settings'
     | '/testing'
     | '/admin/users'
     | '/auth/forgot-password'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/notifications'
     | '/playground'
+    | '/settings'
     | '/testing'
     | '/admin/users'
     | '/auth/forgot-password'
@@ -225,6 +237,7 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   NotificationsRoute: typeof NotificationsRoute
   PlaygroundRoute: typeof PlaygroundRoute
+  SettingsRoute: typeof SettingsRoute
   TestingRoute: typeof TestingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/testing'
       fullPath: '/testing'
       preLoaderRoute: typeof TestingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/playground': {
@@ -361,6 +381,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   NotificationsRoute: NotificationsRoute,
   PlaygroundRoute: PlaygroundRoute,
+  SettingsRoute: SettingsRoute,
   TestingRoute: TestingRoute,
   AdminUsersRoute: AdminUsersRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,

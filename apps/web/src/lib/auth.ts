@@ -4,6 +4,7 @@ import {
   type RegisterParams,
   type RequestPasswordResetParams,
   type ResetPasswordParams,
+  type ChangePasswordParams,
   type UpdateProfileParams,
 } from "@repo/auth-client";
 import { useToast as toast } from "@/hooks/use-toast";
@@ -130,6 +131,32 @@ export async function resetPassword(
 }
 
 /**
+ * Change password wrapper with UI feedback
+ */
+export async function changePassword(
+  params: ChangePasswordParams,
+): Promise<boolean> {
+  const result = await authClient.changePassword({
+    currentPassword: params.currentPassword,
+    newPassword: params.newPassword,
+    revokeOtherSessions: params.revokeOtherSessions ?? true,
+  });
+
+  if (result.error) {
+    toast.error("Failed to change password", {
+      description: result.error.message || "Check your current password",
+    });
+    return false;
+  }
+
+  toast.success("Password changed", {
+    description: "Other sessions were revoked for your security.",
+  });
+
+  return true;
+}
+
+/**
  * Update profile wrapper with UI feedback
  */
 export async function updateProfile(
@@ -192,4 +219,9 @@ export function handleAuthFailure() {
 }
 
 // Re-export types for convenience
-export type { LoginParams, RegisterParams, UpdateProfileParams };
+export type {
+  ChangePasswordParams,
+  LoginParams,
+  RegisterParams,
+  UpdateProfileParams,
+};
