@@ -11,8 +11,7 @@ import {
 } from "@/components/assistant-ui/shiki-highlighter";
 import { createMarkdownComponents } from "@/components/ui/markdown-components";
 
-// Stable module-level constant — components don't depend on runtime state
-// (react-shiki handles theme switching via CSS color-scheme automatically)
+// Stable module-level constant — SyntaxHighlighter reads the app theme internally.
 const components = {
   ...createMarkdownComponents(),
   SyntaxHighlighter,

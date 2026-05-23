@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
  * for ReactMarkdown code blocks; for MarkdownTextPrimitive the SyntaxHighlighter
  * key is provided separately via shiki-highlighter.tsx.
  */
-export const createMarkdownComponents = (): Components => ({
+export const createMarkdownComponents = (isDark = true): Components => ({
   h1: ({ className: cls, ...props }) => (
     <h1
       className={cn(
@@ -147,19 +147,20 @@ export const createMarkdownComponents = (): Components => ({
         children?: unknown;
       };
       const match = /language-([\w-]+)/.exec(codeClass || "");
-      if (match && typeof codeText === "string") {
-        const lang = match[1].toLowerCase();
+      if (typeof codeText === "string") {
+        const lang = match?.[1].toLowerCase() ?? "text";
         return (
           <div className="my-2 overflow-hidden border border-border/50">
-            <div className="flex items-center border-b border-border/50 bg-muted/30 px-1">
-              <CodeLanguageBadge language={lang} />
-            </div>
+            {match ? (
+              <div className="flex items-center border-b border-border/50 bg-muted/30 px-1">
+                <CodeLanguageBadge language={lang} />
+              </div>
+            ) : null}
             <ShikiHighlighter
               language={lang}
-              theme={{ dark: "one-dark-pro", light: "one-light" }}
+              theme={isDark ? "one-dark-pro" : "one-light"}
               addDefaultStyles={false}
               showLanguage={false}
-              defaultColor="light-dark()"
               className="[&_pre]:overflow-x-auto [&_pre]:p-3 [&_pre]:text-xs [&_pre]:leading-relaxed [&_pre]:bg-muted/30!"
             >
               {codeText.replace(/\n$/, "")}

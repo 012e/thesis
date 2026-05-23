@@ -7,6 +7,7 @@ import type {
   CodeHeaderProps,
 } from "@assistant-ui/react-markdown";
 
+import { useTheme } from "@/hooks/use-theme";
 import { CodeLanguageBadge } from "@/lib/code-language-meta";
 import { cn } from "@/lib/utils";
 
@@ -23,13 +24,12 @@ export type HighlighterProps = Omit<
 
 /**
  * SyntaxHighlighter component, using react-shiki.
- * Uses light-dark() for automatic theme switching based on CSS color-scheme.
- * Themes switch automatically when :root.dark / :root (light) color-scheme changes.
+ * Uses the app theme state directly so Shiki cannot alter page-level colors.
  */
 export const SyntaxHighlighter: FC<HighlighterProps> = ({
   code,
   language,
-  theme = { dark: "one-dark-pro", light: "one-light" },
+  theme,
   className,
   addDefaultStyles = false,
   showLanguage = false,
@@ -37,14 +37,17 @@ export const SyntaxHighlighter: FC<HighlighterProps> = ({
   components: _components,
   ...props
 }) => {
+  const { resolvedTheme } = useTheme();
+  const shikiTheme = theme ?? (resolvedTheme === "dark" ? "one-dark-pro" : "one-light");
+  const normalizedLanguage = language === "unknown" ? "text" : language;
+
   return (
     <ShikiHighlighter
       {...props}
-      language={language}
-      theme={theme}
+      language={normalizedLanguage}
+      theme={shikiTheme}
       addDefaultStyles={addDefaultStyles}
       showLanguage={showLanguage}
-      defaultColor="light-dark()"
       className={cn(
         "aui-shiki-base [&_pre]:overflow-x-auto [&_pre]:bg-muted/75! [&_pre]:p-4 [&_pre]:text-xs [&_pre]:leading-relaxed",
         className,
@@ -62,7 +65,7 @@ SyntaxHighlighter.displayName = "SyntaxHighlighter";
  * Used alongside SyntaxHighlighter in memoizeMarkdownComponents.
  */
 export const CodeHeader: FC<CodeHeaderProps> = ({ language }) => {
-  if (!language) return null;
+  if (!language || language === "unknown" || language === "text") return null;
   return (
     <div className="flex items-center border border-b-0 border-border/50 bg-muted/30 px-1">
       <CodeLanguageBadge language={language.toLowerCase()} />
