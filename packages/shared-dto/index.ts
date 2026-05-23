@@ -432,3 +432,68 @@ export interface NotificationDto {
   readAt: string | null;
   createdAt: string;
 }
+
+// ─── Content Moderation ──────────────────────────────────────────────────────
+
+export type ModerationStatusDto =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "needs_human_review";
+
+export type ModerationSourceDto =
+  | "auto_duplicate"
+  | "auto_harmful"
+  | "user_report"
+  | "admin_flag";
+
+export type FlagPriorityDto = "low" | "medium" | "high" | "critical";
+
+export type ReportReasonDto =
+  | "spam"
+  | "harassment"
+  | "misinformation"
+  | "hate_speech"
+  | "violence"
+  | "inappropriate"
+  | "copyright"
+  | "other";
+
+export interface PostModerationDto {
+  id: string;
+  postId: string;
+  source: ModerationSourceDto;
+  status: ModerationStatusDto;
+  priority: FlagPriorityDto;
+  llmConfidence: string | null;
+  llmSummary: string | null;
+  similarPostId: string | null;
+  similarityScore: string | null;
+  moderationResult: unknown | null;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNote: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PostReportDto {
+  id: string;
+  postId: string;
+  reporterId: string;
+  reason: ReportReasonDto;
+  description: string | null;
+  passedHeuristic: boolean;
+  moderationId: string | null;
+  createdAt: string;
+}
+
+export interface PostFlagDto {
+  id: string;
+  postId: string;
+  flaggedBy: string;
+  priority: FlagPriorityDto;
+  reason: string | null;
+  moderationId: string | null;
+  createdAt: string;
+}
