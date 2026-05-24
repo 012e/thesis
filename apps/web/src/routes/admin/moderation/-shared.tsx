@@ -83,9 +83,6 @@ export function formatConfidence(value: string | null | undefined) {
   if (!value) return "—";
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return value;
-  if (numeric >= 0 && numeric <= 1) {
-    return `${Math.round(numeric * 100)}%`;
-  }
   return numeric.toFixed(2);
 }
 

@@ -14,7 +14,14 @@ import type {
   ModerationStatusType,
   PostModerationType,
 } from "@repo/rest-contracts";
-import { IconCheck, IconDotsVertical, IconEye, IconFlag, IconX } from "@tabler/icons-react";
+import {
+  IconCheck,
+  IconDotsVertical,
+  IconEye,
+  IconFlag,
+  IconRefresh,
+  IconX,
+} from "@tabler/icons-react";
 
 import { PAGE_SIZE } from "@/components/admin/types";
 import { Button } from "@/components/ui/button";
@@ -57,6 +64,8 @@ import {
   statusOptions,
   type ModerationDialogState,
 } from "./-shared";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
 const columnHelper = createColumnHelper<PostModerationType>();
 
@@ -78,7 +87,7 @@ export default function ModerationQueueTab({
   });
 
   const offset = pagination.pageIndex * PAGE_SIZE;
-  const { data, isLoading, isFetching, error } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: [
       "moderation",
       "list",
@@ -136,7 +145,7 @@ export default function ModerationQueueTab({
         header: () => "LLM Confidence",
         cell: ({ getValue }) => (
           <span className="text-xs text-muted-foreground">
-            {formatConfidence(getValue())}
+            {formatConfidence(getValue())}%
           </span>
         ),
       }),
@@ -201,7 +210,9 @@ export default function ModerationQueueTab({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => setDialog({ type: "flag", postId: row.original.postId })}
+                onClick={() =>
+                  setDialog({ type: "flag", postId: row.original.postId })
+                }
               >
                 <IconFlag className="size-3.5" />
                 Flag post
@@ -228,6 +239,13 @@ export default function ModerationQueueTab({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap gap-3">
+        <Button
+          variant="outline"
+          onClick={() => void refetch()}
+          disabled={isLoading || isFetching}
+        >
+          <IconRefresh className={cn("size-4", isFetching && "animate-spin")} />
+        </Button>
         <Select
           value={filters.status ?? "all"}
           onValueChange={(value) =>
@@ -237,9 +255,11 @@ export default function ModerationQueueTab({
             )
           }
         >
-          <SelectTrigger className="w-[220px]">
+          <SelectTrigger className="w-55">
             <SelectValue placeholder="All statuses">
-              {filters.status ? formatModerationStatus(filters.status) : "All statuses"}
+              {filters.status
+                ? formatModerationStatus(filters.status)
+                : "All statuses"}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -263,7 +283,7 @@ export default function ModerationQueueTab({
             )
           }
         >
-          <SelectTrigger className="w-[220px]">
+          <SelectTrigger className="w-55">
             <SelectValue placeholder="All sources">
               {filters.source ? humanize(filters.source) : "All sources"}
             </SelectValue>
@@ -289,7 +309,7 @@ export default function ModerationQueueTab({
             )
           }
         >
-          <SelectTrigger className="w-[220px]">
+          <SelectTrigger className="w-55">
             <SelectValue placeholder="All priorities">
               {filters.priority ? humanize(filters.priority) : "All priorities"}
             </SelectValue>
@@ -365,23 +385,16 @@ function ModerationTable({
                   >
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {isLoading && (
-              <TableRow>
-                <TableCell
-                  colSpan={colSpan}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  Loading moderation queue...
-                </TableCell>
-              </TableRow>
-            )}
             {!isLoading && table.getRowModel().rows.length === 0 && (
               <TableRow>
                 <TableCell
@@ -395,7 +408,10 @@ function ModerationTable({
             {table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={cell.column.columnDef.meta?.className}>
+                  <TableCell
+                    key={cell.id}
+                    className={cell.column.columnDef.meta?.className}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -421,7 +437,7 @@ function ModerationTable({
             Previous
           </Button>
           <span>
-            Page {table.getState().pagination.pageIndex + 1} of {" "}
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
             {Math.max(1, table.getPageCount())}
           </span>
           <Button
