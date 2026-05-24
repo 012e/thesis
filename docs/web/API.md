@@ -37,7 +37,7 @@ authClient.resetPassword({ newPassword, token });
 authClient.updateUser({ name, image });
 ```
 
-Base URL for the ts-rest client is read from `env.VITE_BACKEND_URL` (defaults to `http://localhost:3000`). The Better Auth client still uses `http://localhost:3000` by default in `packages/auth-client/src/auth-client.ts`.
+Base URL for the ts-rest client is read from `env.VITE_BACKEND_URL` (defaults to `http://localhost:3000`). The workspace provides a small auth helper package (`packages/auth-client`) which defaults to `http://localhost:3000` for local development; prefer creating a custom auth client when targeting other backends (see docs/web/AUTH_CLIENT.md).
 
 ## TanStack Query Integration Pattern
 
