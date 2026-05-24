@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { PostsFeed } from "@/components/posts-feed";
 import { Button } from "@/components/ui/button";
 import { useSession } from "@/hooks/use-session";
@@ -51,8 +51,8 @@ function BookmarksPage() {
             <p className="text-muted-foreground mb-4">
               Save posts to revisit them later.
             </p>
-            <Button asChild variant="outline">
-              <Link to="/explore">Explore posts</Link>
+            <Button variant="outline" onClick={() => void window.location.assign("/explore")}>
+              Explore posts
             </Button>
           </div>
         )}

@@ -13,6 +13,7 @@ import { Route as TestingRouteImport } from './routes/testing'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as BookmarksRouteImport } from './routes/bookmarks'
 import { Route as ApiRouteImport } from './routes/api'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
@@ -46,6 +47,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BookmarksRoute = BookmarksRouteImport.update({
+  id: '/bookmarks',
+  path: '/bookmarks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiRoute = ApiRouteImport.update({
@@ -122,6 +128,7 @@ const AdminModerationIndexRoute = AdminModerationIndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
+  '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
+  '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api': typeof ApiRoute
+  '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/api'
+    | '/bookmarks'
     | '/explore'
     | '/notifications'
     | '/settings'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/api'
+    | '/bookmarks'
     | '/explore'
     | '/notifications'
     | '/settings'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/api'
+    | '/bookmarks'
     | '/explore'
     | '/notifications'
     | '/settings'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiRoute: typeof ApiRoute
+  BookmarksRoute: typeof BookmarksRoute
   ExploreRoute: typeof ExploreRoute
   NotificationsRoute: typeof NotificationsRoute
   SettingsRoute: typeof SettingsRoute
@@ -292,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bookmarks': {
+      id: '/bookmarks'
+      path: '/bookmarks'
+      fullPath: '/bookmarks'
+      preLoaderRoute: typeof BookmarksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api': {
@@ -398,6 +418,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiRoute: ApiRoute,
+  BookmarksRoute: BookmarksRoute,
   ExploreRoute: ExploreRoute,
   NotificationsRoute: NotificationsRoute,
   SettingsRoute: SettingsRoute,

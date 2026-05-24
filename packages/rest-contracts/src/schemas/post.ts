@@ -52,6 +52,17 @@ export const PostContent = z
     },
   );
 
+export const BookmarkSummary = z.object({
+  postId: z.string().uuid(),
+  userId: z.string(),
+  createdAt: z.string().datetime(),
+});
+
+export const PostBookmarkState = z.object({
+  currentUserBookmarked: z.boolean(),
+  currentUserBookmark: BookmarkSummary.nullable(),
+});
+
 export const Post = z.object({
   id: z.string().uuid(),
   authorId: z.string(),
@@ -72,17 +83,6 @@ export const PostSubscription = z.object({
   postId: z.string().uuid(),
   userId: z.string(),
   createdAt: z.string().datetime(),
-});
-
-export const BookmarkSummary = z.object({
-  postId: z.string().uuid(),
-  userId: z.string(),
-  createdAt: z.string().datetime(),
-});
-
-export const PostBookmarkState = z.object({
-  currentUserBookmarked: z.boolean(),
-  currentUserBookmark: BookmarkSummary.nullable(),
 });
 
 export const CreatePostBody = z.object({

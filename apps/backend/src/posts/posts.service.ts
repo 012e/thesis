@@ -848,7 +848,7 @@ export class PostsService {
       commentCount: number;
       currentUserSubscribed?: boolean;
       currentUserBookmarked?: boolean;
-      currentUserBookmarkCreatedAt?: Date | null;
+      currentUserBookmarkCreatedAt?: Date | string | null;
       currentUserBookmarkUserId?: string | null;
     },
     userReactionType?: ReactionTypeDto | null,
@@ -879,7 +879,7 @@ export class PostsService {
           ? {
               postId: row.id,
               userId: row.currentUserBookmarkUserId,
-              createdAt: row.currentUserBookmarkCreatedAt.toISOString(),
+              createdAt: new Date(row.currentUserBookmarkCreatedAt).toISOString(),
             }
           : null,
     };
