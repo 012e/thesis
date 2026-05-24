@@ -41,13 +41,15 @@ export class PostsSearchService {
       WITH bm25 AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY paradedb.score(id) DESC) AS bm25_rank
         FROM posts
-        WHERE id @@@ paradedb.match('content.text', ${query})
+        WHERE hidden = false
+          AND id @@@ paradedb.match('content.text', ${query})
         LIMIT 50
       ),
       vec AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${queryVector}::vector ASC) AS vec_rank
         FROM posts
-        WHERE embedding IS NOT NULL
+        WHERE hidden = false
+          AND embedding IS NOT NULL
         ORDER BY embedding <=> ${queryVector}::vector
         LIMIT 50
       ),
@@ -83,6 +85,7 @@ export class PostsSearchService {
       INNER JOIN posts p ON p.id = rrf.id
       INNER JOIN users_view u ON u.id = p.author_id
       LEFT JOIN post_reactions pr ON pr.post_id = p.id
+      WHERE p.hidden = false
       GROUP BY p.id, p.author_id, p.content, p.created_at, p.updated_at,
                u.id, u.username, u.email, u.name, u.image, rrf.rrf_score
       ORDER BY rrf.rrf_score DESC

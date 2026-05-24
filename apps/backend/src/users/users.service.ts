@@ -226,7 +226,7 @@ export class UsersService implements OnApplicationBootstrap {
     const postCountSq = this.databaseService.db
       .select({ count: count() })
       .from(posts)
-      .where(eq(posts.authorId, userId));
+      .where(and(eq(posts.authorId, userId), eq(posts.hidden, false)));
 
     const isFollowingSq = this.databaseService.db
       .select({ count: count() })

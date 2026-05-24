@@ -68,11 +68,18 @@ describe("UsersController (e2e)", () => {
         followeeId: followeeId as string,
       });
 
-      // Create a post for targetUser
-      await databaseService.db.insert(posts).values({
-        authorId: followeeId as string,
-        content: { text: "Hello" },
-      });
+      // Create one visible and one hidden post for targetUser.
+      await databaseService.db.insert(posts).values([
+        {
+          authorId: followeeId as string,
+          content: { text: "Hello" },
+        },
+        {
+          authorId: followeeId as string,
+          content: { text: "Rejected" },
+          hidden: true,
+        },
+      ]);
 
       const response = await request(testApp.app.getHttpServer())
         .get(`/users/${followeeId as string}/profile`)

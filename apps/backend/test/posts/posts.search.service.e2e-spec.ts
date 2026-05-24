@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+import { eq } from "drizzle-orm";
 import { Pool } from "pg";
 
 import { DatabaseService } from "@/db/database.service";
@@ -168,6 +169,27 @@ describe("PostsSearchService.search integration", () => {
     );
 
     expect(results).toHaveLength(0);
+  });
+
+  it("does not return hidden posts", async () => {
+    const visiblePost = await postsService.create("search-author-1", {
+      content: { text: "Visible moderation search result" },
+    });
+    const hiddenPost = await postsService.create("search-author-1", {
+      content: { text: "Hidden moderation search result" },
+    });
+
+    await databaseService.db
+      .update(posts)
+      .set({ hidden: true })
+      .where(eq(posts.id, hiddenPost.id));
+
+    const results = await postsSearchService.search(
+      "moderation search result",
+      "search-author-1",
+    );
+
+    expect(results.map((post) => post.id)).toEqual([visiblePost.id]);
   });
 
   it("returns an empty array when no posts exist", async () => {
