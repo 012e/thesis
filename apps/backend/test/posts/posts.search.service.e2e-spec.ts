@@ -15,6 +15,8 @@ import { UsersService } from "@/users/users.service";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
 import { PgBossService } from "@wavezync/nestjs-pgboss";
+import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
+import { ContentHashService } from "@/moderation/content-hash.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -64,6 +66,20 @@ describe("PostsSearchService.search integration", () => {
           useValue: [],
         },
         NotificationsService,
+        {
+          provide: ModerationPipelineService,
+          useValue: {
+            runPipeline: async () => {},
+            processReport: async () => ({}),
+          },
+        },
+        {
+          provide: ContentHashService,
+          useValue: {
+            hash: () => "stub-hash",
+            normalize: (text: string) => text,
+          },
+        },
       ],
     }).compile();
 
