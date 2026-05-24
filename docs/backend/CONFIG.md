@@ -33,6 +33,16 @@ cp apps/backend/.env.example apps/backend/.env
 - `ALLOWED_ORIGINS` – a valid URL string or an array of valid URL strings.
 - Empty strings are treated as `undefined` (`emptyStringAsUndefined: true`), so the defaults apply when variables are set but empty.
 
+## Better Auth migration helper
+
+The backend package exposes a convenience script to regenerate Better Auth types used by the application tests and runtime helpers:
+
+```sh
+pnpm --filter backend run auth:migrate
+```
+
+This runs the Better Auth CLI to generate `src/db/auth-schema.ts`. Run this after upgrading Better Auth or changing auth plugins.
+
 ## Production checklist
 
 - Set `BETTER_AUTH_SECRET` to a cryptographically random string of ≥ 32 chars (e.g. `openssl rand -hex 32`).

@@ -35,6 +35,7 @@
     "test:playground": "vitest run --silent=true test/playground/",
     "test:polls": "vitest run --silent=true test/polls/",
     "test:posts": "vitest run --silent=true test/posts/",
+    "test:bookmarks": "vitest run --silent=true test/bookmarks/",
     "test:reactions": "vitest run --silent=true test/reactions/",
     "test:uploads": "vitest run --silent=true test/uploads/",
     "test:messages": "vitest run --silent=true test/messages/",

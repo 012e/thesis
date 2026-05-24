@@ -3,6 +3,7 @@ import type {
   PostContentDto,
   PostSubscriptionDto,
   ReactionTypeDto,
+  BookmarkSummaryDto,
 } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
@@ -215,4 +216,78 @@ export async function unreactToPost(postId: string): Promise<void> {
   if (response.status !== 200) {
     throw new Error("Failed to remove reaction");
   }
+}
+
+export async function bookmarkPost(
+  postId: string,
+): Promise<BookmarkSummaryDto> {
+  const response = await client.bookmarkPost({
+    params: { id: postId },
+    body: {},
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to bookmark post");
+}
+
+export async function unbookmarkPost(
+  postId: string,
+): Promise<BookmarkSummaryDto> {
+  const response = await client.unbookmarkPost({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Bookmark not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to remove bookmark");
+}
+
+export interface BookmarkListParams {
+  userId: string;
+  limit?: number;
+  cursor?: string;
+}
+
+export async function fetchUserBookmarks(params: BookmarkListParams) {
+  const response = await client.listUserBookmarks({
+    params: { id: params.userId },
+    query: {
+      limit: params.limit,
+      cursor: params.cursor,
+    },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to fetch bookmarks");
 }

@@ -106,6 +106,23 @@ export const postSubscriptions = pgTable(
 export type PostSubscription = typeof postSubscriptions.$inferSelect;
 export type NewPostSubscription = typeof postSubscriptions.$inferInsert;
 
+export const postBookmarks = pgTable(
+  "post_bookmarks",
+  {
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.postId, table.userId] })],
+);
+
+export type PostBookmark = typeof postBookmarks.$inferSelect;
+export type NewPostBookmark = typeof postBookmarks.$inferInsert;
+
 export const comments = pgTable(
   "comments",
   {

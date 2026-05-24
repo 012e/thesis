@@ -19,6 +19,7 @@ import {
   IconMessageCircle,
   IconShare,
   IconBookmark,
+  IconBookmarkFilled,
   IconDots,
   IconArrowUp,
   IconArrowDown,
@@ -37,6 +38,7 @@ import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useOpenChat } from "@/hooks/use-open-chat";
 import { useDeletePost } from "@/hooks/use-delete-post";
 import { usePostSubscription } from "@/hooks/use-post-subscription";
+import { usePostBookmark } from "@/hooks/use-post-bookmark";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
@@ -222,6 +224,15 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   } = usePostSubscription({
     postId: post.id,
     initialSubscribed: post.currentUserSubscribed,
+  });
+
+  const {
+    isBookmarked,
+    isPending: isBookmarkPending,
+    toggle: toggleBookmark,
+  } = usePostBookmark({
+    postId: post.id,
+    initialBookmarked: post.currentUserBookmarked,
   });
 
   const [reactionSummary, setReactionSummary] = useState(() => ({
@@ -512,9 +523,25 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                 <IconArrowDown className="w-4 h-4" />
               </button>
             </div>
-            <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
+            <button
+              className={`flex gap-1 items-center transition-colors group ${
+                isBookmarked
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
+              }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark();
+              }}
+              disabled={isBookmarkPending}
+              title={isBookmarked ? "Remove bookmark" : "Save post"}
+            >
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
-                <IconBookmark className="w-4.5 h-4.5" />
+                {isBookmarked ? (
+                  <IconBookmarkFilled className="w-4.5 h-4.5" />
+                ) : (
+                  <IconBookmark className="w-4.5 h-4.5" />
+                )}
               </div>
             </button>
             <button

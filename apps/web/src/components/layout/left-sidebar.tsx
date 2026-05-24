@@ -18,6 +18,8 @@ import {
   IconShieldFilled,
   IconCodeCircle2,
   IconCodeCircle2Filled,
+  IconBookmark,
+  IconBookmarkFilled,
 } from "@tabler/icons-react";
 import { UserProfile } from "./user-profile";
 import { useNotifications } from "@/hooks/notifications";
@@ -31,6 +33,12 @@ const baseNavigationItems = [
     selectedIcon: IconZoomFilled,
     label: "Explore",
     href: "/explore",
+  },
+  {
+    icon: IconBookmark,
+    selectedIcon: IconBookmarkFilled,
+    label: "Bookmarks",
+    href: "/bookmarks",
   },
   {
     icon: IconRobot,

@@ -7,7 +7,7 @@ plugins: [TanStackRouterVite(), react(), tailwindcss()]
 resolve.alias: { "@": "./src" }
 ```
 
-Plugin order is required: `TanStackRouterVite` must run first. No `server.proxy` — the web app reads the ts-rest `baseUrl` from `env.VITE_BACKEND_URL`; the Better Auth client currently hardcodes `http://localhost:3000`.
+Plugin order is required: `TanStackRouterVite` must run first. No `server.proxy` — the web app reads the ts-rest `baseUrl` from `env.VITE_BACKEND_URL`. The included Better Auth helper package (`packages/auth-client`) defaults to `http://localhost:3000` for local development but will use `process.env.BACKEND_URL` if present or you can create a custom client via `createCustomAuthClient({ baseURL })`.
 
 ## TypeScript (`tsconfig.app.json`)
 
@@ -68,7 +68,7 @@ Additionally hardcoded (not yet env-driven):
 
 | Value                   | Location                                                                                      |
 | ----------------------- | --------------------------------------------------------------------------------------------- |
-| `http://localhost:3000` | `packages/auth-client/src/auth-client.ts` (better-auth base URL)                              |
+| `http://localhost:3000` | `packages/auth-client/src/auth-client.ts` (default base URL; configurable via BACKEND_URL or createCustomAuthClient)                              |
 | `env.VITE_BACKEND_URL`  | `apps/web/src/lib/api/index.ts` (ts-rest client baseUrl; defaults to `http://localhost:3000`) |
 
 Note: the workspace `package.json` includes both `@tabler/icons-react` and `lucide-react`, and also lists `radix-ui` as a dependency. The project prefers `@tabler/icons-react` and the shadcn `base-lyra` primitives (`@base-ui/react`) — avoid introducing Radix primitives or switching icon families without an intentional migration.

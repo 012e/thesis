@@ -31,6 +31,7 @@ jobs:
           - test-config
           - test-threads
           - test-moderation
+          - test-bookmarks
 
     steps:
       - name: Checkout code

@@ -64,6 +64,17 @@ export const Post = z.object({
   commentCount: z.number().int().nonnegative(),
   currentUserReaction: ReactionType.nullable(),
   currentUserSubscribed: z.boolean(),
+  currentUserBookmarked: z.boolean(),
+});
+
+export const BookmarkSummary = z.object({
+  postId: z.string().uuid(),
+  createdAt: z.string().datetime(),
+});
+
+export const BookmarkPage = z.object({
+  items: z.array(Post),
+  nextCursor: z.string().nullable(),
 });
 
 export const PostSubscription = z.object({
@@ -104,3 +115,5 @@ export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
 export type UpdatePostBodyType = z.infer<typeof UpdatePostBody>;
 export type RecommendationPageType = z.infer<typeof RecommendationPage>;
 export type FollowingFeedPageType = z.infer<typeof FollowingFeedPage>;
+export type BookmarkSummaryType = z.infer<typeof BookmarkSummary>;
+export type BookmarkPageType = z.infer<typeof BookmarkPage>;

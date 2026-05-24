@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { usePollResults, usePollVote, usePollUnvote } from "@/hooks/use-poll";
 import type { PollPostContentDto } from "@repo/shared-dto";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
+import { Spinner } from "./ui/spinner";
 
 interface PollDisplayProps {
   postId: string;
@@ -73,16 +74,14 @@ export function PollDisplay({ postId, poll }: PollDisplayProps) {
 
   if (isLoading) {
     return (
-      <div className="p-4 mt-3 border bg-muted/30">
-        <div className="flex justify-center items-center py-4">
-          <IconLoader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-        </div>
+      <div className="flex justify-center items-center py-4">
+        <Spinner />
       </div>
     );
   }
 
   return (
-    <div className="p-4 mt-3 border bg-muted/30">
+    <div className="p-4 mt-3">
       <h4 className="mb-3 font-semibold">{poll.question}</h4>
 
       <div className="space-y-2">

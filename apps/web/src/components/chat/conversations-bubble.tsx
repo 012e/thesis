@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 import { useConversations } from "@/hooks/messages/use-conversations";
 import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
 import { openChatWindowAtom } from "@/lib/atoms/chat-windows";
@@ -176,7 +177,7 @@ export function ConversationsBubble() {
           <div className="overflow-y-auto max-h-80 p-1.5">
             {isLoading && (
               <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-                Loading…
+                <Spinner size="md" />
               </div>
             )}
             {!isLoading && conversations.length === 0 && (

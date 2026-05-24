@@ -32,6 +32,7 @@ import {
   usePostComposerContext,
   type ImagePreview,
 } from "./context";
+import { Separator } from "../ui/separator";
 
 // ---- Types -----------------------------------------------------------------
 
@@ -263,7 +264,10 @@ export function PostComposerPoll() {
     usePostComposerContext();
   if (!showPollCreator) return null;
   return (
-    <PollCreator onPollChange={handlePollChange} onClose={handlePollClose} />
+    <>
+      <Separator className="mt-3" />
+      <PollCreator onPollChange={handlePollChange} onClose={handlePollClose} />
+    </>
   );
 }
 
