@@ -28,6 +28,7 @@ import {
 import { useMessages } from "@/hooks/messages/use-messages";
 import { useMessageSocket } from "@/hooks/messages/use-message-socket";
 import { markConversationRead } from "@/lib/api/messages";
+import { Spinner } from "@/components/ui/spinner";
 import type { ConversationDto } from "@repo/shared-dto";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -169,7 +170,7 @@ function ListView({ onSelect, onClose }: ListViewProps) {
       <div className="flex-1 overflow-y-auto py-1">
         {isLoading && (
           <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
-            Loading…
+            <Spinner size="md" />
           </div>
         )}
         {!isLoading && filtered.length === 0 && (
@@ -346,8 +347,8 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
         className="flex-1 overflow-y-auto flex flex-col gap-1 p-3 min-h-0"
       >
         {isFetchingNextPage && (
-          <div className="text-center text-xs text-muted-foreground py-1">
-            Loading…
+          <div className="flex justify-center py-1 text-xs text-muted-foreground">
+            <Spinner size="sm" />
           </div>
         )}
 

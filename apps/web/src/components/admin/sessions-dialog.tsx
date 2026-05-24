@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 import { type AdminUser, type UserSession, formatDate } from "./types";
 
@@ -82,9 +83,9 @@ export function SessionsDialog({
 
         <div className="flex max-h-80 flex-col gap-2 overflow-y-auto">
           {isLoading && (
-            <p className="py-4 text-center text-muted-foreground">
-              Loading sessions...
-            </p>
+            <div className="flex justify-center py-4 text-muted-foreground">
+              <Spinner size="md" />
+            </div>
           )}
           {!isLoading && (!sessions || sessions.length === 0) && (
             <p className="py-4 text-center text-muted-foreground">

@@ -1,6 +1,11 @@
-import { useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Sortable,
+  SortableItem,
+  SortableItemHandle,
+} from "@/components/reui/sortable";
 import type { PollPostContentDto } from "@repo/shared-dto";
 import {
   IconX,
@@ -19,9 +24,11 @@ function generateOptionId(): string {
   return `opt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
+type PollOption = { id: string; label: string };
+
 export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
   const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState<{ id: string; label: string }[]>([
+  const [options, setOptions] = useState<PollOption[]>(() => [
     { id: generateOptionId(), label: "" },
     { id: generateOptionId(), label: "" },
   ]);
@@ -30,7 +37,7 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
   const [hasExpiration, setHasExpiration] = useState(false);
   const [expirationDays, setExpirationDays] = useState(1);
 
-  const updatePoll = useCallback(() => {
+  useEffect(() => {
     const validOptions = options.filter((o) => o.label.trim() !== "");
 
     if (question.trim() === "" || validOptions.length < 2) {
@@ -64,14 +71,14 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
 
   const handleQuestionChange = (value: string) => {
     setQuestion(value);
-    setTimeout(updatePoll, 0);
   };
 
-  const handleOptionChange = (index: number, value: string) => {
-    const newOptions = [...options];
-    newOptions[index] = { ...newOptions[index], label: value };
-    setOptions(newOptions);
-    setTimeout(updatePoll, 0);
+  const handleOptionChange = (id: string, value: string) => {
+    setOptions(
+      options.map((option) =>
+        option.id === id ? { ...option, label: value } : option,
+      ),
+    );
   };
 
   const addOption = () => {
@@ -79,33 +86,28 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
     setOptions([...options, { id: generateOptionId(), label: "" }]);
   };
 
-  const removeOption = (index: number) => {
+  const removeOption = (id: string) => {
     if (options.length <= 2) return;
-    const newOptions = options.filter((_, i) => i !== index);
-    setOptions(newOptions);
-    setTimeout(updatePoll, 0);
+    setOptions(options.filter((option) => option.id !== id));
   };
 
   const handleMultipleSelectionsChange = (checked: boolean) => {
     setAllowsMultipleSelections(checked);
-    setTimeout(updatePoll, 0);
   };
 
   const handleExpirationChange = (checked: boolean) => {
     setHasExpiration(checked);
-    setTimeout(updatePoll, 0);
   };
 
   const handleExpirationDaysChange = (days: number) => {
     setExpirationDays(days);
-    setTimeout(updatePoll, 0);
   };
 
   const validOptions = options.filter((o) => o.label.trim() !== "");
   const isValid = question.trim() !== "" && validOptions.length >= 2;
 
   return (
-    <div className="p-4 mt-3 border bg-muted/30">
+    <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h4 className="font-semibold">Create a Poll</h4>
         <Button
@@ -129,14 +131,25 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
       </div>
 
       {/* Options */}
-      <div className="space-y-2 mb-4">
+      <Sortable
+        value={options}
+        onValueChange={setOptions}
+        getItemValue={(option) => option.id}
+        className="space-y-2 mb-4"
+      >
         {options.map((option, index) => (
-          <div key={option.id} className="flex gap-2 items-center group">
-            <IconGripVertical className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity cursor-grab" />
+          <SortableItem
+            key={option.id}
+            value={option.id}
+            className="flex gap-2 items-center group"
+          >
+            <SortableItemHandle className="text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
+              <IconGripVertical className="w-4 h-4" />
+            </SortableItemHandle>
             <Input
               placeholder={`Option ${index + 1}`}
               value={option.label}
-              onChange={(e) => handleOptionChange(index, e.target.value)}
+              onChange={(e) => handleOptionChange(option.id, e.target.value)}
               className="flex-1"
             />
             <Button
@@ -146,13 +159,13 @@ export function PollCreator({ onPollChange, onClose }: PollCreatorProps) {
                 "w-8 h-8 text-muted-foreground hover:text-destructive",
                 options.length <= 2 && "opacity-0 pointer-events-none",
               )}
-              onClick={() => removeOption(index)}
+              onClick={() => removeOption(option.id)}
             >
               <IconTrash className="w-4 h-4" />
             </Button>
-          </div>
+          </SortableItem>
         ))}
-      </div>
+      </Sortable>
 
       {/* Add option button */}
       {options.length < 10 && (

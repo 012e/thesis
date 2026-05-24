@@ -2,6 +2,7 @@ import { type Table, flexRender } from "@tanstack/react-table";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table as UITable,
   TableBody,
@@ -67,7 +68,9 @@ export function UsersTable({
                   colSpan={colSpan}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  Loading users...
+                  <div className="flex justify-center">
+                    <Spinner size="md" />
+                  </div>
                 </TableCell>
               </TableRow>
             )}

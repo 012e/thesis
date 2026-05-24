@@ -7,6 +7,7 @@ import { useConversation } from "@/hooks/messages/use-conversations";
 import { useMessages } from "@/hooks/messages/use-messages";
 import { useMessageSocket } from "@/hooks/messages/use-message-socket";
 import { markConversationRead } from "@/lib/api/messages";
+import { Spinner } from "@/components/ui/spinner";
 import {
   closeChatWindowAtom,
   toggleMinimizeChatWindowAtom,
@@ -251,8 +252,8 @@ export function ChatWindow({
           >
             {/* Load-more indicator */}
             {isFetchingNextPage && (
-              <div className="text-center text-xs text-muted-foreground py-1">
-                Loading…
+              <div className="flex justify-center py-1 text-xs text-muted-foreground">
+                <Spinner size="sm" />
               </div>
             )}
 

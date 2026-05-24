@@ -6,6 +6,7 @@ import type { PostReportType } from "@repo/rest-contracts";
 import { PAGE_SIZE } from "@/components/admin/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table as UITable,
   TableBody,
@@ -98,7 +99,9 @@ function ReportsTable({
                   colSpan={7}
                   className="py-8 text-center text-muted-foreground"
                 >
-                  Loading reports...
+                  <div className="flex justify-center">
+                    <Spinner size="md" />
+                  </div>
                 </TableCell>
               </TableRow>
             )}
