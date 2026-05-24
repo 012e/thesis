@@ -230,4 +230,61 @@ export class PostsController {
       };
     });
   }
+
+  @TsRestHandler(postsContract.bookmarkPost)
+  bookmarkPost(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.bookmarkPost, async ({ params }) => {
+      const bookmark = await this.postsService.bookmark(
+        params.id,
+        session.user.id,
+      );
+
+      if (!bookmark) {
+        return { status: 404, body: null };
+      }
+
+      return {
+        status: 200,
+        body: postsContract.bookmarkPost.responses[200].parse(bookmark),
+      };
+    });
+  }
+
+  @TsRestHandler(postsContract.unbookmarkPost)
+  unbookmarkPost(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.unbookmarkPost, async ({ params }) => {
+      const bookmark = await this.postsService.unbookmark(
+        params.id,
+        session.user.id,
+      );
+
+      if (!bookmark) {
+        return { status: 404, body: null };
+      }
+
+      return {
+        status: 200,
+        body: postsContract.unbookmarkPost.responses[200].parse(bookmark),
+      };
+    });
+  }
+
+  @TsRestHandler(postsContract.listUserBookmarks)
+  listUserBookmarks(@Session() session: UserSession) {
+    return tsRestHandler(
+      postsContract.listUserBookmarks,
+      async ({ params, query }) => {
+        const limit = query.limit ?? 20;
+        const result = await this.postsService.listBookmarks(
+          params.id,
+          limit,
+          query.cursor,
+        );
+        return {
+          status: 200,
+          body: postsContract.listUserBookmarks.responses[200].parse(result),
+        };
+      },
+    );
+  }
 }

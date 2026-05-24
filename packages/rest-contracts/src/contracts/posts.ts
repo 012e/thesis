@@ -7,6 +7,8 @@ import {
   UpdatePostBody,
   RecommendationPage,
   FollowingFeedPage,
+  BookmarkSummary,
+  BookmarkPage,
 } from "../schemas/post";
 
 const c = initContract();
@@ -131,6 +133,41 @@ export const postsContract = c.router({
     },
     summary:
       "List posts by a specific user, ordered by creation date descending.",
+  },
+  bookmarkPost: {
+    method: "POST",
+    path: "/posts/:id/bookmark",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.object({}),
+    responses: {
+      200: BookmarkSummary,
+      404: z.null(),
+    },
+    summary: "Bookmark a post for the current user.",
+  },
+  unbookmarkPost: {
+    method: "DELETE",
+    path: "/posts/:id/bookmark",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: BookmarkSummary,
+      404: z.null(),
+    },
+    summary: "Remove a bookmark from a post for the current user.",
+  },
+  listUserBookmarks: {
+    method: "GET",
+    path: "/users/:id/bookmarks",
+    pathParams: z.object({ id: z.string() }),
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: BookmarkPage,
+    },
+    summary:
+      "List bookmarked posts for a user, ordered by most recently bookmarked. Paginated with a keyset cursor.",
   },
 });
 

@@ -88,6 +88,12 @@ export interface PostDto {
   commentCount: number;
   currentUserReaction: ReactionTypeDto | null;
   currentUserSubscribed: boolean;
+  currentUserBookmarked: boolean;
+}
+
+export interface BookmarkSummaryDto {
+  postId: string;
+  createdAt: string;
 }
 
 export interface PostSubscriptionDto {

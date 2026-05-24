@@ -6,6 +6,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import type {
+  BookmarkSummaryDto,
   NotificationPostContextDto,
   NotificationPayloadDto,
   NotificationTypeDto,
@@ -19,6 +20,7 @@ import type { z } from "zod";
 import { DatabaseService } from "@/db/database.service";
 import {
   comments,
+  postBookmarks,
   postReactions,
   posts,
   postSubscriptions,
@@ -63,11 +65,30 @@ const getCurrentUserSubscribed = (userId: string) => {
   )`;
 };
 
+const getCurrentUserBookmarked = (userId: string) => {
+  return sql<boolean>`EXISTS (
+    SELECT 1 FROM ${postBookmarks}
+    WHERE ${postBookmarks.postId} = ${posts.id}
+      AND ${postBookmarks.userId} = ${userId}
+  )`;
+};
+
 type CreatePostInput = z.infer<typeof createPostSchema>;
 type UpdatePostInput = z.infer<typeof updatePostSchema>;
 
-export type PostRow = typeof posts.$inferSelect & {
-  author: typeof usersView.$inferSelect;
+export type PostRow = {
+  id: string;
+  authorId: string;
+  content: PostContentDto;
+  createdAt: Date;
+  updatedAt: Date;
+  author: {
+    id: string;
+    username: string | null;
+    email: string;
+    name: string | null;
+    image: string | null;
+  };
 };
 
 @Injectable()
@@ -112,6 +133,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(requestingUserId),
         currentUserSubscribed: getCurrentUserSubscribed(requestingUserId),
+        currentUserBookmarked: getCurrentUserBookmarked(requestingUserId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -152,6 +174,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(userId),
         currentUserSubscribed: getCurrentUserSubscribed(userId),
+        currentUserBookmarked: getCurrentUserBookmarked(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -305,6 +328,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(authorId),
         currentUserSubscribed: getCurrentUserSubscribed(authorId),
+        currentUserBookmarked: getCurrentUserBookmarked(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -346,6 +370,9 @@ export class PostsService {
           : sql<string | null>`NULL`,
         currentUserSubscribed: userId
           ? getCurrentUserSubscribed(userId)
+          : sql<boolean>`false`,
+        currentUserBookmarked: userId
+          ? getCurrentUserBookmarked(userId)
           : sql<boolean>`false`,
       })
       .from(posts)
@@ -402,6 +429,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(authorId),
         currentUserSubscribed: getCurrentUserSubscribed(authorId),
+        currentUserBookmarked: getCurrentUserBookmarked(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -465,6 +493,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(userId),
         currentUserSubscribed: getCurrentUserSubscribed(userId),
+        currentUserBookmarked: getCurrentUserBookmarked(userId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -535,6 +564,7 @@ export class PostsService {
         commentCount,
         userReactionType: getUserReactionType(authorId),
         currentUserSubscribed: getCurrentUserSubscribed(authorId),
+        currentUserBookmarked: getCurrentUserBookmarked(authorId),
       })
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
@@ -617,6 +647,134 @@ export class PostsService {
     return row ? this.toSubscriptionDto(row) : null;
   }
 
+  async bookmark(
+    postId: string,
+    userId: string,
+  ): Promise<BookmarkSummaryDto | null> {
+    const postExists = await this.postExists(postId);
+    if (!postExists) return null;
+
+    await this.databaseService.db
+      .insert(postBookmarks)
+      .values({ postId, userId })
+      .onConflictDoNothing();
+
+    const [row] = await this.databaseService.db
+      .select()
+      .from(postBookmarks)
+      .where(
+        and(
+          eq(postBookmarks.postId, postId),
+          eq(postBookmarks.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    return row ? this.toBookmarkDto(row) : null;
+  }
+
+  async unbookmark(
+    postId: string,
+    userId: string,
+  ): Promise<BookmarkSummaryDto | null> {
+    const postExists = await this.postExists(postId);
+    if (!postExists) return null;
+
+    const [row] = await this.databaseService.db
+      .delete(postBookmarks)
+      .where(
+        and(
+          eq(postBookmarks.postId, postId),
+          eq(postBookmarks.userId, userId),
+        ),
+      )
+      .returning();
+
+    return row ? this.toBookmarkDto(row) : null;
+  }
+
+  async listBookmarks(
+    userId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
+    const parsed = cursor ? this.decodeBookmarkCursor(cursor) : null;
+    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+
+    const query = this.databaseService.db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          email: usersView.email,
+          name: usersView.name,
+          image: usersView.image,
+        },
+        upvoteCount,
+        downvoteCount,
+        commentCount,
+        userReactionType: getUserReactionType(userId),
+        currentUserSubscribed: getCurrentUserSubscribed(userId),
+        currentUserBookmarked: getCurrentUserBookmarked(userId),
+        bookmarkedAt: postBookmarks.createdAt,
+      })
+      .from(postBookmarks)
+      .innerJoin(posts, eq(postBookmarks.postId, posts.id))
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(
+        cursorDate && parsed
+          ? and(
+              eq(postBookmarks.userId, userId),
+              eq(posts.hidden, false),
+              or(
+                lt(postBookmarks.createdAt, cursorDate),
+                and(
+                  eq(postBookmarks.createdAt, cursorDate),
+                  gt(posts.id, parsed.postId),
+                ),
+              ),
+            )
+          : and(eq(postBookmarks.userId, userId), eq(posts.hidden, false)),
+      )
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+        usersView.image,
+        postBookmarks.createdAt,
+      );
+
+    const rows = await query
+      .orderBy(desc(postBookmarks.createdAt), asc(posts.id))
+      .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? this.encodeBookmarkCursor({
+            createdAt: lastItem.bookmarkedAt.toISOString(),
+            postId: lastItem.id,
+          })
+        : null;
+
+    return {
+      items: items.map((row) =>
+        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+      ),
+      nextCursor,
+    };
+  }
+
   async notifySubscribers(
     postId: string,
     actorId: string,
@@ -649,6 +807,7 @@ export class PostsService {
       downvoteCount: number;
       commentCount: number;
       currentUserSubscribed?: boolean;
+      currentUserBookmarked?: boolean;
     },
     userReactionType?: ReactionTypeDto | null,
   ): PostDto => {
@@ -670,6 +829,7 @@ export class PostsService {
       commentCount: row.commentCount,
       currentUserReaction: userReactionType ?? null,
       currentUserSubscribed: row.currentUserSubscribed ?? false,
+      currentUserBookmarked: row.currentUserBookmarked ?? false,
     };
   };
 
@@ -682,6 +842,49 @@ export class PostsService {
     userId: row.userId,
     createdAt: row.createdAt.toISOString(),
   });
+
+  private readonly toBookmarkDto = (row: {
+    postId: string;
+    createdAt: Date;
+  }): BookmarkSummaryDto => ({
+    postId: row.postId,
+    createdAt: row.createdAt.toISOString(),
+  });
+
+  private encodeBookmarkCursor(cursor: {
+    createdAt: string;
+    postId: string;
+  }): string {
+    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
+  }
+
+  private decodeBookmarkCursor(cursor: string): {
+    createdAt: string;
+    postId: string;
+  } | null {
+    try {
+      const decoded = JSON.parse(
+        Buffer.from(cursor, "base64url").toString("utf8"),
+      ) as unknown;
+      if (
+        typeof decoded === "object" &&
+        decoded !== null &&
+        "createdAt" in decoded &&
+        "postId" in decoded &&
+        typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
+        typeof (decoded as { postId: unknown }).postId === "string" &&
+        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId) &&
+        PostsService.ISO8601_REGEX.test(
+          (decoded as { createdAt: string }).createdAt,
+        )
+      ) {
+        return decoded as { createdAt: string; postId: string };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
 
   private async postExists(postId: string): Promise<boolean> {
     const [row] = await this.databaseService.db
