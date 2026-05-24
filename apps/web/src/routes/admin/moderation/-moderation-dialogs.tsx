@@ -17,7 +17,11 @@ import { PostMarkdown } from "@/components/ui/post-markdown";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast as toast } from "@/hooks/use-toast";
-import { getModeration, reviewModeration } from "@/lib/api/moderation";
+import {
+  getModeration,
+  getPostValidationStatus,
+  reviewModeration,
+} from "@/lib/api/moderation";
 
 import {
   DetailRow,
@@ -29,6 +33,7 @@ import {
   getPostPreview,
   type ModerationDialogState,
 } from "./-shared";
+import { ValidationStatusGraph } from "./-validation-graph";
 
 export function ModerationDialogs({
   dialog,
@@ -42,15 +47,32 @@ export function ModerationDialogs({
   const queryClient = useQueryClient();
   const selectedModerationId =
     dialog.type === "details" || dialog.type === "review" ? dialog.id : undefined;
+  const selectedModerationFromDialog =
+    dialog.type === "details" || dialog.type === "review"
+      ? dialog.moderation
+      : undefined;
 
   const {
-    data: selectedModeration,
+    data: moderationDetail,
     isLoading: isDetailLoading,
     error: detailError,
   } = useQuery({
     queryKey: ["moderation", "detail", selectedModerationId],
     queryFn: () => getModeration(selectedModerationId as string),
     enabled: enabled && !!selectedModerationId,
+  });
+
+  const selectedModeration = moderationDetail ?? selectedModerationFromDialog;
+
+  const selectedPostId = selectedModeration?.postId;
+  const {
+    data: validationGraph,
+    isLoading: isGraphLoading,
+    error: graphError,
+  } = useQuery({
+    queryKey: ["moderation", "validation-status", selectedPostId],
+    queryFn: () => getPostValidationStatus(selectedPostId as string),
+    enabled: enabled && dialog.type === "details" && !!selectedPostId,
   });
 
   const reviewMutation = useMutation({
@@ -81,8 +103,11 @@ export function ModerationDialogs({
     <>
       <ModerationDetailDialog
         moderation={selectedModeration}
+        validationGraph={validationGraph}
         isLoading={isDetailLoading}
+        isGraphLoading={isGraphLoading}
         error={detailError as Error | null}
+        graphError={graphError as Error | null}
         open={dialog.type === "details"}
         onOpenChange={(open) => !open && setDialog({ type: "none" })}
         onApprove={() =>
@@ -139,8 +164,11 @@ export function ModerationDialogs({
 
 function ModerationDetailDialog({
   moderation,
+  validationGraph,
   isLoading,
+  isGraphLoading,
   error,
+  graphError,
   open,
   onOpenChange,
   onApprove,
@@ -148,8 +176,11 @@ function ModerationDetailDialog({
   onFlag,
 }: {
   moderation: PostModerationType | undefined;
+  validationGraph: Parameters<typeof ValidationStatusGraph>[0]["graph"];
   isLoading: boolean;
+  isGraphLoading: boolean;
   error: Error | null;
+  graphError: Error | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onApprove: () => void;
@@ -158,7 +189,7 @@ function ModerationDetailDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Moderation details</DialogTitle>
           <DialogDescription>
@@ -177,6 +208,22 @@ function ModerationDetailDialog({
           </div>
         ) : moderation ? (
           <div className="space-y-4">
+            <div className="space-y-2">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Validation status graph
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Hover a step to see the blockage details or validation summary.
+                </p>
+              </div>
+              <ValidationStatusGraph
+                graph={validationGraph}
+                isLoading={isGraphLoading}
+                error={graphError}
+              />
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailRow
                 label="Status"
@@ -198,7 +245,7 @@ function ModerationDetailDialog({
               <DetailRow
                 label="Reviewed"
                 value={
-                  moderation.reviewedAt ? formatDate(moderation.reviewedAt) : "-"
+                  moderation.reviewedAt ? formatDate(moderation.reviewedAt) : "—"
                 }
               />
             </div>
@@ -241,7 +288,7 @@ function ModerationDetailDialog({
                 label="Similar post ID"
                 value={
                   <span className="font-mono text-xs text-muted-foreground">
-                    {moderation.similarPostId ?? "-"}
+                    {moderation.similarPostId ?? "—"}
                   </span>
                 }
               />

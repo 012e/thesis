@@ -53,8 +53,13 @@ const sourceBadgeClasses: Record<ModerationSourceType, string> = {
 
 export type ModerationDialogState =
   | { type: "none" }
-  | { type: "details"; id: string }
-  | { type: "review"; id: string; action: "approved" | "rejected" }
+  | { type: "details"; id: string; moderation?: PostModerationType }
+  | {
+      type: "review";
+      id: string;
+      action: "approved" | "rejected";
+      moderation?: PostModerationType;
+    }
   | { type: "flag"; postId: string };
 
 export function humanize(value: string) {
@@ -64,7 +69,7 @@ export function humanize(value: string) {
 }
 
 export function formatConfidence(value: string | null | undefined) {
-  if (!value) return "-";
+  if (!value) return "—";
   const numeric = Number(value);
   if (Number.isNaN(numeric)) return value;
   if (numeric >= 0 && numeric <= 1) {
@@ -78,7 +83,7 @@ export function getPostPreview(
 ) {
   const text = moderation.post?.content.text?.trim();
   if (text) {
-    return text.length > 120 ? `${text.slice(0, 120)}...` : text;
+    return text.length > 120 ? `${text.slice(0, 120)}…` : text;
   }
 
   if (moderation.post?.content.poll?.question) {
@@ -89,7 +94,7 @@ export function getPostPreview(
     return `Image post (${moderation.post.content.images.length} attachment${moderation.post.content.images.length > 1 ? "s" : ""})`;
   }
 
-  return `Post ${moderation.postId.slice(0, 8)}...`;
+  return `Post ${moderation.postId.slice(0, 8)}…`;
 }
 
 export function StatusBadge({ status }: { status: ModerationStatusType }) {

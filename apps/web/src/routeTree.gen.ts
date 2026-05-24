@@ -26,7 +26,7 @@ import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
-import { Route as AdminModerationRouteImport } from './routes/admin/moderation'
+import { Route as AdminModerationIndexRouteImport } from './routes/admin/moderation/index'
 
 const TestingRoute = TestingRouteImport.update({
   id: '/testing',
@@ -113,9 +113,9 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminModerationRoute = AdminModerationRouteImport.update({
-  id: '/admin/moderation',
-  path: '/admin/moderation',
+const AdminModerationIndexRoute = AdminModerationIndexRouteImport.update({
+  id: '/admin/moderation/',
+  path: '/admin/moderation/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -126,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
-  '/admin/moderation': typeof AdminModerationRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -138,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/admin/moderation/': typeof AdminModerationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -146,7 +146,6 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
-  '/admin/moderation': typeof AdminModerationRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -158,6 +157,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatIndexRoute
   '/playground': typeof PlaygroundIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/admin/moderation': typeof AdminModerationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,7 +167,6 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
-  '/admin/moderation': typeof AdminModerationRoute
   '/admin/users': typeof AdminUsersRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
@@ -179,6 +178,7 @@ export interface FileRoutesById {
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/admin/moderation/': typeof AdminModerationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -189,7 +189,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/testing'
-    | '/admin/moderation'
     | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -201,6 +200,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/playground/'
     | '/profile/'
+    | '/admin/moderation/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -209,7 +209,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/testing'
-    | '/admin/moderation'
     | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -221,6 +220,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/playground'
     | '/profile'
+    | '/admin/moderation'
   id:
     | '__root__'
     | '/'
@@ -229,7 +229,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/settings'
     | '/testing'
-    | '/admin/moderation'
     | '/admin/users'
     | '/auth/forgot-password'
     | '/auth/login'
@@ -241,6 +240,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/playground/'
     | '/profile/'
+    | '/admin/moderation/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -250,7 +250,6 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   SettingsRoute: typeof SettingsRoute
   TestingRoute: typeof TestingRoute
-  AdminModerationRoute: typeof AdminModerationRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
@@ -262,6 +261,7 @@ export interface RootRouteChildren {
   ChatIndexRoute: typeof ChatIndexRoute
   PlaygroundIndexRoute: typeof PlaygroundIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  AdminModerationIndexRoute: typeof AdminModerationIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -385,11 +385,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/moderation': {
-      id: '/admin/moderation'
+    '/admin/moderation/': {
+      id: '/admin/moderation/'
       path: '/admin/moderation'
-      fullPath: '/admin/moderation'
-      preLoaderRoute: typeof AdminModerationRouteImport
+      fullPath: '/admin/moderation/'
+      preLoaderRoute: typeof AdminModerationIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -402,7 +402,6 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   SettingsRoute: SettingsRoute,
   TestingRoute: TestingRoute,
-  AdminModerationRoute: AdminModerationRoute,
   AdminUsersRoute: AdminUsersRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
@@ -414,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatIndexRoute: ChatIndexRoute,
   PlaygroundIndexRoute: PlaygroundIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  AdminModerationIndexRoute: AdminModerationIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
