@@ -28,6 +28,7 @@ import {
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -48,6 +49,7 @@ import {
   StatusBadge,
   formatConfidence,
   formatDate,
+  formatModerationStatus,
   getPostPreview,
   humanize,
   priorityOptions,
@@ -181,7 +183,7 @@ export default function ModerationQueueTab({
                 }
               >
                 <IconCheck className="size-3.5" />
-                Approve
+                False positive
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() =>
@@ -195,7 +197,7 @@ export default function ModerationQueueTab({
                 className="text-destructive focus:text-destructive"
               >
                 <IconX className="size-3.5" />
-                Reject
+                Reject post
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -236,15 +238,19 @@ export default function ModerationQueueTab({
           }
         >
           <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="All statuses" />
+            <SelectValue placeholder="All statuses">
+              {filters.status ? formatModerationStatus(filters.status) : "All statuses"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            {statusOptions.map((status) => (
-              <SelectItem key={status} value={status}>
-                {humanize(status)}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectItem value="all">All statuses</SelectItem>
+              {statusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {formatModerationStatus(status)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 
@@ -258,15 +264,19 @@ export default function ModerationQueueTab({
           }
         >
           <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="All sources" />
+            <SelectValue placeholder="All sources">
+              {filters.source ? humanize(filters.source) : "All sources"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All sources</SelectItem>
-            {sourceOptions.map((source) => (
-              <SelectItem key={source} value={source}>
-                {humanize(source)}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectItem value="all">All sources</SelectItem>
+              {sourceOptions.map((source) => (
+                <SelectItem key={source} value={source}>
+                  {humanize(source)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 
@@ -280,15 +290,19 @@ export default function ModerationQueueTab({
           }
         >
           <SelectTrigger className="w-[220px]">
-            <SelectValue placeholder="All priorities" />
+            <SelectValue placeholder="All priorities">
+              {filters.priority ? humanize(filters.priority) : "All priorities"}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All priorities</SelectItem>
-            {priorityOptions.map((priority) => (
-              <SelectItem key={priority} value={priority}>
-                {humanize(priority)}
-              </SelectItem>
-            ))}
+            <SelectGroup>
+              <SelectItem value="all">All priorities</SelectItem>
+              {priorityOptions.map((priority) => (
+                <SelectItem key={priority} value={priority}>
+                  {humanize(priority)}
+                </SelectItem>
+              ))}
+            </SelectGroup>
           </SelectContent>
         </Select>
 

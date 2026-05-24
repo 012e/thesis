@@ -33,8 +33,15 @@ export const priorityOptions: FlagPriorityType[] = [
 const statusBadgeClasses: Record<ModerationStatusType, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   needs_human_review: "bg-orange-100 text-orange-800",
-  approved: "bg-green-100 text-green-800",
+  approved: "bg-input",
   rejected: "bg-red-100 text-red-800",
+};
+
+const statusLabels: Record<ModerationStatusType, string> = {
+  pending: "Pending",
+  needs_human_review: "Needs human review",
+  approved: "False positive",
+  rejected: "Rejected post",
 };
 
 const priorityBadgeClasses: Record<FlagPriorityType, string> = {
@@ -66,6 +73,10 @@ export function humanize(value: string) {
   return value
     .replaceAll("_", " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+export function formatModerationStatus(status: ModerationStatusType) {
+  return statusLabels[status];
 }
 
 export function formatConfidence(value: string | null | undefined) {
@@ -100,7 +111,7 @@ export function getPostPreview(
 export function StatusBadge({ status }: { status: ModerationStatusType }) {
   return (
     <Badge variant="outline" className={statusBadgeClasses[status]}>
-      {humanize(status)}
+      {formatModerationStatus(status)}
     </Badge>
   );
 }
@@ -121,7 +132,13 @@ export function SourceBadge({ source }: { source: ModerationSourceType }) {
   );
 }
 
-export function DetailRow({ label, value }: { label: string; value: ReactNode }) {
+export function DetailRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
   return (
     <div className="space-y-1">
       <p className="text-[11px] uppercase tracking-wide text-muted-foreground">

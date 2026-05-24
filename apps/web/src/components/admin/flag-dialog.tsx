@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -92,14 +93,18 @@ export function FlagDialog({
               onValueChange={(value) => setPriority(value as FlagPriorityType)}
             >
               <SelectTrigger id="flag-priority" className="w-full">
-                <SelectValue />
+                <SelectValue>
+                  {PRIORITY_OPTIONS.find((option) => option.value === priority)?.label}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {PRIORITY_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {PRIORITY_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </div>

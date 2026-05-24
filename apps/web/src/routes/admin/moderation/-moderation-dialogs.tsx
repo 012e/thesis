@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { PostModerationType } from "@repo/rest-contracts";
-import { IconCheck, IconFlag, IconX } from "@tabler/icons-react";
+import { IconCheck, IconFlag, IconMinus, IconX } from "@tabler/icons-react";
 
 import { FlagDialog } from "@/components/admin/flag-dialog";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,9 @@ export function ModerationDialogs({
 }) {
   const queryClient = useQueryClient();
   const selectedModerationId =
-    dialog.type === "details" || dialog.type === "review" ? dialog.id : undefined;
+    dialog.type === "details" || dialog.type === "review"
+      ? dialog.id
+      : undefined;
   const selectedModerationFromDialog =
     dialog.type === "details" || dialog.type === "review"
       ? dialog.moderation
@@ -88,8 +90,8 @@ export function ModerationDialogs({
     onSuccess: (_, variables) => {
       toast.success(
         variables.status === "approved"
-          ? "Moderation approved"
-          : "Moderation rejected",
+          ? "Marked as false positive"
+          : "Post rejected",
       );
       void queryClient.invalidateQueries({ queryKey: ["moderation"] });
       setDialog({ type: "none" });
@@ -189,7 +191,7 @@ function ModerationDetailDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl">
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>Moderation details</DialogTitle>
           <DialogDescription>
@@ -198,129 +200,136 @@ function ModerationDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {isLoading ? (
-          <div className="flex min-h-48 items-center justify-center">
-            <Spinner size="md" />
-          </div>
-        ) : error ? (
-          <div className="rounded-none border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">
-            Failed to load moderation details: {error.message}
-          </div>
-        ) : moderation ? (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <div>
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                  Validation status graph
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Hover a step to see the blockage details or validation summary.
-                </p>
-              </div>
-              <ValidationStatusGraph
-                graph={validationGraph}
-                isLoading={isGraphLoading}
-                error={graphError}
-              />
+        <div className="min-h-0 overflow-y-auto pr-1">
+          {isLoading ? (
+            <div className="flex min-h-48 items-center justify-center">
+              <Spinner size="md" />
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <DetailRow
-                label="Status"
-                value={<StatusBadge status={moderation.status} />}
-              />
-              <DetailRow
-                label="Priority"
-                value={<PriorityBadge priority={moderation.priority} />}
-              />
-              <DetailRow
-                label="Source"
-                value={<SourceBadge source={moderation.source} />}
-              />
-              <DetailRow
-                label="LLM confidence"
-                value={formatConfidence(moderation.llmConfidence)}
-              />
-              <DetailRow label="Created" value={formatDate(moderation.createdAt)} />
-              <DetailRow
-                label="Reviewed"
-                value={
-                  moderation.reviewedAt ? formatDate(moderation.reviewedAt) : "—"
-                }
-              />
+          ) : error ? (
+            <div className="rounded-none border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">
+              Failed to load moderation details: {error.message}
             </div>
-
-            <div className="space-y-2 rounded-none border p-3">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
-                Post content
-              </p>
-              {moderation.post?.content.text ? (
-                <div className="prose prose-sm max-w-none text-sm dark:prose-invert">
-                  <PostMarkdown content={moderation.post.content.text} />
+          ) : moderation ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div>
+                  <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                    Validation status graph
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Hover a step to see the blockage details or validation
+                    summary.
+                  </p>
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {getPostPreview(moderation)}
-                </p>
-              )}
-            </div>
+                <ValidationStatusGraph
+                  graph={validationGraph}
+                  isLoading={isGraphLoading}
+                  error={graphError}
+                />
+              </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <DetailRow
-                label="LLM summary"
-                value={
-                  moderation.llmSummary ?? (
-                    <span className="text-muted-foreground">
-                      No summary available
+              <div className="grid gap-4 sm:grid-cols-2">
+                <DetailRow
+                  label="Status"
+                  value={<StatusBadge status={moderation.status} />}
+                />
+                <DetailRow
+                  label="Priority"
+                  value={<PriorityBadge priority={moderation.priority} />}
+                />
+                <DetailRow
+                  label="Source"
+                  value={<SourceBadge source={moderation.source} />}
+                />
+                <DetailRow
+                  label="LLM confidence"
+                  value={formatConfidence(moderation.llmConfidence)}
+                />
+                <DetailRow
+                  label="Created"
+                  value={formatDate(moderation.createdAt)}
+                />
+                <DetailRow
+                  label="Reviewed"
+                  value={
+                    moderation.reviewedAt
+                      ? formatDate(moderation.reviewedAt)
+                      : "—"
+                  }
+                />
+              </div>
+
+              <div className="space-y-2 rounded-none border p-3">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Post content
+                </p>
+                {moderation.post?.content.text ? (
+                  <div className="prose prose-sm max-w-none text-sm dark:prose-invert">
+                    <PostMarkdown content={moderation.post.content.text} />
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    {getPostPreview(moderation)}
+                  </p>
+                )}
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <DetailRow
+                  label="LLM summary"
+                  value={
+                    moderation.llmSummary ?? (
+                      <span className="text-muted-foreground">
+                        No summary available
+                      </span>
+                    )
+                  }
+                />
+                <DetailRow
+                  label="Review note"
+                  value={
+                    moderation.reviewNote ?? (
+                      <span className="text-muted-foreground">
+                        No review note
+                      </span>
+                    )
+                  }
+                />
+                <DetailRow
+                  label="Similar post ID"
+                  value={
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {moderation.similarPostId ?? "—"}
                     </span>
-                  )
-                }
-              />
-              <DetailRow
-                label="Review note"
-                value={
-                  moderation.reviewNote ?? (
-                    <span className="text-muted-foreground">No review note</span>
-                  )
-                }
-              />
-              <DetailRow
-                label="Similar post ID"
-                value={
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {moderation.similarPostId ?? "—"}
-                  </span>
-                }
-              />
-              <DetailRow
-                label="Similarity score"
-                value={formatConfidence(moderation.similarityScore)}
-              />
+                  }
+                />
+                <DetailRow
+                  label="Similarity score"
+                  value={formatConfidence(moderation.similarityScore)}
+                />
+              </div>
             </div>
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No moderation record selected.
-          </p>
-        )}
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No moderation record selected.
+            </p>
+          )}
+        </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
           {moderation && (
             <>
-              <Button variant="outline" onClick={onFlag}>
+              <Button variant="ghost" onClick={onFlag}>
                 <IconFlag className="size-3.5" />
                 Flag post
               </Button>
               <Button variant="outline" onClick={onApprove}>
-                <IconCheck className="size-3.5" />
-                Approve
+                <IconMinus className="size-3.5" />
+                False positive
               </Button>
               <Button variant="destructive" onClick={onReject}>
                 <IconX className="size-3.5" />
-                Reject
+                Reject post
               </Button>
             </>
           )}
@@ -354,19 +363,19 @@ function ReviewDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle>
-            {action === "approved" ? "Approve moderation" : "Reject moderation"}
+            {action === "approved" ? "Mark as false positive" : "Reject post"}
           </DialogTitle>
           <DialogDescription>
             {action === "approved"
-              ? "Mark this moderation record as approved."
-              : "Reject this moderation record and keep the content blocked."}
+              ? "Mark this moderation record as a false positive and allow the post."
+              : "Reject this post and keep the content blocked."}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="min-h-0 space-y-3 overflow-y-auto pr-1">
           {moderation && (
             <div className="rounded-none border bg-muted/40 p-3 text-xs text-muted-foreground">
               <div className="mb-2 flex flex-wrap gap-2">
@@ -414,12 +423,12 @@ function ReviewDialog({
             ) : action === "approved" ? (
               <>
                 <IconCheck className="size-3.5" />
-                Approve
+                Mark false positive
               </>
             ) : (
               <>
                 <IconX className="size-3.5" />
-                Reject
+                Reject post
               </>
             )}
           </Button>
