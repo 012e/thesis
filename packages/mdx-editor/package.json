@@ -21,7 +21,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsgo --noEmit"
   },
   "dependencies": {
     "@codemirror/commands": "^6.2.4",
@@ -79,6 +79,7 @@
     "micromark-factory-space": "^2.0.0",
     "micromark-util-character": "^2.0.1",
     "micromark-util-symbol": "^2.0.0",
+    "micromark-util-types": "^2.0.2",
     "react-hook-form": "^7.56.1",
     "unidiff": "^1.0.2"
   },

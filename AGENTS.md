@@ -95,7 +95,15 @@ pnpm --filter web build           # tsc -b && vite build
 pnpm --filter backend build       # nest build
 pnpm --filter @repo/rest-contracts build  # tsup (dual CJS/ESM — must build before backend tests)
 pnpm --filter @repo/shared-dto build      # tsc
- just build                         # cross-project build & typecheck (use this instead of running tsc directly)
+just build                         # cross-project build & typecheck (use this instead of running tsc directly)
+```
+
+### Typecheck
+
+```bash
+pnpm --filter <package> typecheck  # typecheck one workspace package
+pnpm run typecheck                 # typecheck all workspace packages with a typecheck script
+just typecheck                     # typecheck the whole project
 ```
 
 ### Test (backend — all tests are integration, no mocks)

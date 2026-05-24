@@ -7,6 +7,7 @@
   "author": "",
   "scripts": {
     "build": "nest build",
+    "typecheck": "nest build --type-check --path tsconfig.typecheck.json",
     "auth:migrate": "pnpm dlx auth@latest generate --output=src/db/auth-schema.ts",
     "db:check": "drizzle-kit check",
     "db:generate": "drizzle-kit generate",
@@ -88,6 +89,7 @@
     "@testcontainers/postgresql": "^11.14.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^22.19.17",
     "@types/pg": "^8.20.0",
     "@types/supertest": "^6.0.3",

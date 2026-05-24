@@ -24,6 +24,10 @@ storybook:
 build:
     pnpm nx run-many --target=build
 
+# Typecheck all workspace packages
+typecheck:
+    pnpm run typecheck
+
 # Build all workspace packages, then test the entire monorepo using Nx
 test:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client

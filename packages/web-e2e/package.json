@@ -8,6 +8,7 @@
   "author": "",
   "type": "module",
   "scripts": {
+    "typecheck": "tsgo --noEmit",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "test:debug": "playwright test --debug",

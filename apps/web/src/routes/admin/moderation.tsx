@@ -90,7 +90,12 @@ const sourceOptions: ModerationSourceType[] = [
   "user_report",
   "admin_flag",
 ];
-const priorityOptions: FlagPriorityType[] = ["low", "medium", "high", "critical"];
+const priorityOptions: FlagPriorityType[] = [
+  "low",
+  "medium",
+  "high",
+  "critical",
+];
 
 const statusBadgeClasses: Record<ModerationStatusType, string> = {
   pending: "bg-yellow-100 text-yellow-800",
@@ -120,7 +125,9 @@ type ModerationDialogState =
   | { type: "flag"; postId: string };
 
 function humanize(value: string) {
-  return value.replaceAll("_", " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  return value
+    .replaceAll("_", " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function formatConfidence(value: string | null | undefined) {
@@ -133,7 +140,9 @@ function formatConfidence(value: string | null | undefined) {
   return numeric.toFixed(2);
 }
 
-function getPostPreview(moderation: Pick<PostModerationType, "post" | "postId">) {
+function getPostPreview(
+  moderation: Pick<PostModerationType, "post" | "postId">,
+) {
   const text = moderation.post?.content.text?.trim();
   if (text) {
     return text.length > 120 ? `${text.slice(0, 120)}…` : text;
@@ -223,14 +232,20 @@ function ModerationTable({
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={colSpan} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={colSpan}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   Loading moderation queue...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && table.getRowModel().rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={colSpan} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={colSpan}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   No moderation records found
                 </TableCell>
               </TableRow>
@@ -238,7 +253,10 @@ function ModerationTable({
             {table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className={cell.column.columnDef.meta?.className}>
+                  <TableCell
+                    key={cell.id}
+                    className={cell.column.columnDef.meta?.className}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -251,7 +269,7 @@ function ModerationTable({
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
           {total === 0
-            ? "No moderation records"
+            ? null
             : `Showing ${offset + 1}–${Math.min(offset + PAGE_SIZE, total)} of ${total} records`}
         </span>
         <div className="flex items-center gap-2">
@@ -264,7 +282,8 @@ function ModerationTable({
             Previous
           </Button>
           <span>
-            Page {table.getState().pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
+            Page {table.getState().pagination.pageIndex + 1} of{" "}
+            {Math.max(1, table.getPageCount())}
           </span>
           <Button
             variant="outline"
@@ -324,14 +343,20 @@ function ReportsTable({
           <TableBody>
             {isLoading && (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   Loading reports...
                 </TableCell>
               </TableRow>
             )}
             {!isLoading && items.length === 0 && (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="py-8 text-center text-muted-foreground"
+                >
                   No reports found
                 </TableCell>
               </TableRow>
@@ -340,31 +365,49 @@ function ReportsTable({
               <TableRow key={report.id}>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span className="font-medium">{report.reporter?.name ?? report.reporter?.username ?? "Unknown"}</span>
-                    <span className="text-xs text-muted-foreground">{report.reporter?.email ?? report.reporterId}</span>
+                    <span className="font-medium">
+                      {report.reporter?.name ??
+                        report.reporter?.username ??
+                        "Unknown"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {report.reporter?.email ?? report.reporterId}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span className="font-mono text-xs text-muted-foreground">{report.postId}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {report.postId}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">{humanize(report.reason)}</Badge>
                 </TableCell>
                 <TableCell className="max-w-xs text-xs text-muted-foreground">
-                  <span className="line-clamp-2">{report.description ?? "—"}</span>
+                  <span className="line-clamp-2">
+                    {report.description ?? "—"}
+                  </span>
                 </TableCell>
                 <TableCell>
                   <Badge
                     variant="outline"
-                    className={report.passedHeuristic ? "bg-green-100 text-green-800" : "bg-slate-100 text-slate-700"}
+                    className={
+                      report.passedHeuristic
+                        ? "bg-green-100 text-green-800"
+                        : "bg-slate-100 text-slate-700"
+                    }
                   >
                     {report.passedHeuristic ? "Passed" : "Held"}
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <span className="font-mono text-xs text-muted-foreground">{report.moderationId ?? "—"}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {report.moderationId ?? "—"}
+                  </span>
                 </TableCell>
-                <TableCell className="text-xs text-muted-foreground">{formatDate(report.createdAt)}</TableCell>
+                <TableCell className="text-xs text-muted-foreground">
+                  {formatDate(report.createdAt)}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -413,16 +456,12 @@ function ReportsTable({
   );
 }
 
-function DetailRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: ReactNode;
-}) {
+function DetailRow({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="space-y-1">
-      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+      <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
       <div className="text-sm">{value}</div>
     </div>
   );
@@ -453,7 +492,8 @@ function ModerationDetailDialog({
         <DialogHeader>
           <DialogTitle>Moderation details</DialogTitle>
           <DialogDescription>
-            Review the full moderation record, supporting context, and current decision.
+            Review the full moderation record, supporting context, and current
+            decision.
           </DialogDescription>
         </DialogHeader>
 
@@ -468,37 +508,79 @@ function ModerationDetailDialog({
         ) : moderation ? (
           <div className="space-y-4">
             <div className="grid gap-4 sm:grid-cols-2">
-              <DetailRow label="Status" value={<StatusBadge status={moderation.status} />} />
-              <DetailRow label="Priority" value={<PriorityBadge priority={moderation.priority} />} />
-              <DetailRow label="Source" value={<SourceBadge source={moderation.source} />} />
-              <DetailRow label="LLM confidence" value={formatConfidence(moderation.llmConfidence)} />
-              <DetailRow label="Created" value={formatDate(moderation.createdAt)} />
-              <DetailRow label="Reviewed" value={moderation.reviewedAt ? formatDate(moderation.reviewedAt) : "—"} />
+              <DetailRow
+                label="Status"
+                value={<StatusBadge status={moderation.status} />}
+              />
+              <DetailRow
+                label="Priority"
+                value={<PriorityBadge priority={moderation.priority} />}
+              />
+              <DetailRow
+                label="Source"
+                value={<SourceBadge source={moderation.source} />}
+              />
+              <DetailRow
+                label="LLM confidence"
+                value={formatConfidence(moderation.llmConfidence)}
+              />
+              <DetailRow
+                label="Created"
+                value={formatDate(moderation.createdAt)}
+              />
+              <DetailRow
+                label="Reviewed"
+                value={
+                  moderation.reviewedAt
+                    ? formatDate(moderation.reviewedAt)
+                    : "—"
+                }
+              />
             </div>
 
             <div className="space-y-2 rounded-none border p-3">
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Post content</p>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Post content
+              </p>
               {moderation.post?.content.text ? (
                 <div className="prose prose-sm max-w-none text-sm dark:prose-invert">
                   <PostMarkdown content={moderation.post.content.text} />
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">{getPostPreview(moderation)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {getPostPreview(moderation)}
+                </p>
               )}
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <DetailRow
                 label="LLM summary"
-                value={moderation.llmSummary ?? <span className="text-muted-foreground">No summary available</span>}
+                value={
+                  moderation.llmSummary ?? (
+                    <span className="text-muted-foreground">
+                      No summary available
+                    </span>
+                  )
+                }
               />
               <DetailRow
                 label="Review note"
-                value={moderation.reviewNote ?? <span className="text-muted-foreground">No review note</span>}
+                value={
+                  moderation.reviewNote ?? (
+                    <span className="text-muted-foreground">
+                      No review note
+                    </span>
+                  )
+                }
               />
               <DetailRow
                 label="Similar post ID"
-                value={<span className="font-mono text-xs text-muted-foreground">{moderation.similarPostId ?? "—"}</span>}
+                value={
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {moderation.similarPostId ?? "—"}
+                  </span>
+                }
               />
               <DetailRow
                 label="Similarity score"
@@ -507,7 +589,9 @@ function ModerationDetailDialog({
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No moderation record selected.</p>
+          <p className="text-sm text-muted-foreground">
+            No moderation record selected.
+          </p>
         )}
 
         <DialogFooter>
@@ -562,7 +646,9 @@ function ReviewDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{action === "approved" ? "Approve moderation" : "Reject moderation"}</DialogTitle>
+          <DialogTitle>
+            {action === "approved" ? "Approve moderation" : "Reject moderation"}
+          </DialogTitle>
           <DialogDescription>
             {action === "approved"
               ? "Mark this moderation record as approved."
@@ -598,7 +684,11 @@ function ReviewDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isPending}
+          >
             Cancel
           </Button>
           <Button
@@ -657,7 +747,13 @@ export function AdminModerationPage() {
     isFetching,
     error,
   } = useQuery({
-    queryKey: ["moderation", "list", filters, pagination.pageIndex, pagination.pageSize],
+    queryKey: [
+      "moderation",
+      "list",
+      filters,
+      pagination.pageIndex,
+      pagination.pageSize,
+    ],
     queryFn: () =>
       listModerations({
         ...filters,
@@ -673,7 +769,12 @@ export function AdminModerationPage() {
     isFetching: isReportsFetching,
     error: reportsError,
   } = useQuery({
-    queryKey: ["moderation", "reports", reportsPagination.pageIndex, reportsPagination.pageSize],
+    queryKey: [
+      "moderation",
+      "reports",
+      reportsPagination.pageIndex,
+      reportsPagination.pageSize,
+    ],
     queryFn: () =>
       listReports({
         page: reportsPagination.pageIndex,
@@ -682,8 +783,13 @@ export function AdminModerationPage() {
     enabled: !sessionPending && isAdmin,
   });
 
-  const selectedModerationId = dialog.type === "details" || dialog.type === "review" ? dialog.id : undefined;
-  const selectedModerationFromList = moderationData?.items.find((item) => item.id === selectedModerationId);
+  const selectedModerationId =
+    dialog.type === "details" || dialog.type === "review"
+      ? dialog.id
+      : undefined;
+  const selectedModerationFromList = moderationData?.items.find(
+    (item) => item.id === selectedModerationId,
+  );
 
   const {
     data: moderationDetail,
@@ -721,7 +827,10 @@ export function AdminModerationPage() {
     },
   });
 
-  function updateFilter<Key extends keyof typeof filters>(key: Key, value?: (typeof filters)[Key]) {
+  function updateFilter<Key extends keyof typeof filters>(
+    key: Key,
+    value?: (typeof filters)[Key],
+  ) {
     setFilters((current) => ({
       ...current,
       [key]: value,
@@ -737,8 +846,12 @@ export function AdminModerationPage() {
         meta: { headerClassName: "w-[320px]" },
         cell: ({ row }) => (
           <div className="max-w-sm space-y-1">
-            <p className="line-clamp-2 text-sm font-medium">{getPostPreview(row.original)}</p>
-            <p className="font-mono text-[11px] text-muted-foreground">{row.original.postId}</p>
+            <p className="line-clamp-2 text-sm font-medium">
+              {getPostPreview(row.original)}
+            </p>
+            <p className="font-mono text-[11px] text-muted-foreground">
+              {row.original.postId}
+            </p>
           </div>
         ),
       }),
@@ -757,13 +870,17 @@ export function AdminModerationPage() {
       columnHelper.accessor("llmConfidence", {
         header: () => "LLM Confidence",
         cell: ({ getValue }) => (
-          <span className="text-xs text-muted-foreground">{formatConfidence(getValue())}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatConfidence(getValue())}
+          </span>
         ),
       }),
       columnHelper.accessor("createdAt", {
         header: () => "Created",
         cell: ({ getValue }) => (
-          <span className="text-xs text-muted-foreground">{formatDate(getValue())}</span>
+          <span className="text-xs text-muted-foreground">
+            {formatDate(getValue())}
+          </span>
         ),
       }),
       columnHelper.display({
@@ -778,7 +895,11 @@ export function AdminModerationPage() {
               <IconDotsVertical className="size-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-auto min-w-44">
-              <DropdownMenuItem onClick={() => setDialog({ type: "details", id: row.original.id })}>
+              <DropdownMenuItem
+                onClick={() =>
+                  setDialog({ type: "details", id: row.original.id })
+                }
+              >
                 <IconEye className="size-3.5" />
                 View details
               </DropdownMenuItem>
@@ -808,7 +929,11 @@ export function AdminModerationPage() {
                 Reject
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setDialog({ type: "flag", postId: row.original.postId })}>
+              <DropdownMenuItem
+                onClick={() =>
+                  setDialog({ type: "flag", postId: row.original.postId })
+                }
+              >
                 <IconFlag className="size-3.5" />
                 Flag post
               </DropdownMenuItem>
@@ -856,7 +981,10 @@ export function AdminModerationPage() {
       </div>
 
       <Tabs defaultValue="queue" className="gap-4">
-        <TabsList variant="line" className="flex h-auto max-w-full flex-wrap justify-start gap-1">
+        <TabsList
+          variant="line"
+          className="flex h-auto max-w-full flex-wrap justify-start gap-1"
+        >
           <TabsTrigger value="queue" className="px-2.5 py-1.5">
             Moderation Queue
           </TabsTrigger>
@@ -870,7 +998,10 @@ export function AdminModerationPage() {
             <Select
               value={filters.status ?? "all"}
               onValueChange={(value) =>
-                updateFilter("status", value === "all" ? undefined : (value as ModerationStatusType))
+                updateFilter(
+                  "status",
+                  value === "all" ? undefined : (value as ModerationStatusType),
+                )
               }
             >
               <SelectTrigger className="w-[220px]">
@@ -889,7 +1020,10 @@ export function AdminModerationPage() {
             <Select
               value={filters.source ?? "all"}
               onValueChange={(value) =>
-                updateFilter("source", value === "all" ? undefined : (value as ModerationSourceType))
+                updateFilter(
+                  "source",
+                  value === "all" ? undefined : (value as ModerationSourceType),
+                )
               }
             >
               <SelectTrigger className="w-[220px]">
@@ -908,7 +1042,10 @@ export function AdminModerationPage() {
             <Select
               value={filters.priority ?? "all"}
               onValueChange={(value) =>
-                updateFilter("priority", value === "all" ? undefined : (value as FlagPriorityType))
+                updateFilter(
+                  "priority",
+                  value === "all" ? undefined : (value as FlagPriorityType),
+                )
               }
             >
               <SelectTrigger className="w-[220px]">
@@ -963,13 +1100,24 @@ export function AdminModerationPage() {
         open={dialog.type === "details"}
         onOpenChange={(open) => !open && setDialog({ type: "none" })}
         onApprove={() =>
-          selectedModeration && setDialog({ type: "review", id: selectedModeration.id, action: "approved" })
+          selectedModeration &&
+          setDialog({
+            type: "review",
+            id: selectedModeration.id,
+            action: "approved",
+          })
         }
         onReject={() =>
-          selectedModeration && setDialog({ type: "review", id: selectedModeration.id, action: "rejected" })
+          selectedModeration &&
+          setDialog({
+            type: "review",
+            id: selectedModeration.id,
+            action: "rejected",
+          })
         }
         onFlag={() =>
-          selectedModeration && setDialog({ type: "flag", postId: selectedModeration.postId })
+          selectedModeration &&
+          setDialog({ type: "flag", postId: selectedModeration.postId })
         }
       />
 

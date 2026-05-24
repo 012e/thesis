@@ -4,7 +4,7 @@ import * as Mdast from "mdast";
 import { fromMarkdown, type Options } from "mdast-util-from-markdown";
 import { MdxjsEsm } from "mdast-util-mdx";
 import { toMarkdown } from "mdast-util-to-markdown";
-import { ParseOptions } from "micromark-util-types";
+import type { ParseOptions } from "micromark-util-types";
 import { FORMAT } from "./FormatConstants";
 import { CodeBlockEditorDescriptor } from "./plugins/codeblock";
 import { DirectiveDescriptor } from "./plugins/directives";
