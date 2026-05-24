@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 
 import { DatabaseModule } from "@/db/database.module";
 import { EmbeddingModule } from "@/embedding/embedding.module";
@@ -6,6 +6,7 @@ import { StorageModule } from "@/storage";
 import { UsersModule } from "@/users/users.module";
 import { NotificationsModule } from "@/notifications/notifications.module";
 import { ModerationModule } from "@/moderation/moderation.module";
+import { TagsModule } from "@/tags/tags.module";
 
 import { PostsController } from "./posts.controller";
 import { PostsSearchService } from "./posts-search.service";
@@ -19,6 +20,7 @@ import { PostsService } from "./posts.service";
     EmbeddingModule,
     NotificationsModule,
     ModerationModule,
+    TagsModule,
   ],
   controllers: [PostsController],
   providers: [PostsService, PostsSearchService],

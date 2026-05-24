@@ -36,6 +36,7 @@ import {
 } from "@/embedding/embedding.interface";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { ContentHashService } from "@/moderation/content-hash.service";
+import { TagsService } from "@/tags/tags.service";
 
 import { createPostSchema, updatePostSchema } from "./posts.schemas";
 
@@ -108,6 +109,7 @@ export class PostsService {
     private readonly embeddingService: IEmbeddingService,
     private readonly moderationPipelineService: ModerationPipelineService,
     private readonly contentHashService: ContentHashService,
+    private readonly tagsService: TagsService,
   ) {}
 
   async listByUser(
@@ -149,9 +151,10 @@ export class PostsService {
       )
       .orderBy(desc(posts.createdAt));
 
-    return rows.map((row) =>
+    const dtos = rows.map((row) =>
       this.toDto(row, row.userReactionType as ReactionTypeDto | null),
     );
+    return this.hydrateTags(dtos);
   }
 
   async list(userId: string): Promise<PostDto[]> {
@@ -190,9 +193,10 @@ export class PostsService {
       )
       .orderBy(desc(posts.createdAt));
 
-    return rows.map((row) =>
+    const dtos = rows.map((row) =>
       this.toDto(row, row.userReactionType as ReactionTypeDto | null),
     );
+    return this.hydrateTags(dtos);
   }
 
   async listByFollowing(
@@ -270,10 +274,13 @@ export class PostsService {
           })
         : null;
 
+    const followingDtos = items.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
+    await this.hydrateTags(followingDtos);
+
     return {
-      items: items.map((row) =>
-        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-      ),
+      items: followingDtos,
       nextCursor,
     };
   }
@@ -299,6 +306,13 @@ export class PostsService {
       .insert(postSubscriptions)
       .values({ postId: createdPost.id, userId: authorId })
       .onConflictDoNothing();
+
+    // Sync tags from post text
+    const postTagDtos = await this.tagsService.syncPostTags(
+      createdPost.id,
+      authorId,
+      input.content.text,
+    );
 
     // Run moderation pipeline asynchronously (fire-and-forget)
     this.moderationPipelineService
@@ -344,7 +358,9 @@ export class PostsService {
       )
       .limit(1);
 
-    return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+    const dto = this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+    dto.tags = postTagDtos;
+    return dto;
   }
 
   async getById(id: string, userId?: string): Promise<PostDto | null> {
@@ -389,9 +405,10 @@ export class PostsService {
       )
       .limit(1);
 
-    return row
-      ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
-      : null;
+    if (!row) return null;
+    const dto = this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+    await this.hydrateTags([dto]);
+    return dto;
   }
 
   async update(
@@ -409,6 +426,13 @@ export class PostsService {
       .returning();
 
     if (!updatedPost) return null;
+
+    // Sync tags from updated text
+    const postTagDtos = await this.tagsService.syncPostTags(
+      id,
+      authorId,
+      input.content.text,
+    );
 
     const [row] = await this.databaseService.db
       .select({
@@ -450,6 +474,7 @@ export class PostsService {
       : null;
 
     if (dto) {
+      dto.tags = postTagDtos;
       void this.deliverPostUpdateNotification(
         dto.id,
         authorId,
@@ -536,10 +561,13 @@ export class PostsService {
           })
         : null;
 
+    const recDtos = items.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
+    await this.hydrateTags(recDtos);
+
     return {
-      items: items.map((row) =>
-        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-      ),
+      items: recDtos,
       nextCursor,
     };
   }
@@ -767,10 +795,13 @@ export class PostsService {
           })
         : null;
 
+    const bookmarkDtos = items.map((row) =>
+      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+    );
+    await this.hydrateTags(bookmarkDtos);
+
     return {
-      items: items.map((row) =>
-        this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-      ),
+      items: bookmarkDtos,
       nextCursor,
     };
   }
@@ -830,8 +861,22 @@ export class PostsService {
       currentUserReaction: userReactionType ?? null,
       currentUserSubscribed: row.currentUserSubscribed ?? false,
       currentUserBookmarked: row.currentUserBookmarked ?? false,
+      tags: [],
     };
   };
+
+  /**
+   * Batch-load tags for an array of PostDtos and attach them in-place.
+   */
+  async hydrateTags(dtos: PostDto[]): Promise<PostDto[]> {
+    if (dtos.length === 0) return dtos;
+    const postIds = dtos.map((d) => d.id);
+    const tagsMap = await this.tagsService.getTagsForPosts(postIds);
+    for (const dto of dtos) {
+      dto.tags = tagsMap.get(dto.id) ?? [];
+    }
+    return dtos;
+  }
 
   private readonly toSubscriptionDto = (row: {
     postId: string;

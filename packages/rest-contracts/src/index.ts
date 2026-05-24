@@ -13,6 +13,7 @@ import { messagesContract } from "./contracts/messages";
 import { notificationsContract } from "./contracts/notifications";
 import { configContract } from "./contracts/config";
 import { moderationContract } from "./contracts/moderation";
+import { tagsContract } from "./contracts/tags";
 
 const c = initContract();
 
@@ -30,6 +31,7 @@ export const appContract = c.router({
   ...notificationsContract,
   ...configContract,
   ...moderationContract,
+  ...tagsContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -91,4 +93,8 @@ export type { ConfigContract } from "./contracts/config";
 export { moderationContract } from "./contracts/moderation";
 export type { ModerationContract } from "./contracts/moderation";
 
+export { tagsContract } from "./contracts/tags";
+export type { TagsContract } from "./contracts/tags";
+
 export * from "./schemas/moderation";
+export * from "./schemas/tag";

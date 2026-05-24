@@ -89,6 +89,7 @@ export interface PostDto {
   currentUserReaction: ReactionTypeDto | null;
   currentUserSubscribed: boolean;
   currentUserBookmarked: boolean;
+  tags: PostTagDto[];
 }
 
 export interface BookmarkSummaryDto {
@@ -437,6 +438,21 @@ export interface NotificationDto {
   /** ISO datetime when the notification was read. null = unread. */
   readAt: string | null;
   createdAt: string;
+}
+
+// ─── Tags ────────────────────────────────────────────────────────────────────
+
+export interface TagDto {
+  id: string;
+  slug: string;
+  displayName: string;
+  postCount: number;
+}
+
+export interface PostTagDto {
+  id: string;
+  slug: string;
+  displayName: string;
 }
 
 // ─── Content Moderation ──────────────────────────────────────────────────────

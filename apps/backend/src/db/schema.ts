@@ -2,7 +2,10 @@ import type { NotificationPayloadDto, PostContentDto } from "@repo/shared-dto";
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  date,
   foreignKey,
+  index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -36,6 +39,63 @@ export const posts = pgTable("posts", {
 
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
+
+// ─── Tags ────────────────────────────────────────────────────────────────────
+
+export const tags = pgTable("tags", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  slug: text("slug").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  postCount: integer("post_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type Tag = typeof tags.$inferSelect;
+export type NewTag = typeof tags.$inferInsert;
+
+export const postTags = pgTable(
+  "post_tags",
+  {
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+    authorId: text("author_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.postId, table.tagId] }),
+    index("idx_post_tags_tag_timeline").on(
+      table.tagId,
+      table.createdAt,
+      table.postId,
+    ),
+    index("idx_post_tags_post").on(table.postId),
+  ],
+);
+
+export type PostTag = typeof postTags.$inferSelect;
+
+export const tagDailyStats = pgTable(
+  "tag_daily_stats",
+  {
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+    day: date("day").notNull(),
+    postCount: integer("post_count").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.tagId, table.day] })],
+);
 
 /**
  * Stores user avatar URLs separately from Better Auth's `user` table.

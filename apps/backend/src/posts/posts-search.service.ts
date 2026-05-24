@@ -95,7 +95,7 @@ export class PostsSearchService {
       ORDER BY rrf.rrf_score DESC
     `);
 
-    return result.rows.map((row) => {
+    const dtos = result.rows.map((row) => {
       const r = row as Record<string, unknown>;
       return {
         id: r["id"] as string,
@@ -119,7 +119,11 @@ export class PostsSearchService {
           (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
         currentUserSubscribed: Boolean(r["current_user_subscribed"]),
         currentUserBookmarked: Boolean(r["current_user_bookmarked"]),
+        tags: [],
       } satisfies PostDto;
     });
+
+    // Hydrate tags for search results
+    return this.postsService.hydrateTags(dtos);
   }
 }
