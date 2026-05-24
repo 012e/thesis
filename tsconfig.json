@@ -4,7 +4,7 @@
       "@repo/*": ["./packages/*"]
     },
     "strict": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
     "skipLibCheck": true
   }

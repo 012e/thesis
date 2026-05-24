@@ -30,6 +30,7 @@ jobs:
           - test-messages
           - test-config
           - test-threads
+          - test-moderation
 
     steps:
       - name: Checkout code
