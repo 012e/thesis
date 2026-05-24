@@ -11,6 +11,7 @@ import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 import { PostsSearchService } from "@/posts/posts-search.service";
 import { PostsService } from "@/posts/posts.service";
+import { TagsService } from "@/tags/tags.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
 import { NotificationsService } from "@/notifications/notifications.service";
@@ -45,6 +46,7 @@ describe("PostsSearchService.search integration", () => {
         { provide: EMBEDDING_SERVICE, useClass: StubEmbeddingService },
         DatabaseService,
         PostsService,
+        TagsService,
         PostsSearchService,
         {
           provide: StorageService,

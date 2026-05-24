@@ -8,6 +8,7 @@ import {
   gt,
   gte,
   ilike,
+  inArray,
   lt,
   or,
   sql,
@@ -80,7 +81,7 @@ export class TagsService {
       const tagRows = await tx
         .select({ id: tags.id, slug: tags.slug, displayName: tags.displayName })
         .from(tags)
-        .where(sql`${tags.slug} = ANY(${slugs})`);
+        .where(inArray(tags.slug, slugs));
 
       const tagMap = new Map(tagRows.map((t) => [t.slug, t]));
 
@@ -154,7 +155,7 @@ export class TagsService {
       })
       .from(postTags)
       .innerJoin(tags, eq(postTags.tagId, tags.id))
-      .where(sql`${postTags.postId} = ANY(${postIds})`);
+      .where(inArray(postTags.postId, postIds));
 
     const map = new Map<string, PostTagDto[]>();
     for (const row of rows) {

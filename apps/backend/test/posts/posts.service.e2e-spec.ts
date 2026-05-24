@@ -8,6 +8,7 @@ import { posts, postReactions, comments } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { PostsService } from "@/posts/posts.service";
+import { TagsService } from "@/tags/tags.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -46,6 +47,7 @@ describe("PostsService integration", () => {
         },
         DatabaseService,
         PostsService,
+        TagsService,
         {
           provide: StorageService,
           useValue: {
