@@ -14,6 +14,7 @@ import {
   Background,
   Controls,
   Handle,
+  MarkerType,
   Position,
   ReactFlow,
   type Edge,
@@ -87,6 +88,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { PostMarkdown } from "@/components/ui/post-markdown";
+import {
+  BaseNode,
+  BaseNodeContent,
+} from "@/components/base-node";
+import {
+  NodeTooltip,
+  NodeTooltipContent,
+  NodeTooltipTrigger,
+} from "@/components/node-tooltip";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/moderation")({
   component: AdminModerationPage,
@@ -211,7 +222,7 @@ const validationStatusClasses: Record<ModerationValidationStepStatusType, string
   blocked: "border-red-600 bg-red-50 text-red-950",
   needs_human_review: "border-orange-500 bg-orange-50 text-orange-950",
   pending: "border-yellow-500 border-dashed bg-yellow-50 text-yellow-950",
-  not_run: "border-slate-400 border-dotted bg-slate-50 text-slate-500",
+  not_run: "border-slate-400 border-dotted bg-slate-50 text-slate-500 opacity-45",
 };
 
 const validationStatusLabels: Record<ModerationValidationStepStatusType, string> = {
@@ -264,25 +275,41 @@ function ValidationStepNode({ data }: NodeProps<ValidationFlowNode>) {
   const hoverText = [data.message, data.detail].filter(Boolean).join("\n\n");
 
   return (
-    <div
-      title={hoverText || data.label}
-      className={`w-56 border-2 px-3 py-2 text-left shadow-sm ${validationStatusClasses[data.status]}`}
-    >
-      <Handle type="target" position={Position.Left} className="opacity-40" />
-      <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
-        {humanize(data.pipeline)}
-      </div>
-      <div className="mt-1 text-xs font-semibold">{data.label}</div>
-      <div className="mt-2 text-[11px] opacity-80">
-        {validationStatusLabels[data.status]}
-      </div>
-      {data.message ? (
-        <div className="mt-1 line-clamp-2 text-[11px] opacity-75">
-          {data.message}
-        </div>
+    <NodeTooltip>
+      {hoverText ? (
+        <NodeTooltipContent
+          position={Position.Top}
+          className="max-w-sm whitespace-pre-wrap text-xs leading-relaxed"
+        >
+          {hoverText}
+        </NodeTooltipContent>
       ) : null}
-      <Handle type="source" position={Position.Right} className="opacity-40" />
-    </div>
+      <BaseNode
+        className={cn(
+          "w-56 rounded-none border-2 shadow-sm hover:ring-0",
+          validationStatusClasses[data.status],
+        )}
+      >
+        <Handle type="target" position={Position.Left} className="opacity-40" />
+        <BaseNodeContent className="p-0">
+          <NodeTooltipTrigger className="px-3 py-2 text-left">
+            <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">
+              {humanize(data.pipeline)}
+            </div>
+            <div className="mt-1 text-xs font-semibold">{data.label}</div>
+            <div className="mt-2 text-[11px] opacity-80">
+              {validationStatusLabels[data.status]}
+            </div>
+            {data.message ? (
+              <div className="mt-1 line-clamp-2 text-[11px] opacity-75">
+                {data.message}
+              </div>
+            ) : null}
+          </NodeTooltipTrigger>
+        </BaseNodeContent>
+        <Handle type="source" position={Position.Right} className="opacity-40" />
+      </BaseNode>
+    </NodeTooltip>
   );
 }
 
@@ -307,6 +334,11 @@ function ValidationStatusGraph({
         ...edge,
         type: "smoothstep",
         animated: false,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 18,
+          height: 18,
+        },
       })) ?? [],
     [graph?.edges],
   );
