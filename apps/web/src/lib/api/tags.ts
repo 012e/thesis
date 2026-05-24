@@ -1,4 +1,4 @@
-import type { PostDto, TagDto } from "@repo/shared-dto";
+import type { TagDto } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
 

@@ -20,6 +20,7 @@ import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
 import { Route as ChatIndexRouteImport } from './routes/chat/index'
 import { Route as UsersUserIdRouteImport } from './routes/users.$userId'
+import { Route as TagsSlugRouteImport } from './routes/tags.$slug'
 import { Route as ProfileFollowingRouteImport } from './routes/profile/following'
 import { Route as ProfileFollowersRouteImport } from './routes/profile/followers'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
@@ -84,6 +85,11 @@ const UsersUserIdRoute = UsersUserIdRouteImport.update({
   path: '/users/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TagsSlugRoute = TagsSlugRouteImport.update({
+  id: '/tags/$slug',
+  path: '/tags/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileFollowingRoute = ProfileFollowingRouteImport.update({
   id: '/profile/following',
   path: '/profile/following',
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
+  '/tags/$slug': typeof TagsSlugRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
@@ -161,6 +168,7 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
+  '/tags/$slug': typeof TagsSlugRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat': typeof ChatIndexRoute
   '/playground': typeof PlaygroundIndexRoute
@@ -183,6 +191,7 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
+  '/tags/$slug': typeof TagsSlugRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
@@ -206,6 +215,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/profile/followers'
     | '/profile/following'
+    | '/tags/$slug'
     | '/users/$userId'
     | '/chat/'
     | '/playground/'
@@ -227,6 +237,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/profile/followers'
     | '/profile/following'
+    | '/tags/$slug'
     | '/users/$userId'
     | '/chat'
     | '/playground'
@@ -248,6 +259,7 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/profile/followers'
     | '/profile/following'
+    | '/tags/$slug'
     | '/users/$userId'
     | '/chat/'
     | '/playground/'
@@ -270,6 +282,7 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   ProfileFollowersRoute: typeof ProfileFollowersRoute
   ProfileFollowingRoute: typeof ProfileFollowingRoute
+  TagsSlugRoute: typeof TagsSlugRoute
   UsersUserIdRoute: typeof UsersUserIdRoute
   ChatIndexRoute: typeof ChatIndexRoute
   PlaygroundIndexRoute: typeof PlaygroundIndexRoute
@@ -356,6 +369,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tags/$slug': {
+      id: '/tags/$slug'
+      path: '/tags/$slug'
+      fullPath: '/tags/$slug'
+      preLoaderRoute: typeof TagsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile/following': {
       id: '/profile/following'
       path: '/profile/following'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   ProfileFollowersRoute: ProfileFollowersRoute,
   ProfileFollowingRoute: ProfileFollowingRoute,
+  TagsSlugRoute: TagsSlugRoute,
   UsersUserIdRoute: UsersUserIdRoute,
   ChatIndexRoute: ChatIndexRoute,
   PlaygroundIndexRoute: PlaygroundIndexRoute,

@@ -17,7 +17,7 @@ export function TrendingTags() {
     );
   }
 
-  if (isError || !data?.tags?.length) {
+  if (isError || !data?.items?.length) {
     return null;
   }
 
@@ -25,7 +25,7 @@ export function TrendingTags() {
     <div className="rounded-xl border bg-card">
       <h3 className="font-bold text-base px-4 pt-3 pb-2">Trending</h3>
       <div className="divide-y">
-        {data.tags.map((tag) => (
+        {data.items.map((tag) => (
           <Link
             key={tag.slug}
             to="/tags/$slug"

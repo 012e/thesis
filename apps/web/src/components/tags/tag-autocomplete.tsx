@@ -30,14 +30,13 @@ export function TagAutocomplete({
   text,
   cursorPosition,
   onSelect,
-  anchorRef,
 }: TagAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const query = getHashtagQuery(text, cursorPosition);
   const { data } = useTagSuggestions(query ?? "", 5);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const suggestions = data?.tags ?? [];
+  const suggestions = data?.items ?? [];
   const isOpen = query !== null && suggestions.length > 0;
 
   useEffect(() => {
