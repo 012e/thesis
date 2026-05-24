@@ -62,6 +62,28 @@ export class ModerationController {
     );
   }
 
+  @TsRestHandler(moderationContract.getPostValidationStatus)
+  getPostValidationStatus(@Session() session: UserSession) {
+    return tsRestHandler(
+      moderationContract.getPostValidationStatus,
+      async ({ params }) => {
+        if ((session.user as any).role !== "admin") {
+          return { status: 403, body: null };
+        }
+
+        const graph = await this.moderationService.getPostValidationStatus(
+          params.id,
+        );
+
+        if (!graph) {
+          return { status: 404, body: null };
+        }
+
+        return { status: 200, body: graph };
+      },
+    );
+  }
+
   @TsRestHandler(moderationContract.reviewModeration)
   reviewModeration(@Session() session: UserSession) {
     return tsRestHandler(
@@ -136,7 +158,7 @@ export class ModerationController {
           return { status: 404, body: null };
         }
 
-        const result = await this.pipelineService.processReport(
+        const result = await this.pipelineService.runUserReportPipeline(
           params.id,
           session.user.id,
           body.reason,

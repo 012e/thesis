@@ -15,12 +15,13 @@ const LLM_CONFIDENCE_THRESHOLD = 60;
 /**
  * Orchestrates the full moderation pipeline for a post.
  *
- * Pipeline steps:
- * 1. Content hash for exact duplicate detection
- * 2. Embedding similarity for near-duplicate detection
- * 3. OpenAI omni-moderation for harmful content
- * 4. LLM validation for uncertain results
- * 5. Human review escalation for low-confidence results
+ * Pipeline branches:
+ * 1. Duplication pipeline: content hash, embedding similarity, LLM validation
+ * 2. Harmful content pipeline: OpenAI moderation, LLM validation
+ * 3. User-report pipeline: gibberish heuristic, LLM validation
+ *
+ * Post-created automation runs the independent duplication and harmful-content
+ * pipelines concurrently. User reports enter through the report endpoint.
  */
 @Injectable()
 export class ModerationPipelineService {
@@ -42,18 +43,29 @@ export class ModerationPipelineService {
   async runPipeline(postId: string, textContent: string | null): Promise<void> {
     this.logger.log(`Running moderation pipeline for post ${postId}`);
 
-    // Step 1: Update content hash
-    if (textContent) {
-      const hash = this.contentHashService.hash(textContent);
-      await this.moderationService.updateContentHash(postId, hash);
+    const checks = textContent
+      ? [
+          this.runDuplicationPipeline(postId, textContent),
+          this.runHarmfulContentPipeline(postId, textContent),
+        ]
+      : [];
+
+    const results = await Promise.allSettled(checks);
+    let failureCount = 0;
+
+    for (const result of results) {
+      if (result.status === "rejected") {
+        failureCount += 1;
+        this.logger.error(
+          `Moderation pipeline branch failed for post ${postId}: ${result.reason}`,
+        );
+      }
     }
 
-    // Step 2: Duplicate detection
-    await this.checkDuplication(postId, textContent);
-
-    // Step 3: Harmful content detection
-    if (textContent) {
-      await this.checkHarmfulContent(postId, textContent);
+    if (failureCount > 0) {
+      throw new Error(
+        `Moderation pipeline failed for post ${postId} in ${failureCount} branch(es)`,
+      );
     }
 
     this.logger.log(`Moderation pipeline completed for post ${postId}`);
@@ -62,7 +74,7 @@ export class ModerationPipelineService {
   /**
    * Process a user report through the pipeline.
    */
-  async processReport(
+  async runUserReportPipeline(
     postId: string,
     reporterId: string,
     reason: ReportReasonDto,
@@ -138,23 +150,29 @@ export class ModerationPipelineService {
     return { reportId: report.id, moderationId: moderationRecord.id };
   }
 
+  async processReport(
+    postId: string,
+    reporterId: string,
+    reason: ReportReasonDto,
+    description: string | null,
+  ): Promise<{ reportId: string; moderationId: string | null }> {
+    return this.runUserReportPipeline(postId, reporterId, reason, description);
+  }
+
   // ─── Private Pipeline Steps ──────────────────────────────────────────
 
-  private async checkDuplication(
+  private async runDuplicationPipeline(
     postId: string,
-    textContent: string | null,
+    textContent: string,
   ): Promise<void> {
-    if (!textContent) return;
+    const hash = this.contentHashService.hash(textContent);
+    await this.moderationService.updateContentHash(postId, hash);
 
-    const result = await this.duplicateDetectionService.check(
-      postId,
-      textContent,
-    );
+    const result = await this.duplicateDetectionService.check(postId, textContent);
 
     if (!result.isDuplicate) return;
 
     if (result.method === "hash") {
-      // Exact duplicate — high confidence, auto-reject
       await this.moderationService.createModerationRecord({
         postId,
         source: "auto_duplicate",
@@ -169,43 +187,42 @@ export class ModerationPipelineService {
       return;
     }
 
-    // Embedding similarity — run LLM validation
-    if (result.method === "embedding" && result.similarPostId) {
-      const similarPostText = await this.moderationService.getPostText(
-        result.similarPostId,
+    if (result.method !== "embedding" || !result.similarPostId) return;
+
+    const similarPostText = await this.moderationService.getPostText(
+      result.similarPostId,
+    );
+
+    if (similarPostText) {
+      const llmResult = await this.llmValidationService.validateDuplicate(
+        textContent,
+        similarPostText,
+        result.similarityScore ?? 0,
       );
 
-      if (similarPostText) {
-        const llmResult = await this.llmValidationService.validateDuplicate(
-          textContent,
-          similarPostText,
-          result.similarityScore ?? 0,
-        );
+      const status =
+        llmResult.confidence >= LLM_CONFIDENCE_THRESHOLD
+          ? "rejected"
+          : "needs_human_review";
 
-        const status =
-          llmResult.confidence >= LLM_CONFIDENCE_THRESHOLD
-            ? "rejected"
-            : "needs_human_review";
+      await this.moderationService.createModerationRecord({
+        postId,
+        source: "auto_duplicate",
+        status,
+        priority: status === "rejected" ? "high" : "medium",
+        llmConfidence: llmResult.confidence,
+        llmSummary: llmResult.summary,
+        similarPostId: result.similarPostId,
+        similarityScore: result.similarityScore,
+      });
 
-        await this.moderationService.createModerationRecord({
-          postId,
-          source: "auto_duplicate",
-          status,
-          priority: status === "rejected" ? "high" : "medium",
-          llmConfidence: llmResult.confidence,
-          llmSummary: llmResult.summary,
-          similarPostId: result.similarPostId,
-          similarityScore: result.similarityScore,
-        });
-
-        if (status === "rejected") {
-          await this.moderationService.hidePost(postId);
-        }
+      if (status === "rejected") {
+        await this.moderationService.hidePost(postId);
       }
     }
   }
 
-  private async checkHarmfulContent(
+  private async runHarmfulContentPipeline(
     postId: string,
     textContent: string,
   ): Promise<void> {

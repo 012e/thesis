@@ -88,6 +88,52 @@ export const ReviewModerationBody = z.object({
   reviewNote: z.string().max(2000).optional(),
 });
 
+export const ModerationValidationStepStatus = z.enum([
+  "passed",
+  "blocked",
+  "needs_human_review",
+  "pending",
+  "not_run",
+]);
+
+export const ModerationValidationPipeline = z.enum([
+  "duplication",
+  "harmful_content",
+  "user_report",
+  "decision",
+]);
+
+export const ModerationValidationGraphNode = z.object({
+  id: z.string(),
+  type: z.string().optional(),
+  position: z.object({
+    x: z.number(),
+    y: z.number(),
+  }),
+  data: z.object({
+    label: z.string(),
+    pipeline: ModerationValidationPipeline,
+    status: ModerationValidationStepStatus,
+    message: z.string().nullable(),
+    detail: z.string().nullable(),
+  }),
+});
+
+export const ModerationValidationGraphEdge = z.object({
+  id: z.string(),
+  source: z.string(),
+  target: z.string(),
+  animated: z.boolean().optional(),
+  label: z.string().optional(),
+});
+
+export const ModerationValidationGraph = z.object({
+  postId: z.string().uuid(),
+  generatedAt: z.string().datetime(),
+  nodes: z.array(ModerationValidationGraphNode),
+  edges: z.array(ModerationValidationGraphEdge),
+});
+
 export const ModerationPage = z.object({
   items: z.array(PostModeration),
   total: z.number().int().nonnegative(),
@@ -120,6 +166,21 @@ export type PostFlagType = z.infer<typeof PostFlag>;
 export type CreateFlagBodyType = z.infer<typeof CreateFlagBody>;
 export type CreateReportBodyType = z.infer<typeof CreateReportBody>;
 export type ReviewModerationBodyType = z.infer<typeof ReviewModerationBody>;
+export type ModerationValidationStepStatusType = z.infer<
+  typeof ModerationValidationStepStatus
+>;
+export type ModerationValidationPipelineType = z.infer<
+  typeof ModerationValidationPipeline
+>;
+export type ModerationValidationGraphNodeType = z.infer<
+  typeof ModerationValidationGraphNode
+>;
+export type ModerationValidationGraphEdgeType = z.infer<
+  typeof ModerationValidationGraphEdge
+>;
+export type ModerationValidationGraphType = z.infer<
+  typeof ModerationValidationGraph
+>;
 export type ModerationPageType = z.infer<typeof ModerationPage>;
 export type ModerationFiltersType = z.infer<typeof ModerationFilters>;
 export type ReportsPageType = z.infer<typeof ReportsPage>;

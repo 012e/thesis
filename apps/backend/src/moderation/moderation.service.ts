@@ -19,6 +19,22 @@ import type {
   FlagPriorityDto,
   ReportReasonDto,
 } from "@repo/shared-dto";
+import type {
+  ModerationValidationGraphType,
+  ModerationValidationPipelineType,
+  ModerationValidationStepStatusType,
+} from "@repo/rest-contracts";
+
+type ValidationNodeInput = {
+  id: string;
+  label: string;
+  pipeline: ModerationValidationPipelineType;
+  status: ModerationValidationStepStatusType;
+  message?: string | null;
+  detail?: string | null;
+  x: number;
+  y: number;
+};
 
 // Aggregation helpers (same as posts.service.ts)
 const upvoteCount = count(
@@ -40,6 +56,32 @@ export class ModerationService {
 
   private get db() {
     return this.databaseService.db;
+  }
+
+  private validationNode(input: ValidationNodeInput) {
+    return {
+      id: input.id,
+      type: "validationStep",
+      position: { x: input.x, y: input.y },
+      data: {
+        label: input.label,
+        pipeline: input.pipeline,
+        status: input.status,
+        message: input.message ?? null,
+        detail: input.detail ?? null,
+      },
+    };
+  }
+
+  private describeModerationRecord(record: PostModerationRow | undefined) {
+    if (!record) return null;
+
+    const confidence = record.llmConfidence
+      ? `Confidence: ${record.llmConfidence}`
+      : null;
+    const summary = record.llmSummary ?? null;
+
+    return [summary, confidence].filter(Boolean).join("\n") || null;
   }
 
   // ─── Moderation Records ────────────────────────────────────────────────
@@ -301,6 +343,251 @@ export class ModerationService {
             },
           }
         : undefined,
+    };
+  }
+
+  async getPostValidationStatus(
+    postId: string,
+  ): Promise<ModerationValidationGraphType | null> {
+    const [post] = await this.db
+      .select({ id: posts.id, hidden: posts.hidden })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    if (!post) return null;
+
+    const moderationRecords = await this.db
+      .select()
+      .from(postModeration)
+      .where(eq(postModeration.postId, postId))
+      .orderBy(desc(postModeration.createdAt));
+
+    const reports = await this.db
+      .select()
+      .from(postReports)
+      .where(eq(postReports.postId, postId))
+      .orderBy(desc(postReports.createdAt));
+
+    const duplicateRecord = moderationRecords.find(
+      (record) => record.source === "auto_duplicate",
+    );
+    const harmfulRecord = moderationRecords.find(
+      (record) => record.source === "auto_harmful",
+    );
+    const reportRecord = moderationRecords.find(
+      (record) => record.source === "user_report",
+    );
+    const needsHumanReview = moderationRecords.some(
+      (record) => record.status === "needs_human_review",
+    );
+    const rejected = moderationRecords.some(
+      (record) => record.status === "rejected",
+    );
+    const allReviewed =
+      moderationRecords.length > 0 &&
+      moderationRecords.every((record) => record.reviewedAt !== null);
+
+    const validReports = reports.filter((report) => report.passedHeuristic);
+    const gibberishReports = reports.filter((report) => !report.passedHeuristic);
+
+    const duplicateDetail = this.describeModerationRecord(duplicateRecord);
+    const harmfulDetail = this.describeModerationRecord(harmfulRecord);
+    const reportDetail = this.describeModerationRecord(reportRecord);
+
+    const duplicateByHash = duplicateRecord?.similarityScore === "1";
+    const duplicateConfidence = duplicateRecord?.llmConfidence
+      ? Number(duplicateRecord.llmConfidence)
+      : null;
+    const harmfulConfidence = harmfulRecord?.llmConfidence
+      ? Number(harmfulRecord.llmConfidence)
+      : null;
+    const reportConfidence = reportRecord?.llmConfidence
+      ? Number(reportRecord.llmConfidence)
+      : null;
+
+    const nodes = [
+      this.validationNode({
+        id: "post-created",
+        label: "Post created",
+        pipeline: "decision",
+        status: "passed",
+        message: post.hidden ? "Post is currently hidden" : "Post is visible",
+        x: 0,
+        y: 120,
+      }),
+      this.validationNode({
+        id: "duplicate-hash",
+        label: "Verify content hash",
+        pipeline: "duplication",
+        status: duplicateByHash ? "blocked" : "passed",
+        message: duplicateByHash
+          ? "Exact duplicate content hash matched"
+          : "No exact duplicate hash block",
+        detail: duplicateByHash ? duplicateDetail : null,
+        x: 260,
+        y: 0,
+      }),
+      this.validationNode({
+        id: "duplicate-embedding",
+        label: "Verify by embedding",
+        pipeline: "duplication",
+        status:
+          duplicateRecord && !duplicateByHash
+            ? "blocked"
+            : duplicateByHash
+              ? "not_run"
+              : "passed",
+        message:
+          duplicateRecord && !duplicateByHash
+            ? `Similar post: ${duplicateRecord.similarPostId ?? "unknown"}`
+            : duplicateByHash
+              ? "Skipped after exact hash match"
+              : "No embedding similarity block",
+        detail:
+          duplicateRecord && !duplicateByHash
+            ? `Similarity score: ${duplicateRecord.similarityScore ?? "unknown"}`
+            : null,
+        x: 520,
+        y: 0,
+      }),
+      this.validationNode({
+        id: "duplicate-llm",
+        label: "Cheap LLM duplicate validation",
+        pipeline: "duplication",
+        status: duplicateRecord
+          ? duplicateRecord.status === "needs_human_review"
+            ? "needs_human_review"
+            : "blocked"
+          : "not_run",
+        message: duplicateRecord
+          ? `LLM confidence: ${duplicateConfidence ?? "not available"}`
+          : "No duplicate flag required LLM validation",
+        detail: duplicateDetail,
+        x: 780,
+        y: 0,
+      }),
+      this.validationNode({
+        id: "harmful-openai",
+        label: "OpenAI omni-moderation",
+        pipeline: "harmful_content",
+        status: harmfulRecord ? "blocked" : "passed",
+        message: harmfulRecord
+          ? "OpenAI moderation flagged this post"
+          : "No harmful-content block",
+        detail: harmfulRecord
+          ? JSON.stringify(harmfulRecord.moderationResult, null, 2)
+          : null,
+        x: 260,
+        y: 160,
+      }),
+      this.validationNode({
+        id: "harmful-llm",
+        label: "Cheap LLM harmful validation",
+        pipeline: "harmful_content",
+        status: harmfulRecord
+          ? harmfulRecord.status === "needs_human_review"
+            ? "needs_human_review"
+            : "blocked"
+          : "not_run",
+        message: harmfulRecord
+          ? `LLM confidence: ${harmfulConfidence ?? "not available"}`
+          : "No harmful-content flag required LLM validation",
+        detail: harmfulDetail,
+        x: 520,
+        y: 160,
+      }),
+      this.validationNode({
+        id: "report-heuristic",
+        label: "User report heuristic",
+        pipeline: "user_report",
+        status:
+          reports.length === 0
+            ? "not_run"
+            : validReports.length > 0
+              ? "passed"
+              : "blocked",
+        message:
+          reports.length === 0
+            ? "No user reports submitted"
+            : `${validReports.length} valid report(s), ${gibberishReports.length} gibberish report(s)`,
+        detail:
+          gibberishReports.length > 0
+            ? "Gibberish reports are saved but do not escalate."
+            : null,
+        x: 260,
+        y: 320,
+      }),
+      this.validationNode({
+        id: "report-llm",
+        label: "Cheap LLM report validation",
+        pipeline: "user_report",
+        status: reportRecord
+          ? reportRecord.status === "needs_human_review"
+            ? "needs_human_review"
+            : reportRecord.status === "pending"
+              ? "pending"
+              : "blocked"
+          : validReports.length > 0
+            ? "pending"
+            : "not_run",
+        message: reportRecord
+          ? `LLM confidence: ${reportConfidence ?? "not available"}`
+          : validReports.length > 0
+            ? "A valid report exists without a linked moderation record"
+            : "No valid report required LLM validation",
+        detail: reportDetail,
+        x: 520,
+        y: 320,
+      }),
+      this.validationNode({
+        id: "human-review",
+        label: "Human review",
+        pipeline: "decision",
+        status: needsHumanReview
+          ? "needs_human_review"
+          : allReviewed
+            ? "passed"
+            : "not_run",
+        message: needsHumanReview
+          ? "At least one moderation branch needs human intervention"
+          : allReviewed
+            ? "Moderation records have been reviewed"
+            : "No human review is currently required",
+        x: 1040,
+        y: 160,
+      }),
+      this.validationNode({
+        id: "final-decision",
+        label: "Current post status",
+        pipeline: "decision",
+        status: rejected ? "blocked" : post.hidden ? "blocked" : "passed",
+        message: post.hidden ? "Post is hidden" : "Post is visible",
+        detail: rejected
+          ? "A moderation record rejected this post."
+          : "No rejected moderation record is currently active.",
+        x: 1300,
+        y: 160,
+      }),
+    ];
+
+    return {
+      postId,
+      generatedAt: new Date().toISOString(),
+      nodes,
+      edges: [
+        { id: "post-duplicate-hash", source: "post-created", target: "duplicate-hash" },
+        { id: "duplicate-hash-embedding", source: "duplicate-hash", target: "duplicate-embedding" },
+        { id: "duplicate-embedding-llm", source: "duplicate-embedding", target: "duplicate-llm" },
+        { id: "duplicate-llm-human", source: "duplicate-llm", target: "human-review" },
+        { id: "post-harmful-openai", source: "post-created", target: "harmful-openai" },
+        { id: "harmful-openai-llm", source: "harmful-openai", target: "harmful-llm" },
+        { id: "harmful-llm-human", source: "harmful-llm", target: "human-review" },
+        { id: "post-report-heuristic", source: "post-created", target: "report-heuristic" },
+        { id: "report-heuristic-llm", source: "report-heuristic", target: "report-llm" },
+        { id: "report-llm-human", source: "report-llm", target: "human-review" },
+        { id: "human-final", source: "human-review", target: "final-decision" },
+      ],
     };
   }
 

@@ -10,6 +10,7 @@ import {
   PostReport,
   ReviewModerationBody,
   ReportsPage,
+  ModerationValidationGraph,
 } from "../schemas/moderation";
 
 const c = initContract();
@@ -35,6 +36,17 @@ export const moderationContract = c.router({
       404: z.null(),
     },
     summary: "Get a single moderation record (admin only)",
+  },
+  getPostValidationStatus: {
+    method: "GET",
+    path: "/admin/moderation/posts/:id/validation-status",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: ModerationValidationGraph,
+      403: z.null(),
+      404: z.null(),
+    },
+    summary: "Get a post moderation validation graph (admin only)",
   },
   reviewModeration: {
     method: "PUT",

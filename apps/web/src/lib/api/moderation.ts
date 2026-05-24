@@ -2,6 +2,7 @@ import type {
   CreateFlagBodyType,
   CreateReportBodyType,
   ModerationFiltersType,
+  ModerationValidationGraphType,
   ModerationPageType,
   PostFlagType,
   PostModerationType,
@@ -58,6 +59,33 @@ export async function getModeration(id: string): Promise<PostModerationType> {
   }
 
   throw new Error("Failed to load moderation record");
+}
+
+export async function getPostValidationStatus(
+  postId: string,
+): Promise<ModerationValidationGraphType> {
+  const response = await client.getPostValidationStatus({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 403) {
+    throw new Error("Admin access required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to load validation status");
 }
 
 export async function reviewModeration(
