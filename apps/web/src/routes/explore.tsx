@@ -434,6 +434,13 @@ function ExplorePage() {
   const navigate = useNavigate({ from: "/explore" });
 
   function handleSearch(newQ: string) {
+    // Detect #tag queries and route to tag page
+    const tagMatch = newQ.match(/^#([A-Za-z]\w{0,49})$/);
+    if (tagMatch) {
+      const slug = tagMatch[1].toLowerCase();
+      void navigate({ to: "/tags/$slug", params: { slug } });
+      return;
+    }
     void navigate({
       search: (prev: ExploreSearch) => ({ ...prev, q: newQ || undefined }),
     });

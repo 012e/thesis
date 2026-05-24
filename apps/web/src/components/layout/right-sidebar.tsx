@@ -5,6 +5,7 @@ import { useSession } from "@/hooks/use-session";
 import { Input } from "@/components/ui/input";
 import { WhoToFollow } from "./who-to-follow";
 import { NotificationSummary } from "./notification-summary";
+import { TrendingTags } from "@/components/tags/trending-tags";
 
 interface RightSidebarProps {
   defaultCollapsed?: boolean;
@@ -65,6 +66,9 @@ export function RightSidebar({ defaultCollapsed = false }: RightSidebarProps) {
 
         {/* Notification Summary */}
         <NotificationSummary />
+
+        {/* Trending Tags */}
+        <TrendingTags />
 
         {/* Who to Follow - only show if user is logged in */}
         {session?.user && <WhoToFollow currentUserId={session.user.id} />}

@@ -18,6 +18,7 @@ export function useUpdatePost() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
       toast.success("Post updated successfully!");
     },
     onError: (error: Error) => {

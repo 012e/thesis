@@ -24,6 +24,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { PollCreator } from "@/components/poll-creator";
+import { TagAutocomplete } from "@/components/tags/tag-autocomplete";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
 import { POST_MAX_LENGTH } from "@/lib/constants";
@@ -241,7 +242,7 @@ export const PostComposerEditor = forwardRef<
 
     return (
       <div
-        className={`rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
+        className={`relative rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
           placeholder={placeholder}
@@ -250,6 +251,18 @@ export const PostComposerEditor = forwardRef<
           onChange={setContent}
           plugins={plugins}
           contentEditableClassName={contentEditableClassName}
+        />
+        <TagAutocomplete
+          text={content}
+          onSelect={(tag) => {
+            // Replace the current hashtag being typed with the selected tag
+            const hashIndex = content.lastIndexOf("#");
+            if (hashIndex !== -1) {
+              const newContent = content.slice(0, hashIndex) + tag + " ";
+              setContent(newContent);
+              editorRef.current?.setMarkdown(newContent);
+            }
+          }}
         />
       </div>
     );
