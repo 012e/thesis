@@ -93,7 +93,7 @@ test-threads: build-backend
 test-config: build-backend
     pnpm --filter backend test:config
 
-test-moderation: build-moderation
+test-moderation: build-backend
     pnpm --filter backend test:moderation
 
 build-storybook:

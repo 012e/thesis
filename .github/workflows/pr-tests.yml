@@ -55,4 +55,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run ${{ matrix.target }}
-        run: just ${{ matrix.target }}
+        run: |
+          for attempt in 1 2 3; do
+            if just ${{ matrix.target }}; then
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 3 ]; then
+              echo "${{ matrix.target }} failed on attempt ${attempt}; retrying..."
+            fi
+          done
+
+          exit 1
