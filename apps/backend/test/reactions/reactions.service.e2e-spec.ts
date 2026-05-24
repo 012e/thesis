@@ -15,6 +15,8 @@ import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
 import { PgBossService } from "@wavezync/nestjs-pgboss";
+import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
+import { ContentHashService } from "@/moderation/content-hash.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -71,6 +73,20 @@ describe("ReactionsService integration", () => {
         {
           provide: EMBEDDING_SERVICE,
           useClass: StubEmbeddingService,
+        },
+        {
+          provide: ModerationPipelineService,
+          useValue: {
+            runPipeline: async () => {},
+            processReport: async () => ({}),
+          },
+        },
+        {
+          provide: ContentHashService,
+          useValue: {
+            hash: () => "stub-hash",
+            normalize: (text: string) => text,
+          },
         },
         PostsService,
       ],

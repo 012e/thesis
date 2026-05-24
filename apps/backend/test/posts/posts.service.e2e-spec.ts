@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
+import { eq } from "drizzle-orm";
 import { Pool } from "pg";
 
 import { DatabaseService } from "@/db/database.service";
@@ -22,6 +23,8 @@ import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification-transport.interface";
 import { PgBossService } from "@wavezync/nestjs-pgboss";
+import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
+import { ContentHashService } from "@/moderation/content-hash.service";
 
 describe("PostsService integration", () => {
   let containers: PostgresContainerContext;
@@ -69,6 +72,20 @@ describe("PostsService integration", () => {
         {
           provide: EMBEDDING_SERVICE,
           useClass: StubEmbeddingService,
+        },
+        {
+          provide: ModerationPipelineService,
+          useValue: {
+            runPipeline: async () => {},
+            processReport: async () => ({}),
+          },
+        },
+        {
+          provide: ContentHashService,
+          useValue: {
+            hash: () => "stub-hash",
+            normalize: (text: string) => text,
+          },
         },
       ],
     }).compile();
@@ -157,6 +174,39 @@ describe("PostsService integration", () => {
     expect(listedPosts[0].downvoteCount).toBe(0);
     expect(listedPosts[1].upvoteCount).toBe(0);
     expect(listedPosts[1].downvoteCount).toBe(0);
+  });
+
+  it("excludes hidden posts from the main list", async () => {
+    const visiblePost = await postsService.create("author-1", {
+      content: { text: "Visible post" },
+    });
+    const hiddenPost = await postsService.create("author-2", {
+      content: { text: "Rejected post" },
+    });
+
+    await databaseService.db
+      .update(posts)
+      .set({ hidden: true })
+      .where(eq(posts.id, hiddenPost.id));
+
+    const listedPosts = await postsService.list("test-user");
+
+    expect(listedPosts.map((post) => post.id)).toEqual([visiblePost.id]);
+  });
+
+  it("does not return hidden posts by id", async () => {
+    const hiddenPost = await postsService.create("author-1", {
+      content: { text: "Rejected post" },
+    });
+
+    await databaseService.db
+      .update(posts)
+      .set({ hidden: true })
+      .where(eq(posts.id, hiddenPost.id));
+
+    await expect(
+      postsService.getById(hiddenPost.id, "author-1"),
+    ).resolves.toBeNull();
   });
 
   it("updates only posts owned by the author", async () => {
@@ -336,6 +386,30 @@ describe("PostsService integration", () => {
       expect(result.items[1].id).toBe(postWithoutReactions.id);
       expect(result.items[1].upvoteCount).toBe(0);
       expect(result.items[1].downvoteCount).toBe(0);
+    });
+
+    it("excludes hidden posts from recommendations", async () => {
+      const visiblePost = await postsService.create("author-1", {
+        content: { text: "Visible recommendation" },
+      });
+      const hiddenPost = await postsService.create("author-2", {
+        content: { text: "Rejected recommendation" },
+      });
+
+      await databaseService.db
+        .update(posts)
+        .set({ hidden: true })
+        .where(eq(posts.id, hiddenPost.id));
+
+      await databaseService.db.insert(postReactions).values([
+        { postId: hiddenPost.id, userId: "user-1", type: "upvote" },
+        { postId: hiddenPost.id, userId: "user-2", type: "upvote" },
+        { postId: visiblePost.id, userId: "user-1", type: "upvote" },
+      ]);
+
+      const result = await postsService.recommendations("user-1", 10);
+
+      expect(result.items.map((post) => post.id)).toEqual([visiblePost.id]);
     });
 
     it("respects the limit parameter", async () => {

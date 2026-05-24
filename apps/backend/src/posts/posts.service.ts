@@ -32,6 +32,8 @@ import {
   EMBEDDING_SERVICE,
   type IEmbeddingService,
 } from "@/embedding/embedding.interface";
+import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
+import { ContentHashService } from "@/moderation/content-hash.service";
 
 import { createPostSchema, updatePostSchema } from "./posts.schemas";
 
@@ -83,6 +85,8 @@ export class PostsService {
     private readonly notificationsService: NotificationsService,
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
+    private readonly moderationPipelineService: ModerationPipelineService,
+    private readonly contentHashService: ContentHashService,
   ) {}
 
   async listByUser(
@@ -112,7 +116,7 @@ export class PostsService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.authorId, authorId))
+      .where(and(eq(posts.authorId, authorId), eq(posts.hidden, false)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -152,6 +156,7 @@ export class PostsService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(eq(posts.hidden, false))
       .groupBy(
         posts.id,
         usersView.id,
@@ -173,8 +178,9 @@ export class PostsService {
     cursor?: string,
   ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
     const parsed = cursor ? this.decodeFollowingCursor(cursor) : null;
+    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
 
-    let query = this.databaseService.db
+    const query = this.databaseService.db
       .select({
         id: posts.id,
         authorId: posts.authorId,
@@ -203,6 +209,20 @@ export class PostsService {
         ),
       )
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(
+        cursorDate && parsed
+          ? and(
+              eq(posts.hidden, false),
+              or(
+                lt(posts.createdAt, cursorDate),
+                and(
+                  eq(posts.createdAt, cursorDate),
+                  gt(posts.id, parsed.postId),
+                ),
+              ),
+            )
+          : eq(posts.hidden, false),
+      )
       .groupBy(
         posts.id,
         usersView.id,
@@ -210,18 +230,7 @@ export class PostsService {
         usersView.email,
         usersView.name,
         usersView.image,
-      )
-      .$dynamic();
-
-    if (parsed) {
-      const cursorDate = new Date(parsed.createdAt);
-      query = query.where(
-        or(
-          lt(posts.createdAt, cursorDate),
-          and(eq(posts.createdAt, cursorDate), gt(posts.id, parsed.postId)),
-        ),
       );
-    }
 
     const rows = await query
       .orderBy(desc(posts.createdAt), asc(posts.id))
@@ -259,6 +268,7 @@ export class PostsService {
         authorId,
         content: input.content,
         embedding: embedding ?? null,
+        contentHash: this.contentHashService.hash(textToEmbed) ?? null,
       })
       .returning();
 
@@ -266,6 +276,15 @@ export class PostsService {
       .insert(postSubscriptions)
       .values({ postId: createdPost.id, userId: authorId })
       .onConflictDoNothing();
+
+    // Run moderation pipeline asynchronously (fire-and-forget)
+    this.moderationPipelineService
+      .runPipeline(createdPost.id, input.content.text ?? null)
+      .catch((err) =>
+        this.logger.error(
+          `Moderation pipeline failed for post ${createdPost.id}: ${err}`,
+        ),
+      );
 
     const [row] = await this.databaseService.db
       .select({
@@ -332,7 +351,7 @@ export class PostsService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.id, id))
+      .where(and(eq(posts.id, id), eq(posts.hidden, false)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -450,6 +469,7 @@ export class PostsService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(eq(posts.hidden, false))
       .groupBy(
         posts.id,
         usersView.id,

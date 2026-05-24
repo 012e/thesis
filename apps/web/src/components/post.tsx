@@ -27,16 +27,21 @@ import {
   IconTrash,
   IconEdit,
   IconBell,
+  IconFlag,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
 import { useSession } from "@/hooks/use-session";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useOpenChat } from "@/hooks/use-open-chat";
 import { useDeletePost } from "@/hooks/use-delete-post";
 import { usePostSubscription } from "@/hooks/use-post-subscription";
 import { CommentsDialog } from "./comments-dialog";
 import { PollDisplay } from "./poll-display";
 import { EditPostDialog } from "./edit-post-dialog";
+import { ReportDialog } from "./report-dialog";
+import { PostValidationStatusDialog } from "./post-validation-status-dialog";
 import { UserAvatar } from "./user-avatar";
 import { useToast as toast } from "@/hooks/use-toast";
 
@@ -115,7 +120,7 @@ function PostImages({ images }: PostImagesProps) {
               <img
                 src={image.url}
                 alt={`Post image ${index + 1}`}
-                className={`w-full object-cover ${images.length === 1 ? "max-h-[512px]" : "h-40"}`}
+                className={`w-full object-cover ${images.length === 1 ? "max-h-128" : "h-40"}`}
                 loading="lazy"
               />
             </button>
@@ -202,8 +207,11 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [validationStatusOpen, setValidationStatusOpen] = useState(false);
   const { data: session } = useSession();
+  const isAdmin = useIsAdmin();
   const openChat = useOpenChat();
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
@@ -393,9 +401,57 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                       />
                     </DropdownMenuItem>
                     {subscriptionMenuItem}
+                    {isAdmin && (
+                      <DropdownMenuItem
+                        className="gap-3 py-3 px-3 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setValidationStatusOpen(true);
+                        }}
+                      >
+                        <MenuItemCard
+                          icon={<IconShieldCheck className="w-4 h-4" />}
+                          iconClassName="bg-primary/10"
+                          label="Validation status"
+                          description="View moderation pipeline results"
+                        />
+                      </DropdownMenuItem>
+                    )}
                   </>
                 ) : (
-                  subscriptionMenuItem
+                  <>
+                    {subscriptionMenuItem}
+                    <DropdownMenuItem
+                      className="gap-3 py-3 px-3 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setReportOpen(true);
+                      }}
+                    >
+                      <MenuItemCard
+                        icon={<IconFlag className="w-4 h-4" />}
+                        iconClassName="bg-red-500/10"
+                        label="Report"
+                        description="Flag this post for moderator review"
+                      />
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem
+                        className="gap-3 py-3 px-3 cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setValidationStatusOpen(true);
+                        }}
+                      >
+                        <MenuItemCard
+                          icon={<IconShieldCheck className="w-4 h-4" />}
+                          iconClassName="bg-primary/10"
+                          label="Validation status"
+                          description="View moderation pipeline results"
+                        />
+                      </DropdownMenuItem>
+                    )}
+                  </>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>
@@ -458,7 +514,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
             </div>
             <button className="flex gap-1 items-center transition-colors group text-muted-foreground hover:text-primary">
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
-                <IconBookmark className="w-[18px] h-[18px]" />
+                <IconBookmark className="w-4.5 h-4.5" />
               </div>
             </button>
             <button
@@ -473,7 +529,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
               title="Share via link"
             >
               <div className="p-2 rounded-full transition-colors group-hover:bg-primary/10">
-                <IconShare className="w-[18px] h-[18px]" />
+                <IconShare className="w-4.5 h-4.5" />
               </div>
             </button>
           </div>
@@ -489,6 +545,20 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
 
       {/* Edit Post Dialog */}
       <EditPostDialog post={post} open={editOpen} onOpenChange={setEditOpen} />
+
+      {/* Report Dialog */}
+      <ReportDialog
+        postId={post.id}
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+      />
+
+      {/* Validation Status Dialog (admin only) */}
+      <PostValidationStatusDialog
+        postId={post.id}
+        open={validationStatusOpen}
+        onOpenChange={setValidationStatusOpen}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

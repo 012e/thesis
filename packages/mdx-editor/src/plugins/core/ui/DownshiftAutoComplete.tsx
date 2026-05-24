@@ -2,6 +2,9 @@ import { useCombobox } from "downshift";
 import React from "react";
 import {
   Control,
+  FieldPath,
+  FieldPathValue,
+  FieldValues,
   UseFormSetValue,
   Controller,
   UseFormRegister,
@@ -12,19 +15,19 @@ import { useCellValue } from "@mdxeditor/gurx";
 
 const MAX_SUGGESTIONS = 20;
 
-interface DownshiftAutoCompleteProps {
+interface DownshiftAutoCompleteProps<TFieldValues extends FieldValues> {
   suggestions: string[];
-  control: Control<any>;
-  setValue: UseFormSetValue<any>;
-  register: UseFormRegister<any>;
+  control: Control<TFieldValues>;
+  setValue: UseFormSetValue<TFieldValues>;
+  register: UseFormRegister<TFieldValues>;
   placeholder: string;
-  inputName: string;
+  inputName: FieldPath<TFieldValues>;
   autofocus?: boolean;
   initialInputValue: string;
 }
 
-export const DownshiftAutoComplete: React.FC<DownshiftAutoCompleteProps> = (
-  props,
+export const DownshiftAutoComplete = <TFieldValues extends FieldValues>(
+  props: DownshiftAutoCompleteProps<TFieldValues>,
 ) => {
   if (props.suggestions.length > 0) {
     return <DownshiftAutoCompleteWithSuggestions {...props} />;
@@ -40,9 +43,9 @@ export const DownshiftAutoComplete: React.FC<DownshiftAutoCompleteProps> = (
   }
 };
 
-export const DownshiftAutoCompleteWithSuggestions: React.FC<
-  DownshiftAutoCompleteProps
-> = ({
+export const DownshiftAutoCompleteWithSuggestions = <
+  TFieldValues extends FieldValues,
+>({
   autofocus,
   suggestions,
   control,
@@ -50,7 +53,7 @@ export const DownshiftAutoCompleteWithSuggestions: React.FC<
   placeholder,
   initialInputValue,
   setValue,
-}) => {
+}: DownshiftAutoCompleteProps<TFieldValues>) => {
   const [items, setItems] = React.useState(
     suggestions.slice(0, MAX_SUGGESTIONS),
   );
@@ -69,7 +72,10 @@ export const DownshiftAutoCompleteWithSuggestions: React.FC<
   } = useCombobox({
     initialInputValue,
     onInputValueChange({ inputValue = "" }) {
-      setValue(inputName, inputValue);
+      setValue(
+        inputName,
+        inputValue as FieldPathValue<TFieldValues, typeof inputName>,
+      );
       inputValue = inputValue.toLowerCase() || "";
       const matchingItems = [];
       for (const suggestion of suggestions) {

@@ -41,6 +41,12 @@
       "skillPath": "assistant-ui/skills/primitives/SKILL.md",
       "computedHash": "acdb5ddbdd066abf513a3f729198cee8ad79d03b18ba3329e609658d88bc09ee"
     },
+    "react-flow": {
+      "source": "framara/react-flow-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "f3da56cd9a3eeeb6befbbe306f8152847ac7bd60e44de2743592e1ce071ebcc5"
+    },
     "runtime": {
       "source": "assistant-ui/skills",
       "sourceType": "github",

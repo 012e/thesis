@@ -26,6 +26,7 @@ import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as AdminModerationIndexRouteImport } from './routes/admin/moderation/index'
 
 const TestingRoute = TestingRouteImport.update({
   id: '/testing',
@@ -112,6 +113,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminModerationIndexRoute = AdminModerationIndexRouteImport.update({
+  id: '/admin/moderation/',
+  path: '/admin/moderation/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/admin/moderation/': typeof AdminModerationIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -150,6 +157,7 @@ export interface FileRoutesByTo {
   '/chat': typeof ChatIndexRoute
   '/playground': typeof PlaygroundIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/admin/moderation': typeof AdminModerationIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -170,6 +178,7 @@ export interface FileRoutesById {
   '/chat/': typeof ChatIndexRoute
   '/playground/': typeof PlaygroundIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/admin/moderation/': typeof AdminModerationIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/playground/'
     | '/profile/'
+    | '/admin/moderation/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/chat'
     | '/playground'
     | '/profile'
+    | '/admin/moderation'
   id:
     | '__root__'
     | '/'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/chat/'
     | '/playground/'
     | '/profile/'
+    | '/admin/moderation/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -249,6 +261,7 @@ export interface RootRouteChildren {
   ChatIndexRoute: typeof ChatIndexRoute
   PlaygroundIndexRoute: typeof PlaygroundIndexRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
+  AdminModerationIndexRoute: typeof AdminModerationIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/moderation/': {
+      id: '/admin/moderation/'
+      path: '/admin/moderation'
+      fullPath: '/admin/moderation/'
+      preLoaderRoute: typeof AdminModerationIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -393,6 +413,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChatIndexRoute: ChatIndexRoute,
   PlaygroundIndexRoute: PlaygroundIndexRoute,
   ProfileIndexRoute: ProfileIndexRoute,
+  AdminModerationIndexRoute: AdminModerationIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

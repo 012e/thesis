@@ -4,7 +4,6 @@
       "@repo/*": ["./packages/*"]
     },
     "strict": true,
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true
   }

@@ -19,6 +19,7 @@ import { MessagesModule } from "@/messages/messages.module";
 import { NotificationsModule } from "@/notifications/notifications.module";
 import { ConfigModule } from "@/config/config.module";
 import { MigrateModule } from "@/migrate/migrate.module";
+import { ModerationModule } from "@/moderation/moderation.module";
 import { IdentityMcpModule } from "./mcp/identity/identity-mcp.module";
 import { PostsMcpModule } from "./mcp/posts/posts-mcp.module";
 import { InteractionsMcpModule } from "./mcp/interactions/interactions-mcp.module";
@@ -57,6 +58,7 @@ import { LoggingMiddleware } from "@/common/middleware/logging.middleware";
     IdentityMcpModule,
     PostsMcpModule,
     InteractionsMcpModule,
+    ModerationModule,
   ],
   providers: [AppService],
 })

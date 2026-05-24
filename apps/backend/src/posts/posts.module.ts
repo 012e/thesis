@@ -5,6 +5,7 @@ import { EmbeddingModule } from "@/embedding/embedding.module";
 import { StorageModule } from "@/storage";
 import { UsersModule } from "@/users/users.module";
 import { NotificationsModule } from "@/notifications/notifications.module";
+import { ModerationModule } from "@/moderation/moderation.module";
 
 import { PostsController } from "./posts.controller";
 import { PostsSearchService } from "./posts-search.service";
@@ -17,6 +18,7 @@ import { PostsService } from "./posts.service";
     UsersModule,
     EmbeddingModule,
     NotificationsModule,
+    ModerationModule,
   ],
   controllers: [PostsController],
   providers: [PostsService, PostsSearchService],

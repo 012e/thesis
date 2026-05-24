@@ -24,6 +24,10 @@ storybook:
 build:
     pnpm nx run-many --target=build
 
+# Typecheck all workspace packages
+typecheck:
+    pnpm run typecheck
+
 # Build all workspace packages, then test the entire monorepo using Nx
 test:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
@@ -92,6 +96,9 @@ test-threads: build-backend
 
 test-config: build-backend
     pnpm --filter backend test:config
+
+test-moderation: build-backend
+    pnpm --filter backend test:moderation
 
 build-storybook:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client

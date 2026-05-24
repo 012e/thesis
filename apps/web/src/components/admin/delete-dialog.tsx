@@ -56,7 +56,7 @@ export function DeleteDialog({
         </DialogHeader>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
           <Button

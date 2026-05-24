@@ -5,9 +5,11 @@ export default defineConfig({
   format: ["cjs", "esm"],
   dts: {
     cjsReexport: true,
+    tsgo: {
+      enabled: true,
+    },
   },
   clean: true,
-  splitting: false,
   sourcemap: false,
   outDir: "dist",
   outExtensions: ({ format }) => ({

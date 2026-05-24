@@ -1,6 +1,6 @@
 import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
-import { createUIMessageStreamResponse } from "ai";
+import { createUIMessageStreamResponse, type ToolSet } from "ai";
 import { z } from "zod";
 import {
   AIContextPayloadSchema,
@@ -50,7 +50,7 @@ const StreamRequestSchema = z.object({
   /** System instructions forwarded by assistant-ui model context providers. */
   system: z.string().optional(),
   /** Browser/client tools forwarded by AssistantChatTransport. */
-  tools: z.record(z.string(), z.unknown()).optional(),
+  tools: z.custom<ToolSet>().optional(),
   trigger: z.enum(["submit-message", "regenerate-message"]).optional(),
   messageId: z.string().optional(),
   metadata: z.any().optional(),
