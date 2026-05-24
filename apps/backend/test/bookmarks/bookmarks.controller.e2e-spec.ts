@@ -178,9 +178,7 @@ describe("Bookmarks integration", () => {
         .delete(`/posts/${postId}/bookmark`)
         .set("Cookie", userACookie);
 
-      // Controller currently returns 404 when unbookmark returns null (no row deleted)
-      // Adjust assertion based on actual behavior
-      expect([200, 404]).toContain(res.status);
+      expect(res.status).toBe(404);
     });
 
     it("returns 404 for non-existent post", async () => {
