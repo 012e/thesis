@@ -88,12 +88,25 @@ export interface PostDto {
   commentCount: number;
   currentUserReaction: ReactionTypeDto | null;
   currentUserSubscribed: boolean;
+  currentUserBookmarked: boolean;
+  currentUserBookmark: BookmarkSummaryDto | null;
 }
 
 export interface PostSubscriptionDto {
   postId: string;
   userId: string;
   createdAt: string;
+}
+
+export interface BookmarkSummaryDto {
+  postId: string;
+  userId: string;
+  createdAt: string;
+}
+
+export interface PostBookmarkStateDto {
+  currentUserBookmarked: boolean;
+  currentUserBookmark: BookmarkSummaryDto | null;
 }
 
 export type ReactionTypeDto = "upvote" | "downvote";

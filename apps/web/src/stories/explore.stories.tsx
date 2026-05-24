@@ -73,6 +73,8 @@ const mockPosts: PostType[] = [
     downvoteCount: 1,
     currentUserReaction: null,
     currentUserSubscribed: false,
+    currentUserBookmarked: false,
+    currentUserBookmark: null,
   },
   {
     id: POST_IDS[1],
@@ -87,6 +89,8 @@ const mockPosts: PostType[] = [
     downvoteCount: 3,
     currentUserReaction: "upvote",
     currentUserSubscribed: true,
+    currentUserBookmarked: false,
+    currentUserBookmark: null,
   },
   {
     id: POST_IDS[2],
@@ -101,6 +105,8 @@ const mockPosts: PostType[] = [
     downvoteCount: 0,
     currentUserReaction: null,
     currentUserSubscribed: false,
+    currentUserBookmarked: false,
+    currentUserBookmark: null,
   },
 ];
 

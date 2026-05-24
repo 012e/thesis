@@ -3,10 +3,12 @@ import { z } from "zod";
 import {
   Post,
   PostSubscription,
+  PostBookmarkState,
   CreatePostBody,
   UpdatePostBody,
   RecommendationPage,
   FollowingFeedPage,
+  BookmarksPage,
 } from "../schemas/post";
 
 const c = initContract();
@@ -108,6 +110,27 @@ export const postsContract = c.router({
     },
     summary: "Unsubscribe from notifications for a post",
   },
+  bookmarkPost: {
+    method: "POST",
+    path: "/posts/:id/bookmark",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: z.object({}),
+    responses: {
+      200: PostBookmarkState,
+      404: z.null(),
+    },
+    summary: "Bookmark a post for the current user",
+  },
+  unbookmarkPost: {
+    method: "DELETE",
+    path: "/posts/:id/bookmark",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: PostBookmarkState,
+      404: z.null(),
+    },
+    summary: "Remove the current user's bookmark from a post",
+  },
   getRecommendations: {
     method: "GET",
     path: "/recommendations",
@@ -131,6 +154,21 @@ export const postsContract = c.router({
     },
     summary:
       "List posts by a specific user, ordered by creation date descending.",
+  },
+  listUserBookmarks: {
+    method: "GET",
+    path: "/users/:id/bookmarks",
+    pathParams: z.object({ id: z.string() }),
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: BookmarksPage,
+      403: z.null(),
+    },
+    summary:
+      "List posts bookmarked by a user in most-recently-bookmarked order with cursor pagination",
   },
 });
 

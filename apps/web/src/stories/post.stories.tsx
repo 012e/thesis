@@ -50,6 +50,8 @@ function greet(name) {
   downvoteCount: 3,
   currentUserReaction: null,
   currentUserSubscribed: false,
+  currentUserBookmarked: false,
+  currentUserBookmark: null,
 };
 
 const postWithImages: PostDto = {

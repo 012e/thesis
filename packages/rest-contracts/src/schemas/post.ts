@@ -64,12 +64,25 @@ export const Post = z.object({
   commentCount: z.number().int().nonnegative(),
   currentUserReaction: ReactionType.nullable(),
   currentUserSubscribed: z.boolean(),
+  currentUserBookmarked: z.boolean(),
+  currentUserBookmark: BookmarkSummary.nullable(),
 });
 
 export const PostSubscription = z.object({
   postId: z.string().uuid(),
   userId: z.string(),
   createdAt: z.string().datetime(),
+});
+
+export const BookmarkSummary = z.object({
+  postId: z.string().uuid(),
+  userId: z.string(),
+  createdAt: z.string().datetime(),
+});
+
+export const PostBookmarkState = z.object({
+  currentUserBookmarked: z.boolean(),
+  currentUserBookmark: BookmarkSummary.nullable(),
 });
 
 export const CreatePostBody = z.object({
@@ -90,6 +103,11 @@ export const FollowingFeedPage = z.object({
   nextCursor: z.string().nullable(),
 });
 
+export const BookmarksPage = z.object({
+  items: z.array(Post),
+  nextCursor: z.string().nullable(),
+});
+
 export type PollPostOptionType = z.infer<typeof PollPostOption>;
 export type PollPostContentType = z.infer<typeof PollPostContent>;
 export type VisualizationDataPointType = z.infer<typeof VisualizationDataPoint>;
@@ -100,7 +118,10 @@ export type PostImageType = z.infer<typeof PostImage>;
 export type PostContentType = z.infer<typeof PostContent>;
 export type PostType = z.infer<typeof Post>;
 export type PostSubscriptionType = z.infer<typeof PostSubscription>;
+export type BookmarkSummaryType = z.infer<typeof BookmarkSummary>;
+export type PostBookmarkStateType = z.infer<typeof PostBookmarkState>;
 export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
 export type UpdatePostBodyType = z.infer<typeof UpdatePostBody>;
 export type RecommendationPageType = z.infer<typeof RecommendationPage>;
 export type FollowingFeedPageType = z.infer<typeof FollowingFeedPage>;
+export type BookmarksPageType = z.infer<typeof BookmarksPage>;

@@ -231,6 +231,8 @@ export class ModerationService {
             commentCount: item.commentCount,
             currentUserReaction: null,
             currentUserSubscribed: false,
+            currentUserBookmarked: false,
+            currentUserBookmark: null,
             hidden: item.postHidden,
             author: {
               id: item.postAuthorId,
@@ -333,6 +335,8 @@ export class ModerationService {
             commentCount: record.commentCount,
             currentUserReaction: null,
             currentUserSubscribed: false,
+            currentUserBookmarked: false,
+            currentUserBookmark: null,
             hidden: record.postHidden,
             author: {
               id: record.postAuthorId,

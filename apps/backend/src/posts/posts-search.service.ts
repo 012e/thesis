@@ -79,6 +79,16 @@ export class PostsSearchService {
           SELECT 1 FROM post_subscriptions ps
           WHERE ps.post_id = p.id AND ps.user_id = ${userId}
         ) AS current_user_subscribed,
+        EXISTS (
+          SELECT 1 FROM post_bookmarks pb
+          WHERE pb.post_id = p.id AND pb.user_id = ${userId}
+        ) AS current_user_bookmarked,
+        (
+          SELECT pb.created_at
+          FROM post_bookmarks pb
+          WHERE pb.post_id = p.id AND pb.user_id = ${userId}
+          LIMIT 1
+        ) AS current_user_bookmark_created_at,
         (SELECT COUNT(*)::int FROM comments c WHERE c.post_id = p.id) AS comment_count,
         rrf.rrf_score
       FROM rrf
@@ -114,6 +124,16 @@ export class PostsSearchService {
         currentUserReaction:
           (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
         currentUserSubscribed: Boolean(r["current_user_subscribed"]),
+        currentUserBookmarked: Boolean(r["current_user_bookmarked"]),
+        currentUserBookmark: r["current_user_bookmark_created_at"]
+          ? {
+              postId: r["id"] as string,
+              userId,
+              createdAt: new Date(
+                r["current_user_bookmark_created_at"] as string | Date,
+              ).toISOString(),
+            }
+          : null,
       } satisfies PostDto;
     });
   }

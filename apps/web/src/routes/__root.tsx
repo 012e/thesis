@@ -61,6 +61,14 @@ export function RouteContextSync() {
       setGlobalAIContext({ type: "page", page: "explore", label: "Explore" });
       return;
     }
+    if (pathname.startsWith("/bookmarks")) {
+      setGlobalAIContext({
+        type: "page",
+        page: "bookmarks",
+        label: "Bookmarks",
+      });
+      return;
+    }
     if (pathname.startsWith("/notifications")) {
       setGlobalAIContext({
         type: "page",
