@@ -9,11 +9,11 @@ export type UserCredential = {
 };
 
 export class RegisterPage {
-  private readonly PATH = pathTo("auth", "register");
+  static readonly PATH = pathTo("auth", "register");
   constructor(private readonly page: Page) {}
 
   async goto() {
-    await this.page.goto(this.PATH);
+    await this.page.goto(RegisterPage.PATH);
   }
 
   private getRandomCred(): UserCredential {
@@ -23,17 +23,17 @@ export class RegisterPage {
     return {
       // Result: john-1711206292000@example.com
       email: `${firstName}-${timestamp}@example.com`,
-      password: faker.internet.password(),
+      password: "Test@" + faker.string.alphanumeric(8) + "1",
       name: faker.person.fullName(),
     };
   }
 
   async register(cred: UserCredential) {
-    await this.page.locator("#email").fill(cred.email);
     await this.page.locator("#name").fill(cred.name);
+    await this.page.locator("#email").fill(cred.email);
     await this.page.locator("#password").fill(cred.password);
     await this.page.locator("#confirmPassword").fill(cred.password);
-    await this.page.getByRole("button").getByText("Create account").click();
+    await this.page.getByRole("button", { name: "Create account" }).click();
   }
 
   async registerAsRandomUser(): Promise<UserCredential> {
@@ -42,3 +42,4 @@ export class RegisterPage {
     return cred;
   }
 }
+

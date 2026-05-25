@@ -8,6 +8,27 @@ import type {
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
 
+export async function fetchPost(postId: string): Promise<PostDto> {
+  const response = await client.getPost({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to fetch post");
+}
+
 export interface UserPostsParams {
   userId: string;
   limit?: number;

@@ -8,21 +8,21 @@
     "e2e": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "playwright test",
-        "cwd": "packages"
+        "command": "playwright test --config=playwright.config.ts",
+        "cwd": "packages/web-e2e"
       },
       "configurations": {
         "headed": {
-          "command": "playwright test --headed",
-          "cwd": "packages"
+          "command": "playwright test --config=playwright.config.ts --headed",
+          "cwd": "packages/web-e2e"
         },
         "ui": {
-          "command": "playwright test --ui",
-          "cwd": "packages"
+          "command": "playwright test --config=playwright.config.ts --ui",
+          "cwd": "packages/web-e2e"
         },
         "debug": {
-          "command": "playwright test --debug",
-          "cwd": "packages"
+          "command": "playwright test --config=playwright.config.ts --debug",
+          "cwd": "packages/web-e2e"
         }
       }
     },
@@ -30,21 +30,21 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "playwright codegen http://localhost:5173",
-        "cwd": "packages"
+        "cwd": "packages/web-e2e"
       }
     },
     "show-report": {
       "executor": "nx:run-commands",
       "options": {
         "command": "playwright show-report",
-        "cwd": "packages"
+        "cwd": "packages/web-e2e"
       }
     },
     "install-browsers": {
       "executor": "nx:run-commands",
       "options": {
         "command": "playwright install --with-deps",
-        "cwd": "packages"
+        "cwd": "packages/web-e2e"
       }
     }
   },
