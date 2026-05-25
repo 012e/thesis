@@ -117,12 +117,10 @@ test.describe("Single Post Page", () => {
       await navigateToSinglePost(page, postContent);
 
       // Wait for comments section to load
-      await page.waitForTimeout(2000);
-
-      // Find the comment editor
       const commentEditor = page
         .locator('[contenteditable="true"]')
         .last();
+      await commentEditor.waitFor({ state: "visible", timeout: 15_000 });
       await commentEditor.click();
 
       const commentText = `Single page comment ${Date.now()}`;

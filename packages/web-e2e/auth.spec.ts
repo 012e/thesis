@@ -118,11 +118,11 @@ test.describe("Authentication", () => {
       });
 
       // Should remain on login page or show error
-      await page.waitForTimeout(2000);
-      // Either stays on login page or shows a toast error
-      const isStillOnLogin = page.url().includes("/auth/login");
-      const hasError = await page.getByText(/failed|invalid|error/i).count();
-      expect(isStillOnLogin || hasError > 0).toBeTruthy();
+      await expect(async () => {
+        const isStillOnLogin = page.url().includes("/auth/login");
+        const hasError = await page.getByText(/failed|invalid|error/i).count();
+        expect(isStillOnLogin || hasError > 0).toBeTruthy();
+      }).toPass({ timeout: 10_000 });
     });
 
     test("should have default account credentials pre-filled", async ({
