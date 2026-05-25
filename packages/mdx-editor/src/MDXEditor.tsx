@@ -45,7 +45,14 @@ import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import classNames from "classnames";
-import { EditorState, EditorThemeClasses, LexicalEditor } from "lexical";
+import {
+  $getSelection,
+  $isRangeSelection,
+  $isTextNode,
+  EditorState,
+  EditorThemeClasses,
+  LexicalEditor,
+} from "lexical";
 import { defaultSvgIcons, IconKey } from "./defaultSvgIcons";
 import { ToMarkdownOptions } from "./exportMarkdownFromLexical";
 import { lexicalTheme } from "./styles/lexicalTheme";
@@ -202,6 +209,11 @@ export interface MDXEditorMethods {
   insertMarkdown: (value: string) => void;
 
   /**
+   * Replaces plain text immediately before the current cursor position.
+   */
+  replaceTextBeforeCursor: (length: number, value: string) => void;
+
+  /**
    * Sets focus on input
    */
   focus: (
@@ -313,6 +325,28 @@ const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({
       },
       insertMarkdown: (markdown) => {
         realm.pub(insertMarkdown$, markdown);
+      },
+      replaceTextBeforeCursor: (length, value) => {
+        const editor = realm.getValue(activeEditor$) ?? realm.getValue(rootEditor$);
+
+        editor?.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection) || !selection.isCollapsed()) {
+            return;
+          }
+
+          const anchor = selection.anchor;
+          const anchorNode = anchor.getNode();
+          if (!$isTextNode(anchorNode) || anchor.type !== "text") {
+            selection.insertText(value);
+            return;
+          }
+
+          const endOffset = anchor.offset;
+          const startOffset = Math.max(0, endOffset - length);
+          selection.setTextNodeRange(anchorNode, startOffset, anchorNode, endOffset);
+          selection.insertText(value);
+        });
       },
       focus: (
         callbackFn?: () => void,

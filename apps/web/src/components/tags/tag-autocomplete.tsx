@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback } from "react";
 import type { RefObject } from "react";
 import { IconHash } from "@tabler/icons-react";
 import {
@@ -15,7 +15,7 @@ interface TagAutocompleteProps {
   /** Current cursor position (character index) */
   cursorPosition?: number;
   /** Called when a tag is selected — provides the full tag text to insert */
-  onSelect: (tag: string) => void;
+  onSelect: (tag: string, replacementLength: number) => void;
   /** Anchor element for positioning */
   anchorRef?: RefObject<HTMLElement | null>;
 }
@@ -24,7 +24,9 @@ function getHashtagQuery(text: string, cursorPosition?: number): string | null {
   const pos = cursorPosition ?? text.length;
   const before = text.slice(0, pos);
   // Find the last # that starts a tag
-  const match = before.match(/(?:^|[\s.,!?;:'"()\[\]{}<>\/\\|@~`^&*+=\-])#([A-Za-z]\w{0,49})$/);
+  const match = before.match(
+    /(?:^|[\s.,!?;:'"()\[\]{}<>\/\\|@~`^&*+=\-])#([A-Za-z]\w{0,49})$/,
+  );
   if (match) return match[1];
   // Also handle # at start of text
   const startMatch = before.match(/^#([A-Za-z]\w{0,49})$/);
@@ -32,12 +34,54 @@ function getHashtagQuery(text: string, cursorPosition?: number): string | null {
   return null;
 }
 
+function getSelectionRect(anchor: HTMLElement): DOMRect | null {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) return null;
+
+  const focusNode = selection.focusNode;
+  if (!focusNode || !anchor.contains(focusNode)) return null;
+
+  const range = selection.getRangeAt(0).cloneRange();
+  range.collapse(false);
+
+  const rect = range.getBoundingClientRect();
+  if (rect.width > 0 || rect.height > 0) return rect;
+
+  const clientRect = range.getClientRects().item(0);
+  if (clientRect) return clientRect;
+
+  const focusElement =
+    focusNode.nodeType === Node.ELEMENT_NODE
+      ? focusNode
+      : focusNode.parentElement;
+
+  return focusElement instanceof Element
+    ? focusElement.getBoundingClientRect()
+    : null;
+}
+
+function getCaretAnchorPoint(anchor: HTMLElement) {
+  const selectionRect = getSelectionRect(anchor);
+  if (!selectionRect) return null;
+
+  const anchorRect = anchor.getBoundingClientRect();
+  const x = selectionRect.left - anchorRect.left;
+  const y = selectionRect.bottom - anchorRect.top;
+
+  return {
+    x: Math.max(0, Math.min(x, anchorRect.width)),
+    y: Math.max(0, Math.min(y, anchorRect.height)),
+  };
+}
+
 export function TagAutocomplete({
   text,
   cursorPosition,
   onSelect,
+  anchorRef,
 }: TagAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [anchorPoint, setAnchorPoint] = useState({ x: 0, y: 0 });
   const query = getHashtagQuery(text, cursorPosition);
   const { data } = useTagSuggestions(query ?? "", 5);
 
@@ -50,10 +94,45 @@ export function TagAutocomplete({
 
   const handleSelect = useCallback(
     (tag: { slug: string; displayName: string }) => {
-      onSelect(`#${tag.displayName}`);
+      onSelect(`#${tag.displayName}`, (query?.length ?? 0) + 1);
     },
-    [onSelect],
+    [onSelect, query],
   );
+
+  const updateAnchorPoint = useCallback(() => {
+    const anchor = anchorRef?.current;
+    if (!anchor) return;
+
+    const point = getCaretAnchorPoint(anchor);
+    if (!point) return;
+
+    setAnchorPoint((current) =>
+      current.x === point.x && current.y === point.y ? current : point,
+    );
+  }, [anchorRef]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    updateAnchorPoint();
+    const frame = window.requestAnimationFrame(updateAnchorPoint);
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen, text, cursorPosition, updateAnchorPoint]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    document.addEventListener("selectionchange", updateAnchorPoint);
+    window.addEventListener("resize", updateAnchorPoint);
+    window.addEventListener("scroll", updateAnchorPoint, true);
+
+    return () => {
+      document.removeEventListener("selectionchange", updateAnchorPoint);
+      window.removeEventListener("resize", updateAnchorPoint);
+      window.removeEventListener("scroll", updateAnchorPoint, true);
+    };
+  }, [isOpen, updateAnchorPoint]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -88,21 +167,27 @@ export function TagAutocomplete({
           <button
             type="button"
             className="pointer-events-none absolute top-0 left-0 size-px opacity-0"
+            style={{
+              transform: `translate(${anchorPoint.x}px, ${anchorPoint.y}px)`,
+            }}
           />
         }
       />
       <PopoverContent
         align="start"
-        side="top"
+        side="bottom"
         sideOffset={4}
-        className="w-64 gap-0 p-1"
+        initialFocus={false}
+        finalFocus={false}
+        className="w-64 gap-0 p-0"
       >
         {suggestions.map((tag, index) => (
           <button
             key={tag.slug}
             type="button"
+            tabIndex={-1}
             className={cn(
-              "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+              "flex w-full items-start gap-2 px-3 py-2 text-sm transition-colors [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
               index === selectedIndex
                 ? "bg-accent text-accent-foreground"
                 : "hover:bg-muted/50",
@@ -113,10 +198,12 @@ export function TagAutocomplete({
             }}
             onMouseEnter={() => setSelectedIndex(index)}
           >
-            <IconHash className="shrink-0 text-muted-foreground" />
-            <div className="flex min-w-0 flex-col items-start">
-              <span className="truncate font-medium">{tag.displayName}</span>
-              <span className="text-xs text-muted-foreground">
+            <IconHash className="mt-0.5 shrink-0 text-muted-foreground" />
+            <div className="flex min-w-0 flex-col items-start gap-0.5">
+              <span className="truncate font-medium leading-5">
+                {tag.displayName}
+              </span>
+              <span className="text-[11px] leading-3 text-muted-foreground">
                 {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
               </span>
             </div>

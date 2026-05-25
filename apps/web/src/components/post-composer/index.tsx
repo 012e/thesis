@@ -233,6 +233,7 @@ export const PostComposerEditor = forwardRef<
   ) => {
     const { content, setContent } = usePostComposerContext();
     const editorRef = useRef<MDXEditorMethods>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(ref, () => editorRef.current as MDXEditorMethods, []);
 
@@ -242,6 +243,7 @@ export const PostComposerEditor = forwardRef<
 
     return (
       <div
+        ref={wrapperRef}
         className={`relative rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
@@ -254,14 +256,12 @@ export const PostComposerEditor = forwardRef<
         />
         <TagAutocomplete
           text={content}
-          onSelect={(tag) => {
-            // Replace the current hashtag being typed with the selected tag
-            const hashIndex = content.lastIndexOf("#");
-            if (hashIndex !== -1) {
-              const newContent = content.slice(0, hashIndex) + tag + " ";
-              setContent(newContent);
-              editorRef.current?.setMarkdown(newContent);
-            }
+          anchorRef={wrapperRef}
+          onSelect={(tag, replacementLength) => {
+            editorRef.current?.replaceTextBeforeCursor(
+              replacementLength,
+              `${tag} `,
+            );
           }}
         />
       </div>
