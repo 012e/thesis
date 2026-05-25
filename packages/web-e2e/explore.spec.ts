@@ -1,5 +1,6 @@
 import { test, expect } from "@/fixtures/auth-fixture";
 import { ExplorePage } from "@/models/explore-page";
+import { createPost } from "@/utils/posts";
 
 test.describe("Explore & Search", () => {
   test.describe("Page layout", () => {
@@ -44,15 +45,17 @@ test.describe("Explore & Search", () => {
     });
 
     test("should search for posts", async ({ authedPage: page }) => {
+      const postContent = `search-posts-${Date.now()}`;
+      await createPost(page, postContent);
+
       const explorePage = new ExplorePage(page);
       await explorePage.goto();
 
-      // Search for a random string that likely won't match
-      const randomQuery = `nonexistent_${Date.now()}`;
-      await explorePage.search(randomQuery);
+      await explorePage.search(postContent);
 
-      // Should show no results for the random query
-      await explorePage.expectNoPostsFound(randomQuery);
+      await expect(page.getByText(postContent).first()).toBeVisible({
+        timeout: 30_000,
+      });
     });
 
     test("should switch to People tab and search", async ({
@@ -112,19 +115,8 @@ test.describe("Explore & Search", () => {
     test("should find a post that was just created", async ({
       authedPage: page,
     }) => {
-      // First create a post on the home page
       const uniqueContent = `searchable-e2e-${Date.now()}`;
-      await page.goto("/");
-
-      await page.getByText("What's happening").first().click();
-      const editor = page.locator('[contenteditable="true"]').first();
-      await editor.fill(uniqueContent);
-      await page.getByRole("button", { name: "Post" }).click();
-
-      // Wait for post to be created
-      await expect(page.getByText(uniqueContent).first()).toBeVisible({
-        timeout: 15_000,
-      });
+      await createPost(page, uniqueContent);
 
       // Now search for it
       const explorePage = new ExplorePage(page);

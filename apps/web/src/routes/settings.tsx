@@ -348,18 +348,38 @@ function AccountSecurityTab({
 
               <Field>
                 <passwordForm.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  selector={(state) =>
+                    [
+                      state.values.currentPassword,
+                      state.values.newPassword,
+                      state.values.confirmPassword,
+                      state.isSubmitting,
+                    ] as const
+                  }
                 >
-                  {([canSubmit, isSubmitting]) => (
-                    <div className="flex justify-end">
-                      <Button
-                        type="submit"
-                        disabled={!canSubmit || isSubmitting}
-                      >
-                        {isSubmitting ? "Changing..." : "Change password"}
-                      </Button>
-                    </div>
-                  )}
+                  {([
+                    currentPassword,
+                    newPassword,
+                    confirmPassword,
+                    isSubmitting,
+                  ]) => {
+                    const canSubmit =
+                      currentPassword.length > 0 &&
+                      passwordSchema.shape.newPassword.safeParse(newPassword)
+                        .success &&
+                      confirmPassword === newPassword;
+
+                    return (
+                      <div className="flex justify-end">
+                        <Button
+                          type="submit"
+                          disabled={!canSubmit || isSubmitting}
+                        >
+                          {isSubmitting ? "Changing..." : "Change password"}
+                        </Button>
+                      </div>
+                    );
+                  }}
                 </passwordForm.Subscribe>
               </Field>
             </FieldGroup>

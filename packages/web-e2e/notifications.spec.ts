@@ -32,16 +32,13 @@ test.describe("Notifications", () => {
   });
 
   test.describe("Mark all as read", () => {
-    test("should click mark all as read without errors", async ({
+    test("should disable mark all as read with no notifications", async ({
       authedPage: page,
     }) => {
       const notificationsPage = new NotificationsPage(page);
       await notificationsPage.goto();
 
-      // Click the mark all as read button - should not throw
-      await notificationsPage.markAllAsRead();
-
-      // Page should still be functional
+      await expect(notificationsPage.markAllReadButton).toBeDisabled();
       await expect(notificationsPage.heading).toBeVisible();
     });
   });

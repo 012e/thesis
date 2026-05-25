@@ -1,25 +1,10 @@
 import { test, expect } from "@/fixtures/auth-fixture";
+import { createPost } from "@/utils/posts";
+
+const activeUpvoteClass = /(^|\s)text-orange-600(\s|$)/;
+const activeDownvoteClass = /(^|\s)text-blue-600(\s|$)/;
 
 test.describe("Post Interactions", () => {
-  // Helper: create a post and return its content text
-  async function createPost(page: import("@playwright/test").Page) {
-    const postContent = `E2E interaction test ${Date.now()}`;
-
-    await page.getByText("What's happening").first().click();
-    const editor = page.locator('[contenteditable="true"]').first();
-    await editor.fill(postContent);
-
-    const postButton = page.getByRole("button", { name: "Post" });
-    await postButton.click();
-
-    // Wait for the post to appear
-    await expect(page.getByText(postContent).first()).toBeVisible({
-      timeout: 15_000,
-    });
-
-    return postContent;
-  }
-
   test.describe("Voting", () => {
     test("should upvote a post", async ({ authedPage: page }) => {
       const postContent = await createPost(page);
@@ -35,7 +20,7 @@ test.describe("Post Interactions", () => {
       await upvoteButton.click();
 
       // The upvote button should now have the active style (orange)
-      await expect(upvoteButton).toHaveClass(/text-orange-600/);
+      await expect(upvoteButton).toHaveClass(activeUpvoteClass);
     });
 
     test("should downvote a post", async ({ authedPage: page }) => {
@@ -49,7 +34,7 @@ test.describe("Post Interactions", () => {
       const downvoteButton = article.getByTitle("Downvote");
       await downvoteButton.click();
 
-      await expect(downvoteButton).toHaveClass(/text-blue-600/);
+      await expect(downvoteButton).toHaveClass(activeDownvoteClass);
     });
 
     test("should toggle upvote off when clicked again", async ({
@@ -66,11 +51,11 @@ test.describe("Post Interactions", () => {
 
       // Click to upvote
       await upvoteButton.click();
-      await expect(upvoteButton).toHaveClass(/text-orange-600/);
+      await expect(upvoteButton).toHaveClass(activeUpvoteClass);
 
       // Click again to remove upvote
       await upvoteButton.click();
-      await expect(upvoteButton).not.toHaveClass(/text-orange-600/);
+      await expect(upvoteButton).not.toHaveClass(activeUpvoteClass);
     });
 
     test("should switch from upvote to downvote", async ({
@@ -88,12 +73,12 @@ test.describe("Post Interactions", () => {
 
       // Upvote first
       await upvoteButton.click();
-      await expect(upvoteButton).toHaveClass(/text-orange-600/);
+      await expect(upvoteButton).toHaveClass(activeUpvoteClass);
 
       // Then downvote - should switch
       await downvoteButton.click();
-      await expect(downvoteButton).toHaveClass(/text-blue-600/);
-      await expect(upvoteButton).not.toHaveClass(/text-orange-600/);
+      await expect(downvoteButton).toHaveClass(activeDownvoteClass);
+      await expect(upvoteButton).not.toHaveClass(activeUpvoteClass);
     });
   });
 
@@ -143,20 +128,11 @@ test.describe("Post Interactions", () => {
         .filter({ hasText: postContent })
         .first();
 
-      // Click the comment icon button (has IconMessageCircle)
       const commentButton = article
-        .locator("button")
-        .filter({ has: page.locator('svg.tabler-icon-message-circle') })
+        .locator('button:has(svg.tabler-icon-message-circle)')
         .first();
 
-      // Fallback: click the button with "0" count next to comment icon
-      const commentArea = article
-        .locator("button")
-        .first();
-
-      // Actually, let's find it by the comment count text "0"
-      // The comment button shows the count
-      await article.locator("button").first().click();
+      await commentButton.click();
 
       // Wait for the comments dialog
       await expect(
@@ -244,21 +220,19 @@ test.describe("Post Interactions", () => {
       await menuTrigger.click();
 
       // Click Delete
-      await page
-        .getByText("Delete")
-        .first()
-        .click();
+      await page.getByRole("menuitem", { name: /^Delete/ }).click();
 
       // Confirm deletion in the dialog
       const deleteConfirmButton = page
-        .locator('[role="dialog"]')
+        .getByRole("dialog", { name: /delete/i })
         .getByRole("button", { name: /delete/i });
       await deleteConfirmButton.click();
 
-      // Post should no longer be visible
       await expect(
-        page.getByText(postContent).first(),
-      ).not.toBeVisible({ timeout: 10_000 });
+        page.getByText(/post deleted successfully/i),
+      ).toBeVisible({ timeout: 10_000 });
+      await page.reload();
+      await expect(article).not.toBeVisible({ timeout: 10_000 });
     });
 
     test("should edit own post", async ({ authedPage: page }) => {
@@ -276,11 +250,11 @@ test.describe("Post Interactions", () => {
       await menuTrigger.click();
 
       // Click Edit
-      await page.getByText("Edit").first().click();
+      await page.getByRole("menuitem", { name: /^Edit/ }).click();
 
       // Edit dialog should open
       await expect(
-        page.locator('[role="dialog"]'),
+        page.getByRole("dialog", { name: "Edit post" }),
       ).toBeVisible({ timeout: 10_000 });
     });
   });

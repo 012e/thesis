@@ -1,23 +1,12 @@
 import { test, expect } from "@/fixtures/auth-fixture";
-import { PostPage } from "@/models/post-page";
+import { createPost } from "@/utils/posts";
 
 test.describe("Single Post Page", () => {
   // Helper: create a post and return its content and navigate to single post page
   async function createPostAndGetId(page: import("@playwright/test").Page) {
     const postContent = `Single post test ${Date.now()}`;
 
-    await page.goto("/");
-    await page.getByText("What's happening").first().click();
-    const editor = page.locator('[contenteditable="true"]').first();
-    await editor.fill(postContent);
-    await page.getByRole("button", { name: "Post" }).click();
-
-    // Wait for post to appear
-    await expect(page.getByText(postContent).first()).toBeVisible({
-      timeout: 15_000,
-    });
-
-    return postContent;
+    return createPost(page, postContent);
   }
 
   async function navigateToSinglePost(
@@ -66,15 +55,10 @@ test.describe("Single Post Page", () => {
       const postContent = await createPostAndGetId(page);
       await navigateToSinglePost(page, postContent);
 
-      // Should show a back button or arrow
-      const backButton = page.getByRole("button", { name: /back/i });
-      const backLink = page.locator('a[href="/"]');
-
-      const backIsVisible =
-        (await backButton.isVisible().catch(() => false)) ||
-        (await backLink.isVisible().catch(() => false));
-
-      expect(backIsVisible).toBe(true);
+      const postHeader = page
+        .getByRole("heading", { name: "Post" })
+        .locator("xpath=..");
+      await expect(postHeader.locator('a[href="/"]')).toBeVisible();
     });
 
     test("should navigate back when back button is clicked", async ({
@@ -83,14 +67,10 @@ test.describe("Single Post Page", () => {
       const postContent = await createPostAndGetId(page);
       await navigateToSinglePost(page, postContent);
 
-      // Click back - try button first, then link
-      const backButton = page.getByRole("button", { name: /back/i });
-      if (await backButton.isVisible().catch(() => false)) {
-        await backButton.click();
-      } else {
-        const backLink = page.locator('a[href="/"]').first();
-        await backLink.click();
-      }
+      const postHeader = page
+        .getByRole("heading", { name: "Post" })
+        .locator("xpath=..");
+      await postHeader.locator('a[href="/"]').click();
 
       // Should navigate to home
       await expect(page).toHaveURL(/\/$/, { timeout: 10_000 });
@@ -127,8 +107,12 @@ test.describe("Single Post Page", () => {
       await commentEditor.fill(commentText);
 
       // Submit comment
-      const submitButton = page.getByRole("button", {
-        name: /comment|submit|post/i,
+      const commentsSection = page
+        .getByRole("heading", { name: "Comments" })
+        .locator("xpath=../..");
+      const submitButton = commentsSection.getByRole("button", {
+        name: "Post",
+        exact: true,
       });
       await submitButton.click();
 

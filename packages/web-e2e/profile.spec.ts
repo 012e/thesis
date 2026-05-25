@@ -1,5 +1,6 @@
 import { test, expect } from "@/fixtures/auth-fixture";
 import { ProfilePage } from "@/models/profile-page";
+import { createPost } from "@/utils/posts";
 
 test.describe("Profile", () => {
   test.describe("Own profile", () => {
@@ -60,11 +61,7 @@ test.describe("Profile", () => {
     }) => {
       // Create a post first
       const postContent = `Profile post ${Date.now()}`;
-      await page.goto("/");
-      await page.getByText("What's happening").first().click();
-      const editor = page.locator('[contenteditable="true"]').first();
-      await editor.fill(postContent);
-      await page.getByRole("button", { name: "Post" }).click();
+      await createPost(page, postContent);
       await expect(page.getByText(postContent).first()).toBeVisible({
         timeout: 15_000,
       });

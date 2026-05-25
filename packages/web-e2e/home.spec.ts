@@ -1,5 +1,6 @@
 import { test, expect } from "@/fixtures/auth-fixture";
 import { HomePage } from "@/models/home-page";
+import { createPost } from "@/utils/posts";
 
 test.describe("Home Feed", () => {
   test.describe("Feed tabs", () => {
@@ -69,19 +70,7 @@ test.describe("Home Feed", () => {
     test("should create a new post", async ({ authedPage: page }) => {
       const postContent = `E2E test post ${Date.now()}`;
 
-      // Click on the composer area to focus it
-      await page.getByText("What's happening").first().click();
-
-      // Type in the MDX editor (contenteditable div)
-      const editor = page.locator('[contenteditable="true"]').first();
-      await editor.fill(postContent);
-
-      // Click the Post button
-      const postButton = page.getByRole("button", { name: "Post" });
-      await expect(postButton).toBeEnabled();
-      await postButton.click();
-
-      // Wait for the post to appear in the feed
+      await createPost(page, postContent);
       await expect(page.getByText(postContent).first()).toBeVisible({
         timeout: 15_000,
       });

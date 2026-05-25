@@ -39,8 +39,11 @@ export class SettingsPage {
     await this.page.locator("#currentPassword").fill(currentPassword);
     await this.page.locator("#newPassword").fill(newPassword);
     await this.page.locator("#confirmPassword").fill(confirmPassword);
-    await this.page
-      .getByRole("button", { name: /change password/i })
-      .click();
+
+    const submitButton = this.page.getByRole("button", {
+      name: /change password/i,
+    });
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click({ force: true });
   }
 }

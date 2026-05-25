@@ -1,5 +1,6 @@
 import { test, expect } from "@/fixtures/auth-fixture";
 import { BookmarksPage } from "@/models/bookmarks-page";
+import { createPost } from "@/utils/posts";
 
 test.describe("Bookmarks", () => {
   test.describe("Empty state", () => {
@@ -26,16 +27,8 @@ test.describe("Bookmarks", () => {
     test("should show bookmarked post on bookmarks page", async ({
       authedPage: page,
     }) => {
-      // Create a post first
       const postContent = `Bookmark test ${Date.now()}`;
-      await page.goto("/");
-      await page.getByText("What's happening").first().click();
-      const editor = page.locator('[contenteditable="true"]').first();
-      await editor.fill(postContent);
-      await page.getByRole("button", { name: "Post" }).click();
-      await expect(page.getByText(postContent).first()).toBeVisible({
-        timeout: 15_000,
-      });
+      await createPost(page, postContent);
 
       // Bookmark the post
       const article = page
@@ -58,16 +51,8 @@ test.describe("Bookmarks", () => {
     test("should remove post from bookmarks page after unbookmarking", async ({
       authedPage: page,
     }) => {
-      // Create and bookmark a post
       const postContent = `Unbookmark test ${Date.now()}`;
-      await page.goto("/");
-      await page.getByText("What's happening").first().click();
-      const editor = page.locator('[contenteditable="true"]').first();
-      await editor.fill(postContent);
-      await page.getByRole("button", { name: "Post" }).click();
-      await expect(page.getByText(postContent).first()).toBeVisible({
-        timeout: 15_000,
-      });
+      await createPost(page, postContent);
 
       // Bookmark it
       const article = page
