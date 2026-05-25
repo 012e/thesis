@@ -99,8 +99,12 @@ test-config: build-backend
 
 test-moderation: build-backend
     pnpm --filter backend test:moderation
+
 test-bookmarks: build-backend
     pnpm --filter backend test:bookmarks
+
+test-tags: build-backend
+    pnpm --filter backend test:tags
 
 build-storybook:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
