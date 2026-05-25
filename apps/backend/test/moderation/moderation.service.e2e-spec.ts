@@ -10,7 +10,9 @@ import {
   postFlags,
   postModeration,
   postReports,
+  postTags,
   posts,
+  tags,
 } from "@/db/schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { ModerationService } from "@/moderation/moderation.service";
@@ -101,6 +103,7 @@ describe("ModerationService integration", () => {
     await databaseService.db.delete(postReports);
     await databaseService.db.delete(postModeration);
     await databaseService.db.delete(posts);
+    await databaseService.db.delete(tags);
   });
 
   afterAll(async () => {
@@ -110,6 +113,15 @@ describe("ModerationService integration", () => {
 
   it("creates and retrieves moderation records with joined post data", async () => {
     const post = await createPost("author-1", "Moderated content");
+    const [tag] = await databaseService.db
+      .insert(tags)
+      .values({ slug: "moderation", displayName: "moderation" })
+      .returning();
+    await databaseService.db.insert(postTags).values({
+      postId: post.id,
+      tagId: tag.id,
+      authorId: "author-1",
+    });
     const similarPostId = randomUUID();
 
     const created = await moderationService.createModerationRecord({
@@ -146,6 +158,8 @@ describe("ModerationService integration", () => {
       id: post.id,
       authorId: "author-1",
       content: { text: "Moderated content" },
+      currentUserBookmarked: false,
+      tags: [{ id: tag.id, slug: "moderation", displayName: "moderation" }],
       hidden: false,
       author: {
         id: "author-1",
@@ -197,6 +211,11 @@ describe("ModerationService integration", () => {
       source: "auto_harmful",
       status: "rejected",
       priority: "high",
+      post: {
+        id: postTwo.id,
+        currentUserBookmarked: false,
+        tags: [],
+      },
     });
 
     expect(paged.total).toBe(3);

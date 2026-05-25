@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { eq, desc, sql, and, count } from "drizzle-orm";
+import { eq, desc, sql, and, count, inArray } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
 import {
@@ -7,7 +7,9 @@ import {
   postReactions,
   postReports,
   postFlags,
+  postTags,
   posts,
+  tags,
   comments,
   usersView,
   type PostModeration as PostModerationRow,
@@ -18,6 +20,7 @@ import type {
   ModerationSourceDto,
   FlagPriorityDto,
   ReportReasonDto,
+  PostTagDto,
 } from "@repo/shared-dto";
 import type {
   ModerationValidationGraphType,
@@ -82,6 +85,36 @@ export class ModerationService {
     const summary = record.llmSummary ?? null;
 
     return [summary, confidence].filter(Boolean).join("\n") || null;
+  }
+
+  private async getTagsForPosts(
+    postIds: string[],
+  ): Promise<Map<string, PostTagDto[]>> {
+    const result = new Map<string, PostTagDto[]>();
+    if (postIds.length === 0) return result;
+
+    const rows = await this.db
+      .select({
+        postId: postTags.postId,
+        id: tags.id,
+        slug: tags.slug,
+        displayName: tags.displayName,
+      })
+      .from(postTags)
+      .innerJoin(tags, eq(postTags.tagId, tags.id))
+      .where(inArray(postTags.postId, postIds));
+
+    for (const row of rows) {
+      const postTagsForPost = result.get(row.postId) ?? [];
+      postTagsForPost.push({
+        id: row.id,
+        slug: row.slug,
+        displayName: row.displayName,
+      });
+      result.set(row.postId, postTagsForPost);
+    }
+
+    return result;
   }
 
   // ─── Moderation Records ────────────────────────────────────────────────
@@ -203,6 +236,10 @@ export class ModerationService {
       .limit(pageSize)
       .offset(offset);
 
+    const tagsByPostId = await this.getTagsForPosts(
+      items.filter((item) => item.postContent).map((item) => item.postId),
+    );
+
     const mappedItems = items.map((item) => ({
       id: item.id,
       postId: item.postId,
@@ -231,6 +268,8 @@ export class ModerationService {
             commentCount: item.commentCount,
             currentUserReaction: null,
             currentUserSubscribed: false,
+            currentUserBookmarked: false,
+            tags: tagsByPostId.get(item.postId) ?? [],
             hidden: item.postHidden,
             author: {
               id: item.postAuthorId,
@@ -305,6 +344,8 @@ export class ModerationService {
 
     if (!record) return null;
 
+    const tagsByPostId = await this.getTagsForPosts([record.postId]);
+
     return {
       id: record.id,
       postId: record.postId,
@@ -333,6 +374,8 @@ export class ModerationService {
             commentCount: record.commentCount,
             currentUserReaction: null,
             currentUserSubscribed: false,
+            currentUserBookmarked: false,
+            tags: tagsByPostId.get(record.postId) ?? [],
             hidden: record.postHidden,
             author: {
               id: record.postAuthorId,
