@@ -206,6 +206,10 @@
   @apply text-primary underline underline-offset-2 hover:text-primary/80;
 }
 
+.mdx-editor-wrapper .post-composer-markdown a[href^="/tags/"] {
+  @apply font-medium no-underline hover:underline;
+}
+
 .mdx-editor-wrapper .post-composer-markdown blockquote {
   @apply my-2 border-muted-foreground/30 border-l-2 pl-3 text-muted-foreground italic;
 }

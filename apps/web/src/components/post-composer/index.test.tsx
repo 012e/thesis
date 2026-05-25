@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
 import {
   PostComposerActions,
@@ -95,11 +96,25 @@ function TestComposer({
   );
 }
 
+function renderComposer(ui: React.ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 describe("PostComposer", () => {
   it("updates derived composer state when the editor changes", async () => {
     const user = userEvent.setup();
 
-    render(<TestComposer />);
+    renderComposer(<TestComposer />);
 
     await user.type(screen.getByLabelText("composer editor"), "Hello");
 
@@ -113,7 +128,7 @@ describe("PostComposer", () => {
   it("clears both provider state and the mounted editor value", async () => {
     const user = userEvent.setup();
 
-    render(<TestComposer initialContent="Draft text" />);
+    renderComposer(<TestComposer initialContent="Draft text" />);
 
     expect(
       screen.getByLabelText<HTMLTextAreaElement>("composer editor").value,
@@ -132,7 +147,7 @@ describe("PostComposer", () => {
     const user = userEvent.setup();
     const onSubmitContent = vi.fn().mockResolvedValue(undefined);
 
-    render(
+    renderComposer(
       <TestComposer
         initialContent="  Post this  "
         onSubmitContent={onSubmitContent}
