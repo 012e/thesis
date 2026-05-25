@@ -9,6 +9,7 @@ import { DATABASE_POOL } from "@/db/tokens";
 import { ReactionsService } from "@/reactions/reactions.service";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { PostsService } from "@/posts/posts.service";
+import { TagsService } from "@/tags/tags.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
 import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
@@ -89,6 +90,7 @@ describe("ReactionsService integration", () => {
           },
         },
         PostsService,
+        TagsService,
       ],
     }).compile();
 

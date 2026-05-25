@@ -17,6 +17,7 @@ import {
   markdownShortcutPlugin,
   codeBlockPlugin,
   codeMirrorPlugin,
+  linkPlugin,
 } from "@repo/mdx-editor";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
 import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
@@ -150,6 +151,7 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
         autoLoadLanguageSupport: true,
         codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
       }),
+      linkPlugin(),
       markdownShortcutPlugin(),
     ],
     [],

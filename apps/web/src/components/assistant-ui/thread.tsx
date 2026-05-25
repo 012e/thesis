@@ -124,7 +124,7 @@ function ActiveVerticalForm() {
 
   const Form = config.form;
   return (
-    <div className="w-full max-w-2xl p-4 bg-muted/30 rounded-xl border border-border shadow-sm">
+    <div className="w-full max-w-2xl p-4 bg-muted/30 border border-border shadow-sm">
       <Form threadId={threadId} />
     </div>
   );

@@ -7,6 +7,7 @@ import {
   markdownShortcutPlugin,
   codeBlockPlugin,
   codeMirrorPlugin,
+  linkPlugin,
 } from "@repo/mdx-editor";
 import { oneDark } from "@codemirror/theme-one-dark";
 import type {
@@ -63,6 +64,7 @@ export function EditPostDialog({
         codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
         codeMirrorExtensions: [oneDark],
       }),
+      linkPlugin(),
       markdownShortcutPlugin(),
     ],
     [],

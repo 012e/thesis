@@ -46,6 +46,7 @@ import { ReportDialog } from "./report-dialog";
 import { PostValidationStatusDialog } from "./post-validation-status-dialog";
 import { UserAvatar } from "./user-avatar";
 import { useToast as toast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export interface PostProps {
   post: PostDto;
@@ -212,6 +213,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const [reportOpen, setReportOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [validationStatusOpen, setValidationStatusOpen] = useState(false);
+  const [isTagHoverCardOpen, setIsTagHoverCardOpen] = useState(false);
   const { data: session } = useSession();
   const isAdmin = useIsAdmin();
   const openChat = useOpenChat();
@@ -344,7 +346,12 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   );
 
   return (
-    <article className="p-4 transition-colors hover:bg-accent/50">
+    <article
+      className={cn(
+        "p-4 transition-colors hover:bg-accent/50",
+        isTagHoverCardOpen && "bg-accent/50",
+      )}
+    >
       <div className="flex gap-3 items-start">
         <UserAvatar
           userId={post.author.id}
@@ -469,7 +476,10 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
           </div>
           {post.content.text && (
             <div className="mb-3 leading-normal text-[15px]">
-              <PostMarkdown content={post.content.text} />
+              <PostMarkdown
+                content={post.content.text}
+                onTagHoverOpenChange={setIsTagHoverCardOpen}
+              />
             </div>
           )}
 

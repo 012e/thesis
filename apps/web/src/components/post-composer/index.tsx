@@ -24,6 +24,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { PollCreator } from "@/components/poll-creator";
+import { TagAutocomplete } from "@/components/tags/tag-autocomplete";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useUploadImages } from "@/hooks/use-upload-images";
 import { POST_MAX_LENGTH } from "@/lib/constants";
@@ -232,6 +233,7 @@ export const PostComposerEditor = forwardRef<
   ) => {
     const { content, setContent } = usePostComposerContext();
     const editorRef = useRef<MDXEditorMethods>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(ref, () => editorRef.current as MDXEditorMethods, []);
 
@@ -241,7 +243,8 @@ export const PostComposerEditor = forwardRef<
 
     return (
       <div
-        className={`rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
+        ref={wrapperRef}
+        className={`relative rounded-lg mdx-editor-wrapper${wrapperClassName ? ` ${wrapperClassName}` : ""}`}
       >
         <MDXEditor
           placeholder={placeholder}
@@ -250,6 +253,16 @@ export const PostComposerEditor = forwardRef<
           onChange={setContent}
           plugins={plugins}
           contentEditableClassName={contentEditableClassName}
+        />
+        <TagAutocomplete
+          text={content}
+          anchorRef={wrapperRef}
+          onSelect={(tag, replacementLength) => {
+            editorRef.current?.replaceTextBeforeCursor(
+              replacementLength,
+              `${tag} `,
+            );
+          }}
         />
       </div>
     );

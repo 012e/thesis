@@ -20,6 +20,7 @@ export function useCreatePost() {
       // Invalidate recommendations query to sync with server
       queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["tags", "trending"] });
 
       toast.success("Post created successfully!");
     },

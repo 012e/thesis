@@ -43,6 +43,7 @@
     "test:users": "vitest run --silent=true test/users/",
     "test:config": "vitest run --silent=true test/config/",
     "test:moderation": "vitest run --silent=true test/moderation/",
+    "test:tags": "vitest run --silent=true test/tags/",
     "seed": "tsx seed.ts",
     "seed:watch": "tsx watch seed.ts"
   },

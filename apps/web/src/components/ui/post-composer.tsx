@@ -7,6 +7,7 @@ import {
   markdownShortcutPlugin,
   codeBlockPlugin,
   codeMirrorPlugin,
+  linkPlugin,
 } from "@repo/mdx-editor";
 import { oneDark } from "@codemirror/theme-one-dark";
 import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
@@ -40,6 +41,7 @@ export function PostComposer() {
         codeBlockLanguages: POST_CODE_BLOCK_LANGUAGES,
         codeMirrorExtensions: [oneDark],
       }),
+      linkPlugin(),
       markdownShortcutPlugin(),
     ],
     [],

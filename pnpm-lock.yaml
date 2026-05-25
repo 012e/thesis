@@ -373,6 +373,9 @@ importers:
       '@ts-rest/core':
         specifier: 3.53.0-rc.1
         version: 3.53.0-rc.1(@types/node@24.12.2)
+      '@types/mdast':
+        specifier: ^4.0.4
+        version: 4.0.4
       '@xyflow/react':
         specifier: ^12.10.2
         version: 12.10.2(@types/react@19.2.14)(immer@11.1.8)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -460,6 +463,9 @@ importers:
       tw-shimmer:
         specifier: ^0.4.10
         version: 0.4.10(tailwindcss@4.2.4)
+      unist-util-visit:
+        specifier: ^5.1.0
+        version: 5.1.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6

@@ -65,6 +65,13 @@ export const Post = z.object({
   currentUserReaction: ReactionType.nullable(),
   currentUserSubscribed: z.boolean(),
   currentUserBookmarked: z.boolean(),
+  tags: z.array(
+    z.object({
+      id: z.string().uuid(),
+      slug: z.string(),
+      displayName: z.string(),
+    }),
+  ),
 });
 
 export const BookmarkSummary = z.object({
