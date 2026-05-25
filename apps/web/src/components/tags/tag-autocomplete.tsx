@@ -1,6 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
+import type { RefObject } from "react";
+import { IconHash } from "@tabler/icons-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useTagSuggestions } from "@/hooks/use-tag-suggestions";
-import { Hash } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TagAutocompleteProps {
@@ -11,7 +17,7 @@ interface TagAutocompleteProps {
   /** Called when a tag is selected — provides the full tag text to insert */
   onSelect: (tag: string) => void;
   /** Anchor element for positioning */
-  anchorRef?: React.RefObject<HTMLElement | null>;
+  anchorRef?: RefObject<HTMLElement | null>;
 }
 
 function getHashtagQuery(text: string, cursorPosition?: number): string | null {
@@ -34,7 +40,6 @@ export function TagAutocomplete({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const query = getHashtagQuery(text, cursorPosition);
   const { data } = useTagSuggestions(query ?? "", 5);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const suggestions = data?.items ?? [];
   const isOpen = query !== null && suggestions.length > 0;
@@ -74,39 +79,50 @@ export function TagAutocomplete({
     return () => document.removeEventListener("keydown", handleKeyDown, true);
   }, [isOpen, suggestions, selectedIndex, handleSelect]);
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      ref={containerRef}
-      className="absolute z-50 w-64 rounded-lg border bg-popover p-1 shadow-md"
-      style={{ bottom: "100%", left: 0, marginBottom: 4 }}
-    >
-      {suggestions.map((tag, index) => (
-        <button
-          key={tag.slug}
-          type="button"
-          className={cn(
-            "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
-            index === selectedIndex
-              ? "bg-accent text-accent-foreground"
-              : "hover:bg-muted/50",
-          )}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            handleSelect(tag);
-          }}
-          onMouseEnter={() => setSelectedIndex(index)}
-        >
-          <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <div className="flex flex-col items-start min-w-0">
-            <span className="font-medium truncate">{tag.displayName}</span>
-            <span className="text-xs text-muted-foreground">
-              {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
-            </span>
-          </div>
-        </button>
-      ))}
-    </div>
+    <Popover open={isOpen}>
+      <PopoverTrigger
+        aria-hidden="true"
+        tabIndex={-1}
+        render={
+          <button
+            type="button"
+            className="pointer-events-none absolute top-0 left-0 size-px opacity-0"
+          />
+        }
+      />
+      <PopoverContent
+        align="start"
+        side="top"
+        sideOffset={4}
+        className="w-64 gap-0 p-1"
+      >
+        {suggestions.map((tag, index) => (
+          <button
+            key={tag.slug}
+            type="button"
+            className={cn(
+              "flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0",
+              index === selectedIndex
+                ? "bg-accent text-accent-foreground"
+                : "hover:bg-muted/50",
+            )}
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleSelect(tag);
+            }}
+            onMouseEnter={() => setSelectedIndex(index)}
+          >
+            <IconHash className="shrink-0 text-muted-foreground" />
+            <div className="flex min-w-0 flex-col items-start">
+              <span className="truncate font-medium">{tag.displayName}</span>
+              <span className="text-xs text-muted-foreground">
+                {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
+              </span>
+            </div>
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 }
