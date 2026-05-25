@@ -45,7 +45,7 @@ describe("AnalyticsService integration", () => {
   }, 120000);
 
   afterAll(async () => {
-    await pool.end();
+    // pool.end() is called by DatabaseService.onModuleDestroy via moduleRef.close()
     await moduleRef.close();
     await stopPostgresContainer(containers);
   });
