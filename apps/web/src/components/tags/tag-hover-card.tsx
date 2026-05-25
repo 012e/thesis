@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+import type { MouseEvent, ReactElement } from "react";
 import { Link } from "@tanstack/react-router";
 import {
   HoverCard,
@@ -9,16 +11,70 @@ import { Hash } from "lucide-react";
 
 interface TagHoverCardProps {
   slug: string;
-  children: React.ReactNode;
+  children: ReactElement;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function TagHoverCard({ slug, children }: TagHoverCardProps) {
+export function TagHoverCard({
+  slug,
+  children,
+  onOpenChange,
+}: TagHoverCardProps) {
   const { data: tag } = useTag(slug);
+  const [open, setOpen] = useState(false);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  const closeSoon = () => {
+    clearCloseTimer();
+    closeTimerRef.current = setTimeout(() => {
+      setOpen(false);
+      closeTimerRef.current = null;
+    }, 150);
+  };
+
+  useEffect(() => {
+    onOpenChange?.(open);
+  }, [onOpenChange, open]);
+
+  useEffect(
+    () => () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current);
+      }
+    },
+    [],
+  );
 
   return (
-    <HoverCard>
-      <HoverCardTrigger>{children}</HoverCardTrigger>
-      <HoverCardContent align="start" className="w-56">
+    <HoverCard
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (nextOpen) {
+          clearCloseTimer();
+          setOpen(true);
+          return;
+        }
+
+        closeSoon();
+      }}
+    >
+      <HoverCardTrigger render={children} />
+      <HoverCardContent
+        align="start"
+        className="w-56"
+        onMouseEnter={() => {
+          clearCloseTimer();
+          setOpen(true);
+        }}
+        onMouseLeave={closeSoon}
+      >
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Hash className="h-4 w-4 text-muted-foreground" />
@@ -35,7 +91,7 @@ export function TagHoverCard({ slug, children }: TagHoverCardProps) {
             to="/tags/$slug"
             params={{ slug }}
             className="text-xs text-primary hover:underline"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            onClick={(e: MouseEvent) => e.stopPropagation()}
           >
             View posts →
           </Link>

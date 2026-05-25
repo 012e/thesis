@@ -12,9 +12,14 @@ import { cn } from "@/lib/utils";
 interface PostMarkdownProps {
   content: string;
   className?: string;
+  onTagHoverOpenChange?: (open: boolean) => void;
 }
 
-const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
+const PostMarkdownImpl = ({
+  content,
+  className,
+  onTagHoverOpenChange,
+}: PostMarkdownProps) => {
   const { resolvedTheme } = useTheme();
   const baseComponents = createMarkdownComponents(resolvedTheme === "dark");
 
@@ -25,7 +30,7 @@ const PostMarkdownImpl = ({ content, className }: PostMarkdownProps) => {
       if (href?.startsWith("/tags/")) {
         const slug = href.replace("/tags/", "");
         return (
-          <TagHoverCard slug={slug}>
+          <TagHoverCard slug={slug} onOpenChange={onTagHoverOpenChange}>
             <Link
               to={href}
               className={cn("text-primary hover:underline font-medium", cls)}
