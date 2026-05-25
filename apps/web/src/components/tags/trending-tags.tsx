@@ -8,7 +8,7 @@ export function TrendingTags() {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border bg-card p-4">
+      <div className="border bg-card p-4">
         <h3 className="font-bold text-base mb-3">Trending</h3>
         <div className="flex justify-center py-4">
           <Spinner className="w-4 h-4" />
@@ -22,7 +22,7 @@ export function TrendingTags() {
   }
 
   return (
-    <div className="rounded-xl border bg-card">
+    <div className="border bg-card">
       <h3 className="font-bold text-base px-4 pt-3 pb-2">Trending</h3>
       <div className="divide-y">
         {data.items.map((tag) => (
