@@ -348,7 +348,7 @@ describe("TagsService integration", () => {
     expect(post.tags).toHaveLength(2);
     expect(post.author).toBeDefined();
     expect(post.upvoteCount).toBeDefined();
-    expect(post.commentCount).toBeDefined();
+    expect(post.commentCount).toBe(0);
   });
 
   it("tag feed returns null for nonexistent tag", async () => {

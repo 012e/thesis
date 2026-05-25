@@ -199,7 +199,7 @@ export class TagsService {
       sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
     ).as("downvoteCount");
     const commentCount = sql<number>`(
-      SELECT COUNT(*) FROM ${comments}
+      SELECT COUNT(*)::int FROM ${comments}
       WHERE ${comments.postId} = ${posts.id}
     )`.as("commentCount");
 
