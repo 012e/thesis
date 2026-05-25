@@ -11,7 +11,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: env.CI,
   retries: env.CI ? 2 : 0,
-  workers: env.CI ? 1 : undefined,
+  workers: 1,
   reporter: env.CI
     ? [["html", { open: "never" }], ["list"]]
     : [["html", { open: "on-failure" }]],

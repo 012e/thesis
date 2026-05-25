@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { faker } from "@faker-js/faker";
 import { pathTo } from "@/utils/path";
 
@@ -28,12 +28,24 @@ export class RegisterPage {
     };
   }
 
-  async register(cred: UserCredential) {
+  async fillForm(cred: UserCredential) {
     await this.page.locator("#name").fill(cred.name);
     await this.page.locator("#email").fill(cred.email);
     await this.page.locator("#password").fill(cred.password);
     await this.page.locator("#confirmPassword").fill(cred.password);
-    await this.page.getByRole("button", { name: "Create account" }).click();
+  }
+
+  async submit() {
+    const submitButton = this.page.getByRole("button", {
+      name: "Create account",
+    });
+    await expect(submitButton).toBeEnabled();
+    await submitButton.click();
+  }
+
+  async register(cred: UserCredential) {
+    await this.fillForm(cred);
+    await this.submit();
   }
 
   async registerAsRandomUser(): Promise<UserCredential> {
@@ -42,4 +54,3 @@ export class RegisterPage {
     return cred;
   }
 }
-

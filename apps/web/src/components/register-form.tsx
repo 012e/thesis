@@ -45,7 +45,13 @@ export function RegisterForm({
       password: "",
       confirmPassword: "",
     },
+    canSubmitWhenInvalid: true,
     onSubmit: async ({ value }) => {
+      const result = registerSchema.safeParse(value);
+      if (!result.success) {
+        return;
+      }
+
       if (value.password !== value.confirmPassword) {
         toast.error("Password mismatch", {
           description: "Passwords do not match",
@@ -228,13 +234,24 @@ export function RegisterForm({
               </form.Field>
               <Field>
                 <form.Subscribe
-                  selector={(state) => [state.canSubmit, state.isSubmitting]}
+                  selector={(state) => [state.values, state.isSubmitting] as const}
                 >
-                  {([canSubmit, isSubmitting]) => (
-                    <Button type="submit" disabled={!canSubmit || isSubmitting}>
-                      {isSubmitting ? "Creating account..." : "Create account"}
-                    </Button>
-                  )}
+                  {([values, isSubmitting]) => {
+                    const isValid =
+                      registerSchema.safeParse(values).success &&
+                      values.password === values.confirmPassword;
+
+                    return (
+                      <Button
+                        type="submit"
+                        disabled={!isValid || isSubmitting}
+                      >
+                        {isSubmitting
+                          ? "Creating account..."
+                          : "Create account"}
+                      </Button>
+                    );
+                  }}
                 </form.Subscribe>
                 <Button variant="outline" type="button">
                   Sign up with Google

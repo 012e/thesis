@@ -17,6 +17,6 @@ export class LoginPage {
   async login(cred: LoginCredential) {
     await this.page.locator("#email").fill(cred.email);
     await this.page.locator("#password").fill(cred.password);
-    await this.page.getByRole("button", { name: "Login" }).click();
+    await this.page.getByRole("button", { name: "Login", exact: true }).click();
   }
 }

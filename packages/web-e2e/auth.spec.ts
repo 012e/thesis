@@ -2,7 +2,6 @@ import { test, expect } from "@playwright/test";
 import { RegisterPage } from "@/models/register-page";
 import { LoginPage } from "@/models/login-page";
 import { HomePage } from "@/models/home-page";
-import { faker } from "@faker-js/faker";
 
 test.describe("Authentication", () => {
   test.describe("Registration", () => {
@@ -35,7 +34,7 @@ test.describe("Authentication", () => {
       const registerPage = new RegisterPage(page);
       await registerPage.goto();
 
-      const loginLink = page.getByRole("link", { name: /log in|sign in/i });
+      const loginLink = page.getByRole("link", { name: /login|sign in/i });
       await expect(loginLink).toBeVisible();
     });
 
@@ -45,16 +44,18 @@ test.describe("Authentication", () => {
       const registerPage = new RegisterPage(page);
       await registerPage.goto();
 
-      await registerPage.register({
+      await registerPage.fillForm({
         name: "Test User",
         email: `test-${Date.now()}@example.com`,
         password: "weak",
       });
 
-      // Should show password validation error (min 8 chars)
       await expect(
         page.getByText(/password must be at least 8 characters/i),
       ).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: "Create account" }),
+      ).toBeDisabled();
     });
   });
 
@@ -86,7 +87,7 @@ test.describe("Authentication", () => {
       await expect(page.locator("#email")).toBeVisible();
       await expect(page.locator("#password")).toBeVisible();
       await expect(
-        page.getByRole("button", { name: "Login" }),
+        page.getByRole("button", { name: "Login", exact: true }),
       ).toBeVisible();
     });
 
