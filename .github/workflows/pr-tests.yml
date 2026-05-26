@@ -33,6 +33,7 @@ jobs:
           - test-moderation
           - test-bookmarks
           - test-tags
+          - test-analytics
 
     steps:
       - name: Checkout code
