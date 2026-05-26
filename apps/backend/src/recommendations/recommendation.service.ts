@@ -94,23 +94,23 @@ export class RecommendationService {
     const parsed = cursor ? decodeQueueCursor(cursor) : null;
 
     // Build query for unserved items ordered by rank
-    let whereCondition = and(
+    const baseCondition = and(
       eq(recommendationItems.userId, userId),
       isNull(recommendationItems.servedAt),
     );
 
-    if (parsed) {
-      whereCondition = and(
-        whereCondition,
-        or(
-          gt(recommendationItems.rank, parsed.rank),
-          and(
-            eq(recommendationItems.rank, parsed.rank),
-            gt(recommendationItems.id, parsed.itemId),
+    const whereCondition = parsed
+      ? and(
+          baseCondition,
+          or(
+            gt(recommendationItems.rank, parsed.rank),
+            and(
+              eq(recommendationItems.rank, parsed.rank),
+              gt(recommendationItems.id, parsed.itemId),
+            ),
           ),
-        ),
-      );
-    }
+        )
+      : baseCondition;
 
     const rows = await this.databaseService.db
       .select({
@@ -120,7 +120,7 @@ export class RecommendationService {
         score: recommendationItems.score,
       })
       .from(recommendationItems)
-      .where(whereCondition!)
+      .where(whereCondition)
       .orderBy(
         asc(recommendationItems.rank),
         asc(recommendationItems.id),

@@ -160,11 +160,12 @@ export class RecommendationPipelineService {
         context: { batchId, trigger },
       };
 
+      const beforeCount = currentIds.length;
       const result = await filter.apply(input);
       currentIds = result.keptPostIds;
 
       this.logger.debug(
-        `Filter "${filter.name}": ${candidatePostIds.length} → ${currentIds.length}`,
+        `Filter "${filter.name}": ${beforeCount} → ${currentIds.length}`,
       );
     }
 
