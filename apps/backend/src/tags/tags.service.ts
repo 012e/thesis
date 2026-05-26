@@ -96,17 +96,21 @@ export class TagsService {
             authorId,
           };
         })
-        .filter(Boolean) as { postId: string; tagId: string; authorId: string }[];
+        .filter(Boolean) as {
+        postId: string;
+        tagId: string;
+        authorId: string;
+      }[];
 
       if (postTagValues.length > 0) {
-        await tx
-          .insert(postTags)
-          .values(postTagValues)
-          .onConflictDoNothing();
+        await tx.insert(postTags).values(postTagValues).onConflictDoNothing();
       }
 
       // Update denormalized post_count on tags
-      await this.updateTagCounts(tx, tagRows.map((t) => t.id));
+      await this.updateTagCounts(
+        tx,
+        tagRows.map((t) => t.id),
+      );
 
       return tagRows.map((t) => ({
         id: t.id,
@@ -278,12 +282,7 @@ export class TagsService {
       .innerJoin(postTags, eq(posts.id, postTags.postId))
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(
-        and(
-          eq(postTags.tagId, tag.id),
-          eq(posts.hidden, false),
-        ),
-      )
+      .where(and(eq(postTags.tagId, tag.id), eq(posts.hidden, false)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -317,7 +316,11 @@ export class TagsService {
     } else {
       // "top" sort — simple: order by upvotes desc, then createdAt desc
       query = query
-        .orderBy(desc(select.upvoteCount), desc(postTags.createdAt), asc(posts.id))
+        .orderBy(
+          desc(select.upvoteCount),
+          desc(postTags.createdAt),
+          asc(posts.id),
+        )
         .limit(limit + 1);
 
       if (parsed) {
@@ -358,7 +361,11 @@ export class TagsService {
 
     return {
       items: items.map((row) =>
-        this.toDto(row, row.userReactionType as ReactionTypeDto | null, tagsMap.get(row.id) ?? []),
+        this.toDto(
+          row,
+          row.userReactionType as ReactionTypeDto | null,
+          tagsMap.get(row.id) ?? [],
+        ),
       ),
       nextCursor,
     };
@@ -366,10 +373,7 @@ export class TagsService {
 
   // ─── Trending ────────────────────────────────────────────────────────────────
 
-  async getTrendingTags(
-    limit: number = 10,
-    windowHours: number = 24,
-  ) {
+  async getTrendingTags(limit: number = 10, windowHours: number = 24) {
     const since = new Date(Date.now() - windowHours * 60 * 60 * 1000);
 
     const recentCount = count().as("recentCount");
@@ -385,12 +389,7 @@ export class TagsService {
       .from(postTags)
       .innerJoin(tags, eq(postTags.tagId, tags.id))
       .innerJoin(posts, eq(postTags.postId, posts.id))
-      .where(
-        and(
-          gte(postTags.createdAt, since),
-          eq(posts.hidden, false),
-        ),
-      )
+      .where(and(gte(postTags.createdAt, since), eq(posts.hidden, false)))
       .groupBy(tags.id, tags.slug, tags.displayName, tags.postCount)
       .orderBy(desc(recentCount), desc(sql`MAX(${postTags.createdAt})`))
       .limit(limit);
@@ -448,10 +447,7 @@ export class TagsService {
     };
   }
 
-  private encodeCursor(cursor: {
-    createdAt: string;
-    postId: string;
-  }): string {
+  private encodeCursor(cursor: { createdAt: string; postId: string }): string {
     return Buffer.from(JSON.stringify(cursor)).toString("base64url");
   }
 

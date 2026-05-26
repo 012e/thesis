@@ -19,7 +19,12 @@ type ToolTraceProps = {
   state: "running" | "complete";
 };
 
-export function ToolTrace({ icon: Icon, label, detail, state }: ToolTraceProps) {
+export function ToolTrace({
+  icon: Icon,
+  label,
+  detail,
+  state,
+}: ToolTraceProps) {
   const isRunning = state === "running";
 
   return (

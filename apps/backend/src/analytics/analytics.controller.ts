@@ -13,47 +13,41 @@ export class AnalyticsController {
 
   @TsRestHandler(analyticsContract.ingestEvents)
   ingestEvents(@Session() session: UserSession) {
-    return tsRestHandler(
-      analyticsContract.ingestEvents,
-      async ({ body }) => {
-        const ingested = await this.analyticsService.ingestBatch(
-          body.events.map((e) => ({
-            userId: session.user.id,
-            type: e.type,
-            metadata: e.metadata ?? null,
-            clientTimestamp: new Date(e.timestamp),
-          })),
-        );
+    return tsRestHandler(analyticsContract.ingestEvents, async ({ body }) => {
+      const ingested = await this.analyticsService.ingestBatch(
+        body.events.map((e) => ({
+          userId: session.user.id,
+          type: e.type,
+          metadata: e.metadata ?? null,
+          clientTimestamp: new Date(e.timestamp),
+        })),
+      );
 
-        return {
-          status: 201 as const,
-          body: analyticsContract.ingestEvents.responses[201].parse({
-            ingested,
-          }),
-        };
-      },
-    );
+      return {
+        status: 201 as const,
+        body: analyticsContract.ingestEvents.responses[201].parse({
+          ingested,
+        }),
+      };
+    });
   }
 
   @TsRestHandler(analyticsContract.getMyEvents)
   getMyEvents(@Session() session: UserSession) {
-    return tsRestHandler(
-      analyticsContract.getMyEvents,
-      async ({ query }) => {
-        const result = await this.analyticsService.getEventsByUser(
-          session.user.id,
-          {
-            limit: query.limit,
-            offset: query.offset,
-            type: query.type,
-          },
-        );
+    return tsRestHandler(analyticsContract.getMyEvents, async ({ query }) => {
+      const result = await this.analyticsService.getEventsByUser(
+        session.user.id,
+        {
+          limit: query.limit,
+          offset: query.offset,
+          type: query.type,
+        },
+      );
 
-        return {
-          status: 200 as const,
-          body: analyticsContract.getMyEvents.responses[200].parse(result),
-        };
-      },
-    );
+      return {
+        status: 200 as const,
+        body: analyticsContract.getMyEvents.responses[200].parse(result),
+      };
+    });
   }
 }

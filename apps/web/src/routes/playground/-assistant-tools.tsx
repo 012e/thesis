@@ -1,5 +1,8 @@
 import { useMemo, useRef } from "react";
-import { useAssistantInstructions, useAssistantTool } from "@assistant-ui/react";
+import {
+  useAssistantInstructions,
+  useAssistantTool,
+} from "@assistant-ui/react";
 import { z } from "zod";
 import { useAtomValue, useSetAtom } from "jotai";
 import { executeCode } from "@/lib/api/playground";
@@ -95,7 +98,9 @@ export function PlaygroundAssistantTools() {
       description:
         "Switch the playground language without changing the current editor contents.",
       parameters: SetPlaygroundLanguageInput,
-      execute: ({ language: nextLanguage }: z.infer<typeof SetPlaygroundLanguageInput>) => {
+      execute: ({
+        language: nextLanguage,
+      }: z.infer<typeof SetPlaygroundLanguageInput>) => {
         setLanguage(nextLanguage);
         return { status: "updated", language: nextLanguage };
       },

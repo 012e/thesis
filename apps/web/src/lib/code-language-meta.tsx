@@ -160,16 +160,15 @@ export function CodeLanguageIcon({
   );
 }
 
-export function CodeLanguageBadge({
-  language,
-}: {
-  language: string;
-}) {
+export function CodeLanguageBadge({ language }: { language: string }) {
   const label = getCodeLanguageLabel(language);
 
   return (
     <span className="code-language-badge">
-      <CodeLanguageIcon language={language} className="code-language-badge-icon" />
+      <CodeLanguageIcon
+        language={language}
+        className="code-language-badge-icon"
+      />
       <span>{label}</span>
     </span>
   );

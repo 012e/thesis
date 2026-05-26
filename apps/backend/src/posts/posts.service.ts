@@ -691,10 +691,7 @@ export class PostsService {
       .select()
       .from(postBookmarks)
       .where(
-        and(
-          eq(postBookmarks.postId, postId),
-          eq(postBookmarks.userId, userId),
-        ),
+        and(eq(postBookmarks.postId, postId), eq(postBookmarks.userId, userId)),
       )
       .limit(1);
 
@@ -711,10 +708,7 @@ export class PostsService {
     const [row] = await this.databaseService.db
       .delete(postBookmarks)
       .where(
-        and(
-          eq(postBookmarks.postId, postId),
-          eq(postBookmarks.userId, userId),
-        ),
+        and(eq(postBookmarks.postId, postId), eq(postBookmarks.userId, userId)),
       )
       .returning();
 

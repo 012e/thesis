@@ -104,9 +104,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
   );
 
   return (
-    <div
-      className="sticky top-0 flex h-screen w-[17.1875rem] flex-col justify-between overflow-x-hidden border-r py-4 transition-all duration-300"
-    >
+    <div className="sticky top-0 flex h-screen w-[17.1875rem] flex-col justify-between overflow-x-hidden border-r py-4 transition-all duration-300">
       <div className="flex flex-col gap-2">
         {/* Logo */}
         <Link

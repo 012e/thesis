@@ -18,8 +18,7 @@ const URL_REGEX =
 const EMAIL_REGEX =
   /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/;
 
-const HASHTAG_REGEX =
-  /#([A-Za-z_]\w{0,49}|[\d_]*[A-Za-z]\w{0,49})/;
+const HASHTAG_REGEX = /#([A-Za-z_]\w{0,49}|[\d_]*[A-Za-z]\w{0,49})/;
 
 const MATCHERS = [
   (text: string) => {

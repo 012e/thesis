@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { sql } from "drizzle-orm";
 import { toSql } from "pgvector";
@@ -126,7 +134,10 @@ describe("DuplicateDetectionService integration", () => {
       contentHash: contentHashService.hash(duplicateText),
     });
 
-    const result = await service.check(randomUUID(), "  HELLO   moderation world ");
+    const result = await service.check(
+      randomUUID(),
+      "  HELLO   moderation world ",
+    );
 
     expect(result).toEqual({
       isDuplicate: true,
@@ -145,7 +156,10 @@ describe("DuplicateDetectionService integration", () => {
     });
     embeddingService.embed.mockResolvedValue(makeVector(1, 0));
 
-    const result = await service.check(randomUUID(), "Different wording entirely");
+    const result = await service.check(
+      randomUUID(),
+      "Different wording entirely",
+    );
 
     expect(embeddingService.embed).toHaveBeenCalledWith(
       "Different wording entirely",
@@ -163,7 +177,10 @@ describe("DuplicateDetectionService integration", () => {
     });
     embeddingService.embed.mockResolvedValue(makeVector(1, 0));
 
-    const result = await service.check(randomUUID(), "Potentially related post");
+    const result = await service.check(
+      randomUUID(),
+      "Potentially related post",
+    );
 
     expect(result.isDuplicate).toBe(false);
     expect(result.method).toBeNull();

@@ -47,10 +47,7 @@ export function useAnalytics(options?: {
 
   /** Track a single analytics event. */
   const track = useCallback(
-    (
-      type: AnalyticsEventInput["type"],
-      metadata?: Record<string, unknown>,
-    ) => {
+    (type: AnalyticsEventInput["type"], metadata?: Record<string, unknown>) => {
       queueRef.current.push({
         type,
         timestamp: new Date().toISOString(),
@@ -98,10 +95,9 @@ export function useAnalytics(options?: {
         }
       })();
 
-      const blob = new Blob(
-        [JSON.stringify({ events })],
-        { type: "application/json" },
-      );
+      const blob = new Blob([JSON.stringify({ events })], {
+        type: "application/json",
+      });
 
       // sendBeacon doesn't support custom headers, so we append
       // the bearer token as a query parameter for beacon requests.

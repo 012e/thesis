@@ -66,9 +66,9 @@ Empty strings are coerced to `undefined` (`emptyStringAsUndefined: true`). Use `
 
 Additionally hardcoded (not yet env-driven):
 
-| Value                   | Location                                                                                      |
-| ----------------------- | --------------------------------------------------------------------------------------------- |
-| `http://localhost:3000` | `packages/auth-client/src/auth-client.ts` (default base URL; configurable via BACKEND_URL or createCustomAuthClient)                              |
-| `env.VITE_BACKEND_URL`  | `apps/web/src/lib/api/index.ts` (ts-rest client baseUrl; defaults to `http://localhost:3000`) |
+| Value                   | Location                                                                                                             |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `http://localhost:3000` | `packages/auth-client/src/auth-client.ts` (default base URL; configurable via BACKEND_URL or createCustomAuthClient) |
+| `env.VITE_BACKEND_URL`  | `apps/web/src/lib/api/index.ts` (ts-rest client baseUrl; defaults to `http://localhost:3000`)                        |
 
 Note: the workspace `package.json` includes both `@tabler/icons-react` and `lucide-react`, and also lists `radix-ui` as a dependency. The project prefers `@tabler/icons-react` and the shadcn `base-lyra` primitives (`@base-ui/react`) — avoid introducing Radix primitives or switching icon families without an intentional migration.

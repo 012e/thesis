@@ -170,8 +170,7 @@ export class ModerationService {
       conditions.push(eq(postModeration.priority, filters.priority));
     }
 
-    const whereClause =
-      conditions.length > 0 ? and(...conditions) : undefined;
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Get total count
     const [{ total: totalCount }] = await this.db
@@ -432,7 +431,9 @@ export class ModerationService {
       moderationRecords.every((record) => record.reviewedAt !== null);
 
     const validReports = reports.filter((report) => report.passedHeuristic);
-    const gibberishReports = reports.filter((report) => !report.passedHeuristic);
+    const gibberishReports = reports.filter(
+      (report) => !report.passedHeuristic,
+    );
 
     const duplicateDetail = this.describeModerationRecord(duplicateRecord);
     const harmfulDetail = this.describeModerationRecord(harmfulRecord);
@@ -619,16 +620,56 @@ export class ModerationService {
       generatedAt: new Date().toISOString(),
       nodes,
       edges: [
-        { id: "post-duplicate-hash", source: "post-created", target: "duplicate-hash" },
-        { id: "duplicate-hash-embedding", source: "duplicate-hash", target: "duplicate-embedding" },
-        { id: "duplicate-embedding-llm", source: "duplicate-embedding", target: "duplicate-llm" },
-        { id: "duplicate-llm-human", source: "duplicate-llm", target: "human-review" },
-        { id: "post-harmful-openai", source: "post-created", target: "harmful-openai" },
-        { id: "harmful-openai-llm", source: "harmful-openai", target: "harmful-llm" },
-        { id: "harmful-llm-human", source: "harmful-llm", target: "human-review" },
-        { id: "post-report-heuristic", source: "post-created", target: "report-heuristic" },
-        { id: "report-heuristic-llm", source: "report-heuristic", target: "report-llm" },
-        { id: "report-llm-human", source: "report-llm", target: "human-review" },
+        {
+          id: "post-duplicate-hash",
+          source: "post-created",
+          target: "duplicate-hash",
+        },
+        {
+          id: "duplicate-hash-embedding",
+          source: "duplicate-hash",
+          target: "duplicate-embedding",
+        },
+        {
+          id: "duplicate-embedding-llm",
+          source: "duplicate-embedding",
+          target: "duplicate-llm",
+        },
+        {
+          id: "duplicate-llm-human",
+          source: "duplicate-llm",
+          target: "human-review",
+        },
+        {
+          id: "post-harmful-openai",
+          source: "post-created",
+          target: "harmful-openai",
+        },
+        {
+          id: "harmful-openai-llm",
+          source: "harmful-openai",
+          target: "harmful-llm",
+        },
+        {
+          id: "harmful-llm-human",
+          source: "harmful-llm",
+          target: "human-review",
+        },
+        {
+          id: "post-report-heuristic",
+          source: "post-created",
+          target: "report-heuristic",
+        },
+        {
+          id: "report-heuristic-llm",
+          source: "report-heuristic",
+          target: "report-llm",
+        },
+        {
+          id: "report-llm-human",
+          source: "report-llm",
+          target: "human-review",
+        },
         { id: "human-final", source: "human-review", target: "final-decision" },
       ],
     };
@@ -718,8 +759,7 @@ export class ModerationService {
       postId: input.postId,
       source: "admin_flag",
       priority: input.priority,
-      status:
-        input.priority === "critical" ? "rejected" : "needs_human_review",
+      status: input.priority === "critical" ? "rejected" : "needs_human_review",
     });
 
     // Link flag to moderation record

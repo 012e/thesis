@@ -84,7 +84,10 @@ export function PostsFeed({
 
   const fetchedPosts = data?.pages.flatMap((page) => page.items) ?? [];
   const allPosts = createdPost
-    ? [createdPost, ...fetchedPosts.filter((post) => post.id !== createdPost.id)]
+    ? [
+        createdPost,
+        ...fetchedPosts.filter((post) => post.id !== createdPost.id),
+      ]
     : fetchedPosts;
 
   // Track which post is most visible and sync to the global AI context.

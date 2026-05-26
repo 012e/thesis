@@ -387,7 +387,9 @@ describe("ModerationService integration", () => {
 
     expect(await moderationService.postExists(post.id)).toBe(true);
     expect(await moderationService.postExists(randomUUID())).toBe(false);
-    expect(await moderationService.getPostText(post.id)).toBe("Hashable content");
+    expect(await moderationService.getPostText(post.id)).toBe(
+      "Hashable content",
+    );
     expect(await moderationService.getPostText(randomUUID())).toBeNull();
 
     await moderationService.updateContentHash(post.id, "sha-256-hash");

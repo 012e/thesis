@@ -136,7 +136,10 @@ describe("TagsService integration", () => {
     });
 
     expect(post.tags).toHaveLength(2);
-    expect(post.tags.map((t) => t.slug).sort()).toEqual(["react", "typescript"]);
+    expect(post.tags.map((t) => t.slug).sort()).toEqual([
+      "react",
+      "typescript",
+    ]);
 
     // Verify tag rows exist in DB
     const tagRows = await databaseService.db.select().from(tags);
@@ -299,7 +302,12 @@ describe("TagsService integration", () => {
       .set({ hidden: true })
       .where(eq(posts.id, hiddenPost.id));
 
-    const result = await tagsService.listPostsByTag("testtag", "author-1", "latest", 20);
+    const result = await tagsService.listPostsByTag(
+      "testtag",
+      "author-1",
+      "latest",
+      20,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.items).toHaveLength(1);
@@ -340,7 +348,12 @@ describe("TagsService integration", () => {
       content: { text: "Post about #React and #JavaScript" },
     });
 
-    const result = await tagsService.listPostsByTag("react", "author-1", "latest", 20);
+    const result = await tagsService.listPostsByTag(
+      "react",
+      "author-1",
+      "latest",
+      20,
+    );
 
     expect(result).not.toBeNull();
     expect(result!.items).toHaveLength(1);
@@ -352,7 +365,12 @@ describe("TagsService integration", () => {
   });
 
   it("tag feed returns null for nonexistent tag", async () => {
-    const result = await tagsService.listPostsByTag("nonexistent", "author-1", "latest", 20);
+    const result = await tagsService.listPostsByTag(
+      "nonexistent",
+      "author-1",
+      "latest",
+      20,
+    );
     expect(result).toBeNull();
   });
 
@@ -367,7 +385,12 @@ describe("TagsService integration", () => {
     }
 
     // First page of 2
-    const page1 = await tagsService.listPostsByTag("paginationtest", "author-1", "latest", 2);
+    const page1 = await tagsService.listPostsByTag(
+      "paginationtest",
+      "author-1",
+      "latest",
+      2,
+    );
     expect(page1).not.toBeNull();
     expect(page1!.items).toHaveLength(2);
     expect(page1!.nextCursor).not.toBeNull();
@@ -505,8 +528,18 @@ describe("TagsService integration", () => {
 
     expect(tagsMap.get(post1.id)).toHaveLength(2);
     expect(tagsMap.get(post2.id)).toHaveLength(2);
-    expect(tagsMap.get(post1.id)!.map((t) => t.slug).sort()).toEqual(["tag1", "tag2"]);
-    expect(tagsMap.get(post2.id)!.map((t) => t.slug).sort()).toEqual(["tag2", "tag3"]);
+    expect(
+      tagsMap
+        .get(post1.id)!
+        .map((t) => t.slug)
+        .sort(),
+    ).toEqual(["tag1", "tag2"]);
+    expect(
+      tagsMap
+        .get(post2.id)!
+        .map((t) => t.slug)
+        .sort(),
+    ).toEqual(["tag2", "tag3"]);
   });
 
   it("getTagsForPosts returns empty map for empty input", async () => {

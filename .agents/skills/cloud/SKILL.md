@@ -26,7 +26,10 @@ npm install assistant-cloud
 
 ```tsx
 import { AssistantCloud } from "assistant-cloud";
-import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
+import {
+  useChatRuntime,
+  AssistantChatTransport,
+} from "@assistant-ui/react-ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
@@ -104,9 +107,11 @@ ASSISTANT_API_KEY=your-api-key  # Server-side only
 ## Common Gotchas
 
 **Threads not persisting**
+
 - Pass `cloud` to runtime
 - Check authentication
 
 **Auth errors**
+
 - Verify `authToken` returns valid token
 - Check `baseUrl` is correct

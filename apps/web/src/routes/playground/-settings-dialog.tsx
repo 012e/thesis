@@ -148,7 +148,10 @@ export function PlaygroundSettingsDialog() {
               </Field>
             </div>
 
-            <Field orientation="horizontal" className="justify-between border p-3">
+            <Field
+              orientation="horizontal"
+              className="justify-between border p-3"
+            >
               <FieldContent>
                 <FieldTitle>Word wrap</FieldTitle>
               </FieldContent>
@@ -164,7 +167,10 @@ export function PlaygroundSettingsDialog() {
               />
             </Field>
 
-            <Field orientation="horizontal" className="justify-between border p-3">
+            <Field
+              orientation="horizontal"
+              className="justify-between border p-3"
+            >
               <FieldContent>
                 <FieldTitle>Minimap</FieldTitle>
               </FieldContent>

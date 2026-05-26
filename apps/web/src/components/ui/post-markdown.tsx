@@ -25,7 +25,12 @@ const PostMarkdownImpl = ({
 
   const components = {
     ...baseComponents,
-    a: ({ href, children, className: cls, ...props }: React.ComponentPropsWithoutRef<"a"> & { className?: string }) => {
+    a: ({
+      href,
+      children,
+      className: cls,
+      ...props
+    }: React.ComponentPropsWithoutRef<"a"> & { className?: string }) => {
       // Render hashtag links as TanStack Router Links with hover card
       if (href?.startsWith("/tags/")) {
         const slug = href.replace("/tags/", "");
@@ -59,7 +64,10 @@ const PostMarkdownImpl = ({
 
   return (
     <div className={cn("post-markdown", className)}>
-      <ReactMarkdown remarkPlugins={[remarkGfm, remarkHashtags]} components={components}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkHashtags]}
+        components={components}
+      >
         {content}
       </ReactMarkdown>
     </div>

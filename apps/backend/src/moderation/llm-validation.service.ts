@@ -165,7 +165,10 @@ Where confidence is how confident you are that the report IS valid (100 = defini
       };
 
       // Clamp confidence to valid range
-      const confidence = Math.max(1, Math.min(100, Math.round(parsed.confidence)));
+      const confidence = Math.max(
+        1,
+        Math.min(100, Math.round(parsed.confidence)),
+      );
 
       return {
         confidence,

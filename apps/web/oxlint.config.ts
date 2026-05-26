@@ -114,7 +114,7 @@ export default defineConfig({
               "toast",
               "badgeVariants",
               "sourceVariants",
-              "reasoningVariants"
+              "reasoningVariants",
             ],
           },
         ],

@@ -110,7 +110,12 @@ const runtime = useLocalRuntime({
 
       const toolCalls = new Map<
         string,
-        { toolCallId: string; toolName: string; args: unknown; argsText: string }
+        {
+          toolCallId: string;
+          toolName: string;
+          args: unknown;
+          argsText: string;
+        }
       >();
 
       for await (const event of parseResponse(response)) {
@@ -157,7 +162,10 @@ For apps with existing state management (Redux, Zustand, etc.).
 ### Basic Setup
 
 ```tsx
-import { useExternalStoreRuntime, AssistantRuntimeProvider } from "@assistant-ui/react";
+import {
+  useExternalStoreRuntime,
+  AssistantRuntimeProvider,
+} from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 
 function Chat() {

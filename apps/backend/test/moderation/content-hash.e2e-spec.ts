@@ -28,9 +28,7 @@ describe("ContentHashService", () => {
 
     it("hashes normalized content using SHA-256", () => {
       const input = "  HeLLo\n  WoRLD  ";
-      const expected = createHash("sha256")
-        .update("hello world")
-        .digest("hex");
+      const expected = createHash("sha256").update("hello world").digest("hex");
 
       expect(service.hash(input)).toBe(expected);
     });

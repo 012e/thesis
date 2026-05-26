@@ -94,7 +94,10 @@ export function FlagDialog({
             >
               <SelectTrigger id="flag-priority" className="w-full">
                 <SelectValue>
-                  {PRIORITY_OPTIONS.find((option) => option.value === priority)?.label}
+                  {
+                    PRIORITY_OPTIONS.find((option) => option.value === priority)
+                      ?.label
+                  }
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
@@ -136,7 +139,10 @@ export function FlagDialog({
           >
             Cancel
           </Button>
-          <Button onClick={() => flagMutation.mutate()} disabled={flagMutation.isPending}>
+          <Button
+            onClick={() => flagMutation.mutate()}
+            disabled={flagMutation.isPending}
+          >
             <IconFlag className="size-3.5" />
             {flagMutation.isPending ? "Flagging..." : "Flag post"}
           </Button>

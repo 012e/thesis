@@ -90,7 +90,9 @@ describe("ModerationPipelineService", () => {
   it("creates no moderation record when no duplicate or harmful content is found", async () => {
     await service.runPipeline("post-1", "Legitimate post text");
 
-    expect(contentHashService.hash).toHaveBeenCalledWith("Legitimate post text");
+    expect(contentHashService.hash).toHaveBeenCalledWith(
+      "Legitimate post text",
+    );
     expect(moderationService.updateContentHash).toHaveBeenCalledWith(
       "post-1",
       "hash-123",
@@ -122,8 +124,7 @@ describe("ModerationPipelineService", () => {
       status: "rejected",
       priority: "high",
       llmConfidence: 100,
-      llmSummary:
-        "Exact content hash match — this post is an exact duplicate",
+      llmSummary: "Exact content hash match — this post is an exact duplicate",
       similarPostId: "post-original",
       similarityScore: 1,
     });
@@ -141,7 +142,9 @@ describe("ModerationPipelineService", () => {
       confidence: 88,
       summary: "These posts say the same thing",
     });
-    (moderationService.getPostText as any).mockResolvedValue("Original post text");
+    (moderationService.getPostText as any).mockResolvedValue(
+      "Original post text",
+    );
 
     await service.runPipeline("post-1", "Copied text");
 

@@ -171,9 +171,7 @@ export class ModerationController {
           pageSize: 1,
         });
 
-        const report = reports.items.find(
-          (r: any) => r.id === result.reportId,
-        );
+        const report = reports.items.find((r: any) => r.id === result.reportId);
 
         return { status: 201, body: report as any };
       },

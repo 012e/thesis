@@ -168,7 +168,10 @@ export class ModerationPipelineService {
     const hash = this.contentHashService.hash(textContent);
     await this.moderationService.updateContentHash(postId, hash);
 
-    const result = await this.duplicateDetectionService.check(postId, textContent);
+    const result = await this.duplicateDetectionService.check(
+      postId,
+      textContent,
+    );
 
     if (!result.isDuplicate) return;
 
@@ -179,7 +182,8 @@ export class ModerationPipelineService {
         status: "rejected",
         priority: "high",
         llmConfidence: 100,
-        llmSummary: "Exact content hash match — this post is an exact duplicate",
+        llmSummary:
+          "Exact content hash match — this post is an exact duplicate",
         similarPostId: result.similarPostId,
         similarityScore: result.similarityScore,
       });

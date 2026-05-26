@@ -122,7 +122,7 @@ export const CodeMirrorEditor = ({
             try {
               const languageSupport = await languageData.load();
               extensions.push(languageSupport.extension);
-            } catch  {
+            } catch {
               console.warn("failed to load language support for", language);
             }
           }

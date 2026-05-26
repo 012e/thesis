@@ -9,12 +9,16 @@ export function useTagPosts(
   return useInfiniteQuery({
     queryKey: ["tags", slug, "posts", sort, limit],
     queryFn: async ({ pageParam }) => {
-      const result = await fetchTagPosts({ slug, sort, limit, cursor: pageParam });
+      const result = await fetchTagPosts({
+        slug,
+        sort,
+        limit,
+        cursor: pageParam,
+      });
       return result ?? { items: [], nextCursor: null };
     },
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) =>
-      lastPage.nextCursor ?? undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !!slug,
   });
 }

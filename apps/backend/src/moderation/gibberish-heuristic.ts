@@ -33,7 +33,9 @@ export function passesGibberishCheck(text: string | null | undefined): boolean {
   }
 
   // Check for excessive special characters / non-alphabetic content
-  const alphaCount = (trimmed.match(/[a-zA-Z\u00C0-\u024F\u0400-\u04FF]/g) || []).length;
+  const alphaCount = (
+    trimmed.match(/[a-zA-Z\u00C0-\u024F\u0400-\u04FF]/g) || []
+  ).length;
   if (totalChars > 5 && alphaCount / totalChars < 0.3) {
     return false;
   }
