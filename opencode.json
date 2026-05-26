@@ -1,6 +1,10 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "lsp": true,
+  "lsp": {
+    "typescript": {
+      "disabled": true
+    }
+  },
   "mcp": {},
   "plugin": [
     "@plannotator/opencode@0.19.21",
