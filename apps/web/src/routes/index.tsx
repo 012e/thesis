@@ -48,12 +48,12 @@ export function Index() {
   };
 
   return (
-    <>
+    <div className="grid min-w-0 grid-cols-1">
       <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="flex items-center">
+        <div className="grid grid-cols-2 items-center">
           <button
             type="button"
-            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
+            className={`relative min-w-0 py-4 text-center transition-colors hover:bg-accent ${
               activeTab === "for-you"
                 ? "font-bold text-foreground"
                 : "font-semibold text-muted-foreground"
@@ -67,7 +67,7 @@ export function Index() {
           </button>
           <button
             type="button"
-            className={`relative flex-1 py-4 text-center transition-colors hover:bg-accent ${
+            className={`relative min-w-0 py-4 text-center transition-colors hover:bg-accent ${
               activeTab === "following"
                 ? "font-bold text-foreground"
                 : "font-semibold text-muted-foreground"
@@ -107,6 +107,6 @@ export function Index() {
             : "No posts from people you follow yet"
         }
       />
-    </>
+    </div>
   );
 }

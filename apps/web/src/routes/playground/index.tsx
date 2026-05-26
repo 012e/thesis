@@ -301,7 +301,10 @@ function resolveInitialPanelItem(
   chatItem: ReactNode,
 ) {
   return (
-    <div data-swapy-slot={slot} className="relative min-h-0 min-w-0 overflow-visible">
+    <div
+      data-swapy-slot={slot}
+      className="relative min-h-0 min-w-0 overflow-visible"
+    >
       {item === "playground" ? playgroundItem : chatItem}
     </div>
   );

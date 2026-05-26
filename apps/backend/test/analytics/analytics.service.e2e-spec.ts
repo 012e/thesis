@@ -51,7 +51,9 @@ describe("AnalyticsService integration", () => {
   });
 
   beforeEach(async () => {
-    await pool.query("TRUNCATE TABLE analytics_events RESTART IDENTITY CASCADE");
+    await pool.query(
+      "TRUNCATE TABLE analytics_events RESTART IDENTITY CASCADE",
+    );
   });
 
   // ─── ingestBatch ─────────────────────────────────────────────────────────────

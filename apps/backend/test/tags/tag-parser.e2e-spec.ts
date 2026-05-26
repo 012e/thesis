@@ -58,7 +58,10 @@ describe("extractTags", () => {
   });
 
   it("limits to 10 tags per post", () => {
-    const text = Array.from({ length: 15 }, (_, i) => `#tag${String.fromCharCode(65 + i)}`).join(" ");
+    const text = Array.from(
+      { length: 15 },
+      (_, i) => `#tag${String.fromCharCode(65 + i)}`,
+    ).join(" ");
     const result = extractTags(text);
     expect(result).toHaveLength(10);
   });
@@ -84,7 +87,9 @@ describe("extractTags", () => {
   });
 
   it("handles text with no hashtags", () => {
-    const result = extractTags("Just a regular post with no special characters");
+    const result = extractTags(
+      "Just a regular post with no special characters",
+    );
     expect(result).toEqual([]);
   });
 

@@ -66,7 +66,11 @@ const baseNavigationItems = [
   },
 ];
 
-export function LeftSidebar() {
+interface LeftSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
   const { unreadCount } = useNotifications();
   const isAdmin = useIsAdmin();
 
@@ -100,12 +104,14 @@ export function LeftSidebar() {
   );
 
   return (
-    <div
-      className={`flex sticky top-0 flex-col justify-between py-4 h-screen border-r transition-all duration-300 overflow-x-hidden w-68.75}`}
-    >
+    <div className="sticky top-0 flex h-screen w-[17.1875rem] flex-col justify-between overflow-x-hidden border-r py-4 transition-all duration-300">
       <div className="flex flex-col gap-2">
         {/* Logo */}
-        <Link to="/" className="p-3 w-fit hover:bg-foreground/8">
+        <Link
+          to="/"
+          className="w-fit p-3 hover:bg-foreground/8"
+          onClick={onNavigate}
+        >
           <svg
             viewBox="0 0 24 24"
             aria-hidden="true"
@@ -125,6 +131,7 @@ export function LeftSidebar() {
               to={item.href}
               title={item.label}
               aria-label={item.label}
+              onClick={onNavigate}
             >
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;

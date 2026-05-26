@@ -88,9 +88,7 @@ export class AnalyticsService {
     };
   }
 
-  private toDto(
-    row: typeof analyticsEvents.$inferSelect,
-  ): AnalyticsEventDto {
+  private toDto(row: typeof analyticsEvents.$inferSelect): AnalyticsEventDto {
     return {
       id: row.id,
       userId: row.userId,

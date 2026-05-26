@@ -44,7 +44,9 @@ describe("AnalyticsController integration", () => {
   });
 
   beforeEach(async () => {
-    await pool.query("TRUNCATE TABLE analytics_events RESTART IDENTITY CASCADE");
+    await pool.query(
+      "TRUNCATE TABLE analytics_events RESTART IDENTITY CASCADE",
+    );
   });
 
   // ─── POST /analytics/events (batch ingest) ──────────────────────────────────
@@ -77,7 +79,11 @@ describe("AnalyticsController integration", () => {
           events: [
             { type: "post_view", timestamp: now, metadata: { postId: "p1" } },
             { type: "post_like", timestamp: now, metadata: { postId: "p2" } },
-            { type: "comment_create", timestamp: now, metadata: { commentId: "c1" } },
+            {
+              type: "comment_create",
+              timestamp: now,
+              metadata: { commentId: "c1" },
+            },
             { type: "page_view", timestamp: now, metadata: { route: "/home" } },
             { type: "search", timestamp: now, metadata: { query: "hello" } },
           ],
@@ -92,9 +98,7 @@ describe("AnalyticsController integration", () => {
         .post("/analytics/events")
         .set("Cookie", userACookie)
         .send({
-          events: [
-            { type: "page_view", timestamp: new Date().toISOString() },
-          ],
+          events: [{ type: "page_view", timestamp: new Date().toISOString() }],
         })
         .expect(201);
 
@@ -232,9 +236,7 @@ describe("AnalyticsController integration", () => {
       await request(testApp.app.getHttpServer())
         .post("/analytics/events")
         .send({
-          events: [
-            { type: "post_view", timestamp: new Date().toISOString() },
-          ],
+          events: [{ type: "post_view", timestamp: new Date().toISOString() }],
         })
         .expect(401);
     });
@@ -292,9 +294,7 @@ describe("AnalyticsController integration", () => {
         .post("/analytics/events")
         .set("Cookie", userACookie)
         .send({
-          events: [
-            { type: "post_view", timestamp: clientTime },
-          ],
+          events: [{ type: "post_view", timestamp: clientTime }],
         })
         .expect(201);
 
@@ -530,9 +530,7 @@ describe("AnalyticsController integration", () => {
         .post("/analytics/events")
         .set("Cookie", userACookie)
         .send({
-          events: [
-            { type: "page_view", timestamp: new Date().toISOString() },
-          ],
+          events: [{ type: "page_view", timestamp: new Date().toISOString() }],
         })
         .expect(201);
 

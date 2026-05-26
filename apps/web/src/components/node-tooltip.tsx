@@ -61,7 +61,9 @@ export function NodeTooltipTrigger(props: ComponentProps<"div">) {
     [props, hideTooltip],
   );
 
-  return <div {...props} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} />;
+  return (
+    <div {...props} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} />
+  );
 }
 
 /* TOOLTIP CONTENT ---------------------------------------------------------- */

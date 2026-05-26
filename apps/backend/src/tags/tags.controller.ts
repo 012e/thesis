@@ -61,27 +61,30 @@ export class TagsController {
 
   @TsRestHandler(tagsContract.getTagPosts)
   getTagPosts(@Session() session: UserSession) {
-    return tsRestHandler(tagsContract.getTagPosts, async ({ params, query }) => {
-      const result = await this.tagsService.listPostsByTag(
-        params.slug,
-        session?.user?.id,
-        (query.sort as "top" | "latest") ?? "top",
-        query.limit ?? 20,
-        query.cursor,
-      );
+    return tsRestHandler(
+      tagsContract.getTagPosts,
+      async ({ params, query }) => {
+        const result = await this.tagsService.listPostsByTag(
+          params.slug,
+          session?.user?.id,
+          (query.sort as "top" | "latest") ?? "top",
+          query.limit ?? 20,
+          query.cursor,
+        );
 
-      if (!result) {
+        if (!result) {
+          return {
+            status: 404 as const,
+            body: null,
+          };
+        }
+
         return {
-          status: 404 as const,
-          body: null,
+          status: 200 as const,
+          body: result,
         };
-      }
-
-      return {
-        status: 200 as const,
-        body: result,
-      };
-    });
+      },
+    );
   }
 
   private parseWindowHours(window?: string): number {

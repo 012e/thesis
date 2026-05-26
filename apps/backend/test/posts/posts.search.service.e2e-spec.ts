@@ -11,6 +11,11 @@ import { EMBEDDING_SERVICE } from "@/embedding/embedding.interface";
 import { StubEmbeddingService } from "@/embedding/stub-embedding.service";
 import { PostsSearchService } from "@/posts/posts-search.service";
 import { PostsService } from "@/posts/posts.service";
+import { PostsEngagementService } from "@/posts/posts-engagement.service";
+import { PostsMutationService } from "@/posts/posts-mutation.service";
+import { PostsNotificationsService } from "@/posts/posts-notifications.service";
+import { PostsPresenterService } from "@/posts/posts-presenter.service";
+import { PostsReadService } from "@/posts/posts-read.service";
 import { TagsService } from "@/tags/tags.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
@@ -46,6 +51,11 @@ describe("PostsSearchService.search integration", () => {
         { provide: EMBEDDING_SERVICE, useClass: StubEmbeddingService },
         DatabaseService,
         PostsService,
+        PostsReadService,
+        PostsMutationService,
+        PostsEngagementService,
+        PostsNotificationsService,
+        PostsPresenterService,
         TagsService,
         PostsSearchService,
         {

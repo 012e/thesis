@@ -576,8 +576,9 @@ export const analyticsEvents = pgTable(
     /** Arbitrary event-specific payload (e.g. postId, dwellTimeMs, query). */
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
     /** When the event occurred on the client. */
-    clientTimestamp: timestamp("client_timestamp", { withTimezone: true })
-      .notNull(),
+    clientTimestamp: timestamp("client_timestamp", {
+      withTimezone: true,
+    }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

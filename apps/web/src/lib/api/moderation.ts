@@ -117,7 +117,9 @@ export async function reviewModeration(
   throw new Error("Failed to review moderation record");
 }
 
-export async function flagPost(body: CreateFlagBodyType): Promise<PostFlagType> {
+export async function flagPost(
+  body: CreateFlagBodyType,
+): Promise<PostFlagType> {
   const response = await client.flagPost({ body });
 
   if (response.status === 401) {
@@ -140,10 +142,12 @@ export async function flagPost(body: CreateFlagBodyType): Promise<PostFlagType> 
   throw new Error("Failed to flag post");
 }
 
-export async function listReports(filters: {
-  page?: number;
-  pageSize?: number;
-} = {}): Promise<ReportsPageType> {
+export async function listReports(
+  filters: {
+    page?: number;
+    pageSize?: number;
+  } = {},
+): Promise<ReportsPageType> {
   const response = await client.listReports({
     query: filters,
   });

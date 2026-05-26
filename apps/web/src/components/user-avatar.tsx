@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { getUserProfile } from "@/lib/api/users";
 import { useSession } from "@/hooks/use-session";
 import { useFollow } from "@/hooks/use-follow";
+import { useOpenDmSidebar } from "@/hooks/use-open-dm-sidebar";
+import { IconMessageCircle } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 
 interface UserAvatarProps {
@@ -57,6 +59,7 @@ function ProfileCardContent({
   });
 
   const isOwnProfile = currentUserId === userId;
+  const openDmSidebar = useOpenDmSidebar();
 
   const follow = useFollow({
     userId,
@@ -83,7 +86,7 @@ function ProfileCardContent({
 
   return (
     <div className="flex flex-col gap-3 w-90">
-      {/* Header row: avatar + name + follow button */}
+      {/* Header row: avatar + name */}
       <div className="flex gap-3 items-start">
         <Link to="/users/$userId" params={{ userId: profile.id }}>
           <Avatar className="size-12 shrink-0">
@@ -106,22 +109,6 @@ function ProfileCardContent({
             {displayHandle}
           </p>
         </div>
-
-        {!isOwnProfile && (
-          <Button
-            size="sm"
-            variant={follow.isFollowing ? "outline" : "default"}
-            className="shrink-0 h-7 text-xs px-2.5"
-            disabled={follow.isPending}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              follow.toggle();
-            }}
-          >
-            {follow.isFollowing ? "Following" : "Follow"}
-          </Button>
-        )}
       </div>
 
       {/* Bio */}
@@ -152,6 +139,39 @@ function ProfileCardContent({
           posts
         </span>
       </div>
+
+      {!isOwnProfile && (
+        <div className="flex gap-2">
+          {follow.isFollowing && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void openDmSidebar(profile.id);
+              }}
+            >
+              <IconMessageCircle data-icon="inline-start" />
+              Message
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant={follow.isFollowing ? "outline" : "default"}
+            className="flex-1"
+            disabled={follow.isPending}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              follow.toggle();
+            }}
+          >
+            {follow.isFollowing ? "Following" : "Follow"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -206,7 +226,7 @@ export function UserAvatar({
         side="bottom"
         align="start"
         sideOffset={8}
-        className="w-full"
+        className="w-auto"
       >
         <ProfileCardContent userId={userId} currentUserId={currentUserId} />
       </HoverCardContent>

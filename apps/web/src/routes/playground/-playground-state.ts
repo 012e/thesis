@@ -59,16 +59,19 @@ export const setResultAtom = atom(
   },
 );
 
-export const changeLanguageAtom = atom(null, (_get, set, language: Language) => {
-  set(playgroundStateAtom, (current) => ({
-    ...current,
-    code:
-      current.code === DEFAULT_CODE[current.language]
-        ? DEFAULT_CODE[language]
-        : current.code,
-    language,
-  }));
-});
+export const changeLanguageAtom = atom(
+  null,
+  (_get, set, language: Language) => {
+    set(playgroundStateAtom, (current) => ({
+      ...current,
+      code:
+        current.code === DEFAULT_CODE[current.language]
+          ? DEFAULT_CODE[language]
+          : current.code,
+      language,
+    }));
+  },
+);
 
 export const setBeforeChatCollapseAtom = atom(
   null,
@@ -77,21 +80,18 @@ export const setBeforeChatCollapseAtom = atom(
   },
 );
 
-export const toggleChatCollapsedAtom = atom(
-  null,
-  (get, set) => {
-    const current = get(playgroundStateAtom);
+export const toggleChatCollapsedAtom = atom(null, (get, set) => {
+  const current = get(playgroundStateAtom);
 
-    if (!current.isChatCollapsed) {
-      get(beforeChatCollapseAtom)?.callback();
-    }
+  if (!current.isChatCollapsed) {
+    get(beforeChatCollapseAtom)?.callback();
+  }
 
-    set(playgroundStateAtom, {
-      ...current,
-      isChatCollapsed: !current.isChatCollapsed,
-    });
-  },
-);
+  set(playgroundStateAtom, {
+    ...current,
+    isChatCollapsed: !current.isChatCollapsed,
+  });
+});
 
 export const toggleOutputMinimizedAtom = atom(null, (get, set) => {
   set(isOutputMinimizedAtom, !get(isOutputMinimizedAtom));

@@ -20,7 +20,12 @@ export function remarkHashtags() {
       if (!parent || index === undefined) return;
       if (parent.type === "link" || parent.type === "linkReference") return;
 
-      const matches: { start: number; end: number; tag: string; slug: string }[] = [];
+      const matches: {
+        start: number;
+        end: number;
+        tag: string;
+        slug: string;
+      }[] = [];
       let match: RegExpExecArray | null;
       TAG_REGEX.lastIndex = 0;
 

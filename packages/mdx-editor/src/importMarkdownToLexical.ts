@@ -287,7 +287,7 @@ export function importMdastTreeToLexical({
         throw new UnrecognizedMarkdownConstructError(
           `Unsupported markdown syntax: ${toMarkdown(mdastNode)}`,
         );
-      } catch  {
+      } catch {
         throw new UnrecognizedMarkdownConstructError(
           `Parsing of the following markdown structure failed: ${JSON.stringify(
             {

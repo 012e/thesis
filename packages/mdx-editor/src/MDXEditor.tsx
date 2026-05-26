@@ -327,7 +327,8 @@ const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({
         realm.pub(insertMarkdown$, markdown);
       },
       replaceTextBeforeCursor: (length, value) => {
-        const editor = realm.getValue(activeEditor$) ?? realm.getValue(rootEditor$);
+        const editor =
+          realm.getValue(activeEditor$) ?? realm.getValue(rootEditor$);
 
         editor?.update(() => {
           const selection = $getSelection();
@@ -344,7 +345,12 @@ const Methods: React.FC<{ mdxRef: React.ForwardedRef<MDXEditorMethods> }> = ({
 
           const endOffset = anchor.offset;
           const startOffset = Math.max(0, endOffset - length);
-          selection.setTextNodeRange(anchorNode, startOffset, anchorNode, endOffset);
+          selection.setTextNodeRange(
+            anchorNode,
+            startOffset,
+            anchorNode,
+            endOffset,
+          );
           selection.insertText(value);
         });
       },

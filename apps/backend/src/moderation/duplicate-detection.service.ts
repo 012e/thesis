@@ -122,9 +122,10 @@ export class DuplicateDetectionService {
       const result = await this.db
         .select({
           id: posts.id,
-          similarity: sql<number>`1 - (${posts.embedding} <=> ${vectorStr}::vector(${sql.raw(String(EMBEDDING_DIMENSIONS))}))`.as(
-            "similarity",
-          ),
+          similarity:
+            sql<number>`1 - (${posts.embedding} <=> ${vectorStr}::vector(${sql.raw(String(EMBEDDING_DIMENSIONS))}))`.as(
+              "similarity",
+            ),
         })
         .from(posts)
         .where(and(ne(posts.id, postId), isNotNull(posts.embedding)))

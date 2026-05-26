@@ -22,7 +22,11 @@ function TagPage() {
   const { sort = "top" } = Route.useSearch();
   const navigate = useNavigate();
 
-  const { data: tag, isLoading: isTagLoading, isError: isTagError } = useTag(slug);
+  const {
+    data: tag,
+    isLoading: isTagLoading,
+    isError: isTagError,
+  } = useTag(slug);
 
   const {
     data,

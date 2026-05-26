@@ -85,7 +85,10 @@ export function ReportDialog({
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="report-reason">Reason</Label>
-            <Select value={reason} onValueChange={(value) => setReason(value as ReportReasonType)}>
+            <Select
+              value={reason}
+              onValueChange={(value) => setReason(value as ReportReasonType)}
+            >
               <SelectTrigger id="report-reason" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -120,7 +123,10 @@ export function ReportDialog({
           >
             Cancel
           </Button>
-          <Button onClick={() => reportMutation.mutate()} disabled={reportMutation.isPending}>
+          <Button
+            onClick={() => reportMutation.mutate()}
+            disabled={reportMutation.isPending}
+          >
             <IconFlag className="size-3.5" />
             {reportMutation.isPending ? "Submitting..." : "Submit report"}
           </Button>

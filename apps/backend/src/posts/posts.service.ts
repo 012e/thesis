@@ -1,1067 +1,136 @@
-import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import type {
   BookmarkSummaryDto,
-  NotificationPostContextDto,
   NotificationPayloadDto,
   NotificationTypeDto,
-  PostContentDto,
   PostDto,
   PostSubscriptionDto,
   ReactionTypeDto,
 } from "@repo/shared-dto";
-import type { z } from "zod";
 
-import { DatabaseService } from "@/db/database.service";
-import {
-  comments,
-  postBookmarks,
-  postReactions,
-  posts,
-  postSubscriptions,
-  userFollows,
-  usersView,
-} from "@/db/schema";
-import { StorageService } from "@/storage/storage.service";
-import { UsersService } from "@/users/users.service";
-import { NotificationsService } from "@/notifications/notifications.service";
-import {
-  EMBEDDING_SERVICE,
-  type IEmbeddingService,
-} from "@/embedding/embedding.interface";
-import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
-import { ContentHashService } from "@/moderation/content-hash.service";
-import { TagsService } from "@/tags/tags.service";
-
-import { createPostSchema, updatePostSchema } from "./posts.schemas";
-
-const upvoteCount = count(
-  sql`CASE WHEN ${postReactions.type} = 'upvote' THEN 1 END`,
-).as("upvoteCount");
-const downvoteCount = count(
-  sql`CASE WHEN ${postReactions.type} = 'downvote' THEN 1 END`,
-).as("downvoteCount");
-
-const commentCount =
-  sql<number>`(SELECT count(*)::int FROM ${comments} WHERE ${comments.postId} = ${posts.id})`.as(
-    "commentCount",
-  );
-
-const getUserReactionType = (userId: string) => {
-  return sql<
-    string | null
-  >`MAX(CASE WHEN ${postReactions.userId} = ${sql.raw(`'${userId}'`)} THEN ${postReactions.type} END)`;
-};
-
-const getCurrentUserSubscribed = (userId: string) => {
-  return sql<boolean>`EXISTS (
-    SELECT 1 FROM ${postSubscriptions}
-    WHERE ${postSubscriptions.postId} = ${posts.id}
-      AND ${postSubscriptions.userId} = ${userId}
-  )`;
-};
-
-const getCurrentUserBookmarked = (userId: string) => {
-  return sql<boolean>`EXISTS (
-    SELECT 1 FROM ${postBookmarks}
-    WHERE ${postBookmarks.postId} = ${posts.id}
-      AND ${postBookmarks.userId} = ${userId}
-  )`;
-};
-
-type CreatePostInput = z.infer<typeof createPostSchema>;
-type UpdatePostInput = z.infer<typeof updatePostSchema>;
-
-export type PostRow = {
-  id: string;
-  authorId: string;
-  content: PostContentDto;
-  createdAt: Date;
-  updatedAt: Date;
-  author: {
-    id: string;
-    username: string | null;
-    email: string;
-    name: string | null;
-    image: string | null;
-  };
-};
+import { PostsEngagementService } from "./posts-engagement.service";
+import { PostsMutationService } from "./posts-mutation.service";
+import { PostsNotificationsService } from "./posts-notifications.service";
+import { PostsPresenterService } from "./posts-presenter.service";
+import { PostsReadService } from "./posts-read.service";
+import type {
+  CreatePostInput,
+  PostDtoRow,
+  PostFeedPage,
+  UpdatePostInput,
+} from "./posts.types";
 
 @Injectable()
 export class PostsService {
-  private readonly logger = new Logger(PostsService.name);
-  private static readonly UUID_REGEX =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  private static readonly ISO8601_REGEX =
-    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-
   constructor(
-    private readonly databaseService: DatabaseService,
-    private readonly storageService: StorageService,
-    private readonly usersService: UsersService,
-    private readonly notificationsService: NotificationsService,
-    @Inject(EMBEDDING_SERVICE)
-    private readonly embeddingService: IEmbeddingService,
-    private readonly moderationPipelineService: ModerationPipelineService,
-    private readonly contentHashService: ContentHashService,
-    private readonly tagsService: TagsService,
+    private readonly postsReadService: PostsReadService,
+    private readonly postsMutationService: PostsMutationService,
+    private readonly postsEngagementService: PostsEngagementService,
+    private readonly postsNotificationsService: PostsNotificationsService,
+    private readonly postsPresenter: PostsPresenterService,
   ) {}
 
-  async listByUser(
-    authorId: string,
-    requestingUserId: string,
-  ): Promise<PostDto[]> {
-    const rows = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(requestingUserId),
-        currentUserSubscribed: getCurrentUserSubscribed(requestingUserId),
-        currentUserBookmarked: getCurrentUserBookmarked(requestingUserId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(and(eq(posts.authorId, authorId), eq(posts.hidden, false)))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .orderBy(desc(posts.createdAt));
-
-    const dtos = rows.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
-    return this.hydrateTags(dtos);
+  listByUser(authorId: string, requestingUserId: string): Promise<PostDto[]> {
+    return this.postsReadService.listByUser(authorId, requestingUserId);
   }
 
-  async list(userId: string): Promise<PostDto[]> {
-    const rows = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(userId),
-        currentUserSubscribed: getCurrentUserSubscribed(userId),
-        currentUserBookmarked: getCurrentUserBookmarked(userId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .orderBy(desc(posts.createdAt));
-
-    const dtos = rows.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
-    return this.hydrateTags(dtos);
+  list(userId: string): Promise<PostDto[]> {
+    return this.postsReadService.list(userId);
   }
 
-  async listByFollowing(
+  listByFollowing(
     userId: string,
     limit: number = 20,
     cursor?: string,
-  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
-    const parsed = cursor ? this.decodeFollowingCursor(cursor) : null;
-    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
-
-    const query = this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(userId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .innerJoin(
-        userFollows,
-        and(
-          eq(userFollows.followeeId, posts.authorId),
-          eq(userFollows.followerId, userId),
-        ),
-      )
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(
-        cursorDate && parsed
-          ? and(
-              eq(posts.hidden, false),
-              or(
-                lt(posts.createdAt, cursorDate),
-                and(
-                  eq(posts.createdAt, cursorDate),
-                  gt(posts.id, parsed.postId),
-                ),
-              ),
-            )
-          : eq(posts.hidden, false),
-      )
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      );
-
-    const rows = await query
-      .orderBy(desc(posts.createdAt), asc(posts.id))
-      .limit(limit + 1);
-
-    const hasMore = rows.length > limit;
-    const items = hasMore ? rows.slice(0, limit) : rows;
-    const lastItem = items.at(-1);
-    const nextCursor =
-      hasMore && lastItem
-        ? this.encodeFollowingCursor({
-            createdAt: lastItem.createdAt.toISOString(),
-            postId: lastItem.id,
-          })
-        : null;
-
-    const followingDtos = items.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
-    await this.hydrateTags(followingDtos);
-
-    return {
-      items: followingDtos,
-      nextCursor,
-    };
+  ): Promise<PostFeedPage> {
+    return this.postsReadService.listByFollowing(userId, limit, cursor);
   }
 
-  async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
-    // Embed the post text before inserting — hard-fail if embedding fails.
-    const textToEmbed = input.content.text ?? "";
-    const embedding = textToEmbed.trim()
-      ? await this.embeddingService.embed(textToEmbed)
-      : null;
-
-    const [createdPost] = await this.databaseService.db
-      .insert(posts)
-      .values({
-        authorId,
-        content: input.content,
-        embedding: embedding ?? null,
-        contentHash: this.contentHashService.hash(textToEmbed) ?? null,
-      })
-      .returning();
-
-    await this.databaseService.db
-      .insert(postSubscriptions)
-      .values({ postId: createdPost.id, userId: authorId })
-      .onConflictDoNothing();
-
-    // Sync tags from post text
-    const postTagDtos = await this.tagsService.syncPostTags(
-      createdPost.id,
-      authorId,
-      input.content.text,
-    );
-
-    // Run moderation pipeline asynchronously (fire-and-forget)
-    this.moderationPipelineService
-      .runPipeline(createdPost.id, input.content.text ?? null)
-      .catch((err) =>
-        this.logger.error(
-          `Moderation pipeline failed for post ${createdPost.id}: ${err}`,
-        ),
-      );
-
-    const [row] = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(authorId),
-        currentUserSubscribed: getCurrentUserSubscribed(authorId),
-        currentUserBookmarked: getCurrentUserBookmarked(authorId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.id, createdPost.id))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .limit(1);
-
-    const dto = this.toDto(row, row.userReactionType as ReactionTypeDto | null);
-    dto.tags = postTagDtos;
-    return dto;
+  create(authorId: string, input: CreatePostInput): Promise<PostDto> {
+    return this.postsMutationService.create(authorId, input);
   }
 
-  async getById(id: string, userId?: string): Promise<PostDto | null> {
-    const [row] = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: userId
-          ? getUserReactionType(userId)
-          : sql<string | null>`NULL`,
-        currentUserSubscribed: userId
-          ? getCurrentUserSubscribed(userId)
-          : sql<boolean>`false`,
-        currentUserBookmarked: userId
-          ? getCurrentUserBookmarked(userId)
-          : sql<boolean>`false`,
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(and(eq(posts.id, id), eq(posts.hidden, false)))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .limit(1);
-
-    if (!row) return null;
-    const dto = this.toDto(row, row.userReactionType as ReactionTypeDto | null);
-    await this.hydrateTags([dto]);
-    return dto;
+  getById(id: string, userId?: string): Promise<PostDto | null> {
+    return this.postsReadService.getById(id, userId);
   }
 
-  async update(
+  update(
     id: string,
     authorId: string,
     input: UpdatePostInput,
   ): Promise<PostDto | null> {
-    const [updatedPost] = await this.databaseService.db
-      .update(posts)
-      .set({
-        content: input.content,
-        updatedAt: new Date(),
-      })
-      .where(and(eq(posts.id, id), eq(posts.authorId, authorId)))
-      .returning();
-
-    if (!updatedPost) return null;
-
-    // Sync tags from updated text
-    const postTagDtos = await this.tagsService.syncPostTags(
-      id,
-      authorId,
-      input.content.text,
-    );
-
-    const [row] = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(authorId),
-        currentUserSubscribed: getCurrentUserSubscribed(authorId),
-        currentUserBookmarked: getCurrentUserBookmarked(authorId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.id, updatedPost.id))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .limit(1);
-
-    const dto = row
-      ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
-      : null;
-
-    if (dto) {
-      dto.tags = postTagDtos;
-      void this.deliverPostUpdateNotification(
-        dto.id,
-        authorId,
-        dto.content.text,
-      ).catch((error) =>
-        this.logger.warn(
-          `Failed to notify subscribers for post update ${dto.id}: ${(error as Error).message}`,
-        ),
-      );
-    }
-
-    return dto;
+    return this.postsMutationService.update(id, authorId, input);
   }
 
-  async recommendations(
+  recommendations(
     userId: string,
     limit: number = 20,
     cursor?: string,
-  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
-    const parsed = cursor ? this.decodeCursor(cursor) : null;
-
-    const reactionCount = count(postReactions.postId).as("reaction_count");
-
-    let query = this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        reactionCount,
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(userId),
-        currentUserSubscribed: getCurrentUserSubscribed(userId),
-        currentUserBookmarked: getCurrentUserBookmarked(userId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .$dynamic();
-
-    if (parsed) {
-      query = query.having(
-        or(
-          sql`count(${postReactions.postId}) < ${parsed.reactionCount}`,
-          and(
-            sql`count(${postReactions.postId}) = ${parsed.reactionCount}`,
-            sql`${posts.id} > ${parsed.postId}`,
-          ),
-        ),
-      );
-    }
-
-    const rows = await query
-      .orderBy(desc(reactionCount), asc(posts.id))
-      .limit(limit + 1);
-
-    const hasMore = rows.length > limit;
-    const items = hasMore ? rows.slice(0, limit) : rows;
-    const lastItem = items.at(-1);
-    const nextCursor =
-      hasMore && lastItem
-        ? this.encodeCursor({
-            reactionCount: lastItem.reactionCount,
-            postId: lastItem.id,
-          })
-        : null;
-
-    const recDtos = items.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
-    await this.hydrateTags(recDtos);
-
-    return {
-      items: recDtos,
-      nextCursor,
-    };
+  ): Promise<PostFeedPage> {
+    return this.postsReadService.recommendations(userId, limit, cursor);
   }
 
-  async delete(id: string, authorId: string): Promise<PostDto | null> {
-    const [row] = await this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(authorId),
-        currentUserSubscribed: getCurrentUserSubscribed(authorId),
-        currentUserBookmarked: getCurrentUserBookmarked(authorId),
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.id, id))
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-      )
-      .limit(1);
-
-    if (!row || row.authorId !== authorId) return null;
-
-    await this.databaseService.db
-      .delete(posts)
-      .where(and(eq(posts.id, id), eq(posts.authorId, authorId)));
-
-    const images = row.content.images;
-    if (images && images.length > 0) {
-      const imageKeys = images.map((img) => img.key);
-      this.storageService.deleteImages(imageKeys).catch((error) => {
-        this.logger.error(`Failed to delete images for post ${id}:`, error);
-      });
-    }
-
-    return this.toDto(row, row.userReactionType as ReactionTypeDto | null);
+  delete(id: string, authorId: string): Promise<PostDto | null> {
+    return this.postsMutationService.delete(id, authorId);
   }
 
-  async subscribe(
+  subscribe(
     postId: string,
     userId: string,
   ): Promise<PostSubscriptionDto | null> {
-    const postExists = await this.postExists(postId);
-    if (!postExists) return null;
-
-    await this.databaseService.db
-      .insert(postSubscriptions)
-      .values({ postId, userId })
-      .onConflictDoNothing();
-
-    const [row] = await this.databaseService.db
-      .select()
-      .from(postSubscriptions)
-      .where(
-        and(
-          eq(postSubscriptions.postId, postId),
-          eq(postSubscriptions.userId, userId),
-        ),
-      )
-      .limit(1);
-
-    return row ? this.toSubscriptionDto(row) : null;
+    return this.postsEngagementService.subscribe(postId, userId);
   }
 
-  async unsubscribe(
+  unsubscribe(
     postId: string,
     userId: string,
   ): Promise<PostSubscriptionDto | null> {
-    const [post] = await this.databaseService.db
-      .select({ id: posts.id, authorId: posts.authorId })
-      .from(posts)
-      .where(eq(posts.id, postId))
-      .limit(1);
-    if (!post) return null;
-
-    const [row] = await this.databaseService.db
-      .delete(postSubscriptions)
-      .where(
-        and(
-          eq(postSubscriptions.postId, postId),
-          eq(postSubscriptions.userId, userId),
-        ),
-      )
-      .returning();
-
-    return row ? this.toSubscriptionDto(row) : null;
+    return this.postsEngagementService.unsubscribe(postId, userId);
   }
 
-  async bookmark(
+  bookmark(postId: string, userId: string): Promise<BookmarkSummaryDto | null> {
+    return this.postsEngagementService.bookmark(postId, userId);
+  }
+
+  unbookmark(
     postId: string,
     userId: string,
   ): Promise<BookmarkSummaryDto | null> {
-    const postExists = await this.postExists(postId);
-    if (!postExists) return null;
-
-    await this.databaseService.db
-      .insert(postBookmarks)
-      .values({ postId, userId })
-      .onConflictDoNothing();
-
-    const [row] = await this.databaseService.db
-      .select()
-      .from(postBookmarks)
-      .where(
-        and(
-          eq(postBookmarks.postId, postId),
-          eq(postBookmarks.userId, userId),
-        ),
-      )
-      .limit(1);
-
-    return row ? this.toBookmarkDto(row) : null;
+    return this.postsEngagementService.unbookmark(postId, userId);
   }
 
-  async unbookmark(
-    postId: string,
-    userId: string,
-  ): Promise<BookmarkSummaryDto | null> {
-    const postExists = await this.postExists(postId);
-    if (!postExists) return null;
-
-    const [row] = await this.databaseService.db
-      .delete(postBookmarks)
-      .where(
-        and(
-          eq(postBookmarks.postId, postId),
-          eq(postBookmarks.userId, userId),
-        ),
-      )
-      .returning();
-
-    return row ? this.toBookmarkDto(row) : null;
-  }
-
-  async listBookmarks(
+  listBookmarks(
     userId: string,
     limit: number = 20,
     cursor?: string,
-  ): Promise<{ items: PostDto[]; nextCursor: string | null }> {
-    const parsed = cursor ? this.decodeBookmarkCursor(cursor) : null;
-    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
-
-    const query = this.databaseService.db
-      .select({
-        id: posts.id,
-        authorId: posts.authorId,
-        content: posts.content,
-        createdAt: posts.createdAt,
-        updatedAt: posts.updatedAt,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          email: usersView.email,
-          name: usersView.name,
-          image: usersView.image,
-        },
-        upvoteCount,
-        downvoteCount,
-        commentCount,
-        userReactionType: getUserReactionType(userId),
-        currentUserSubscribed: getCurrentUserSubscribed(userId),
-        currentUserBookmarked: getCurrentUserBookmarked(userId),
-        bookmarkedAt: postBookmarks.createdAt,
-      })
-      .from(postBookmarks)
-      .innerJoin(posts, eq(postBookmarks.postId, posts.id))
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(
-        cursorDate && parsed
-          ? and(
-              eq(postBookmarks.userId, userId),
-              eq(posts.hidden, false),
-              or(
-                lt(postBookmarks.createdAt, cursorDate),
-                and(
-                  eq(postBookmarks.createdAt, cursorDate),
-                  gt(posts.id, parsed.postId),
-                ),
-              ),
-            )
-          : and(eq(postBookmarks.userId, userId), eq(posts.hidden, false)),
-      )
-      .groupBy(
-        posts.id,
-        usersView.id,
-        usersView.username,
-        usersView.email,
-        usersView.name,
-        usersView.image,
-        postBookmarks.createdAt,
-      );
-
-    const rows = await query
-      .orderBy(desc(postBookmarks.createdAt), asc(posts.id))
-      .limit(limit + 1);
-
-    const hasMore = rows.length > limit;
-    const items = hasMore ? rows.slice(0, limit) : rows;
-    const lastItem = items.at(-1);
-    const nextCursor =
-      hasMore && lastItem
-        ? this.encodeBookmarkCursor({
-            createdAt: lastItem.bookmarkedAt.toISOString(),
-            postId: lastItem.id,
-          })
-        : null;
-
-    const bookmarkDtos = items.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
-    );
-    await this.hydrateTags(bookmarkDtos);
-
-    return {
-      items: bookmarkDtos,
-      nextCursor,
-    };
+  ): Promise<PostFeedPage> {
+    return this.postsReadService.listBookmarks(userId, limit, cursor);
   }
 
-  async notifySubscribers(
+  notifySubscribers(
     postId: string,
     actorId: string,
     type: NotificationTypeDto,
     payload: NotificationPayloadDto,
     excludeUserIds: string[] = [],
   ): Promise<void> {
-    const excluded = new Set([actorId, ...excludeUserIds]);
-    const subscribers = await this.databaseService.db
-      .select({ userId: postSubscriptions.userId })
-      .from(postSubscriptions)
-      .where(eq(postSubscriptions.postId, postId));
-
-    const recipientIds = [
-      ...new Set(subscribers.map((row) => row.userId)),
-    ].filter((userId) => !excluded.has(userId));
-
-    await Promise.all(
-      recipientIds.map((userId) =>
-        this.notificationsService.deliver({ userId, actorId, type, payload }, [
-          "websocket",
-        ]),
-      ),
+    return this.postsNotificationsService.notifySubscribers(
+      postId,
+      actorId,
+      type,
+      payload,
+      excludeUserIds,
     );
   }
 
-  readonly toDto = (
-    row: PostRow & {
-      upvoteCount: number;
-      downvoteCount: number;
-      commentCount: number;
-      currentUserSubscribed?: boolean;
-      currentUserBookmarked?: boolean;
-    },
+  toDto(
+    row: PostDtoRow,
     userReactionType?: ReactionTypeDto | null,
-  ): PostDto => {
-    return {
-      id: row.id,
-      authorId: row.authorId,
-      author: {
-        id: row.author.id,
-        username: row.author.username ?? null,
-        email: row.author.email,
-        name: row.author.name ?? null,
-        image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
-      },
-      content: row.content,
-      createdAt: row.createdAt.toISOString(),
-      updatedAt: row.updatedAt.toISOString(),
-      upvoteCount: row.upvoteCount,
-      downvoteCount: row.downvoteCount,
-      commentCount: row.commentCount,
-      currentUserReaction: userReactionType ?? null,
-      currentUserSubscribed: row.currentUserSubscribed ?? false,
-      currentUserBookmarked: row.currentUserBookmarked ?? false,
-      tags: [],
-    };
-  };
-
-  /**
-   * Batch-load tags for an array of PostDtos and attach them in-place.
-   */
-  async hydrateTags(dtos: PostDto[]): Promise<PostDto[]> {
-    if (dtos.length === 0) return dtos;
-    const postIds = dtos.map((d) => d.id);
-    const tagsMap = await this.tagsService.getTagsForPosts(postIds);
-    for (const dto of dtos) {
-      dto.tags = tagsMap.get(dto.id) ?? [];
-    }
-    return dtos;
+  ): PostDto {
+    return this.postsPresenter.toDto(row, userReactionType);
   }
 
-  private readonly toSubscriptionDto = (row: {
-    postId: string;
-    userId: string;
-    createdAt: Date;
-  }): PostSubscriptionDto => ({
-    postId: row.postId,
-    userId: row.userId,
-    createdAt: row.createdAt.toISOString(),
-  });
-
-  private readonly toBookmarkDto = (row: {
-    postId: string;
-    createdAt: Date;
-  }): BookmarkSummaryDto => ({
-    postId: row.postId,
-    createdAt: row.createdAt.toISOString(),
-  });
-
-  private encodeBookmarkCursor(cursor: {
-    createdAt: string;
-    postId: string;
-  }): string {
-    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
-  }
-
-  private decodeBookmarkCursor(cursor: string): {
-    createdAt: string;
-    postId: string;
-  } | null {
-    try {
-      const decoded = JSON.parse(
-        Buffer.from(cursor, "base64url").toString("utf8"),
-      ) as unknown;
-      if (
-        typeof decoded === "object" &&
-        decoded !== null &&
-        "createdAt" in decoded &&
-        "postId" in decoded &&
-        typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
-        typeof (decoded as { postId: unknown }).postId === "string" &&
-        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId) &&
-        PostsService.ISO8601_REGEX.test(
-          (decoded as { createdAt: string }).createdAt,
-        )
-      ) {
-        return decoded as { createdAt: string; postId: string };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  private async postExists(postId: string): Promise<boolean> {
-    const [row] = await this.databaseService.db
-      .select({ id: posts.id })
-      .from(posts)
-      .where(eq(posts.id, postId))
-      .limit(1);
-
-    return row !== undefined;
-  }
-
-  private async deliverPostUpdateNotification(
-    postId: string,
-    actorId: string,
-    text: string | undefined,
-  ): Promise<void> {
-    const postContext = await this.getPostNotificationContext(postId);
-
-    await this.notifySubscribers(postId, actorId, "post_update", {
-      postId,
-      preview: text ? text.slice(0, 100) : null,
-      post: postContext ?? undefined,
-    });
-  }
-
-  private async getPostNotificationContext(
-    postId: string,
-  ): Promise<NotificationPostContextDto | null> {
-    const [row] = await this.databaseService.db
-      .select({
-        id: posts.id,
-        content: posts.content,
-        author: {
-          id: usersView.id,
-          username: usersView.username,
-          name: usersView.name,
-        },
-      })
-      .from(posts)
-      .innerJoin(usersView, eq(posts.authorId, usersView.id))
-      .where(eq(posts.id, postId))
-      .limit(1);
-
-    return row
-      ? {
-          id: row.id,
-          preview: this.getPostPreview(row.content),
-          author: row.author,
-        }
-      : null;
-  }
-
-  private getPostPreview(content: PostContentDto): string | null {
-    if (content.text?.trim()) return content.text.slice(0, 100);
-    if (content.poll?.question.trim())
-      return content.poll.question.slice(0, 100);
-    if (content.visualization?.title.trim()) {
-      return content.visualization.title.slice(0, 100);
-    }
-    return null;
-  }
-
-  private encodeCursor(cursor: {
-    reactionCount: number;
-    postId: string;
-  }): string {
-    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
-  }
-
-  private decodeCursor(cursor: string): {
-    reactionCount: number;
-    postId: string;
-  } | null {
-    try {
-      const decoded = JSON.parse(
-        Buffer.from(cursor, "base64url").toString("utf8"),
-      ) as unknown;
-      if (
-        typeof decoded === "object" &&
-        decoded !== null &&
-        "reactionCount" in decoded &&
-        "postId" in decoded &&
-        typeof (decoded as { reactionCount: unknown }).reactionCount ===
-          "number" &&
-        typeof (decoded as { postId: unknown }).postId === "string" &&
-        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
-      ) {
-        return decoded as { reactionCount: number; postId: string };
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-
-  private encodeFollowingCursor(cursor: {
-    createdAt: string;
-    postId: string;
-  }): string {
-    return Buffer.from(JSON.stringify(cursor)).toString("base64url");
-  }
-
-  private decodeFollowingCursor(cursor: string): {
-    createdAt: string;
-    postId: string;
-  } | null {
-    try {
-      const decoded = JSON.parse(
-        Buffer.from(cursor, "base64url").toString("utf8"),
-      ) as unknown;
-      if (
-        typeof decoded === "object" &&
-        decoded !== null &&
-        "createdAt" in decoded &&
-        "postId" in decoded &&
-        typeof (decoded as { createdAt: unknown }).createdAt === "string" &&
-        typeof (decoded as { postId: unknown }).postId === "string" &&
-        PostsService.ISO8601_REGEX.test(
-          (decoded as { createdAt: string }).createdAt,
-        ) &&
-        PostsService.UUID_REGEX.test((decoded as { postId: string }).postId)
-      ) {
-        const parsed = decoded as { createdAt: string; postId: string };
-        const d = new Date(parsed.createdAt);
-        if (!isFinite(d.getTime())) {
-          throw new BadRequestException("Invalid date in cursor");
-        }
-        return parsed;
-      }
-      return null;
-    } catch {
-      return null;
-    }
+  hydrateTags(dtos: PostDto[]): Promise<PostDto[]> {
+    return this.postsPresenter.hydrateTags(dtos);
   }
 }

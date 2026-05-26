@@ -3,6 +3,7 @@ import { useUserProfile } from "@/hooks/use-user-profile";
 import { useUserPosts } from "@/hooks/use-user-posts";
 import { useSession } from "@/hooks/use-session";
 import { useFollow } from "@/hooks/use-follow";
+import { useOpenDmSidebar } from "@/hooks/use-open-dm-sidebar";
 import { ProfileView } from "@/components/profile/profile-view";
 import { PageSpinner } from "@/components/ui/spinner";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
@@ -19,6 +20,7 @@ export function UserProfilePage() {
   const { data: profile, isPending, error } = useUserProfile(userId);
   const { data: posts = [] } = useUserPosts(userId);
   const { data: session } = useSession();
+  const openDmSidebar = useOpenDmSidebar();
   const {
     isFollowing,
     isPending: isFollowPending,
@@ -63,6 +65,7 @@ export function UserProfilePage() {
       isCurrentUser={isCurrentUser}
       showFollowingLinks={false}
       onFollow={toggleFollow}
+      onMessage={() => void openDmSidebar(userId)}
       followPending={isFollowPending}
     />
   );

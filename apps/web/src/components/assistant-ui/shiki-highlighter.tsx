@@ -38,7 +38,8 @@ export const SyntaxHighlighter: FC<HighlighterProps> = ({
   ...props
 }) => {
   const { resolvedTheme } = useTheme();
-  const shikiTheme = theme ?? (resolvedTheme === "dark" ? "one-dark-pro" : "one-light");
+  const shikiTheme =
+    theme ?? (resolvedTheme === "dark" ? "one-dark-pro" : "one-light");
   const normalizedLanguage = language === "unknown" ? "text" : language;
 
   return (

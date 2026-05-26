@@ -22,7 +22,11 @@ export function useSearchPosts(q: string) {
   });
 
   useEffect(() => {
-    if (query.isSuccess && trimmed.length > 0 && trackedRef.current !== trimmed) {
+    if (
+      query.isSuccess &&
+      trimmed.length > 0 &&
+      trackedRef.current !== trimmed
+    ) {
       trackedRef.current = trimmed;
       track("search", { query: trimmed, resultType: "posts" });
     }
@@ -47,7 +51,11 @@ export function useSearchUsers(q: string) {
   });
 
   useEffect(() => {
-    if (query.isSuccess && trimmed.length > 0 && trackedRef.current !== trimmed) {
+    if (
+      query.isSuccess &&
+      trimmed.length > 0 &&
+      trackedRef.current !== trimmed
+    ) {
       trackedRef.current = trimmed;
       track("search", { query: trimmed, resultType: "users" });
     }
