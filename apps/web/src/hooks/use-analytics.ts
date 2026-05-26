@@ -105,7 +105,7 @@ export function useAnalytics(options?: {
 
       // sendBeacon doesn't support custom headers, so we append
       // the bearer token as a query parameter for beacon requests.
-      const baseUrl = env.VITE_BACKEND_URL;
+      const baseUrl = env.VITE_BACKEND_URL.replace(/\/$/, "");
       const url = token
         ? `${baseUrl}/analytics/events?_token=${encodeURIComponent(token)}`
         : `${baseUrl}/analytics/events`;
