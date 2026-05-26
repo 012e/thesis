@@ -5,6 +5,7 @@ import type { PostContentDto, PostDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
 import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
 import { useTrack } from "@/components/analytics-provider";
+import { setCreatedPost } from "@/lib/atoms/created-post";
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
@@ -16,6 +17,8 @@ export function useCreatePost() {
       return post;
     },
     onSuccess: (post: PostDto) => {
+      setCreatedPost(post);
+
       // Store new post in session storage for optimistic UI update
       addNewPost(post);
 
