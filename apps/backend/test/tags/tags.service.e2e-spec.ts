@@ -8,6 +8,11 @@ import { posts, postTags, tags } from "@/db/schema";
 import { user } from "@/db/auth-schema";
 import { DATABASE_POOL } from "@/db/tokens";
 import { PostsService } from "@/posts/posts.service";
+import { PostsEngagementService } from "@/posts/posts-engagement.service";
+import { PostsMutationService } from "@/posts/posts-mutation.service";
+import { PostsNotificationsService } from "@/posts/posts-notifications.service";
+import { PostsPresenterService } from "@/posts/posts-presenter.service";
+import { PostsReadService } from "@/posts/posts-read.service";
 import { TagsService } from "@/tags/tags.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
@@ -48,6 +53,11 @@ describe("TagsService integration", () => {
         },
         DatabaseService,
         PostsService,
+        PostsReadService,
+        PostsMutationService,
+        PostsEngagementService,
+        PostsNotificationsService,
+        PostsPresenterService,
         TagsService,
         {
           provide: StorageService,

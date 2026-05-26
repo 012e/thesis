@@ -9,6 +9,11 @@ import { DATABASE_POOL } from "@/db/tokens";
 import { ReactionsService } from "@/reactions/reactions.service";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { PostsService } from "@/posts/posts.service";
+import { PostsEngagementService } from "@/posts/posts-engagement.service";
+import { PostsMutationService } from "@/posts/posts-mutation.service";
+import { PostsNotificationsService } from "@/posts/posts-notifications.service";
+import { PostsPresenterService } from "@/posts/posts-presenter.service";
+import { PostsReadService } from "@/posts/posts-read.service";
 import { TagsService } from "@/tags/tags.service";
 import { StorageService } from "@/storage/storage.service";
 import { UsersService } from "@/users/users.service";
@@ -90,6 +95,11 @@ describe("ReactionsService integration", () => {
           },
         },
         PostsService,
+        PostsReadService,
+        PostsMutationService,
+        PostsEngagementService,
+        PostsNotificationsService,
+        PostsPresenterService,
         TagsService,
       ],
     }).compile();
