@@ -109,6 +109,10 @@ test-tags: build-backend
 test-analytics: build-backend
     pnpm --filter backend test:analytics
 
+test-web:
+    pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
+    pnpm --filter web test
+
 build-storybook:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm --filter web build-storybook
