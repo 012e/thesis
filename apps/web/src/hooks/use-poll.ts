@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { votePoll, unvotePoll, getPollResults } from "@/lib/api/polls";
 import type { PollResultsDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
+import { useTrack } from "@/components/analytics-provider";
 
 export function usePollResults(postId: string) {
   return useQuery({
@@ -12,6 +13,7 @@ export function usePollResults(postId: string) {
 
 export function usePollVote(postId: string) {
   const queryClient = useQueryClient();
+  const track = useTrack();
 
   return useMutation({
     mutationFn: async (optionIds: string[]) => {
@@ -51,6 +53,7 @@ export function usePollVote(postId: string) {
     onSuccess: (data) => {
       // Update with server response
       queryClient.setQueryData(["poll-results", postId], data);
+      track("poll_vote", { postId, optionIds: data.userVotes });
     },
   });
 }

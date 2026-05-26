@@ -3,6 +3,7 @@ import { reactToComment, unreactToComment } from "@/lib/api/comments";
 import type { CommentType } from "@repo/rest-contracts";
 import type { ReactionTypeDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
+import { useTrack } from "@/components/analytics-provider";
 
 interface CommentReactionVariables {
   commentId: string;
@@ -18,6 +19,7 @@ interface CommentReactionVariables {
  */
 export function useCommentReaction(postId: string) {
   const queryClient = useQueryClient();
+  const track = useTrack();
   const queryKey = ["comments", postId] as const;
 
   return useMutation({
@@ -75,6 +77,10 @@ export function useCommentReaction(postId: string) {
       toast.error(`Failed to update reaction: ${error.message}`);
     },
 
-    // No need to refetch on success — optimistic state is already correct
+    onSuccess: (_data, { commentId, type }) => {
+      if (type === "upvote") {
+        track("comment_like", { commentId, postId });
+      }
+    },
   });
 }

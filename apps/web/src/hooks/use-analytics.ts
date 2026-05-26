@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import { ingestAnalyticsEvents } from "@/lib/api/analytics";
+import { env } from "@/env";
 import type { AnalyticsEventInput } from "@repo/rest-contracts";
 
 /** Default configuration for the analytics batcher. */
@@ -104,9 +105,10 @@ export function useAnalytics(options?: {
 
       // sendBeacon doesn't support custom headers, so we append
       // the bearer token as a query parameter for beacon requests.
+      const baseUrl = env.VITE_BACKEND_URL;
       const url = token
-        ? `/analytics/events?_token=${encodeURIComponent(token)}`
-        : "/analytics/events";
+        ? `${baseUrl}/analytics/events?_token=${encodeURIComponent(token)}`
+        : `${baseUrl}/analytics/events`;
 
       navigator.sendBeacon(url, blob);
     };

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { bookmarkPost, unbookmarkPost } from "@/lib/api/posts";
 import { useToast as toast } from "@/hooks/use-toast";
+import { useTrack } from "@/components/analytics-provider";
 
 interface UsePostBookmarkOptions {
   postId: string;
@@ -13,6 +14,7 @@ export function usePostBookmark({
   initialBookmarked,
 }: UsePostBookmarkOptions) {
   const queryClient = useQueryClient();
+  const track = useTrack();
   const [isBookmarked, setIsBookmarked] = useState(initialBookmarked);
   const [isPending, setIsPending] = useState(false);
 
@@ -44,6 +46,7 @@ export function usePostBookmark({
     try {
       await bookmarkPost(postId);
       await invalidatePostQueries();
+      track("post_bookmark", { postId });
       toast.success("Saved to bookmarks");
     } catch {
       setIsBookmarked(false);
@@ -61,6 +64,7 @@ export function usePostBookmark({
     try {
       await unbookmarkPost(postId);
       await invalidatePostQueries();
+      track("post_unbookmark", { postId });
       toast.success("Removed from bookmarks");
     } catch {
       setIsBookmarked(true);

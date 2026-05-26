@@ -46,6 +46,7 @@ import { ReportDialog } from "./report-dialog";
 import { PostValidationStatusDialog } from "./post-validation-status-dialog";
 import { UserAvatar } from "./user-avatar";
 import { useToast as toast } from "@/hooks/use-toast";
+import { useTrack } from "@/components/analytics-provider";
 import { cn } from "@/lib/utils";
 
 export interface PostProps {
@@ -208,6 +209,7 @@ function MenuItemCard({
 export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const { mutate: reactToPost, isPending: isVoting } = usePostReaction();
   const { mutate: deletePost, isPending: isDeleting } = useDeletePost();
+  const track = useTrack();
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
@@ -560,6 +562,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
                 e.stopPropagation();
                 const url = `${window.location.origin}/posts/${post.id}`;
                 navigator.clipboard.writeText(url).then(() => {
+                  track("post_share", { postId: post.id });
                   toast.success("Link copied to clipboard!");
                 });
               }}
