@@ -268,7 +268,7 @@ export class RecommendationService {
     }
 
     const jobData: GenerateRecommendationsJobData = { userId, trigger };
-    await this.pgBossService.send(GENERATE_RECOMMENDATIONS_JOB, jobData, {
+    await this.pgBossService.scheduleJob(GENERATE_RECOMMENDATIONS_JOB, jobData, {
       singletonKey: `rec-${userId}`,
     });
 

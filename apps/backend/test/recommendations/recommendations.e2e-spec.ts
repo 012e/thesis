@@ -34,16 +34,16 @@ describe("Recommendations integration", () => {
     const server = request(testApp.app.getHttpServer());
     const sessionA = await registerAndGetSession(
       server,
-      `rec-a-${Date.now()}@example.com`,
-      `rec-a-${Date.now()}`,
+      `reca${Date.now()}@example.com`,
+      `reca${Date.now()}`,
     );
     userACookie = sessionA.cookie;
     userAId = sessionA.userId;
 
     const sessionB = await registerAndGetSession(
       server,
-      `rec-b-${Date.now()}@example.com`,
-      `rec-b-${Date.now()}`,
+      `recb${Date.now()}@example.com`,
+      `recb${Date.now()}`,
     );
     userBCookie = sessionB.cookie;
     userBId = sessionB.userId;
@@ -272,7 +272,8 @@ describe("Recommendations integration", () => {
     });
 
     it("uses opaque cursor format (not reaction count based)", async () => {
-      await createPost(userBCookie, "Cursor test post");
+      await createPost(userBCookie, "Cursor test post 1");
+      await createPost(userBCookie, "Cursor test post 2");
 
       const res = await request(testApp.app.getHttpServer())
         .get("/recommendations")
@@ -280,18 +281,17 @@ describe("Recommendations integration", () => {
         .set("Cookie", userACookie)
         .expect(200);
 
-      if (res.body.nextCursor) {
-        // Cursor should be base64url encoded
-        const decoded = Buffer.from(
-          res.body.nextCursor,
-          "base64url",
-        ).toString("utf8");
-        const parsed = JSON.parse(decoded);
-        // Should have rank-based cursor, not reactionCount
-        expect(parsed).toHaveProperty("rank");
-        expect(parsed).toHaveProperty("itemId");
-        expect(parsed).not.toHaveProperty("reactionCount");
-      }
+      expect(res.body.nextCursor).not.toBeNull();
+      // Cursor should be base64url encoded
+      const decoded = Buffer.from(
+        res.body.nextCursor,
+        "base64url",
+      ).toString("utf8");
+      const parsed = JSON.parse(decoded);
+      // Should have rank-based cursor, not reactionCount
+      expect(parsed).toHaveProperty("rank");
+      expect(parsed).toHaveProperty("itemId");
+      expect(parsed).not.toHaveProperty("reactionCount");
     });
   });
 

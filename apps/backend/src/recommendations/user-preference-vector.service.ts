@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
 import {
@@ -64,7 +64,7 @@ export class UserPreferenceVectorService {
           eq(analyticsEvents.userId, userId),
           gte(analyticsEvents.createdAt, windowStart),
           isNotNull(posts.embedding),
-          sql`${analyticsEvents.type} = ANY(${eventTypes})`,
+          inArray(analyticsEvents.type, eventTypes),
         ),
       );
 

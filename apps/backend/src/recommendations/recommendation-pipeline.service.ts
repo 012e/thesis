@@ -117,8 +117,10 @@ export class RecommendationPipelineService {
   }
 
   /**
-   * Fetch candidate post IDs: recent visible posts with non-null embeddings,
-   * excluding the user's own posts and already-served items.
+   * Fetch candidate post IDs: recent visible posts,
+   * excluding the user's own posts.
+   * Embeddings are NOT required here – posts without embeddings are still
+   * valid candidates for the recency-based cold-start fallback.
    */
   private async fetchCandidates(userId: string): Promise<string[]> {
     const rows = await this.databaseService.db
@@ -127,7 +129,6 @@ export class RecommendationPipelineService {
       .where(
         and(
           eq(posts.hidden, false),
-          isNotNull(posts.embedding),
           sql`${posts.authorId} != ${userId}`,
         ),
       )
