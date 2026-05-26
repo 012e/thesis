@@ -29,6 +29,8 @@ import { useMessages } from "@/hooks/messages/use-messages";
 import { useMessageSocket } from "@/hooks/messages/use-message-socket";
 import { markConversationRead } from "@/lib/api/messages";
 import { Spinner } from "@/components/ui/spinner";
+import { ChatParticipantAvatar } from "@/components/chat/chat-participant-avatar";
+import { getParticipantDisplayName } from "@/components/chat/chat-participant";
 import type { ConversationDto } from "@repo/shared-dto";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -51,18 +53,6 @@ function formatTime(iso: string): string {
   });
 }
 
-function getDisplayName(user: {
-  name?: string | null;
-  displayUsername?: string | null;
-  username?: string | null;
-}): string {
-  return user.name ?? user.displayUsername ?? user.username ?? "Unknown";
-}
-
-function getInitial(displayName: string): string {
-  return (displayName[0] ?? "?").toUpperCase();
-}
-
 // ─── Conversation List Item ───────────────────────────────────────────────────
 
 interface ConversationItemProps {
@@ -72,8 +62,7 @@ interface ConversationItemProps {
 
 function ConversationItem({ conversation, onSelect }: ConversationItemProps) {
   const { otherUser, lastMessage } = conversation;
-  const displayName = getDisplayName(otherUser);
-  const initial = getInitial(displayName);
+  const displayName = getParticipantDisplayName(otherUser);
 
   const preview = lastMessage?.content
     ? lastMessage.content.length > 40
@@ -91,10 +80,11 @@ function ConversationItem({ conversation, onSelect }: ConversationItemProps) {
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-semibold text-sm">
-          {initial}
-        </div>
-        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
+        <ChatParticipantAvatar
+          user={otherUser}
+          className="size-10"
+          showBadge
+        />
       </div>
 
       {/* Info */}
@@ -130,7 +120,7 @@ function ListView({ onSelect, onClose }: ListViewProps) {
     if (!search.trim()) return conversations;
     const q = search.toLowerCase();
     return conversations.filter((c) => {
-      const name = getDisplayName(c.otherUser).toLowerCase();
+      const name = getParticipantDisplayName(c.otherUser).toLowerCase();
       return name.includes(q);
     });
   }, [conversations, search]);
@@ -315,8 +305,7 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
     }
   };
 
-  const displayName = otherUser ? getDisplayName(otherUser) : "Chat";
-  const initial = getInitial(displayName);
+  const displayName = otherUser ? getParticipantDisplayName(otherUser) : "Chat";
 
   return (
     <div className="flex flex-col h-full">
@@ -333,9 +322,11 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
 
         {/* Avatar + name */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground font-semibold text-xs shrink-0">
-            {initial}
-          </div>
+          <ChatParticipantAvatar
+            user={otherUser}
+            className="size-8"
+            fallbackClassName="text-xs"
+          />
           <span className="font-semibold text-sm truncate">{displayName}</span>
         </div>
       </div>

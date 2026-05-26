@@ -8,6 +8,8 @@ import { useMessages } from "@/hooks/messages/use-messages";
 import { useMessageSocket } from "@/hooks/messages/use-message-socket";
 import { markConversationRead } from "@/lib/api/messages";
 import { Spinner } from "@/components/ui/spinner";
+import { ChatParticipantAvatar } from "@/components/chat/chat-participant-avatar";
+import { getParticipantDisplayName } from "@/components/chat/chat-participant";
 import {
   closeChatWindowAtom,
   toggleMinimizeChatWindowAtom,
@@ -30,10 +32,6 @@ interface ChatWindowProps {
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getInitial(name: string | null, username: string | null): string {
-  return (name?.[0] ?? username?.[0] ?? "?").toUpperCase();
-}
 
 function formatTime(iso: string): string {
   const date = new Date(iso);
@@ -190,15 +188,7 @@ export function ChatWindow({
   const rightPx = BUBBLE_OFFSET + index * (WINDOW_WIDTH + WINDOW_GAP);
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const displayName =
-    otherUser?.name ??
-    otherUser?.username ??
-    otherUser?.displayUsername ??
-    "Chat";
-  const initial = getInitial(
-    otherUser?.name ?? null,
-    otherUser?.displayUsername ?? otherUser?.username ?? null,
-  );
+  const displayName = otherUser ? getParticipantDisplayName(otherUser) : "Chat";
 
   return (
     <div
@@ -210,10 +200,11 @@ export function ChatWindow({
         className="flex items-center gap-2 px-3 py-2 bg-primary text-primary-foreground cursor-pointer select-none"
         onClick={() => toggleMinimize(conversationId)}
       >
-        {/* Avatar */}
-        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-foreground/20 text-primary-foreground font-semibold text-sm shrink-0">
-          {initial}
-        </div>
+        <ChatParticipantAvatar
+          user={otherUser}
+          className="size-8"
+          fallbackClassName="bg-primary-foreground/20 text-primary-foreground text-sm"
+        />
 
         {/* Name */}
         <span className="flex-1 font-semibold text-sm truncate">

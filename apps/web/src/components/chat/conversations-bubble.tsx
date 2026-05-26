@@ -3,6 +3,8 @@ import { useAtomValue, useSetAtom } from "jotai";
 import { IconMessageCircle2 } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 import { Spinner } from "@/components/ui/spinner";
+import { ChatParticipantAvatar } from "@/components/chat/chat-participant-avatar";
+import { getParticipantDisplayName } from "@/components/chat/chat-participant";
 import { useConversations } from "@/hooks/messages/use-conversations";
 import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
 import { openChatWindowAtom } from "@/lib/atoms/chat-windows";
@@ -22,12 +24,7 @@ interface ConversationItemProps {
 function ConversationItem({ conversation, onOpen }: ConversationItemProps) {
   const { otherUser, lastMessage } = conversation;
 
-  const displayName =
-    otherUser.name ??
-    otherUser.displayUsername ??
-    otherUser.username ??
-    "Unknown";
-  const initial = displayName[0]?.toUpperCase() ?? "?";
+  const displayName = getParticipantDisplayName(otherUser);
 
   const preview = lastMessage?.content
     ? lastMessage.content.length > 42
@@ -45,10 +42,11 @@ function ConversationItem({ conversation, onOpen }: ConversationItemProps) {
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-semibold text-sm">
-          {initial}
-        </div>
-        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-popover" />
+        <ChatParticipantAvatar
+          user={otherUser}
+          className="size-10"
+          showBadge
+        />
       </div>
 
       {/* Info */}

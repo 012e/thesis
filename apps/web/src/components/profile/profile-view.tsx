@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Separator } from "@/components/ui/separator";
-import { IconCalendar, IconMail, IconEdit } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconMail,
+  IconEdit,
+  IconMessageCircle,
+} from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
 import { Post } from "@/components/post";
 import { uploadImages } from "@/lib/api/uploads";
@@ -33,6 +38,7 @@ export interface ProfileViewProps {
   showFollowingLinks?: boolean;
   onEdit?: () => void;
   onFollow?: () => void;
+  onMessage?: () => void;
   followPending?: boolean;
   editDialog?: ReactNode;
 }
@@ -44,6 +50,7 @@ export function ProfileView({
   showFollowingLinks = false,
   onEdit,
   onFollow,
+  onMessage,
   followPending = false,
   editDialog,
 }: ProfileViewProps) {
@@ -181,30 +188,38 @@ export function ProfileView({
               )}
             </button>
           </div>
-          <div className="flex justify-end pt-3">
+          <div className="flex justify-end gap-2 pt-3">
             {isCurrentUser ? (
               <Button variant="outline" size="sm" onClick={onEdit}>
-                <IconEdit className="w-4 h-4" />
+                <IconEdit data-icon="inline-start" />
                 Edit Profile
               </Button>
             ) : (
-              <Button
-                variant={profile.isFollowing ? "outline" : "default"}
-                size="sm"
-                onClick={onFollow}
-                disabled={followPending}
-              >
-                {followPending ? (
-                  <Spinner
-                    size="sm"
-                    className="border-current border-t-transparent"
-                  />
-                ) : profile.isFollowing ? (
-                  "Unfollow"
-                ) : (
-                  "Follow"
+              <>
+                {profile.isFollowing && (
+                  <Button variant="outline" size="sm" onClick={onMessage}>
+                    <IconMessageCircle data-icon="inline-start" />
+                    Message
+                  </Button>
                 )}
-              </Button>
+                <Button
+                  variant={profile.isFollowing ? "outline" : "default"}
+                  size="sm"
+                  onClick={onFollow}
+                  disabled={followPending}
+                >
+                  {followPending ? (
+                    <Spinner
+                      size="sm"
+                      className="border-current border-t-transparent"
+                    />
+                  ) : profile.isFollowing ? (
+                    "Unfollow"
+                  ) : (
+                    "Follow"
+                  )}
+                </Button>
+              </>
             )}
           </div>
         </div>

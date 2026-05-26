@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
 import { IconTrash, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
@@ -6,6 +5,7 @@ import type { CommentType } from "@repo/rest-contracts";
 import { useSession } from "@/hooks/use-session";
 import { useDeleteComment } from "@/hooks/use-comments";
 import { useCommentReaction } from "@/hooks/use-comment-reaction";
+import { UserAvatar } from "@/components/user-avatar";
 
 export interface CommentItemProps {
   comment: CommentType;
@@ -58,26 +58,17 @@ export function CommentItem({
     return "now";
   };
 
-  const authorInitial = (
-    comment.author.name?.[0] ||
-    comment.author.username?.[0] ||
-    comment.author.email[0]
-  ).toUpperCase();
-
   // Limit indentation depth
   const indentLevel = Math.min(level, 4);
 
   return (
     <div className="flex gap-2" style={{ marginLeft: `${indentLevel * 16}px` }}>
-      <Avatar className="w-8 h-8 shrink-0">
-        <AvatarImage
-          src={comment.author.image ?? undefined}
-          alt={comment.author.name || comment.author.username || undefined}
-        />
-        <AvatarFallback className="text-xs font-semibold bg-primary text-primary-foreground">
-          {authorInitial}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar
+        userId={comment.author.id}
+        src={comment.author.image}
+        name={comment.author.name ?? comment.author.username}
+        className="size-8 shrink-0"
+      />
       <div className="flex-1 min-w-0">
         <div className="flex gap-2 items-center mb-1">
           <span className="text-sm font-semibold truncate">
