@@ -76,11 +76,11 @@ function Chat() {
       // Stream from LangGraph
       const stream = client.runs.stream(
         currentThreadId,
-        "my-assistant", // Assistant name in LangGraph
+        "my-assistant",  // Assistant name in LangGraph
         {
           input: { messages },
           config,
-        },
+        }
       );
 
       for await (const event of stream) {
@@ -143,9 +143,7 @@ const SearchToolUI = makeAssistantToolUI({
     return (
       <div>
         {result?.results?.map((r: any) => (
-          <a key={r.url} href={r.url}>
-            {r.title}
-          </a>
+          <a key={r.url} href={r.url}>{r.title}</a>
         ))}
       </div>
     );

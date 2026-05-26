@@ -43,7 +43,7 @@ interface MakeAssistantToolOptions<TArgs, TResult> {
   execute: (args: TArgs, context: ToolContext) => Promise<TResult>;
 
   // Optional
-  description?: string; // For frontend-only tools
+  description?: string;  // For frontend-only tools
 }
 
 interface ToolContext {
