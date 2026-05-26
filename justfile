@@ -45,6 +45,9 @@ build-backend:
 build-auth:
     pnpm nx run-many --output-style=static --target=build --projects=auth-client
 
+build-web-packages:
+    pnpm --filter @repo/shared-dto --filter @repo/rest-contracts --filter @repo/auth-client --filter @repo/mdx-editor build
+
 # Run backend tests in verbose mode
 test-verbose: build-backend
     pnpm --filter backend run test:verbose
@@ -109,8 +112,7 @@ test-tags: build-backend
 test-analytics: build-backend
     pnpm --filter backend test:analytics
 
-test-web:
-    pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
+test-web: build-web-packages
     pnpm --filter web test
 
 build-storybook:
