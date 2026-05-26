@@ -11,7 +11,12 @@ import type {
 } from "@repo/shared-dto";
 
 import { DatabaseService } from "@/db/database.service";
-import { conversations, directMessages, userFollows } from "@/db/schema";
+import {
+  conversations,
+  directMessages,
+  userFollows,
+  userProfiles,
+} from "@/db/schema";
 import { user } from "@/db/auth-schema";
 
 const DEFAULT_PAGE_SIZE = 50;
@@ -327,9 +332,10 @@ export class MessagesService {
         username: user.username,
         displayUsername: user.displayUsername,
         name: user.name,
-        image: user.image,
+        image: sql<string | null>`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
       })
       .from(user)
+      .leftJoin(userProfiles, eq(userProfiles.userId, user.id))
       .where(eq(user.id, otherUserId))
       .limit(1);
 

@@ -28,6 +28,8 @@ describe("MessagesController integration", () => {
   let userAId: string;
   let userBId: string;
   let userCId: string;
+  const userAAvatarUrl = "https://cdn.example.com/avatars/messages-a.webp";
+  const userBAvatarUrl = "https://cdn.example.com/avatars/messages-b.webp";
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -53,6 +55,14 @@ describe("MessagesController integration", () => {
       `msg-c-${Date.now()}@example.com`,
       `msg_c_${Date.now()}`,
     ));
+
+    await pool.query(
+      `
+        INSERT INTO user_profiles (user_id, avatar_url)
+        VALUES ($1, $2), ($3, $4)
+      `,
+      [userAId, userAAvatarUrl, userBId, userBAvatarUrl],
+    );
 
     // A follows B so they can exchange DMs
     await server
@@ -106,10 +116,11 @@ describe("MessagesController integration", () => {
 
       const conv = res.body[0] as {
         id: string;
-        otherUser: { id: string };
+        otherUser: { id: string; image: string | null };
         lastMessage: null;
       };
       expect(conv.otherUser.id).toBe(userBId);
+      expect(conv.otherUser.image).toBe(userBAvatarUrl);
       expect(conv.lastMessage).toBeNull();
     });
 
@@ -131,7 +142,7 @@ describe("MessagesController integration", () => {
         .expect(201);
 
       expect(res.body).toMatchObject({
-        otherUser: { id: userBId },
+        otherUser: { id: userBId, image: userBAvatarUrl },
         lastMessage: null,
       });
       expect(typeof res.body.id).toBe("string");
@@ -230,6 +241,7 @@ describe("MessagesController integration", () => {
       expect(res.body.id).toBe(convId);
       // From B's perspective, the other user is A
       expect(res.body.otherUser.id).toBe(userAId);
+      expect(res.body.otherUser.image).toBe(userAAvatarUrl);
     });
 
     it("returns 403 when non-participant requests the conversation", async () => {
