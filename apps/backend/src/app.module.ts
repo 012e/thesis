@@ -22,6 +22,7 @@ import { MigrateModule } from "@/migrate/migrate.module";
 import { ModerationModule } from "@/moderation/moderation.module";
 import { TagsModule } from "@/tags/tags.module";
 import { AnalyticsModule } from "@/analytics/analytics.module";
+import { RecommendationsModule } from "@/recommendations/recommendations.module";
 import { IdentityMcpModule } from "./mcp/identity/identity-mcp.module";
 import { PostsMcpModule } from "./mcp/posts/posts-mcp.module";
 import { InteractionsMcpModule } from "./mcp/interactions/interactions-mcp.module";
@@ -63,6 +64,7 @@ import { LoggingMiddleware } from "@/common/middleware/logging.middleware";
     ModerationModule,
     TagsModule,
     AnalyticsModule,
+    RecommendationsModule,
   ],
   providers: [AppService],
 })

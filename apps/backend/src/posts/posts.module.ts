@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 
 import { DatabaseModule } from "@/db/database.module";
 import { EmbeddingModule } from "@/embedding/embedding.module";
@@ -7,6 +7,7 @@ import { UsersModule } from "@/users/users.module";
 import { NotificationsModule } from "@/notifications/notifications.module";
 import { ModerationModule } from "@/moderation/moderation.module";
 import { TagsModule } from "@/tags/tags.module";
+import { RecommendationsModule } from "@/recommendations/recommendations.module";
 
 import { PostsController } from "./posts.controller";
 import { PostsEngagementService } from "./posts-engagement.service";
@@ -26,6 +27,7 @@ import { PostsService } from "./posts.service";
     NotificationsModule,
     ModerationModule,
     TagsModule,
+    forwardRef(() => RecommendationsModule),
   ],
   controllers: [PostsController],
   providers: [
@@ -37,6 +39,6 @@ import { PostsService } from "./posts.service";
     PostsPresenterService,
     PostsSearchService,
   ],
-  exports: [PostsService, PostsSearchService],
+  exports: [PostsService, PostsSearchService, PostsPresenterService],
 })
 export class PostsModule {}
