@@ -16,6 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         target:
+          - test-web
           - test-app
           - test-auth
           - test-comments
@@ -34,7 +35,7 @@ jobs:
           - test-bookmarks
           - test-tags
           - test-analytics
-          - test-web
+          - test-recommendations
 
     steps:
       - name: Checkout code
