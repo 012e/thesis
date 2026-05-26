@@ -4,9 +4,11 @@ import { addNewPost } from "@/lib/session-storage";
 import type { PostContentDto, PostDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
 import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
+import { useTrack } from "@/components/analytics-provider";
 
 export function useCreatePost() {
   const queryClient = useQueryClient();
+  const track = useTrack();
 
   const mutation = useMutation({
     mutationFn: async (content: PostContentDto) => {
@@ -22,6 +24,7 @@ export function useCreatePost() {
       queryClient.invalidateQueries({ queryKey: FOLLOWING_POSTS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: ["tags", "trending"] });
 
+      track("post_create", { postId: post.id });
       toast.success("Post created successfully!");
     },
     onError: (error: Error) => {

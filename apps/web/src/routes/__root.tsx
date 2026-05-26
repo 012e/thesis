@@ -3,7 +3,7 @@ import {
   Outlet,
   useRouterState,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTheme } from "@/hooks/use-theme";
 import { Toaster } from "@/components/ui/sonner";
 import { AppLayout, HomeLayout } from "@/components/layout/app-layout";
@@ -13,6 +13,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { GlobalErrorPage } from "@/components/global-error-boundary";
+import { useTrack } from "@/components/analytics-provider";
 
 export function ThemeSync() {
   useTheme();
@@ -81,6 +82,28 @@ export function RouteContextSync() {
   return null;
 }
 
+/**
+ * Tracks page_view analytics events whenever the route changes.
+ * Skips auth and API routes since the user isn't meaningfully viewing content.
+ */
+export function PageViewTracker() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const track = useTrack();
+  const prevPathRef = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (pathname === prevPathRef.current) return;
+    prevPathRef.current = pathname;
+
+    // Skip auth / api routes — not meaningful page views
+    if (pathname.startsWith("/auth") || pathname.startsWith("/api")) return;
+
+    track("page_view", { path: pathname });
+  }, [pathname, track]);
+
+  return null;
+}
+
 export function RootComponent() {
   const router = useRouterState();
   const isAuthRoute = router.location.pathname.startsWith("/auth");
@@ -93,6 +116,7 @@ export function RootComponent() {
     <>
       <ThemeSync />
       <RouteContextSync />
+      <PageViewTracker />
       <AuthGuard>
         {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />

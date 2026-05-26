@@ -106,6 +106,9 @@ test-bookmarks: build-backend
 test-tags: build-backend
     pnpm --filter backend test:tags
 
+test-analytics: build-backend
+    pnpm --filter backend test:analytics
+
 build-storybook:
     pnpm nx run-many --output-style=static --target=build --projects=shared-dto,rest-contracts,auth-client
     pnpm --filter web build-storybook

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { PostDto } from "@repo/shared-dto";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
+import { useTrack } from "@/components/analytics-provider";
 
 /**
  * Tracks which post in a scrollable list is most prominently in the viewport
@@ -18,6 +19,8 @@ export function usePostInViewTracker(posts: PostDto[]): void {
   // Keep a stable ref so the observer callback always has the latest posts
   // array without needing to re-create the observer on every render.
   const postsRef = useRef<PostDto[]>(posts);
+  const track = useTrack();
+  const trackedPostIdRef = useRef<string | null>(null);
   useEffect(() => {
     postsRef.current = posts;
   });
@@ -62,6 +65,12 @@ export function usePostInViewTracker(posts: PostDto[]): void {
         const winnerPost = postsRef.current.find((p) => p.id === winnerId);
         if (winnerPost) {
           setGlobalAIContext({ type: "post", post: winnerPost });
+
+          // Track post_view when a new post becomes the primary visible post
+          if (winnerId !== trackedPostIdRef.current) {
+            trackedPostIdRef.current = winnerId;
+            track("post_view", { postId: winnerId });
+          }
         }
       },
       {

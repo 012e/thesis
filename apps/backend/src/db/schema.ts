@@ -542,3 +542,52 @@ export const postFlags = pgTable("post_flags", {
 
 export type PostFlag = typeof postFlags.$inferSelect;
 export type NewPostFlag = typeof postFlags.$inferInsert;
+
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+/**
+ * Supported analytics event types.
+ */
+export const analyticsEventTypeEnum = pgEnum("analytics_event_type", [
+  "post_view",
+  "post_like",
+  "post_unlike",
+  "post_bookmark",
+  "post_unbookmark",
+  "comment_create",
+  "comment_like",
+  "post_share",
+  "post_create",
+  "poll_vote",
+  "search",
+  "page_view",
+]);
+
+/**
+ * Stores user interaction analytics events.
+ * Event-specific data is stored in the JSONB `metadata` column.
+ */
+export const analyticsEvents = pgTable(
+  "analytics_events",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    type: analyticsEventTypeEnum("type").notNull(),
+    /** Arbitrary event-specific payload (e.g. postId, dwellTimeMs, query). */
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
+    /** When the event occurred on the client. */
+    clientTimestamp: timestamp("client_timestamp", { withTimezone: true })
+      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    index("idx_analytics_events_user_id").on(table.userId),
+    index("idx_analytics_events_type").on(table.type),
+    index("idx_analytics_events_created_at").on(table.createdAt),
+  ],
+);
+
+export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
+export type NewAnalyticsEvent = typeof analyticsEvents.$inferInsert;

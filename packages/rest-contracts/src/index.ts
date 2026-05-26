@@ -14,6 +14,7 @@ import { notificationsContract } from "./contracts/notifications";
 import { configContract } from "./contracts/config";
 import { moderationContract } from "./contracts/moderation";
 import { tagsContract } from "./contracts/tags";
+import { analyticsContract } from "./contracts/analytics";
 
 const c = initContract();
 
@@ -32,6 +33,7 @@ export const appContract = c.router({
   ...configContract,
   ...moderationContract,
   ...tagsContract,
+  ...analyticsContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -98,3 +100,7 @@ export type { TagsContract } from "./contracts/tags";
 
 export * from "./schemas/moderation";
 export * from "./schemas/tag";
+export * from "./schemas/analytics";
+
+export { analyticsContract } from "./contracts/analytics";
+export type { AnalyticsContract } from "./contracts/analytics";

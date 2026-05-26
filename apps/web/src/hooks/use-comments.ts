@@ -7,6 +7,7 @@ import {
 } from "@/lib/api/comments";
 import type { CreateCommentBodyType } from "@repo/rest-contracts";
 import { useToast as toast } from "@/hooks/use-toast";
+import { useTrack } from "@/components/analytics-provider";
 
 export function useComments(
   postId: string,
@@ -22,11 +23,13 @@ export function useComments(
 
 export function useCreateComment(postId: string) {
   const queryClient = useQueryClient();
+  const track = useTrack();
 
   return useMutation({
     mutationFn: (data: CreateCommentBodyType) => createComment(postId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      track("comment_create", { postId });
       toast.success("Comment posted successfully!");
     },
     onError: (error: Error) => {
@@ -37,6 +40,7 @@ export function useCreateComment(postId: string) {
 
 export function useCreateReply(postId: string) {
   const queryClient = useQueryClient();
+  const track = useTrack();
 
   return useMutation({
     mutationFn: ({
@@ -48,6 +52,7 @@ export function useCreateReply(postId: string) {
     }) => createReply(commentId, content),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      track("comment_create", { postId });
       toast.success("Reply posted successfully!");
     },
     onError: (error: Error) => {
