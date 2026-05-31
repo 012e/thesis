@@ -45,6 +45,7 @@ export class PostsReadService {
       ? decodeCreatedAtCursor(cursor, { throwOnInvalidDate: true })
       : null;
     const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+    const createdAtCursorValue = sql<Date>`date_trunc('milliseconds', ${posts.createdAt})`;
 
     const rows = await this.databaseService.db
       .select({
@@ -76,9 +77,9 @@ export class PostsReadService {
               eq(posts.authorId, authorId),
               eq(posts.hidden, false),
               or(
-                lt(posts.createdAt, cursorDate),
+                lt(createdAtCursorValue, cursorDate),
                 and(
-                  eq(posts.createdAt, cursorDate),
+                  eq(createdAtCursorValue, cursorDate),
                   gt(posts.id, parsed.postId),
                 ),
               ),
@@ -93,7 +94,7 @@ export class PostsReadService {
         usersView.name,
         usersView.image,
       )
-      .orderBy(desc(posts.createdAt), asc(posts.id))
+      .orderBy(desc(createdAtCursorValue), asc(posts.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
@@ -172,6 +173,7 @@ export class PostsReadService {
       ? decodeCreatedAtCursor(cursor, { throwOnInvalidDate: true })
       : null;
     const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+    const createdAtCursorValue = sql<Date>`date_trunc('milliseconds', ${posts.createdAt})`;
 
     const query = this.databaseService.db
       .select({
@@ -207,9 +209,9 @@ export class PostsReadService {
           ? and(
               eq(posts.hidden, false),
               or(
-                lt(posts.createdAt, cursorDate),
+                lt(createdAtCursorValue, cursorDate),
                 and(
-                  eq(posts.createdAt, cursorDate),
+                  eq(createdAtCursorValue, cursorDate),
                   gt(posts.id, parsed.postId),
                 ),
               ),
@@ -226,7 +228,7 @@ export class PostsReadService {
       );
 
     const rows = await query
-      .orderBy(desc(posts.createdAt), asc(posts.id))
+      .orderBy(desc(createdAtCursorValue), asc(posts.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
@@ -392,6 +394,7 @@ export class PostsReadService {
   ): Promise<PostFeedPage> {
     const parsed = cursor ? decodeCreatedAtCursor(cursor) : null;
     const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+    const bookmarkedAtCursorValue = sql<Date>`date_trunc('milliseconds', ${postBookmarks.createdAt})`;
 
     const query = this.databaseService.db
       .select({
@@ -425,9 +428,9 @@ export class PostsReadService {
               eq(postBookmarks.userId, userId),
               eq(posts.hidden, false),
               or(
-                lt(postBookmarks.createdAt, cursorDate),
+                lt(bookmarkedAtCursorValue, cursorDate),
                 and(
-                  eq(postBookmarks.createdAt, cursorDate),
+                  eq(bookmarkedAtCursorValue, cursorDate),
                   gt(posts.id, parsed.postId),
                 ),
               ),
@@ -445,7 +448,7 @@ export class PostsReadService {
       );
 
     const rows = await query
-      .orderBy(desc(postBookmarks.createdAt), asc(posts.id))
+      .orderBy(desc(bookmarkedAtCursorValue), asc(posts.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;

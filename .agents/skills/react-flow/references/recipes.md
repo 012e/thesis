@@ -18,14 +18,8 @@ Use this file for quick implementation patterns for frequently requested React F
 Right-click on the canvas pane to add a new node at the cursor position. Use `screenToFlowPosition` to convert screen coordinates to flow coordinates:
 
 ```tsx
-import { useCallback, useState, useRef } from "react";
-import {
-  ReactFlow,
-  useReactFlow,
-  Panel,
-  type Node,
-  type Edge,
-} from "@xyflow/react";
+import { useCallback, useState, useRef } from 'react';
+import { ReactFlow, useReactFlow, Panel, type Node, type Edge } from '@xyflow/react';
 
 let id = 0;
 const getId = () => `node_${id++}`;
@@ -66,19 +60,19 @@ function Flow() {
       {menu && (
         <div
           style={{
-            position: "absolute",
+            position: 'absolute',
             top: menu.y,
             left: menu.x,
-            background: "white",
-            border: "1px solid #ccc",
+            background: 'white',
+            border: '1px solid #ccc',
             borderRadius: 4,
             padding: 8,
             zIndex: 1000,
           }}
         >
-          <button onClick={() => addNode("default")}>Default Node</button>
-          <button onClick={() => addNode("input")}>Input Node</button>
-          <button onClick={() => addNode("output")}>Output Node</button>
+          <button onClick={() => addNode('default')}>Default Node</button>
+          <button onClick={() => addNode('input')}>Input Node</button>
+          <button onClick={() => addNode('output')}>Output Node</button>
         </div>
       )}
     </>
@@ -93,8 +87,8 @@ function Flow() {
 Use the HTML Drag and Drop API to drag items from a sidebar onto the canvas. The key is converting the drop coordinates with `screenToFlowPosition`:
 
 ```tsx
-import { useCallback } from "react";
-import { ReactFlow, useReactFlow, type Node } from "@xyflow/react";
+import { useCallback } from 'react';
+import { ReactFlow, useReactFlow, type Node } from '@xyflow/react';
 
 let id = 0;
 const getId = () => `dnd_${id++}`;
@@ -102,28 +96,23 @@ const getId = () => `dnd_${id++}`;
 // Sidebar component
 function Sidebar() {
   const onDragStart = (event: React.DragEvent, nodeType: string) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
-    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData('application/reactflow', nodeType);
+    event.dataTransfer.effectAllowed = 'move';
   };
 
   return (
     <aside style={{ padding: 10 }}>
       <div
         draggable
-        onDragStart={(e) => onDragStart(e, "default")}
-        style={{
-          padding: 8,
-          border: "1px solid #ccc",
-          marginBottom: 8,
-          cursor: "grab",
-        }}
+        onDragStart={(e) => onDragStart(e, 'default')}
+        style={{ padding: 8, border: '1px solid #ccc', marginBottom: 8, cursor: 'grab' }}
       >
         Default Node
       </div>
       <div
         draggable
-        onDragStart={(e) => onDragStart(e, "input")}
-        style={{ padding: 8, border: "1px solid #ccc", cursor: "grab" }}
+        onDragStart={(e) => onDragStart(e, 'input')}
+        style={{ padding: 8, border: '1px solid #ccc', cursor: 'grab' }}
       >
         Input Node
       </div>
@@ -137,13 +126,13 @@ function Flow() {
 
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
-    event.dataTransfer.dropEffect = "move";
+    event.dataTransfer.dropEffect = 'move';
   }, []);
 
   const onDrop = useCallback(
     (event: React.DragEvent) => {
       event.preventDefault();
-      const type = event.dataTransfer.getData("application/reactflow");
+      const type = event.dataTransfer.getData('application/reactflow');
       if (!type) return;
 
       const position = screenToFlowPosition({
@@ -161,7 +150,13 @@ function Flow() {
     [screenToFlowPosition, addNodes],
   );
 
-  return <ReactFlow onDragOver={onDragOver} onDrop={onDrop} fitView />;
+  return (
+    <ReactFlow
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+      fitView
+    />
+  );
 }
 ```
 
@@ -172,8 +167,8 @@ Use `application/reactflow` as the MIME type to avoid interfering with native dr
 Display a detail panel when a node is selected. Use the `onNodeClick` callback or filter `nodes` for `selected`:
 
 ```tsx
-import { useState, useCallback } from "react";
-import { ReactFlow, Panel, useReactFlow, type Node } from "@xyflow/react";
+import { useState, useCallback } from 'react';
+import { ReactFlow, Panel, useReactFlow, type Node } from '@xyflow/react';
 
 function Flow() {
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -188,7 +183,7 @@ function Flow() {
   }, []);
 
   return (
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div style={{ display: 'flex', height: '100vh' }}>
       <div style={{ flex: 1 }}>
         <ReactFlow
           nodes={nodes}
@@ -199,21 +194,18 @@ function Flow() {
         />
       </div>
       {selectedNode && (
-        <div style={{ width: 300, padding: 16, borderLeft: "1px solid #ccc" }}>
+        <div style={{ width: 300, padding: 16, borderLeft: '1px solid #ccc' }}>
           <h3>Node: {selectedNode.id}</h3>
           <label>
             Label:
             <input
-              value={selectedNode.data.label ?? ""}
+              value={selectedNode.data.label ?? ''}
               onChange={(e) => {
                 updateNodeData(selectedNode.id, { label: e.target.value });
-                setSelectedNode(
-                  (n) =>
-                    n && {
-                      ...n,
-                      data: { ...n.data, label: e.target.value },
-                    },
-                );
+                setSelectedNode((n) => n && ({
+                  ...n,
+                  data: { ...n.data, label: e.target.value },
+                }));
               }}
             />
           </label>
@@ -231,8 +223,8 @@ function Flow() {
 Use `useReactFlow().deleteElements` to delete all currently selected elements:
 
 ```tsx
-import { useCallback } from "react";
-import { Panel, useReactFlow } from "@xyflow/react";
+import { useCallback } from 'react';
+import { Panel, useReactFlow } from '@xyflow/react';
 
 function DeleteButton() {
   const { getNodes, getEdges, deleteElements } = useReactFlow();
@@ -262,14 +254,9 @@ npm install html-to-image
 ```
 
 ```tsx
-import { useCallback } from "react";
-import {
-  Panel,
-  useReactFlow,
-  getNodesBounds,
-  getViewportForBounds,
-} from "@xyflow/react";
-import { toPng } from "html-to-image";
+import { useCallback } from 'react';
+import { Panel, useReactFlow, getNodesBounds, getViewportForBounds } from '@xyflow/react';
+import { toPng } from 'html-to-image';
 
 const IMAGE_WIDTH = 1024;
 const IMAGE_HEIGHT = 768;
@@ -280,22 +267,13 @@ function DownloadButton() {
   const onClick = useCallback(() => {
     const nodes = getNodes();
     const bounds = getNodesBounds(nodes);
-    const viewport = getViewportForBounds(
-      bounds,
-      IMAGE_WIDTH,
-      IMAGE_HEIGHT,
-      0.5,
-      2,
-      0.1,
-    );
+    const viewport = getViewportForBounds(bounds, IMAGE_WIDTH, IMAGE_HEIGHT, 0.5, 2, 0.1);
 
-    const viewportEl = document.querySelector<HTMLElement>(
-      ".react-flow__viewport",
-    );
+    const viewportEl = document.querySelector<HTMLElement>('.react-flow__viewport');
     if (!viewportEl) return;
 
     toPng(viewportEl, {
-      backgroundColor: "#ffffff",
+      backgroundColor: '#ffffff',
       width: IMAGE_WIDTH,
       height: IMAGE_HEIGHT,
       style: {
@@ -304,8 +282,8 @@ function DownloadButton() {
         transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
       },
     }).then((dataUrl) => {
-      const link = document.createElement("a");
-      link.download = "flow.png";
+      const link = document.createElement('a');
+      link.download = 'flow.png';
       link.href = dataUrl;
       link.click();
     });
@@ -326,16 +304,16 @@ function DownloadButton() {
 When adding nodes programmatically, call `fitView` after the state update to ensure all nodes are visible:
 
 ```tsx
-import { useReactFlow } from "@xyflow/react";
+import { useReactFlow } from '@xyflow/react';
 
 function AddAndFit() {
   const { addNodes, fitView } = useReactFlow();
 
   const handleAdd = useCallback(() => {
     addNodes({
-      id: "new",
+      id: 'new',
       position: { x: 500, y: 500 },
-      data: { label: "Far away node" },
+      data: { label: 'Far away node' },
     });
 
     // fitView runs after the next render when nodes are measured

@@ -105,7 +105,6 @@ const nodeTypes = { textUpdater: TextUpdaterNode }; // not 'TextUpdater' or 'tex
 ### Zustand context warning / "useStore must be used within a Provider"
 
 **Causes**:
-
 1. Two versions of `@xyflow/react` installed (check `package-lock.json`)
 2. Using React Flow hooks outside `<ReactFlowProvider>`
 
@@ -148,12 +147,8 @@ npm install
 ```tsx
 // CORRECT
 const [edgePath] = getBezierPath({
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition, // include these!
+  sourceX, sourceY, targetX, targetY,
+  sourcePosition, targetPosition, // include these!
 });
 ```
 
@@ -214,7 +209,7 @@ updateNodeInternals(nodeId);
 **Fix**: Add `className="nowheel"` to scrollable containers:
 
 ```tsx
-<div className="nodrag nowheel" style={{ overflow: "auto", maxHeight: 200 }}>
+<div className="nodrag nowheel" style={{ overflow: 'auto', maxHeight: 200 }}>
   {/* scrollable content */}
 </div>
 ```
@@ -248,13 +243,13 @@ const onPaneClick = (event) => {
 ```tsx
 // WRONG — mutation
 const node = nodes.find((n) => n.id === id);
-node.data.label = "Updated";
+node.data.label = 'Updated';
 setNodes(nodes);
 
 // CORRECT — new object
 setNodes((nodes) =>
   nodes.map((n) =>
-    n.id === id ? { ...n, data: { ...n.data, label: "Updated" } } : n,
+    n.id === id ? { ...n, data: { ...n.data, label: 'Updated' } } : n,
   ),
 );
 ```
@@ -295,12 +290,12 @@ module.exports = {
         test: /\.jsx?$/,
         include: /node_modules\/@xyflow/,
         use: {
-          loader: "babel-loader",
+          loader: 'babel-loader',
           options: {
-            presets: ["@babel/preset-env"],
+            presets: ['@babel/preset-env'],
             plugins: [
-              "@babel/plugin-proposal-optional-chaining",
-              "@babel/plugin-proposal-nullish-coalescing-operator",
+              '@babel/plugin-proposal-optional-chaining',
+              '@babel/plugin-proposal-nullish-coalescing-operator',
             ],
           },
         },
@@ -315,18 +310,18 @@ module.exports = {
 React Flow requires DOM APIs. For Next.js App Router, add the `'use client'` directive at the top of the file containing your flow:
 
 ```tsx
-"use client";
+'use client';
 
-import { ReactFlow } from "@xyflow/react";
+import { ReactFlow } from '@xyflow/react';
 // ...
 ```
 
 For Next.js Pages Router or when you need to fully skip SSR:
 
 ```tsx
-import dynamic from "next/dynamic";
+import dynamic from 'next/dynamic';
 
-const Flow = dynamic(() => import("./Flow"), { ssr: false });
+const Flow = dynamic(() => import('./Flow'), { ssr: false });
 ```
 
 Or use `useEffect` to delay rendering:
@@ -357,9 +352,9 @@ Install the React Flow DevTools browser extension for visual debugging of nodes,
 const { getNodes, getEdges, getViewport } = useReactFlow();
 
 useEffect(() => {
-  console.log("Nodes:", getNodes());
-  console.log("Edges:", getEdges());
-  console.log("Viewport:", getViewport());
+  console.log('Nodes:', getNodes());
+  console.log('Edges:', getEdges());
+  console.log('Viewport:', getViewport());
 });
 ```
 
