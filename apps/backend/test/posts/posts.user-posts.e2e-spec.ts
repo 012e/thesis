@@ -24,7 +24,7 @@ describe("GET /users/:id/posts integration", () => {
   let userBCookie: string;
 
   let userAId: string;
-  let userBId: string;
+  let _userBId: string;
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -55,7 +55,7 @@ describe("GET /users/:id/posts integration", () => {
       .expect(200);
 
     userAId = userASession.body.user.id as string;
-    userBId = userBSession.body.user.id as string;
+    _userBId = userBSession.body.user.id as string;
   }, 120000);
 
   afterAll(async () => {

@@ -610,7 +610,7 @@ describe("Bookmarks integration", () => {
         .set("Cookie", userACookie)
         .expect(200);
 
-      const post = res.body.find((p: { id: string }) => p.id === postId);
+      const post = res.body.items.find((p: { id: string }) => p.id === postId);
       expect(post.currentUserBookmarked).toBe(true);
     });
   });
