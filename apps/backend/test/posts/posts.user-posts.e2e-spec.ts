@@ -278,6 +278,55 @@ describe("GET /users/:id/posts integration", () => {
       expect(new Set(allIds).size).toBe(5);
     });
 
+    it("paginates rows created within the same millisecond", async () => {
+      const postIds = [
+        "00000000-0000-4000-8000-000000000001",
+        "00000000-0000-4000-8000-000000000002",
+        "00000000-0000-4000-8000-000000000003",
+        "00000000-0000-4000-8000-000000000004",
+      ];
+
+      for (const [index, postId] of postIds.entries()) {
+        await pool.query(
+          `INSERT INTO posts (id, author_id, content, created_at, updated_at)
+           VALUES ($1, $2, $3::jsonb, $4::timestamptz, $4::timestamptz)`,
+          [
+            postId,
+            userAId,
+            JSON.stringify({ text: `Same ms ${index + 1}` }),
+            `2026-01-01T00:00:00.123${4 - index}00Z`,
+          ],
+        );
+      }
+
+      const server = request(testApp.app.getHttpServer());
+      const page1 = await server
+        .get(`/users/${userAId}/posts?limit=2`)
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect((page1.body.items as { id: string }[]).map((p) => p.id)).toEqual([
+        postIds[0],
+        postIds[1],
+      ]);
+      expect(page1.body.nextCursor).not.toBeNull();
+
+      const page2 = await server
+        .get(
+          `/users/${userAId}/posts?limit=2&cursor=${encodeURIComponent(
+            page1.body.nextCursor as string,
+          )}`,
+        )
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect((page2.body.items as { id: string }[]).map((p) => p.id)).toEqual([
+        postIds[2],
+        postIds[3],
+      ]);
+      expect(page2.body.nextCursor).toBeNull();
+    });
+
     it("default limit is 20", async () => {
       const server = request(testApp.app.getHttpServer());
 
