@@ -1,22 +1,34 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchUserPosts } from "@/lib/api/posts";
 import { useSession } from "./use-session";
 
-export function useUserPosts(userId: string) {
-  const { data: session } = useSession();
+export const USER_POSTS_QUERY_KEY = (userId: string) =>
+  ["users", userId, "posts"] as const;
 
-  return useQuery({
-    queryKey: ["users", userId, "posts"],
-    queryFn: () => fetchUserPosts(userId),
-    enabled: !!session && !!userId,
-    staleTime: 1000 * 60 * 2, // 2 minutes
-  });
+export interface UseUserPostsOptions {
+  limit?: number;
+  enabled?: boolean;
 }
 
-export function useUserPostsSuspense(userId: string) {
-  return useSuspenseQuery({
-    queryKey: ["users", userId, "posts"],
-    queryFn: () => fetchUserPosts(userId),
+export function useUserPosts(
+  userId: string,
+  options: UseUserPostsOptions = {},
+) {
+  const { data: session } = useSession();
+  const { limit = 20, enabled = true } = options;
+
+  return useInfiniteQuery({
+    queryKey: [...USER_POSTS_QUERY_KEY(userId), limit],
+    queryFn: ({ pageParam }) =>
+      fetchUserPosts({
+        userId,
+        limit,
+        cursor: pageParam,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 2, // 2 minutes
+    enabled: !!session && !!userId && enabled,
   });
 }

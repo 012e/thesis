@@ -30,8 +30,18 @@ export class PostsService {
     private readonly postsPresenter: PostsPresenterService,
   ) {}
 
-  listByUser(authorId: string, requestingUserId: string): Promise<PostDto[]> {
-    return this.postsReadService.listByUser(authorId, requestingUserId);
+  listByUser(
+    authorId: string,
+    requestingUserId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<PostFeedPage> {
+    return this.postsReadService.listByUser(
+      authorId,
+      requestingUserId,
+      limit,
+      cursor,
+    );
   }
 
   list(userId: string): Promise<PostDto[]> {

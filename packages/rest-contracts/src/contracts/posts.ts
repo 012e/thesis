@@ -7,6 +7,7 @@ import {
   UpdatePostBody,
   RecommendationPage,
   FollowingFeedPage,
+  UserPostsPage,
   BookmarkSummary,
   BookmarkPage,
 } from "../schemas/post";
@@ -127,12 +128,16 @@ export const postsContract = c.router({
     method: "GET",
     path: "/users/:id/posts",
     pathParams: z.object({ id: z.string() }),
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
     responses: {
-      200: z.array(Post),
+      200: UserPostsPage,
       404: z.null(),
     },
     summary:
-      "List posts by a specific user, ordered by creation date descending.",
+      "List posts by a specific user, ordered by creation date descending. Paginated with a keyset cursor encoding (createdAt, postId).",
   },
   bookmarkPost: {
     method: "POST",

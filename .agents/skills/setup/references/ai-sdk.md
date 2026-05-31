@@ -6,14 +6,14 @@ Use this when the app uses `@assistant-ui/react-ai-sdk` and an `/api/chat` route
 
 Agents trained on older AI SDK versions will use outdated patterns. These are **AI SDK** breaking changes (not assistant-ui changes):
 
-| Concept             | Old (v4/v5)                            | Current (v6)                              |
-| ------------------- | -------------------------------------- | ----------------------------------------- |
-| useChat import      | `import { useChat } from "ai/react"`   | `import { useChat } from "@ai-sdk/react"` |
-| assistant-ui wiring | `useAISDKRuntime(chat)`                | `useChatRuntime({ transport })`           |
-| Message conversion  | Pass messages directly to `streamText` | `await convertToModelMessages(messages)`  |
-| Stream response     | `result.toDataStreamResponse()`        | `result.toUIMessageStreamResponse()`      |
-| Tool schema key     | `parameters: z.object({...})`          | `inputSchema: z.object({...})`            |
-| Multi-step tools    | `maxSteps: n`                          | `stopWhen: stepCountIs(n)`                |
+| Concept | Old (v4/v5) | Current (v6) |
+|---------|-------------|--------------|
+| useChat import | `import { useChat } from "ai/react"` | `import { useChat } from "@ai-sdk/react"` |
+| assistant-ui wiring | `useAISDKRuntime(chat)` | `useChatRuntime({ transport })` |
+| Message conversion | Pass messages directly to `streamText` | `await convertToModelMessages(messages)` |
+| Stream response | `result.toDataStreamResponse()` | `result.toUIMessageStreamResponse()` |
+| Tool schema key | `parameters: z.object({...})` | `inputSchema: z.object({...})` |
+| Multi-step tools | `maxSteps: n` | `stopWhen: stepCountIs(n)` |
 
 ## Standard Setup
 
@@ -87,10 +87,7 @@ The route must destructure and use both `system` and `tools` for frontend tool f
 `useChatRuntime` supports the underlying AI SDK chat options plus assistant-ui extensions like `cloud`, `adapters`, and `toCreateMessage`.
 
 ```tsx
-import {
-  useChatRuntime,
-  AssistantChatTransport,
-} from "@assistant-ui/react-ai-sdk";
+import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
 import { lastAssistantMessageIsCompleteWithToolCalls } from "ai";
 
 const runtime = useChatRuntime({
@@ -100,11 +97,7 @@ const runtime = useChatRuntime({
     body: { model: "gpt-4o-mini" },
   }),
   messages: [
-    {
-      id: "1",
-      role: "assistant",
-      parts: [{ type: "text", text: "Hello! How can I help?" }],
-    },
+    { id: "1", role: "assistant", parts: [{ type: "text", text: "Hello! How can I help?" }] },
   ],
   sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
   onError: (error) => {
@@ -189,7 +182,7 @@ const WeatherToolUI = makeAssistantToolUI({
 <AssistantRuntimeProvider runtime={runtime}>
   <WeatherToolUI />
   <Thread />
-</AssistantRuntimeProvider>;
+</AssistantRuntimeProvider>
 ```
 
 ## Using Different Providers
@@ -225,7 +218,9 @@ const runtime = useChatRuntime({
 // Backend
 const { messages, model } = await req.json();
 
-const provider = model.startsWith("claude") ? anthropic(model) : openai(model);
+const provider = model.startsWith("claude")
+  ? anthropic(model)
+  : openai(model);
 
 const result = streamText({
   model: provider,
@@ -241,10 +236,7 @@ Pass a `cloud` instance to `useChatRuntime` to enable thread persistence and his
 import { AssistantCloud, AssistantRuntimeProvider } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
-import {
-  useChatRuntime,
-  AssistantChatTransport,
-} from "@assistant-ui/react-ai-sdk";
+import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
 
 const cloud = new AssistantCloud({
   baseUrl: process.env.NEXT_PUBLIC_ASSISTANT_BASE_URL,
@@ -271,14 +263,12 @@ See the [cloud reference](./cloud.md) for authentication and configuration detai
 ## Troubleshooting
 
 **"Module not found: @ai-sdk/react"**
-
 ```bash
 npm install @ai-sdk/react
 ```
 
 **"useChat is not a function"**
 Mixing v5 and v6. Remove old imports:
-
 ```bash
 npm uninstall ai/react  # if present
 npm install @ai-sdk/react@latest ai@latest

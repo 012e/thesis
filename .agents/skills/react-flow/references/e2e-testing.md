@@ -24,19 +24,21 @@ Use this file when writing Playwright end-to-end tests for React Flow applicatio
 Minimal `playwright.config.ts` with a `webServer` block for a Vite or Next.js dev server:
 
 ```ts
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: './tests',
   retries: process.env.CI ? 2 : 0,
   use: {
-    baseURL: "http://localhost:5173",
-    trace: "on-first-retry",
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry',
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+  ],
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:5173",
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
   },
 });
@@ -56,46 +58,46 @@ webServer: {
 
 ### CSS class selectors
 
-| Selector                        | Element                                                        |
-| ------------------------------- | -------------------------------------------------------------- |
-| `.react-flow`                   | Root container                                                 |
-| `.react-flow__renderer`         | Main renderer wrapper                                          |
-| `.react-flow__viewport`         | Viewport (transform applied here)                              |
-| `.react-flow__pane`             | Background pane (receives pan/click events)                    |
-| `.react-flow__nodes`            | Node container                                                 |
-| `.react-flow__node`             | Individual node                                                |
-| `.react-flow__node-default`     | Default node type                                              |
-| `.react-flow__node-input`       | Input node type                                                |
-| `.react-flow__node-output`      | Output node type                                               |
-| `.react-flow__node-group`       | Group node type                                                |
-| `.react-flow__edges`            | Edge container (SVG)                                           |
-| `.react-flow__edge`             | Individual edge                                                |
-| `.react-flow__edge-path`        | Edge path element                                              |
+| Selector | Element |
+|----------|---------|
+| `.react-flow` | Root container |
+| `.react-flow__renderer` | Main renderer wrapper |
+| `.react-flow__viewport` | Viewport (transform applied here) |
+| `.react-flow__pane` | Background pane (receives pan/click events) |
+| `.react-flow__nodes` | Node container |
+| `.react-flow__node` | Individual node |
+| `.react-flow__node-default` | Default node type |
+| `.react-flow__node-input` | Input node type |
+| `.react-flow__node-output` | Output node type |
+| `.react-flow__node-group` | Group node type |
+| `.react-flow__edges` | Edge container (SVG) |
+| `.react-flow__edge` | Individual edge |
+| `.react-flow__edge-path` | Edge path element |
 | `.react-flow__edge-interaction` | Edge interaction area (wider invisible path for click targets) |
-| `.react-flow__connection`       | Active connection line                                         |
-| `.react-flow__connectionline`   | Connection line path                                           |
-| `.react-flow__handle`           | Handle element                                                 |
-| `.react-flow__handle-top`       | Handle positioned at top                                       |
-| `.react-flow__handle-right`     | Handle positioned at right                                     |
-| `.react-flow__handle-bottom`    | Handle positioned at bottom                                    |
-| `.react-flow__handle-left`      | Handle positioned at left                                      |
-| `.react-flow__minimap`          | MiniMap component                                              |
-| `.react-flow__controls`         | Controls component                                             |
-| `.react-flow__background`       | Background component                                           |
-| `.react-flow__panel`            | Panel component                                                |
-| `.react-flow__node-toolbar`     | NodeToolbar component                                          |
-| `.react-flow__nodesselection`   | Multi-selection box                                            |
-| `.react-flow__selection`        | Selection rectangle                                            |
+| `.react-flow__connection` | Active connection line |
+| `.react-flow__connectionline` | Connection line path |
+| `.react-flow__handle` | Handle element |
+| `.react-flow__handle-top` | Handle positioned at top |
+| `.react-flow__handle-right` | Handle positioned at right |
+| `.react-flow__handle-bottom` | Handle positioned at bottom |
+| `.react-flow__handle-left` | Handle positioned at left |
+| `.react-flow__minimap` | MiniMap component |
+| `.react-flow__controls` | Controls component |
+| `.react-flow__background` | Background component |
+| `.react-flow__panel` | Panel component |
+| `.react-flow__node-toolbar` | NodeToolbar component |
+| `.react-flow__nodesselection` | Multi-selection box |
+| `.react-flow__selection` | Selection rectangle |
 
 ### Data attributes
 
-| Attribute        | Used on         | Example                       |
-| ---------------- | --------------- | ----------------------------- |
-| `data-id`        | Nodes, edges    | `[data-id="node-1"]`          |
-| `data-nodeid`    | Handles         | `[data-nodeid="node-1"]`      |
-| `data-handleid`  | Handles         | `[data-handleid="output-a"]`  |
-| `data-handlepos` | Handles         | `[data-handlepos="right"]`    |
-| `data-testid`    | Custom elements | `[data-testid="custom-node"]` |
+| Attribute | Used on | Example |
+|-----------|---------|---------|
+| `data-id` | Nodes, edges | `[data-id="node-1"]` |
+| `data-nodeid` | Handles | `[data-nodeid="node-1"]` |
+| `data-handleid` | Handles | `[data-handleid="output-a"]` |
+| `data-handlepos` | Handles | `[data-handlepos="right"]` |
+| `data-testid` | Custom elements | `[data-testid="custom-node"]` |
 
 ### Combined selector patterns
 
@@ -113,16 +115,16 @@ page.locator('[data-nodeid="node-1"].react-flow__handle-bottom');
 page.locator('[data-nodeid="node-1"][data-handleid="output-a"]');
 
 // Select all selected nodes
-page.locator(".react-flow__node.selected");
+page.locator('.react-flow__node.selected');
 
 // Select all selected edges
-page.locator(".react-flow__edge.selected");
+page.locator('.react-flow__edge.selected');
 
 // Count all nodes
-page.locator(".react-flow__node");
+page.locator('.react-flow__node');
 
 // The viewport element (for reading transforms)
-page.locator(".react-flow__viewport");
+page.locator('.react-flow__viewport');
 ```
 
 ## Test fixture: controlled flow component
@@ -130,7 +132,7 @@ page.locator(".react-flow__viewport");
 A reusable test component ensures deterministic starting state:
 
 ```tsx
-import { useCallback, useState } from "react";
+import { useCallback, useState } from 'react';
 import {
   ReactFlow,
   addEdge,
@@ -141,17 +143,17 @@ import {
   type OnNodesChange,
   type OnEdgesChange,
   type OnConnect,
-} from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
+} from '@xyflow/react';
+import '@xyflow/react/dist/style.css';
 
 const initialNodes: Node[] = [
-  { id: "node-1", position: { x: 0, y: 0 }, data: { label: "Node 1" } },
-  { id: "node-2", position: { x: 250, y: 100 }, data: { label: "Node 2" } },
-  { id: "node-3", position: { x: 250, y: 250 }, data: { label: "Node 3" } },
+  { id: 'node-1', position: { x: 0, y: 0 }, data: { label: 'Node 1' } },
+  { id: 'node-2', position: { x: 250, y: 100 }, data: { label: 'Node 2' } },
+  { id: 'node-3', position: { x: 250, y: 250 }, data: { label: 'Node 3' } },
 ];
 
 const initialEdges: Edge[] = [
-  { id: "edge-1-2", source: "node-1", target: "node-2" },
+  { id: 'edge-1-2', source: 'node-1', target: 'node-2' },
 ];
 
 export default function TestFlow() {
@@ -172,7 +174,7 @@ export default function TestFlow() {
   );
 
   return (
-    <div style={{ width: "100vw", height: "100vh" }}>
+    <div style={{ width: '100vw', height: '100vh' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -193,10 +195,10 @@ export default function TestFlow() {
 ### Select a node
 
 ```ts
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 
-test("select a node by clicking", async ({ page }) => {
-  await page.goto("/");
+test('select a node by clicking', async ({ page }) => {
+  await page.goto('/');
   const node = page.locator('.react-flow__node[data-id="node-1"]');
   await expect(node).toBeAttached();
 
@@ -210,8 +212,8 @@ test("select a node by clicking", async ({ page }) => {
 **Critical**: Use `{ steps: 5 }` (or more) in `page.mouse.move`. Single-step moves do not trigger React Flow's drag handlers because React Flow requires multiple `mousemove` events.
 
 ```ts
-test("drag a node changes its position", async ({ page }) => {
-  await page.goto("/");
+test('drag a node changes its position', async ({ page }) => {
+  await page.goto('/');
   const node = page.locator('.react-flow__node[data-id="node-1"]');
   await expect(node).toBeAttached();
 
@@ -236,14 +238,14 @@ test("drag a node changes its position", async ({ page }) => {
 ### Delete a node
 
 ```ts
-test("delete a selected node with Backspace", async ({ page }) => {
-  await page.goto("/");
-  const nodes = page.locator(".react-flow__node");
+test('delete a selected node with Backspace', async ({ page }) => {
+  await page.goto('/');
+  const nodes = page.locator('.react-flow__node');
   await expect(nodes).toHaveCount(3);
 
   const node = page.locator('.react-flow__node[data-id="node-1"]');
   await node.click();
-  await page.keyboard.press("Backspace");
+  await page.keyboard.press('Backspace');
 
   await expect(nodes).toHaveCount(2);
 });
@@ -252,8 +254,8 @@ test("delete a selected node with Backspace", async ({ page }) => {
 ### Verify node CSS classes and visibility
 
 ```ts
-test("custom node has expected classes", async ({ page }) => {
-  await page.goto("/");
+test('custom node has expected classes', async ({ page }) => {
+  await page.goto('/');
   const node = page.locator('.react-flow__node[data-id="node-1"]');
   await expect(node).toBeVisible();
   await expect(node).toHaveClass(/react-flow__node-default/);
@@ -267,13 +269,13 @@ test("custom node has expected classes", async ({ page }) => {
 Edges are thin SVG paths — click the wider interaction area:
 
 ```ts
-test("select an edge", async ({ page }) => {
-  await page.goto("/");
+test('select an edge', async ({ page }) => {
+  await page.goto('/');
   const edge = page.locator('.react-flow__edge[data-id="edge-1-2"]');
   await expect(edge).toBeAttached();
 
   // Click the interaction area (wider invisible path)
-  const interactionPath = edge.locator(".react-flow__edge-interaction");
+  const interactionPath = edge.locator('.react-flow__edge-interaction');
   await interactionPath.click();
   await expect(edge).toHaveClass(/selected/);
 });
@@ -282,28 +284,28 @@ test("select an edge", async ({ page }) => {
 ### Check edge markers
 
 ```ts
-test("edge has arrow marker", async ({ page }) => {
-  await page.goto("/");
+test('edge has arrow marker', async ({ page }) => {
+  await page.goto('/');
   const edgePath = page.locator(
     '.react-flow__edge[data-id="edge-1-2"] .react-flow__edge-path',
   );
-  await expect(edgePath).toHaveAttribute("marker-end", /url/);
+  await expect(edgePath).toHaveAttribute('marker-end', /url/);
 });
 ```
 
 ### Delete an edge
 
 ```ts
-test("delete a selected edge", async ({ page }) => {
-  await page.goto("/");
-  const edges = page.locator(".react-flow__edge");
+test('delete a selected edge', async ({ page }) => {
+  await page.goto('/');
+  const edges = page.locator('.react-flow__edge');
   await expect(edges).toHaveCount(1);
 
   const interactionPath = page
     .locator('.react-flow__edge[data-id="edge-1-2"]')
-    .locator(".react-flow__edge-interaction");
+    .locator('.react-flow__edge-interaction');
   await interactionPath.click();
-  await page.keyboard.press("Backspace");
+  await page.keyboard.press('Backspace');
 
   await expect(edges).toHaveCount(0);
 });
@@ -312,9 +314,9 @@ test("delete a selected edge", async ({ page }) => {
 ### Count edges after connection
 
 ```ts
-test("new edge appears after connection", async ({ page }) => {
-  await page.goto("/");
-  const edges = page.locator(".react-flow__edge");
+test('new edge appears after connection', async ({ page }) => {
+  await page.goto('/');
+  const edges = page.locator('.react-flow__edge');
   await expect(edges).toHaveCount(1);
 
   // ... perform connection (see Connection tests) ...
@@ -330,9 +332,9 @@ test("new edge appears after connection", async ({ page }) => {
 **Critical**: Use `{ steps: 5 }` in `page.mouse.move` — single-step moves skip React Flow's internal event processing and the connection will not register.
 
 ```ts
-test("connect two nodes via handles", async ({ page }) => {
-  await page.goto("/");
-  const edges = page.locator(".react-flow__edge");
+test('connect two nodes via handles', async ({ page }) => {
+  await page.goto('/');
+  const edges = page.locator('.react-flow__edge');
   await expect(edges).toHaveCount(1);
 
   // Source handle on node-1 (bottom)
@@ -366,8 +368,8 @@ test("connect two nodes via handles", async ({ page }) => {
 ### Connection line visibility during drag
 
 ```ts
-test("connection line visible while dragging", async ({ page }) => {
-  await page.goto("/");
+test('connection line visible while dragging', async ({ page }) => {
+  await page.goto('/');
 
   const sourceHandle = page.locator(
     '[data-nodeid="node-1"].react-flow__handle-bottom',
@@ -379,9 +381,13 @@ test("connection line visible while dragging", async ({ page }) => {
     sourceBBox!.y + sourceBBox!.height / 2,
   );
   await page.mouse.down();
-  await page.mouse.move(sourceBBox!.x + 100, sourceBBox!.y + 100, { steps: 5 });
+  await page.mouse.move(
+    sourceBBox!.x + 100,
+    sourceBBox!.y + 100,
+    { steps: 5 },
+  );
 
-  const connectionLine = page.locator(".react-flow__connection");
+  const connectionLine = page.locator('.react-flow__connection');
   await expect(connectionLine).toBeVisible();
 
   await page.mouse.up();
@@ -393,15 +399,15 @@ test("connection line visible while dragging", async ({ page }) => {
 ### Pan the viewport
 
 ```ts
-test("pan by dragging the pane", async ({ page }) => {
-  await page.goto("/");
-  const viewport = page.locator(".react-flow__viewport");
+test('pan by dragging the pane', async ({ page }) => {
+  await page.goto('/');
+  const viewport = page.locator('.react-flow__viewport');
   await expect(viewport).toBeAttached();
 
   const beforeTransform = await getTransform(page);
 
   // Drag on the pane (empty area)
-  const pane = page.locator(".react-flow__pane");
+  const pane = page.locator('.react-flow__pane');
   const paneBox = await pane.boundingBox();
   const startX = paneBox!.x + paneBox!.width / 2;
   const startY = paneBox!.y + paneBox!.height / 2;
@@ -420,14 +426,14 @@ test("pan by dragging the pane", async ({ page }) => {
 ### Zoom with mouse wheel
 
 ```ts
-test("zoom in with mouse wheel", async ({ page }) => {
-  await page.goto("/");
-  const viewport = page.locator(".react-flow__viewport");
+test('zoom in with mouse wheel', async ({ page }) => {
+  await page.goto('/');
+  const viewport = page.locator('.react-flow__viewport');
   await expect(viewport).toBeAttached();
 
   const beforeTransform = await getTransform(page);
 
-  const pane = page.locator(".react-flow__pane");
+  const pane = page.locator('.react-flow__pane');
   const paneBox = await pane.boundingBox();
   await page.mouse.move(
     paneBox!.x + paneBox!.width / 2,
@@ -448,11 +454,11 @@ test("zoom in with mouse wheel", async ({ page }) => {
 ### Zoom constraints (minZoom / maxZoom)
 
 ```ts
-test("zoom respects minZoom and maxZoom", async ({ page }) => {
+test('zoom respects minZoom and maxZoom', async ({ page }) => {
   // Assumes the test fixture has minZoom={0.5} maxZoom={2}
-  await page.goto("/");
+  await page.goto('/');
 
-  const pane = page.locator(".react-flow__pane");
+  const pane = page.locator('.react-flow__pane');
   const paneBox = await pane.boundingBox();
   await page.mouse.move(
     paneBox!.x + paneBox!.width / 2,
@@ -482,11 +488,11 @@ test("zoom respects minZoom and maxZoom", async ({ page }) => {
 ### fitView
 
 ```ts
-test("fitView makes all nodes visible", async ({ page }) => {
-  await page.goto("/");
+test('fitView makes all nodes visible', async ({ page }) => {
+  await page.goto('/');
 
   // With fitView on the fixture, all nodes should be within the viewport
-  const nodes = page.locator(".react-flow__node");
+  const nodes = page.locator('.react-flow__node');
   const count = await nodes.count();
 
   for (let i = 0; i < count; i++) {
@@ -500,9 +506,9 @@ test("fitView makes all nodes visible", async ({ page }) => {
 ### Toolbar visibility on node selection
 
 ```ts
-test("NodeToolbar appears when node is selected", async ({ page }) => {
-  await page.goto("/");
-  const toolbar = page.locator(".react-flow__node-toolbar");
+test('NodeToolbar appears when node is selected', async ({ page }) => {
+  await page.goto('/');
+  const toolbar = page.locator('.react-flow__node-toolbar');
 
   // Toolbar hidden before selection
   await expect(toolbar).not.toBeVisible();
@@ -518,13 +524,13 @@ test("NodeToolbar appears when node is selected", async ({ page }) => {
 ### Toolbar positioning relative to node
 
 ```ts
-test("toolbar is positioned above the node", async ({ page }) => {
-  await page.goto("/");
+test('toolbar is positioned above the node', async ({ page }) => {
+  await page.goto('/');
 
   const node = page.locator('.react-flow__node[data-id="node-1"]');
   await node.click();
 
-  const toolbar = page.locator(".react-flow__node-toolbar");
+  const toolbar = page.locator('.react-flow__node-toolbar');
   await expect(toolbar).toBeVisible();
 
   const nodeBox = await node.boundingBox();
@@ -537,14 +543,14 @@ test("toolbar is positioned above the node", async ({ page }) => {
 
 ## Wait and stability strategies
 
-| Strategy                                           | When to use                                                                               |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| `await expect(locator).toBeAttached()`             | Wait for element to exist in the DOM (e.g., after page load)                              |
-| `await expect(locator).toBeVisible()`              | Wait for element to be visible (e.g., toolbar after selection)                            |
-| `await expect(locator).toHaveCount(n)`             | Wait for exact number of elements (e.g., edge count after connection)                     |
-| `await expect(locator).toHaveClass(/selected/)`    | Wait for class change (e.g., after clicking a node)                                       |
-| `await expect(locator).toHaveAttribute(attr, val)` | Wait for attribute value (e.g., edge markers)                                             |
-| `page.waitForTimeout(ms)`                          | **Last resort** — only for animations with no observable state change (e.g., zoom settle) |
+| Strategy | When to use |
+|----------|-------------|
+| `await expect(locator).toBeAttached()` | Wait for element to exist in the DOM (e.g., after page load) |
+| `await expect(locator).toBeVisible()` | Wait for element to be visible (e.g., toolbar after selection) |
+| `await expect(locator).toHaveCount(n)` | Wait for exact number of elements (e.g., edge count after connection) |
+| `await expect(locator).toHaveClass(/selected/)` | Wait for class change (e.g., after clicking a node) |
+| `await expect(locator).toHaveAttribute(attr, val)` | Wait for attribute value (e.g., edge markers) |
+| `page.waitForTimeout(ms)` | **Last resort** — only for animations with no observable state change (e.g., zoom settle) |
 
 **Prefer assertion-based waits** (`expect` with auto-retry) over `waitForTimeout`. Assertion-based waits are faster (they resolve as soon as the condition is met) and more reliable (they don't depend on timing).
 
@@ -552,11 +558,11 @@ Use `toHaveCount` instead of manual counting:
 
 ```ts
 // WRONG — does not auto-retry
-const count = await page.locator(".react-flow__node").count();
+const count = await page.locator('.react-flow__node').count();
 expect(count).toBe(3);
 
 // CORRECT — auto-retries until condition met or timeout
-await expect(page.locator(".react-flow__node")).toHaveCount(3);
+await expect(page.locator('.react-flow__node')).toHaveCount(3);
 ```
 
 ## Helper utilities
@@ -566,8 +572,8 @@ await expect(page.locator(".react-flow__node")).toHaveCount(3);
 Extracts translateX, translateY, and scale from the viewport's CSS transform. Based on the pattern used in the xyflow test suite:
 
 ```ts
-async function getTransform(page: import("@playwright/test").Page) {
-  return page.locator(".react-flow__viewport").evaluate((el) => {
+async function getTransform(page: import('@playwright/test').Page) {
+  return page.locator('.react-flow__viewport').evaluate((el) => {
     const style = window.getComputedStyle(el);
     const matrix = new DOMMatrix(style.transform);
     return {
@@ -592,7 +598,7 @@ Convenience helper for mouse drag operations:
 
 ```ts
 async function dragFromTo(
-  page: import("@playwright/test").Page,
+  page: import('@playwright/test').Page,
   from: { x: number; y: number },
   to: { x: number; y: number },
   steps = 5,
@@ -611,10 +617,7 @@ const nodeBox = await node.boundingBox();
 await dragFromTo(
   page,
   { x: nodeBox!.x + nodeBox!.width / 2, y: nodeBox!.y + nodeBox!.height / 2 },
-  {
-    x: nodeBox!.x + nodeBox!.width / 2 + 100,
-    y: nodeBox!.y + nodeBox!.height / 2 + 50,
-  },
+  { x: nodeBox!.x + nodeBox!.width / 2 + 100, y: nodeBox!.y + nodeBox!.height / 2 + 50 },
 );
 ```
 
@@ -623,11 +626,9 @@ await dragFromTo(
 Get the center point of an element for mouse operations:
 
 ```ts
-async function getBoundingBoxCenter(
-  locator: import("@playwright/test").Locator,
-) {
+async function getBoundingBoxCenter(locator: import('@playwright/test').Locator) {
   const box = await locator.boundingBox();
-  if (!box) throw new Error("Element not found or not visible");
+  if (!box) throw new Error('Element not found or not visible');
   return {
     x: box.x + box.width / 2,
     y: box.y + box.height / 2,
@@ -652,7 +653,7 @@ await dragFromTo(page, sourceCenter, targetCenter);
 export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   use: {
-    trace: "on-first-retry",
+    trace: 'on-first-retry',
   },
 });
 ```
@@ -694,18 +695,14 @@ use: {
 Each test gets a fresh page by default. If your tests share a fixture page, use `test.describe` with `beforeEach`:
 
 ```ts
-test.describe("node interactions", () => {
+test.describe('node interactions', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto("/");
-    await expect(page.locator(".react-flow__node")).toHaveCount(3);
+    await page.goto('/');
+    await expect(page.locator('.react-flow__node')).toHaveCount(3);
   });
 
-  test("select node", async ({ page }) => {
-    /* ... */
-  });
-  test("drag node", async ({ page }) => {
-    /* ... */
-  });
+  test('select node', async ({ page }) => { /* ... */ });
+  test('drag node', async ({ page }) => { /* ... */ });
 });
 ```
 

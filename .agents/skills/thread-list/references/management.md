@@ -5,7 +5,6 @@ CRUD operations for managing multiple chat threads.
 ## Overview
 
 Thread list management allows users to:
-
 - Create new conversations
 - Switch between threads
 - Rename, archive, and delete threads
@@ -23,10 +22,12 @@ function ThreadManager() {
   const threads = api.threads();
 
   // Get current state
-  const { threadIds, mainThreadId } = useAuiState((s) => ({
-    threadIds: s.threads.threadIds,
-    mainThreadId: s.threads.mainThreadId,
-  }));
+  const { threadIds, mainThreadId } = useAuiState(
+    (s) => ({
+      threadIds: s.threads.threadIds,
+      mainThreadId: s.threads.mainThreadId,
+    })
+  );
 }
 ```
 
@@ -102,9 +103,9 @@ await item.generateTitle();
 
 ```typescript
 interface ThreadListState {
-  mainThreadId: string; // Current thread
-  newThreadId: string | null; // Pending new thread
-  threadIds: readonly string[]; // Regular thread IDs
+  mainThreadId: string;           // Current thread
+  newThreadId: string | null;     // Pending new thread
+  threadIds: readonly string[];   // Regular thread IDs
   archivedThreadIds: readonly string[];
   isLoading: boolean;
   threadItems: readonly ThreadListItemState[];

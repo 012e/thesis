@@ -124,8 +124,8 @@ export function MyRuntimeProvider({ children }: { children: ReactNode }) {
       for await (const chunk of stream) {
         setMessages((prev) =>
           prev.map((m) =>
-            m.id === assistantId ? { ...m, content: m.content + chunk } : m,
-          ),
+            m.id === assistantId ? { ...m, content: m.content + chunk } : m
+          )
         );
       }
     } finally {
