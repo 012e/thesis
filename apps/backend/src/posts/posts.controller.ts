@@ -219,14 +219,17 @@ export class PostsController {
 
   @TsRestHandler(postsContract.listUserPosts)
   listUserPosts(@Session() session: UserSession) {
-    return tsRestHandler(postsContract.listUserPosts, async ({ params }) => {
-      const userPosts = await this.postsService.listByUser(
+    return tsRestHandler(postsContract.listUserPosts, async ({ params, query }) => {
+      const limit = query.limit ?? 20;
+      const result = await this.postsService.listByUser(
         params.id,
         session.user.id,
+        limit,
+        query.cursor,
       );
       return {
         status: 200,
-        body: userPosts as any,
+        body: postsContract.listUserPosts.responses[200].parse(result),
       };
     });
   }

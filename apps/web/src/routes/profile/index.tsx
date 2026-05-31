@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 import { useSession } from "@/hooks/use-session";
 import { useUserProfileSuspense } from "@/hooks/use-user-profile";
-import { useUserPostsSuspense } from "@/hooks/use-user-posts";
+import { useUserPosts } from "@/hooks/use-user-posts";
 import { PageSpinner } from "@/components/ui/spinner";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ProfileView } from "@/components/profile/profile-view";
@@ -38,7 +38,7 @@ export function ProfileContent({
 
   const userId = session.user.id;
   const { data: profile } = useUserProfileSuspense(userId);
-  const { data: userPosts } = useUserPostsSuspense(userId);
+  const userPosts = useUserPosts(userId);
 
   const sessionRaw = session as
     | { session?: { impersonatedBy?: string | null } }
@@ -64,7 +64,13 @@ export function ProfileContent({
             ? new Date(session.user.createdAt).toISOString()
             : null,
         }}
-        posts={userPosts}
+        postsData={userPosts.data}
+        fetchNextPage={userPosts.fetchNextPage}
+        hasNextPage={userPosts.hasNextPage}
+        isFetchingNextPage={userPosts.isFetchingNextPage}
+        isLoadingPosts={userPosts.isLoading}
+        isPostsError={userPosts.isError}
+        postsError={userPosts.error}
         isCurrentUser={true}
         showFollowingLinks={true}
         onEdit={() => setIsEditDialogOpen(true)}

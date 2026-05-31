@@ -8,9 +8,19 @@ import type {
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
 
-export async function fetchUserPosts(userId: string): Promise<PostDto[]> {
+export interface UserPostsParams {
+  userId: string;
+  limit?: number;
+  cursor?: string;
+}
+
+export async function fetchUserPosts(params: UserPostsParams) {
   const response = await client.listUserPosts({
-    params: { id: userId },
+    params: { id: params.userId },
+    query: {
+      limit: params.limit,
+      cursor: params.cursor,
+    },
   });
 
   if (response.status === 401) {
@@ -19,7 +29,7 @@ export async function fetchUserPosts(userId: string): Promise<PostDto[]> {
   }
 
   if (response.status === 404) {
-    return [];
+    return { items: [], nextCursor: null };
   }
 
   if (response.status === 200) {

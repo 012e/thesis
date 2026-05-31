@@ -38,7 +38,14 @@ export class PostsReadService {
   async listByUser(
     authorId: string,
     requestingUserId: string,
-  ): Promise<PostDto[]> {
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<PostFeedPage> {
+    const parsed = cursor
+      ? decodeCreatedAtCursor(cursor, { throwOnInvalidDate: true })
+      : null;
+    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+
     const rows = await this.databaseService.db
       .select({
         id: posts.id,
@@ -63,7 +70,21 @@ export class PostsReadService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(and(eq(posts.authorId, authorId), eq(posts.hidden, false)))
+      .where(
+        cursorDate && parsed
+          ? and(
+              eq(posts.authorId, authorId),
+              eq(posts.hidden, false),
+              or(
+                lt(posts.createdAt, cursorDate),
+                and(
+                  eq(posts.createdAt, cursorDate),
+                  gt(posts.id, parsed.postId),
+                ),
+              ),
+            )
+          : and(eq(posts.authorId, authorId), eq(posts.hidden, false)),
+      )
       .groupBy(
         posts.id,
         usersView.id,
@@ -72,15 +93,29 @@ export class PostsReadService {
         usersView.name,
         usersView.image,
       )
-      .orderBy(desc(posts.createdAt));
+      .orderBy(desc(posts.createdAt), asc(posts.id))
+      .limit(limit + 1);
 
-    const dtos = rows.map((row) =>
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? encodeCreatedAtCursor({
+            createdAt: lastItem.createdAt.toISOString(),
+            postId: lastItem.id,
+          })
+        : null;
+
+    const dtos = items.map((row) =>
       this.postsPresenter.toDto(
         row,
         row.userReactionType as ReactionTypeDto | null,
       ),
     );
-    return this.postsPresenter.hydrateTags(dtos);
+    await this.postsPresenter.hydrateTags(dtos);
+
+    return { items: dtos, nextCursor };
   }
 
   async list(userId: string): Promise<PostDto[]> {

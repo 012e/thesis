@@ -18,7 +18,7 @@ export const Route = createFileRoute("/users/$userId")({
 export function UserProfilePage() {
   const { userId } = Route.useParams();
   const { data: profile, isPending, error } = useUserProfile(userId);
-  const { data: posts = [] } = useUserPosts(userId);
+  const userPosts = useUserPosts(userId);
   const { data: session } = useSession();
   const openDmSidebar = useOpenDmSidebar();
   const {
@@ -61,7 +61,13 @@ export function UserProfilePage() {
         isFollowing,
         createdAt: profile.createdAt,
       }}
-      posts={posts}
+      postsData={userPosts.data}
+      fetchNextPage={userPosts.fetchNextPage}
+      hasNextPage={userPosts.hasNextPage}
+      isFetchingNextPage={userPosts.isFetchingNextPage}
+      isLoadingPosts={userPosts.isLoading}
+      isPostsError={userPosts.isError}
+      postsError={userPosts.error}
       isCurrentUser={isCurrentUser}
       showFollowingLinks={false}
       onFollow={toggleFollow}

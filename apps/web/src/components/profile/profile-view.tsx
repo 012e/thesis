@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
+import type { InfiniteData } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -12,12 +13,16 @@ import {
   IconMessageCircle,
 } from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
-import { Post } from "@/components/post";
+import { PostsFeed } from "@/components/posts-feed";
 import { uploadImages } from "@/lib/api/uploads";
 import { updateCoverPhoto } from "@/lib/api/users";
 import { toast } from "@/lib/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { usePostInViewTracker } from "@/hooks/use-post-in-view";
+
+interface PostsPageData {
+  items: PostDto[];
+  nextCursor: string | null;
+}
 
 export interface ProfileViewProps {
   profile: {
@@ -33,7 +38,13 @@ export interface ProfileViewProps {
     isFollowing: boolean;
     createdAt: string | null;
   };
-  posts: PostDto[];
+  postsData: InfiniteData<PostsPageData> | undefined;
+  fetchNextPage: () => void;
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  isLoadingPosts: boolean;
+  isPostsError: boolean;
+  postsError: Error | null;
   isCurrentUser: boolean;
   showFollowingLinks?: boolean;
   onEdit?: () => void;
@@ -45,7 +56,13 @@ export interface ProfileViewProps {
 
 export function ProfileView({
   profile,
-  posts,
+  postsData,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  isLoadingPosts,
+  isPostsError,
+  postsError,
   isCurrentUser,
   showFollowingLinks = false,
   onEdit,
@@ -57,9 +74,6 @@ export function ProfileView({
   const queryClient = useQueryClient();
   const coverFileInputRef = useRef<HTMLInputElement>(null);
   const [isCoverUploading, setIsCoverUploading] = useState(false);
-
-  // Track which post is most visible and sync to the global AI context.
-  usePostInViewTracker(posts);
 
   const initials = profile.name
     ? profile.name
@@ -290,19 +304,18 @@ export function ProfileView({
         {/* Posts Section */}
         <div className="pb-8 mt-6">
           <h2 className="mb-4 text-xl font-semibold px-4">Posts</h2>
-          {posts.length === 0 ? (
-            <Card className="p-8 text-center">
-              <div className="text-muted-foreground">No posts yet</div>
-            </Card>
-          ) : (
-            <div className="flex flex-col divide-y">
-              {posts.map((post) => (
-                <div key={post.id} data-post-id={post.id}>
-                  <Post post={post} />
-                </div>
-              ))}
-            </div>
-          )}
+          <PostsFeed
+            data={postsData}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoadingPosts}
+            isError={isPostsError}
+            error={postsError}
+            loadingLabel="Loading posts..."
+            errorLabel="Error loading posts"
+            emptyLabel="No posts yet"
+          />
         </div>
       </div>
 
