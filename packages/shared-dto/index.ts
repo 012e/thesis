@@ -87,6 +87,8 @@ export interface PostDto {
   downvoteCount: number;
   commentCount: number;
   currentUserReaction: ReactionTypeDto | null;
+  currentUserUpvoted: boolean;
+  currentUserDownvoted: boolean;
   currentUserSubscribed: boolean;
   currentUserBookmarked: boolean;
   tags: PostTagDto[];

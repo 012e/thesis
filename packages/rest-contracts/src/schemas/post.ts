@@ -63,6 +63,8 @@ export const Post = z.object({
   downvoteCount: z.number().int().nonnegative(),
   commentCount: z.number().int().nonnegative(),
   currentUserReaction: ReactionType.nullable(),
+  currentUserUpvoted: z.boolean(),
+  currentUserDownvoted: z.boolean(),
   currentUserSubscribed: z.boolean(),
   currentUserBookmarked: z.boolean(),
   tags: z.array(
