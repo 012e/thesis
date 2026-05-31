@@ -10,6 +10,7 @@ import type { ExecutionResult } from "@repo/rest-contracts";
 import { isOutputMinimizedAtom } from "./-types";
 import {
   codeAtom,
+  editFlashAtom,
   languageAtom,
   resultAtom,
   setCodeAtom,
@@ -71,6 +72,7 @@ export function PlaygroundAssistantTools() {
   const setCode = useSetAtom(setCodeAtom);
   const setLanguage = useSetAtom(setLanguageAtom);
   const setResult = useSetAtom(setResultAtom);
+  const setEditFlash = useSetAtom(editFlashAtom);
   const setIsOutputMinimized = useSetAtom(isOutputMinimizedAtom);
   const stateRef = useRef({
     code,
@@ -197,6 +199,13 @@ export function PlaygroundAssistantTools() {
           version: nextVersion,
         };
         setCode(nextCode);
+        if (newString.length > 0) {
+          setEditFlash({
+            id: nextVersion,
+            startOffset: firstIndex,
+            endOffset: firstIndex + newString.length,
+          });
+        }
 
         return {
           status: "success",
@@ -208,7 +217,7 @@ export function PlaygroundAssistantTools() {
         };
       },
     }),
-    [setCode],
+    [setCode, setEditFlash],
   );
 
   const writeFileTool = useMemo(
@@ -256,6 +265,13 @@ export function PlaygroundAssistantTools() {
         };
         setCode(content);
         if (nextLanguage !== current.language) setLanguage(nextLanguage);
+        if (content.length > 0) {
+          setEditFlash({
+            id: nextVersion,
+            startOffset: 0,
+            endOffset: content.length,
+          });
+        }
 
         return {
           status: "success",
@@ -267,7 +283,7 @@ export function PlaygroundAssistantTools() {
         };
       },
     }),
-    [setCode, setLanguage],
+    [setCode, setEditFlash, setLanguage],
   );
 
   const setLanguageTool = useMemo(
