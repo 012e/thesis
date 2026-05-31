@@ -751,7 +751,8 @@ export class ModerationService {
 
     // Send notification to the post owner
     if (post) {
-      const preview = this.getPostPreview(post.content as PostContentDto);
+      const content = post.content as PostContentDto | null | undefined;
+      const preview = content ? this.getPostPreview(content) : null;
 
       await this.notificationsService
         .deliver(
@@ -777,7 +778,7 @@ export class ModerationService {
         )
         .catch((err: unknown) => {
           this.logger.warn(
-            `Failed to send post_hidden notification for post ${postId}: ${(err as Error)?.message ?? err}`,
+            `Failed to send post_hidden notification for post ${postId} (author=${post.authorId}): ${(err as Error)?.message ?? err}`,
           );
         });
     }
