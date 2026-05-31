@@ -14,6 +14,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { GlobalErrorPage } from "@/components/global-error-boundary";
 import { useTrack } from "@/components/analytics-provider";
+import { AppNavigationAssistantTools } from "@/components/assistant-ui/app-navigation-tools";
 
 export function ThemeSync() {
   useTheme();
@@ -118,6 +119,7 @@ export function RootComponent() {
       <RouteContextSync />
       <PageViewTracker />
       <AuthGuard>
+        <AppNavigationAssistantTools />
         {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />
         ) : isHomeRoute ? (

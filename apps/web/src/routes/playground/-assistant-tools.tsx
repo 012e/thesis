@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useAtomValue, useSetAtom } from "jotai";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
+import { useAssistantPageReady } from "@/lib/assistant/page-readiness";
 import { isOutputMinimizedAtom } from "./-types";
 import {
   codeAtom,
@@ -353,6 +354,7 @@ export function PlaygroundAssistantTools() {
   useAssistantTool(writeFileTool);
   useAssistantTool(setLanguageTool);
   useAssistantTool(runCodeTool);
+  useAssistantPageReady("playground");
 
   return null;
 }
