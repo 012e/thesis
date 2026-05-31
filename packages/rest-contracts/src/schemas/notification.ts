@@ -10,6 +10,7 @@ export const NotificationType = z.enum([
   "post_reaction",
   "comment_reaction",
   "direct_message",
+  "post_hidden",
 ]);
 
 // ─── Payload schemas (per type) ───────────────────────────────────────────────
@@ -81,6 +82,12 @@ export const DirectMessageNotificationPayload = z.object({
   preview: z.string(),
 });
 
+export const PostHiddenNotificationPayload = z.object({
+  postId: z.string().uuid(),
+  reason: z.string().nullable(),
+  post: NotificationPostContext.optional(),
+});
+
 export const NotificationPayload = z.union([
   FollowNotificationPayload,
   CommentNotificationPayload,
@@ -89,6 +96,7 @@ export const NotificationPayload = z.union([
   PostReactionNotificationPayload,
   CommentReactionNotificationPayload,
   DirectMessageNotificationPayload,
+  PostHiddenNotificationPayload,
 ]);
 
 // ─── Actor ────────────────────────────────────────────────────────────────────
