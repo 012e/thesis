@@ -90,6 +90,12 @@ const statusIconMap: Record<ToolStatus, React.ElementType> = {
   "requires-action": AlertCircleIcon,
 };
 
+function formatToolName(toolName: string) {
+  const sentence = toolName.replace(/[_-]+/g, " ").trim().toLowerCase();
+
+  return sentence ? sentence.charAt(0).toUpperCase() + sentence.slice(1) : toolName;
+}
+
 function ToolFallbackTrigger({
   toolName,
   status,
@@ -106,6 +112,7 @@ function ToolFallbackTrigger({
 
   const Icon = statusIconMap[statusType];
   const label = isCancelled ? "Cancelled tool" : "Used tool";
+  const formattedToolName = formatToolName(toolName);
 
   return (
     <CollapsibleTrigger
@@ -130,9 +137,9 @@ function ToolFallbackTrigger({
           "aui-tool-fallback-trigger-label-wrapper relative inline-block grow text-left leading-none",
           isCancelled && "text-muted-foreground line-through",
         )}
-      >
+        >
         <span>
-          {label}: <b>{toolName}</b>
+          {label}: <b>{formattedToolName}</b>
         </span>
         {isRunning && (
           <span
@@ -140,7 +147,7 @@ function ToolFallbackTrigger({
             data-slot="tool-fallback-trigger-shimmer"
             className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
           >
-            {label}: <b>{toolName}</b>
+            {label}: <b>{formattedToolName}</b>
           </span>
         )}
       </span>
