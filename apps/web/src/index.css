@@ -379,3 +379,7 @@
   color: #7d8799;
   border-right: none;
 }
+
+.monaco-editor .line-numbers::before {
+  content: none !important;
+}
