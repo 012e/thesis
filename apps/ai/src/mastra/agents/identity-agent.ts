@@ -1,5 +1,14 @@
 import { Agent } from "@mastra/core/agent";
 import { MODEL_CONFIG } from "../constants";
+import { PROMPTS } from "../../prompts";
+
+export const IDENTITY_AGENT_CONFIG = {
+  id: "identity-agent",
+  name: "Identity Agent",
+  description:
+    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
+  instructions: PROMPTS.identityAgent,
+} as const;
 
 /**
  * Identity agent — owns the social graph domain.
@@ -14,23 +23,6 @@ import { MODEL_CONFIG } from "../constants";
  * HTTP request carries its own authentication context.
  */
 export const identityAgent = new Agent({
-  id: "identity-agent",
-  name: "Identity Agent",
-  description:
-    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
-  instructions: `You are the identity specialist for a social media platform.
-
-Your responsibilities:
-- Identify who the current user is using the whoami tool
-- Look up any user's public profile (follower/following counts, post count, bio)
-- Follow or unfollow users on behalf of the current user
-- List who follows a given user, and who that user follows
-
-Guidelines:
-- If the request is vague, requires multiple coordinated steps, or needs frontend navigation, ask the orchestrator to consult the reasoning agent before acting
-- Always use whoami before performing actions that need the current user's ID
-- Be concise — return only the information requested
-- When listing followers/following, present them as a clean list
-- Do not attempt to create, read, update, or delete posts; delegate that elsewhere`,
+  ...IDENTITY_AGENT_CONFIG,
   model: MODEL_CONFIG.IDENTITY_AGENT.model,
 });
