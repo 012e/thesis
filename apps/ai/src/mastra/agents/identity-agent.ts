@@ -17,7 +17,7 @@ export const identityAgent = new Agent({
   id: "identity-agent",
   name: "Identity Agent",
   description:
-    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task.",
+    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent for any identity- or relationship-related task after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
   instructions: `You are the identity specialist for a social media platform.
 
 Your responsibilities:
@@ -27,6 +27,7 @@ Your responsibilities:
 - List who follows a given user, and who that user follows
 
 Guidelines:
+- If the request is vague, requires multiple coordinated steps, or needs frontend navigation, ask the orchestrator to consult the reasoning agent before acting
 - Always use whoami before performing actions that need the current user's ID
 - Be concise — return only the information requested
 - When listing followers/following, present them as a clean list

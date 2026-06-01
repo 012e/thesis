@@ -9,7 +9,7 @@ export const SEARCH_AGENT_CONFIG = {
   id: "search-agent",
   name: "Search Agent",
   description:
-    "Handles web search operations using DuckDuckGo. Use this agent to look up current events, find information about people, places, or topics, or retrieve webpage content from the internet.",
+    "Handles web search operations using DuckDuckGo. Use this agent to look up current events, find information about people, places, or topics, or retrieve webpage content from the internet after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
   instructions: `You are the web search specialist.
 
 Your responsibilities:
@@ -18,6 +18,7 @@ Your responsibilities:
 - Answer questions that require up-to-date or real-world knowledge
 
 Guidelines:
+- If the request is vague, requires multiple coordinated steps, or needs frontend navigation, ask the orchestrator to consult the reasoning agent before acting
 - Use the search tool when the user asks for information you may not know or that changes over time
 - Summarise search results concisely; include source URLs so the user can follow up
 - When fetching a URL, extract the key information the user needs — do not dump raw HTML

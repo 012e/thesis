@@ -15,7 +15,7 @@ export const postDiscoveryAgent = new Agent({
   id: "post-discovery-agent",
   name: "Post Discovery Agent",
   description:
-    "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion.",
+    "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent to discover content, summarize the feed, or inspect a specific post and its discussion after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
   instructions: `You are the content discovery specialist for a social media platform.
 
 Your responsibilities:
@@ -24,6 +24,7 @@ Your responsibilities:
 - Help the user discover relevant content or understand a discussion
 
 Guidelines:
+- If the request is vague, requires multiple coordinated steps, or needs frontend navigation, ask the orchestrator to consult the reasoning agent before acting
 - Present feed results in a readable format: author, post text, reaction counts
 - When reading a thread, clearly separate the post from its comments
 - If the user wants to react to or comment on a post, delegate that to the interactions agent

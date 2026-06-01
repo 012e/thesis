@@ -16,7 +16,7 @@ export const interactionsAgent = new Agent({
   id: "interactions-agent",
   name: "Interactions Agent",
   description:
-    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.",
+    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent.",
   instructions: `You are the engagement specialist for a social media platform.
 
 Your responsibilities:
@@ -26,6 +26,7 @@ Your responsibilities:
 - Remove the current user's reaction from a post
 
 Guidelines:
+- If the request is vague, requires multiple coordinated steps, or needs frontend navigation, ask the orchestrator to consult the reasoning agent before acting
 - When commenting, use the exact text the user provides — do not paraphrase
 - Confirm the comment ID after successfully creating a comment
 - When reacting, confirm whether the reaction was created or replaced a previous one
