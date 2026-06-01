@@ -4,7 +4,6 @@ import type { ToolSet } from "ai";
 import type { AIContextPayload } from "@repo/shared-dto";
 import { PROMPTS } from "../../prompts";
 import { getSocialMcpToolsets } from "../mcp/social";
-import { getSearchMcpToolset } from "../mcp/search";
 import { IDENTITY_AGENT_CONFIG } from "./identity-agent";
 import { INTERACTIONS_AGENT_CONFIG } from "./interactions-agent";
 import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
@@ -54,7 +53,6 @@ export async function createOrchestratorAgent(
   const { identityToolset, postsToolset, interactionsToolset } =
     await getSocialMcpToolsets(context);
 
-  const searchToolset = await getSearchMcpToolset();
   const getContextTool = createGetContextTool(userContext);
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
@@ -86,7 +84,6 @@ export async function createOrchestratorAgent(
   const searchAgent = new Agent({
     ...SEARCH_AGENT_CONFIG,
     model: MODEL_CONFIG.SEARCH_AGENT.model,
-    tools: searchToolset,
   });
 
   const navigationAgent = new Agent({
@@ -97,6 +94,9 @@ export async function createOrchestratorAgent(
   const planningAgent = new Agent({
     ...PLANNING_AGENT_CONFIG,
     model: MODEL_CONFIG.PLANNING_AGENT.model,
+    agents: {
+      navigationAgent,
+    },
   });
 
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────

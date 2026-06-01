@@ -1,6 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { MODEL_CONFIG } from "../constants";
 import { PROMPTS } from "../../prompts";
+import { navigationAgent } from "./navigation-agent";
 
 /**
  * Shared config for the planning agent. Exported so the orchestrator factory
@@ -23,4 +24,7 @@ export const PLANNING_AGENT_CONFIG = {
 export const planningAgent = new Agent({
   ...PLANNING_AGENT_CONFIG,
   model: MODEL_CONFIG.PLANNING_AGENT.model,
+  agents: {
+    navigationAgent,
+  },
 });

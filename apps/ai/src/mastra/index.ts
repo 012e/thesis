@@ -25,7 +25,7 @@ import { RequestContext } from "@mastra/core/request-context";
  * - interactionsAgent — engagement ops (Studio preview only)
  * - navigationAgent — app page/tool discovery (Studio preview only)
  * - planningAgent   — explicit execution planning with the strongest model
- * - searchAgent     — web search via DuckDuckGo (Studio preview only)
+ * - searchAgent     — web search via OpenAI web search
  *
  * Note: the sub-agents registered here have NO tools attached because MCP
  * toolsets require per-request auth. The live /chat route uses

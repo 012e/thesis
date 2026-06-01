@@ -1,6 +1,11 @@
+import { openai } from "@ai-sdk/openai";
 import { Agent } from "@mastra/core/agent";
 import { MODEL_CONFIG } from "../constants";
 import { PROMPTS } from "../../prompts";
+
+const searchTools = {
+  webSearch: openai.tools.webSearch(),
+};
 
 /**
  * Shared config for the search agent. Exported so the orchestrator factory can
@@ -10,19 +15,17 @@ export const SEARCH_AGENT_CONFIG = {
   id: "search-agent",
   name: "Search Agent",
   description:
-    "Handles web search operations using DuckDuckGo. Use this agent directly for simple web lookups or page fetches; use the planning agent first when the task is complex or needs multiple steps.",
+    "Handles web search operations using OpenAI web search. Use this agent directly for simple web lookups; use the planning agent first when the task is complex or needs multiple steps.",
   instructions: PROMPTS.searchAgent,
+  tools: searchTools,
 } as const;
 
 /**
  * Search agent — owns all web search operations.
  *
  * Capable of:
- * - Searching the web via DuckDuckGo
- * - Fetching and parsing webpage content
- *
- * Tools are injected per-request by the orchestrator via toolsets.
- * This static registration is kept for Mastra Studio compatibility only.
+ * - Searching the web via OpenAI web search
+ * - Summarising current web information from search results
  */
 export const searchAgent = new Agent({
   ...SEARCH_AGENT_CONFIG,
