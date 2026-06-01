@@ -10,7 +10,7 @@ export const SEARCH_AGENT_CONFIG = {
   id: "search-agent",
   name: "Search Agent",
   description:
-    "Handles web search operations using DuckDuckGo. Use this agent directly to look up current events, find information about people, places, or topics, or retrieve webpage content from the internet; use the planning agent first only when an explicit multi-step plan is needed.",
+    "Handles web search operations using DuckDuckGo. Use this agent directly for simple web lookups or page fetches; use the planning agent first when the task is complex or needs multiple steps.",
   instructions: PROMPTS.searchAgent,
 } as const;
 

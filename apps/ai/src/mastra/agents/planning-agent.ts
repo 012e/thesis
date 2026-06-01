@@ -10,7 +10,7 @@ export const PLANNING_AGENT_CONFIG = {
   id: "planning-agent",
   name: "Planning Agent",
   description:
-    "Creates and revises explicit execution plans only. Use when the user asks for a plan, a task has multiple dependent steps, or side effects require user-approved planning.",
+    "Creates and revises execution plans for complex work only. Use before acting when a task has 3+ steps, spans multiple agents/tools, mixes UI navigation with backend actions, needs context gathering before action, has ordering constraints, needs user approval for side effects, or requires researching/drafting content before posting.",
   instructions: PROMPTS.planningAgent,
 } as const;
 

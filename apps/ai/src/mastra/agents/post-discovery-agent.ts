@@ -6,7 +6,7 @@ export const POST_DISCOVERY_AGENT_CONFIG = {
   id: "post-discovery-agent",
   name: "Post Discovery Agent",
   description:
-    "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent directly to discover content, summarize the feed, or inspect a specific post and its discussion; use the planning agent first only when an explicit multi-step plan is needed.",
+    "Handles read operations on posts: browsing the recommended feed and reading full post threads with their comments. Use this agent directly for simple discovery tasks; use the planning agent first when the task is complex or needs multiple steps.",
   instructions: PROMPTS.postDiscoveryAgent,
 } as const;
 

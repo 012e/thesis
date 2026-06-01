@@ -6,7 +6,7 @@ export const INTERACTIONS_AGENT_CONFIG = {
   id: "interactions-agent",
   name: "Interactions Agent",
   description:
-    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent directly whenever the user wants to respond to, react to, or engage with content; use the planning agent first only when an explicit multi-step plan is needed.",
+    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent directly for simple engagement tasks; use the planning agent first when the task is complex or needs multiple steps.",
   instructions: PROMPTS.interactionsAgent,
 } as const;
 

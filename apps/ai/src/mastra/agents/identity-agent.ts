@@ -6,7 +6,7 @@ export const IDENTITY_AGENT_CONFIG = {
   id: "identity-agent",
   name: "Identity Agent",
   description:
-    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent directly for identity- or relationship-related tasks; use the planning agent first only when an explicit multi-step plan is needed.",
+    "Handles user identity and social-graph operations: who the current user is, profile lookups, following and unfollowing users, and listing followers or followings. Use this agent directly for simple identity- or relationship-related tasks; use the planning agent first when the task is complex or needs multiple steps.",
   instructions: PROMPTS.identityAgent,
 } as const;
 
