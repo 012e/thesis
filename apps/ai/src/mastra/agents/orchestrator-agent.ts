@@ -1,11 +1,13 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
+import type { ToolSet } from "ai";
 import type { AIContextPayload } from "@repo/shared-dto";
 import { PROMPTS } from "../../prompts";
 import { getSocialMcpToolsets } from "../mcp/social";
 import { getSearchMcpToolset } from "../mcp/search";
 import { IDENTITY_AGENT_CONFIG } from "./identity-agent";
 import { INTERACTIONS_AGENT_CONFIG } from "./interactions-agent";
+import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
 import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
 import { POST_DISCOVERY_AGENT_CONFIG } from "./post-discovery-agent";
 import { REASONING_AGENT_CONFIG } from "./reasoning-agent";
@@ -45,6 +47,7 @@ export async function createOrchestratorAgent(
   context: RequestContext,
   mode: ModelMode = "fast",
   userContext?: AIContextPayload,
+  clientTools?: ToolSet,
 ): Promise<Agent> {
   const orchestratorModelConfig = getOrchestratorModelConfig(mode);
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
@@ -86,6 +89,11 @@ export async function createOrchestratorAgent(
     tools: searchToolset,
   });
 
+  const navigationAgent = new Agent({
+    ...NAVIGATION_AGENT_CONFIG,
+    model: MODEL_CONFIG.NAVIGATION_AGENT.model,
+  });
+
   const reasoningAgent = new Agent({
     ...REASONING_AGENT_CONFIG,
     model: MODEL_CONFIG.REASONING_AGENT.model,
@@ -104,6 +112,7 @@ export async function createOrchestratorAgent(
       postDiscoveryAgent,
       interactionsAgent,
       searchAgent,
+      navigationAgent,
       reasoningAgent,
     },
     tools: {

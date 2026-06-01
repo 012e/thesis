@@ -6,6 +6,7 @@ import { identityAgent } from "./agents/identity-agent";
 import { postCreationAgent } from "./agents/post-creation-agent";
 import { postDiscoveryAgent } from "./agents/post-discovery-agent";
 import { interactionsAgent } from "./agents/interactions-agent";
+import { navigationAgent } from "./agents/navigation-agent";
 import { reasoningAgent } from "./agents/reasoning-agent";
 import { searchAgent } from "./agents/search-agent";
 import { pgStore } from "./memory";
@@ -22,6 +23,7 @@ import { RequestContext } from "@mastra/core/request-context";
  * - postCreationAgent — post write ops (Studio preview only)
  * - postDiscoveryAgent — post read ops (Studio preview only)
  * - interactionsAgent — engagement ops (Studio preview only)
+ * - navigationAgent — app page/tool discovery (Studio preview only)
  * - reasoningAgent  — complex reasoning with the strongest model
  * - searchAgent     — web search via DuckDuckGo (Studio preview only)
  *
@@ -37,6 +39,7 @@ export const mastra = new Mastra({
     postCreationAgent,
     postDiscoveryAgent,
     interactionsAgent,
+    navigationAgent,
     reasoningAgent,
     searchAgent,
   },

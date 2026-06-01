@@ -155,6 +155,7 @@ export const streamRoute = registerApiRoute("/chat", {
         requestContext,
         resolvedMode,
         userContext,
+        clientTools,
       );
 
       const messagesWithContext = injectContextMessage(messages, userContext);
