@@ -82,9 +82,9 @@ test.describe("Bookmarks", () => {
       await bookmarksPage.goto();
 
       // The post should no longer be there
-      await expect(
-        page.getByText(postContent).first(),
-      ).not.toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(postContent).first()).not.toBeVisible({
+        timeout: 10_000,
+      });
     });
   });
 });

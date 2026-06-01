@@ -234,7 +234,9 @@ export function RegisterForm({
               </form.Field>
               <Field>
                 <form.Subscribe
-                  selector={(state) => [state.values, state.isSubmitting] as const}
+                  selector={(state) =>
+                    [state.values, state.isSubmitting] as const
+                  }
                 >
                   {([values, isSubmitting]) => {
                     const isValid =
@@ -242,10 +244,7 @@ export function RegisterForm({
                       values.password === values.confirmPassword;
 
                     return (
-                      <Button
-                        type="submit"
-                        disabled={!isValid || isSubmitting}
-                      >
+                      <Button type="submit" disabled={!isValid || isSubmitting}>
                         {isSubmitting
                           ? "Creating account..."
                           : "Create account"}

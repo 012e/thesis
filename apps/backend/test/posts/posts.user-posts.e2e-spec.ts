@@ -257,9 +257,7 @@ describe("GET /users/:id/posts integration", () => {
 
       // Second page using cursor → should give remaining 2 (Post 2, 1)
       const page2 = await server
-        .get(
-          `/users/${userAId}/posts?limit=3&cursor=${page1.body.nextCursor}`,
-        )
+        .get(`/users/${userAId}/posts?limit=3&cursor=${page1.body.nextCursor}`)
         .set("Cookie", userACookie)
         .expect(200);
 

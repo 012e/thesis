@@ -41,7 +41,9 @@ const fetchUrlTool = createTool({
   description:
     "Fetches a public web page by URL and returns normalized page text, title, and description for source-grounded synthesis after web search.",
   inputSchema: z.object({
-    url: z.url().describe("The public http(s) URL to fetch from search results"),
+    url: z
+      .url()
+      .describe("The public http(s) URL to fetch from search results"),
   }),
   execute: async ({ url: inputUrl }) => {
     const url = new URL(inputUrl);
@@ -65,12 +67,19 @@ const fetchUrlTool = createTool({
 
     const contentType = response.headers.get("content-type") ?? "";
     const rawText = await response.text();
-    const isHtml = contentType.includes("text/html") || /<html[\s>]/i.test(rawText);
+    const isHtml =
+      contentType.includes("text/html") || /<html[\s>]/i.test(rawText);
     const title = isHtml
-      ? decodeHtmlEntities(/<title[^>]*>([\s\S]*?)<\/title>/i.exec(rawText)?.[1]?.trim() ?? "")
+      ? decodeHtmlEntities(
+          /<title[^>]*>([\s\S]*?)<\/title>/i.exec(rawText)?.[1]?.trim() ?? "",
+        )
       : "";
-    const description = isHtml ? extractMetaContent(rawText, "description") : "";
-    const text = isHtml ? extractHtmlText(rawText) : rawText.replace(/\s+/g, " ").trim();
+    const description = isHtml
+      ? extractMetaContent(rawText, "description")
+      : "";
+    const text = isHtml
+      ? extractHtmlText(rawText)
+      : rawText.replace(/\s+/g, " ").trim();
 
     return {
       url: url.toString(),

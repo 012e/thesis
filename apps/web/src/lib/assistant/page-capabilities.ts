@@ -85,7 +85,8 @@ export const ASSISTANT_PAGE_DEFINITIONS = [
       },
       {
         toolName: "submit_form",
-        description: "Submit the active chat workspace form after confirmation.",
+        description:
+          "Submit the active chat workspace form after confirmation.",
       },
     ],
     requiresAssistantReady: false,
@@ -132,12 +133,15 @@ export function getAssistantPageDefinition(pageId: AssistantPageId) {
 
 export function getAssistantPageByPathname(pathname: string) {
   if (pathname === "/") return getAssistantPageDefinition("home");
-  if (pathname.startsWith("/explore")) return getAssistantPageDefinition("explore");
-  if (pathname.startsWith("/bookmarks")) return getAssistantPageDefinition("bookmarks");
+  if (pathname.startsWith("/explore"))
+    return getAssistantPageDefinition("explore");
+  if (pathname.startsWith("/bookmarks"))
+    return getAssistantPageDefinition("bookmarks");
   if (pathname.startsWith("/notifications")) {
     return getAssistantPageDefinition("notifications");
   }
-  if (pathname.startsWith("/settings")) return getAssistantPageDefinition("settings");
+  if (pathname.startsWith("/settings"))
+    return getAssistantPageDefinition("settings");
   if (pathname.startsWith("/chat")) return getAssistantPageDefinition("chat");
   if (pathname.startsWith("/playground")) {
     return getAssistantPageDefinition("playground");

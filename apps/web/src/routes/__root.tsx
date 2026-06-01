@@ -15,6 +15,7 @@ import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { GlobalErrorPage } from "@/components/global-error-boundary";
 import { useTrack } from "@/components/analytics-provider";
 import { AppNavigationAssistantTools } from "@/components/assistant-ui/app-navigation-tools";
+import { ChatAssistantEffects } from "@/components/assistant-ui/chat-assistant-effects";
 
 export function ThemeSync() {
   useTheme();
@@ -120,6 +121,7 @@ export function RootComponent() {
       <PageViewTracker />
       <AuthGuard>
         <AppNavigationAssistantTools />
+        {!isAuthRoute && !isApiRoute && <ChatAssistantEffects />}
         {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />
         ) : isHomeRoute ? (

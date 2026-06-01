@@ -190,3 +190,15 @@ const UpdatePlanItemToolUIImpl = makeAssistantToolUI({
 export function UpdatePlanItemToolUI() {
   return <UpdatePlanItemToolUIImpl />;
 }
+
+export function ChatToolUIs() {
+  return (
+    <>
+      <OpenFormToolUI />
+      <SetFormFieldToolUI />
+      <SubmitFormToolUI />
+      <CreatePlanToolUI />
+      <UpdatePlanItemToolUI />
+    </>
+  );
+}

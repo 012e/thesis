@@ -32,9 +32,7 @@ test.describe("Explore & Search", () => {
   });
 
   test.describe("Search functionality", () => {
-    test("should show tabs after searching", async ({
-      authedPage: page,
-    }) => {
+    test("should show tabs after searching", async ({ authedPage: page }) => {
       const explorePage = new ExplorePage(page);
       await explorePage.goto();
 
@@ -125,9 +123,9 @@ test.describe("Explore & Search", () => {
 
       // Wait for search results - the post should appear
       // Note: Search might use BM25 indexing which could have a delay
-      await expect(
-        page.getByText(uniqueContent).first(),
-      ).toBeVisible({ timeout: 30_000 });
+      await expect(page.getByText(uniqueContent).first()).toBeVisible({
+        timeout: 30_000,
+      });
     });
   });
 });

@@ -38,9 +38,7 @@ test.describe("Authentication", () => {
       await expect(loginLink).toBeVisible();
     });
 
-    test("should show validation error for weak password", async ({
-      page,
-    }) => {
+    test("should show validation error for weak password", async ({ page }) => {
       const registerPage = new RegisterPage(page);
       await registerPage.goto();
 
@@ -149,9 +147,7 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test("should redirect to requested page after login", async ({
-      page,
-    }) => {
+    test("should redirect to requested page after login", async ({ page }) => {
       // Register first
       const registerPage = new RegisterPage(page);
       await registerPage.goto();

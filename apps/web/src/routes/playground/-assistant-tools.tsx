@@ -26,7 +26,10 @@ const VirtualFilePathSchema = z.enum([
   "/playground/index.ts",
 ]);
 
-const VIRTUAL_FILE_BY_LANGUAGE: Record<Language, z.infer<typeof VirtualFilePathSchema>> = {
+const VIRTUAL_FILE_BY_LANGUAGE: Record<
+  Language,
+  z.infer<typeof VirtualFilePathSchema>
+> = {
   javascript: "/playground/index.js",
   typescript: "/playground/index.ts",
 };
@@ -166,7 +169,8 @@ export function PlaygroundAssistantTools() {
             path,
             currentVersion: current.version,
             expectedVersion,
-            message: "The playground changed after your read. Read the file again before editing.",
+            message:
+              "The playground changed after your read. Read the file again before editing.",
           };
         }
 
@@ -180,12 +184,15 @@ export function PlaygroundAssistantTools() {
           };
         }
 
-        if (current.code.indexOf(oldString, firstIndex + oldString.length) !== -1) {
+        if (
+          current.code.indexOf(oldString, firstIndex + oldString.length) !== -1
+        ) {
           return {
             status: "ambiguous",
             path,
             currentVersion: current.version,
-            message: "old_string appears more than once. Read the file and use a more specific replacement.",
+            message:
+              "old_string appears more than once. Read the file and use a more specific replacement.",
           };
         }
 
@@ -243,7 +250,8 @@ export function PlaygroundAssistantTools() {
             path,
             language: nextLanguage,
             currentVersion: current.version,
-            message: "The requested language must match the virtual file path extension.",
+            message:
+              "The requested language must match the virtual file path extension.",
           };
         }
 
@@ -253,7 +261,8 @@ export function PlaygroundAssistantTools() {
             path,
             currentVersion: current.version,
             expectedVersion,
-            message: "The playground changed after your read. Read the file again before writing.",
+            message:
+              "The playground changed after your read. Read the file again before writing.",
           };
         }
 

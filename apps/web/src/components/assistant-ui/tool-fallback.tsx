@@ -93,7 +93,9 @@ const statusIconMap: Record<ToolStatus, React.ElementType> = {
 function formatToolName(toolName: string) {
   const sentence = toolName.replace(/[_-]+/g, " ").trim().toLowerCase();
 
-  return sentence ? sentence.charAt(0).toUpperCase() + sentence.slice(1) : toolName;
+  return sentence
+    ? sentence.charAt(0).toUpperCase() + sentence.slice(1)
+    : toolName;
 }
 
 function ToolFallbackTrigger({
@@ -137,7 +139,7 @@ function ToolFallbackTrigger({
           "aui-tool-fallback-trigger-label-wrapper relative inline-block grow text-left leading-none",
           isCancelled && "text-muted-foreground line-through",
         )}
-        >
+      >
         <span>
           {label}: <b>{formattedToolName}</b>
         </span>

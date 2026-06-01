@@ -332,7 +332,9 @@ export class MessagesService {
         username: user.username,
         displayUsername: user.displayUsername,
         name: user.name,
-        image: sql<string | null>`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
+        image: sql<
+          string | null
+        >`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
       })
       .from(user)
       .leftJoin(userProfiles, eq(userProfiles.userId, user.id))

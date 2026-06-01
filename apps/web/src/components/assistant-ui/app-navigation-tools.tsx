@@ -33,7 +33,9 @@ const PAGE_CATALOG = ASSISTANT_PAGE_DEFINITIONS.map((page) => ({
 }));
 
 export function AppNavigationAssistantTools() {
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const pathname = useRouterState({
+    select: (state) => state.location.pathname,
+  });
 
   if (pathname.startsWith("/auth") || pathname.startsWith("/api")) {
     return null;

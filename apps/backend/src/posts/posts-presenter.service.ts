@@ -13,10 +13,7 @@ export class PostsPresenterService {
     private readonly tagsService: TagsService,
   ) {}
 
-  toDto(
-    row: PostDtoRow,
-    userReactionType?: ReactionTypeDto | null,
-  ): PostDto {
+  toDto(row: PostDtoRow, userReactionType?: ReactionTypeDto | null): PostDto {
     const currentUserReaction = userReactionType ?? null;
 
     return {

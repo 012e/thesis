@@ -96,9 +96,7 @@ test.describe("Post Interactions", () => {
       await bookmarkButton.click();
 
       // After bookmarking, the title changes to "Remove bookmark"
-      await expect(
-        article.getByTitle("Remove bookmark"),
-      ).toBeVisible();
+      await expect(article.getByTitle("Remove bookmark")).toBeVisible();
     });
 
     test("should unbookmark a post", async ({ authedPage: page }) => {
@@ -129,15 +127,15 @@ test.describe("Post Interactions", () => {
         .first();
 
       const commentButton = article
-        .locator('button:has(svg.tabler-icon-message-circle)')
+        .locator("button:has(svg.tabler-icon-message-circle)")
         .first();
 
       await commentButton.click();
 
       // Wait for the comments dialog
-      await expect(
-        page.getByRole("heading", { name: "Comments" }),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole("heading", { name: "Comments" })).toBeVisible(
+        { timeout: 10_000 },
+      );
     });
 
     test("should add a comment to a post", async ({ authedPage: page }) => {
@@ -154,9 +152,9 @@ test.describe("Post Interactions", () => {
       );
       await actionButtons.first().click();
 
-      await expect(
-        page.getByRole("heading", { name: "Comments" }),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole("heading", { name: "Comments" })).toBeVisible(
+        { timeout: 10_000 },
+      );
 
       // Type a comment in the comment editor
       const commentText = `E2E comment ${Date.now()}`;
@@ -195,9 +193,7 @@ test.describe("Post Interactions", () => {
         .first();
 
       // Click the three-dot menu
-      const menuTrigger = article.locator(
-        'button:has(svg.tabler-icon-dots)',
-      );
+      const menuTrigger = article.locator("button:has(svg.tabler-icon-dots)");
       await menuTrigger.click();
 
       // Should show Edit and Delete options
@@ -214,9 +210,7 @@ test.describe("Post Interactions", () => {
         .first();
 
       // Click three-dot menu
-      const menuTrigger = article.locator(
-        'button:has(svg.tabler-icon-dots)',
-      );
+      const menuTrigger = article.locator("button:has(svg.tabler-icon-dots)");
       await menuTrigger.click();
 
       // Click Delete
@@ -228,9 +222,9 @@ test.describe("Post Interactions", () => {
         .getByRole("button", { name: /delete/i });
       await deleteConfirmButton.click();
 
-      await expect(
-        page.getByText(/post deleted successfully/i),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/post deleted successfully/i)).toBeVisible({
+        timeout: 10_000,
+      });
       await page.reload();
       await expect(article).not.toBeVisible({ timeout: 10_000 });
     });
@@ -244,25 +238,21 @@ test.describe("Post Interactions", () => {
         .first();
 
       // Click three-dot menu
-      const menuTrigger = article.locator(
-        'button:has(svg.tabler-icon-dots)',
-      );
+      const menuTrigger = article.locator("button:has(svg.tabler-icon-dots)");
       await menuTrigger.click();
 
       // Click Edit
       await page.getByRole("menuitem", { name: /^Edit/ }).click();
 
       // Edit dialog should open
-      await expect(
-        page.getByRole("dialog", { name: "Edit post" }),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByRole("dialog", { name: "Edit post" })).toBeVisible(
+        { timeout: 10_000 },
+      );
     });
   });
 
   test.describe("Share", () => {
-    test("should copy post link to clipboard", async ({
-      authedPage: page,
-    }) => {
+    test("should copy post link to clipboard", async ({ authedPage: page }) => {
       const postContent = await createPost(page);
 
       const article = page
@@ -271,16 +261,18 @@ test.describe("Post Interactions", () => {
         .first();
 
       // Grant clipboard permissions
-      await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+      await page
+        .context()
+        .grantPermissions(["clipboard-read", "clipboard-write"]);
 
       // Click share button (has title "Share via link")
       const shareButton = article.getByTitle("Share via link");
       await shareButton.click();
 
       // Should show a toast with success message
-      await expect(
-        page.getByText(/link copied/i).first(),
-      ).toBeVisible({ timeout: 5_000 });
+      await expect(page.getByText(/link copied/i).first()).toBeVisible({
+        timeout: 5_000,
+      });
     });
   });
 });

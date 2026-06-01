@@ -80,11 +80,7 @@ function ConversationItem({ conversation, onSelect }: ConversationItemProps) {
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <ChatParticipantAvatar
-          user={otherUser}
-          className="size-10"
-          showBadge
-        />
+        <ChatParticipantAvatar user={otherUser} className="size-10" showBadge />
       </div>
 
       {/* Info */}
