@@ -58,7 +58,11 @@ const WeatherToolUI = makeAssistantToolUI({
   toolName: "get_weather",
   render: ({ args, result, status }) => {
     if (status === "running") return <div>Loading weather...</div>;
-    return <div>{result?.city}: {result?.temp}°C</div>;
+    return (
+      <div>
+        {result?.city}: {result?.temp}°C
+      </div>
+    );
   },
 });
 
@@ -66,7 +70,7 @@ const WeatherToolUI = makeAssistantToolUI({
 <AssistantRuntimeProvider runtime={runtime}>
   <WeatherToolUI />
   <Thread />
-</AssistantRuntimeProvider>
+</AssistantRuntimeProvider>;
 ```
 
 ## Frontend-Only Tool
@@ -87,7 +91,7 @@ const CopyTool = makeAssistantTool({
 <AssistantRuntimeProvider runtime={runtime}>
   <CopyTool />
   <Thread />
-</AssistantRuntimeProvider>
+</AssistantRuntimeProvider>;
 ```
 
 ## API Reference
@@ -101,7 +105,7 @@ interface ToolUIProps {
   argsText: string;
   result?: unknown;
   status: "running" | "complete" | "incomplete" | "requires-action";
-  submitResult: (result: unknown) => void;  // For interactive tools
+  submitResult: (result: unknown) => void; // For interactive tools
 }
 ```
 
@@ -115,8 +119,12 @@ const DeleteToolUI = makeAssistantToolUI({
       return (
         <div>
           <p>Delete {args.path}?</p>
-          <button onClick={() => submitResult({ confirmed: true })}>Confirm</button>
-          <button onClick={() => submitResult({ confirmed: false })}>Cancel</button>
+          <button onClick={() => submitResult({ confirmed: true })}>
+            Confirm
+          </button>
+          <button onClick={() => submitResult({ confirmed: false })}>
+            Cancel
+          </button>
         </div>
       );
     }
@@ -128,13 +136,16 @@ const DeleteToolUI = makeAssistantToolUI({
 ## Common Gotchas
 
 **Tool UI not rendering**
+
 - `toolName` must match exactly (case-sensitive)
 - Register UI inside `AssistantRuntimeProvider`
 
 **Tool not being called**
+
 - Check tool description is clear
 - Use `stopWhen: stepCountIs(n)` to allow multi-step
 
 **Result not showing**
+
 - Tool must return a value
 - Check `status === "complete"` before accessing result

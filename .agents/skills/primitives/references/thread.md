@@ -4,15 +4,15 @@ Container for the entire chat thread.
 
 ## Parts
 
-| Part | Description |
-|------|-------------|
-| `.Root` | Outermost container element |
-| `.Viewport` | Scrollable message area |
-| `.Messages` | Renders message list |
-| `.Empty` | Shown when no messages |
-| `.ScrollToBottom` | Button to scroll down |
-| `.Suggestions` | Quick reply suggestions |
-| `.If` | Conditional rendering (deprecated; prefer `AuiIf`) |
+| Part              | Description                                        |
+| ----------------- | -------------------------------------------------- |
+| `.Root`           | Outermost container element                        |
+| `.Viewport`       | Scrollable message area                            |
+| `.Messages`       | Renders message list                               |
+| `.Empty`          | Shown when no messages                             |
+| `.ScrollToBottom` | Button to scroll down                              |
+| `.Suggestions`    | Quick reply suggestions                            |
+| `.If`             | Conditional rendering (deprecated; prefer `AuiIf`) |
 
 ## Basic Structure
 
@@ -49,7 +49,7 @@ Scrollable area containing messages. Handles auto-scroll on new messages.
 ```tsx
 <ThreadPrimitive.Viewport
   className="flex-1 overflow-y-auto p-4"
-  autoScroll={true}  // Default: true
+  autoScroll={true} // Default: true
 >
   <ThreadPrimitive.Messages />
 </ThreadPrimitive.Viewport>
@@ -93,9 +93,7 @@ Rendered when thread has no messages.
 Button that appears when scrolled up, scrolls to bottom on click.
 
 ```tsx
-<ThreadPrimitive.ScrollToBottom
-  className="fixed bottom-20 right-4 rounded-full p-2 bg-white shadow"
->
+<ThreadPrimitive.ScrollToBottom className="fixed bottom-20 right-4 rounded-full p-2 bg-white shadow">
   ↓ Scroll to bottom
 </ThreadPrimitive.ScrollToBottom>
 ```
@@ -108,9 +106,7 @@ Renders suggested quick replies.
 <ThreadPrimitive.Suggestions
   components={{
     Suggestion: ({ suggestion }) => (
-      <button onClick={() => suggestion.onClick()}>
-        {suggestion.text}
-      </button>
+      <button onClick={() => suggestion.onClick()}>{suggestion.text}</button>
     ),
   }}
 />

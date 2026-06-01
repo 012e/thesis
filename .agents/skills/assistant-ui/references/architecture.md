@@ -63,7 +63,7 @@ import { useAui, useAuiState, useAuiEvent } from "@assistant-ui/react";
 const api = useAui();
 
 // Subscribe to state changes
-const messages = useAuiState(s => s.thread.messages);
+const messages = useAuiState((s) => s.thread.messages);
 
 // Listen to events
 useAuiEvent("composer.send", (e) => console.log(e));

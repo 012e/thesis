@@ -36,13 +36,13 @@ import {
 
 ## Primitive Parts
 
-| Primitive | Key Parts |
-|-----------|-----------|
-| `ThreadPrimitive` | `.Root`, `.Viewport`, `.Messages`, `.Empty`, `.ScrollToBottom` |
-| `ComposerPrimitive` | `.Root`, `.Input`, `.Send`, `.Cancel`, `.Attachments` |
-| `MessagePrimitive` | `.Root`, `.Parts`/`.Content`, `.If`, `.Error` |
-| `ActionBarPrimitive` | `.Copy`, `.Edit`, `.Reload`, `.Speak`, `.FeedbackPositive`, `.FeedbackNegative`, `.ExportMarkdown` |
-| `BranchPickerPrimitive` | `.Previous`, `.Next`, `.Number`, `.Count` |
+| Primitive               | Key Parts                                                                                          |
+| ----------------------- | -------------------------------------------------------------------------------------------------- |
+| `ThreadPrimitive`       | `.Root`, `.Viewport`, `.Messages`, `.Empty`, `.ScrollToBottom`                                     |
+| `ComposerPrimitive`     | `.Root`, `.Input`, `.Send`, `.Cancel`, `.Attachments`                                              |
+| `MessagePrimitive`      | `.Root`, `.Parts`/`.Content`, `.If`, `.Error`                                                      |
+| `ActionBarPrimitive`    | `.Copy`, `.Edit`, `.Reload`, `.Speak`, `.FeedbackPositive`, `.FeedbackNegative`, `.ExportMarkdown` |
+| `BranchPickerPrimitive` | `.Previous`, `.Next`, `.Number`, `.Count`                                                          |
 
 ## Custom Thread Example
 
@@ -57,10 +57,12 @@ function CustomThread() {
       </ThreadPrimitive.Empty>
 
       <ThreadPrimitive.Viewport className="flex-1 overflow-y-auto p-4">
-        <ThreadPrimitive.Messages components={{
-          UserMessage: CustomUserMessage,
-          AssistantMessage: CustomAssistantMessage,
-        }} />
+        <ThreadPrimitive.Messages
+          components={{
+            UserMessage: CustomUserMessage,
+            AssistantMessage: CustomAssistantMessage,
+          }}
+        />
       </ThreadPrimitive.Viewport>
 
       <ComposerPrimitive.Root className="border-t p-4 flex gap-2">
@@ -99,12 +101,19 @@ Prefer `AuiIf` for new code. Primitive `.If` components still exist but are depr
 ## Content Parts
 
 ```tsx
-<MessagePrimitive.Content components={{
-  Text: ({ part }) => <p>{part.text}</p>,
-  Image: ({ part }) => <img src={part.image} alt="" />,
-  ToolCall: ({ part }) => <div>Tool: {part.toolName}</div>,
-  Reasoning: ({ part }) => <details><summary>Thinking</summary>{part.text}</details>,
-}} />
+<MessagePrimitive.Content
+  components={{
+    Text: ({ part }) => <p>{part.text}</p>,
+    Image: ({ part }) => <img src={part.image} alt="" />,
+    ToolCall: ({ part }) => <div>Tool: {part.toolName}</div>,
+    Reasoning: ({ part }) => (
+      <details>
+        <summary>Thinking</summary>
+        {part.text}
+      </details>
+    ),
+  }}
+/>
 ```
 
 ## Branch Picker
@@ -113,7 +122,9 @@ Prefer `AuiIf` for new code. Primitive `.If` components still exist but are depr
 <MessagePrimitive.If hasBranches>
   <BranchPickerPrimitive.Root className="flex items-center gap-1">
     <BranchPickerPrimitive.Previous>←</BranchPickerPrimitive.Previous>
-    <span><BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count /></span>
+    <span>
+      <BranchPickerPrimitive.Number /> / <BranchPickerPrimitive.Count />
+    </span>
     <BranchPickerPrimitive.Next>→</BranchPickerPrimitive.Next>
   </BranchPickerPrimitive.Root>
 </MessagePrimitive.If>
@@ -122,9 +133,11 @@ Prefer `AuiIf` for new code. Primitive `.If` components still exist but are depr
 ## Common Gotchas
 
 **Primitives not rendering**
+
 - Wrap in `AssistantRuntimeProvider`
 - Ensure parent primitive provides context
 
 **Styles not applying**
+
 - Primitives are unstyled by default
 - Add `className` and style with your app's Tailwind/CSS system

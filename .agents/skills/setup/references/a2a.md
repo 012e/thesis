@@ -55,12 +55,13 @@ function Chat() {
 
 ```tsx
 const runtime = useA2ARuntime({
-  stream: A2AStreamCallback,                  // Required: streaming function
-  contextId: "thread-id",                     // Optional: thread context ID (deprecated)
-  autoCancelPendingToolCalls: true,           // Optional: auto-cancel pending tools
-  unstable_allowCancellation: false,          // Optional: enable cancellation
-  onSwitchToNewThread: () => {},              // Optional: new thread handler (deprecated)
-  onSwitchToThread: async (id) => ({          // Optional: switch thread handler
+  stream: A2AStreamCallback, // Required: streaming function
+  contextId: "thread-id", // Optional: thread context ID (deprecated)
+  autoCancelPendingToolCalls: true, // Optional: auto-cancel pending tools
+  unstable_allowCancellation: false, // Optional: enable cancellation
+  onSwitchToNewThread: () => {}, // Optional: new thread handler (deprecated)
+  onSwitchToThread: async (id) => ({
+    // Optional: switch thread handler
     messages: [],
     artifacts: [],
   }),
@@ -69,7 +70,8 @@ const runtime = useA2ARuntime({
     speech: SpeechSynthesisAdapter,
     feedback: FeedbackAdapter,
   },
-  eventHandlers: {                            // Optional: A2A event callbacks
+  eventHandlers: {
+    // Optional: A2A event callbacks
     onTaskUpdate: (event) => {},
     onArtifacts: (event) => {},
     onError: (event) => {},
@@ -82,18 +84,19 @@ const runtime = useA2ARuntime({
 ## Accessing A2A State
 
 ```tsx
-import { useA2ATaskState, useA2AArtifacts, useA2ASend } from "@assistant-ui/react-a2a";
+import {
+  useA2ATaskState,
+  useA2AArtifacts,
+  useA2ASend,
+} from "@assistant-ui/react-a2a";
 
 function MyComponent() {
-  const taskState = useA2ATaskState();  // Current task state
-  const artifacts = useA2AArtifacts();  // Accumulated artifacts
-  const send = useA2ASend();            // Send function for manual control
+  const taskState = useA2ATaskState(); // Current task state
+  const artifacts = useA2AArtifacts(); // Accumulated artifacts
+  const send = useA2ASend(); // Send function for manual control
 
   // Send messages manually
-  await send(
-    [{ role: "user", content: "Hello" }],
-    { contextId: "my-context" }
-  );
+  await send([{ role: "user", content: "Hello" }], { contextId: "my-context" });
 }
 ```
 

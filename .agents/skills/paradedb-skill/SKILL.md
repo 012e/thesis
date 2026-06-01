@@ -29,6 +29,7 @@ scripts/paradedb-docs llms.txt
 ```
 
 Once you have the list of urls, load the pages necessary to answer the user's question. For example:
+
 ```bash
 scripts/paradedb-docs documentation/getting-started/environment.md
 scripts/paradedb-docs documentation/full-text/match.md

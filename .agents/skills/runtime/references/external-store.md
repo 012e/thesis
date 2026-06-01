@@ -5,7 +5,10 @@ Connect assistant-ui to custom message stores (Redux, Zustand, etc.).
 ## Basic Usage
 
 ```tsx
-import { useExternalStoreRuntime, AssistantRuntimeProvider } from "@assistant-ui/react";
+import {
+  useExternalStoreRuntime,
+  AssistantRuntimeProvider,
+} from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 
 function App() {
@@ -27,13 +30,16 @@ function App() {
       });
 
       const data = await response.json();
-      setMessages((prev) => [...prev, {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: [{ type: "text", text: data.text }],
-        status: "complete",
-        createdAt: new Date(),
-      }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: [{ type: "text", text: data.text }],
+          status: "complete",
+          createdAt: new Date(),
+        },
+      ]);
       setIsRunning(false);
     },
   });
@@ -310,7 +316,7 @@ const runtime = useExternalStoreRuntime({
   onNew: handleNew,
   // Only enable capabilities you implement
   capabilities: {
-    edit: false,   // Disable edit if onEdit not provided
+    edit: false, // Disable edit if onEdit not provided
     reload: true,
     cancel: true,
     copy: true,
