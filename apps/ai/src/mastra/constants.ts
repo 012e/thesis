@@ -24,7 +24,7 @@ export const MODEL_CONFIG = {
       reasoningEffort: reasoning("medium"),
     },
   },
-  REASONING_AGENT: {
+  PLANNING_AGENT: {
     model: openai("gpt-5.5"),
     reasoningEffort: reasoning("high"),
   },

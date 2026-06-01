@@ -6,7 +6,7 @@ export const POST_CREATION_AGENT_CONFIG = {
   id: "post-creation-agent",
   name: "Post Creation Agent",
   description:
-    "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content after the orchestrator has resolved vague, multi-step, or navigation-heavy requests with the reasoning agent. Does NOT handle comments or reactions.",
+    "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent directly whenever the user wants to publish, edit, or remove content; use the planning agent first only when an explicit multi-step plan is needed. Does NOT handle comments or reactions.",
   instructions: PROMPTS.postCreationAgent,
 } as const;
 

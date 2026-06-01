@@ -10,7 +10,7 @@ import { INTERACTIONS_AGENT_CONFIG } from "./interactions-agent";
 import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
 import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
 import { POST_DISCOVERY_AGENT_CONFIG } from "./post-discovery-agent";
-import { REASONING_AGENT_CONFIG } from "./reasoning-agent";
+import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
 import {
   getOrchestratorModelConfig,
@@ -94,9 +94,9 @@ export async function createOrchestratorAgent(
     model: MODEL_CONFIG.NAVIGATION_AGENT.model,
   });
 
-  const reasoningAgent = new Agent({
-    ...REASONING_AGENT_CONFIG,
-    model: MODEL_CONFIG.REASONING_AGENT.model,
+  const planningAgent = new Agent({
+    ...PLANNING_AGENT_CONFIG,
+    model: MODEL_CONFIG.PLANNING_AGENT.model,
   });
 
   // ── 3. Build the orchestrator (supervisor) ─────────────────────────────
@@ -113,7 +113,7 @@ export async function createOrchestratorAgent(
       interactionsAgent,
       searchAgent,
       navigationAgent,
-      reasoningAgent,
+      planningAgent,
     },
     tools: {
       open_form: openFormTool,
