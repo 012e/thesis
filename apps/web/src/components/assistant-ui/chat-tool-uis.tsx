@@ -191,14 +191,21 @@ export function UpdatePlanItemToolUI() {
   return <UpdatePlanItemToolUIImpl />;
 }
 
-export function ChatToolUIs() {
+export function PlanToolUIs() {
+  return (
+    <>
+      <CreatePlanToolUI />
+      <UpdatePlanItemToolUI />
+    </>
+  );
+}
+
+export function FormToolUIs() {
   return (
     <>
       <OpenFormToolUI />
       <SetFormFieldToolUI />
       <SubmitFormToolUI />
-      <CreatePlanToolUI />
-      <UpdatePlanItemToolUI />
     </>
   );
 }

@@ -16,8 +16,6 @@ import {
 import { useEffect, useRef, useState, useCallback, type FC } from "react";
 import { useAtom } from "jotai";
 import { cn } from "@/lib/utils";
-import { FormRegistry } from "@/components/forms/registry";
-import { useChatState } from "@/hooks/use-chat-state";
 import {
   isGlobalChatOpenAtom,
   globalChatSizeAtom,
@@ -260,24 +258,9 @@ export function GlobalChatPanel() {
         onSizeToggle={handleSizeToggle}
         onClose={handleClose}
       />
-      <GlobalChatActiveForm />
       <div className="flex-1 overflow-hidden min-h-0">
         <Thread scrollToEndKey={isOpen} />
       </div>
-    </div>
-  );
-}
-
-function GlobalChatActiveForm() {
-  const { threadId, activeForm } = useChatState();
-  const activeFormConfig = activeForm ? FormRegistry[activeForm] : null;
-  const ActiveForm = activeFormConfig?.form;
-
-  if (!ActiveForm || activeFormConfig?.layout !== "horizontal") return null;
-
-  return (
-    <div className="max-h-[45vh] shrink-0 overflow-y-auto border-b bg-muted/10">
-      <ActiveForm threadId={threadId} />
     </div>
   );
 }

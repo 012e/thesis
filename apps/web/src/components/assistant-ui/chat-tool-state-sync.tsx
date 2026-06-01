@@ -14,7 +14,7 @@ type ToolCallPart = {
 
 type ToolArgs = Record<string, unknown>;
 
-export function ChatToolStateSync() {
+export function ChatToolStateSync({ syncForms = false }: { syncForms?: boolean }) {
   const { id: localId, remoteId } = useAuiState((s) => s.threadListItem);
   const threadId = remoteId ?? localId;
   const messages = useAuiState((s) => s.thread.messages);
@@ -73,18 +73,20 @@ export function ChatToolStateSync() {
       }
     }
 
-    setDrafts((prev) => {
-      const current = prev[threadId];
-      return {
-        ...prev,
-        [threadId]: {
-          activeForm: derivedActiveForm,
-          data: derivedData,
-          // Only set submitRequest; PostCreationForm clears it after submission.
-          submitRequest: hasSubmit || (current?.submitRequest ?? false),
-        },
-      };
-    });
+    if (syncForms) {
+      setDrafts((prev) => {
+        const current = prev[threadId];
+        return {
+          ...prev,
+          [threadId]: {
+            activeForm: derivedActiveForm,
+            data: derivedData,
+            // Only set submitRequest; PostCreationForm clears it after submission.
+            submitRequest: hasSubmit || (current?.submitRequest ?? false),
+          },
+        };
+      });
+    }
 
     setPlanStates((prev) => {
       if (!latestPlanArgs) {
@@ -126,7 +128,7 @@ export function ChatToolStateSync() {
         },
       };
     });
-  }, [messages, threadId, setDrafts, setPlanStates]);
+  }, [messages, syncForms, threadId, setDrafts, setPlanStates]);
 
   return null;
 }
