@@ -108,7 +108,7 @@ export async function createOrchestratorAgent(
     model: orchestratorModelConfig.model,
     agents: {
       identityAgent,
-      postCreationAgent,
+      // postCreationAgent,
       postDiscoveryAgent,
       interactionsAgent,
       searchAgent,
