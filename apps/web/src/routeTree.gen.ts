@@ -23,6 +23,7 @@ import { Route as UsersUserIdRouteImport } from './routes/users.$userId'
 import { Route as TagsSlugRouteImport } from './routes/tags.$slug'
 import { Route as ProfileFollowingRouteImport } from './routes/profile/following'
 import { Route as ProfileFollowersRouteImport } from './routes/profile/followers'
+import { Route as PostsPostIdRouteImport } from './routes/posts.$postId'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -100,6 +101,11 @@ const ProfileFollowersRoute = ProfileFollowersRouteImport.update({
   path: '/profile/followers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostsPostIdRoute = PostsPostIdRouteImport.update({
+  id: '/posts/$postId',
+  path: '/posts/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
   path: '/auth/reset-password',
@@ -144,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/tags/$slug': typeof TagsSlugRoute
@@ -166,6 +173,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/tags/$slug': typeof TagsSlugRoute
@@ -189,6 +197,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/posts/$postId': typeof PostsPostIdRoute
   '/profile/followers': typeof ProfileFollowersRoute
   '/profile/following': typeof ProfileFollowingRoute
   '/tags/$slug': typeof TagsSlugRoute
@@ -213,6 +222,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/posts/$postId'
     | '/profile/followers'
     | '/profile/following'
     | '/tags/$slug'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/posts/$postId'
     | '/profile/followers'
     | '/profile/following'
     | '/tags/$slug'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
+    | '/posts/$postId'
     | '/profile/followers'
     | '/profile/following'
     | '/tags/$slug'
@@ -280,6 +292,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
+  PostsPostIdRoute: typeof PostsPostIdRoute
   ProfileFollowersRoute: typeof ProfileFollowersRoute
   ProfileFollowingRoute: typeof ProfileFollowingRoute
   TagsSlugRoute: typeof TagsSlugRoute
@@ -390,6 +403,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileFollowersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/posts/$postId': {
+      id: '/posts/$postId'
+      path: '/posts/$postId'
+      fullPath: '/posts/$postId'
+      preLoaderRoute: typeof PostsPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/reset-password': {
       id: '/auth/reset-password'
       path: '/auth/reset-password'
@@ -448,6 +468,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
+  PostsPostIdRoute: PostsPostIdRoute,
   ProfileFollowersRoute: ProfileFollowersRoute,
   ProfileFollowingRoute: ProfileFollowingRoute,
   TagsSlugRoute: TagsSlugRoute,
