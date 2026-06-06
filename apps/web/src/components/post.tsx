@@ -623,7 +623,6 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
           <DialogFooter>
             <Button
               variant="outline"
-              className="rounded-full"
               disabled={isDeleting}
               onClick={() => setDeleteConfirmOpen(false)}
             >
@@ -631,7 +630,6 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
             </Button>
             <Button
               variant="destructive"
-              className="rounded-full"
               disabled={isDeleting}
               onClick={() => {
                 deletePost(post.id, {

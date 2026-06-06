@@ -1,5 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { and, desc, eq, isNotNull, isNull, inArray, sql, asc } from "drizzle-orm";
+import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
 import {
@@ -197,12 +198,12 @@ export class RecommendationPipelineService {
     postIds: string[],
     userVector: number[],
   ): Promise<{ postId: string; score: number }[]> {
-    const vectorStr = `[${userVector.join(",")}]`;
+    const queryVector = toSql(userVector);
 
     const rows = await this.databaseService.db
       .select({
         id: posts.id,
-        similarity: sql<number>`1 - (${posts.embedding} <=> ${vectorStr}::vector)`,
+        similarity: sql<number>`1 - (${posts.embedding} <=> ${queryVector}::vector)`,
       })
       .from(posts)
       .where(
@@ -212,7 +213,7 @@ export class RecommendationPipelineService {
         ),
       )
       .orderBy(
-        asc(sql`${posts.embedding} <=> ${vectorStr}::vector`),
+        asc(sql`${posts.embedding} <=> ${queryVector}::vector`),
         desc(posts.createdAt),
       );
 

@@ -22,7 +22,11 @@ export class RecommendationJobsService {
     private readonly pipelineService: RecommendationPipelineService,
   ) {}
 
-  @Job(GENERATE_RECOMMENDATIONS_JOB, { teamSize: 3, teamConcurrency: 1 })
+  @Job(GENERATE_RECOMMENDATIONS_JOB, {
+    batchSize: 3,
+    localConcurrency: 1,
+    includeMetadata: true,
+  })
   async handleGenerateRecommendations(
     jobs: JobWithMetadata<GenerateRecommendationsJobData>[],
   ): Promise<void> {

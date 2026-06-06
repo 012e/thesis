@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { and, eq, gte, inArray, isNotNull, sql } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
+import type { AnalyticsEvent } from "@/db/schema";
 import {
   analyticsEvents,
   posts,
@@ -14,7 +15,18 @@ import {
  * Positive weights attract the user vector toward post embeddings.
  * Negative weights repel it.
  */
-const EVENT_WEIGHTS: Record<string, number> = {
+const RECOMMENDATION_EVENT_TYPES = [
+  "post_view",
+  "poll_vote",
+  "post_share",
+  "comment_create",
+  "post_like",
+  "post_bookmark",
+  "post_unlike",
+  "post_unbookmark",
+] as const satisfies readonly AnalyticsEvent["type"][];
+
+const EVENT_WEIGHTS: Record<(typeof RECOMMENDATION_EVENT_TYPES)[number], number> = {
   post_view: 1,
   poll_vote: 2,
   post_share: 3,
@@ -44,8 +56,6 @@ export class UserPreferenceVectorService {
     const windowStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Fetch weighted post embeddings from analytics events
-    const eventTypes = Object.keys(EVENT_WEIGHTS);
-
     const rows = await this.databaseService.db
       .select({
         embedding: posts.embedding,
@@ -64,7 +74,7 @@ export class UserPreferenceVectorService {
           eq(analyticsEvents.userId, userId),
           gte(analyticsEvents.createdAt, windowStart),
           isNotNull(posts.embedding),
-          inArray(analyticsEvents.type, eventTypes),
+          inArray(analyticsEvents.type, RECOMMENDATION_EVENT_TYPES),
         ),
       );
 
@@ -137,13 +147,12 @@ export class UserPreferenceVectorService {
       }
     }
 
-    // Upsert user profile
-    const vectorStr = `[${result.join(",")}]`;
+    // Drizzle's vector column encoder expects number[] and serializes it for pgvector.
     await this.databaseService.db
       .insert(userRecommendationProfiles)
       .values({
         userId,
-        vector: vectorStr,
+        vector: result,
         eventCount: rows.length,
         lastGeneratedAt: now,
         sourceWindowStart: windowStart,
@@ -152,7 +161,7 @@ export class UserPreferenceVectorService {
       .onConflictDoUpdate({
         target: userRecommendationProfiles.userId,
         set: {
-          vector: vectorStr,
+          vector: result,
           eventCount: rows.length,
           lastGeneratedAt: now,
           sourceWindowStart: windowStart,
