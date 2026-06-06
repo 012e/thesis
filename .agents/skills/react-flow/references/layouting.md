@@ -20,24 +20,24 @@ Use this file when positioning nodes with layout algorithms, creating sub-flows 
 
 React Flow does not include built-in layout algorithms. Use an external library:
 
-| Library | Best for | Dynamic sizes | Sub-flows | Edge routing | Bundle size |
-|---------|----------|---------------|-----------|--------------|-------------|
-| **dagre** | Tree/DAG with minimal config | Yes | Partial | No | Small |
-| **elkjs** | Complex, highly configurable layouts | Yes | Yes | Yes | Large (~1.4MB) |
-| **d3-hierarchy** | Single-root tree structures | No (uniform) | No | No | Small |
-| **d3-force** | Physics-based, organic layouts | Yes | No | No | Small |
+| Library          | Best for                             | Dynamic sizes | Sub-flows | Edge routing | Bundle size    |
+| ---------------- | ------------------------------------ | ------------- | --------- | ------------ | -------------- |
+| **dagre**        | Tree/DAG with minimal config         | Yes           | Partial   | No           | Small          |
+| **elkjs**        | Complex, highly configurable layouts | Yes           | Yes       | Yes          | Large (~1.4MB) |
+| **d3-hierarchy** | Single-root tree structures          | No (uniform)  | No        | No           | Small          |
+| **d3-force**     | Physics-based, organic layouts       | Yes           | No        | No           | Small          |
 
 ## Dagre integration
 
 Best for tree-shaped graphs with straightforward requirements.
 
 ```tsx
-import dagre from '@dagrejs/dagre';
+import dagre from "@dagrejs/dagre";
 
 const dagreGraph = new dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
 
-function getLayoutedElements(nodes, edges, direction = 'TB') {
-  const isHorizontal = direction === 'LR';
+function getLayoutedElements(nodes, edges, direction = "TB") {
+  const isHorizontal = direction === "LR";
   dagreGraph.setGraph({ rankdir: direction });
 
   nodes.forEach((node) => {
@@ -61,8 +61,8 @@ function getLayoutedElements(nodes, edges, direction = 'TB') {
         x: nodeWithPosition.x - (node.measured?.width ?? 172) / 2,
         y: nodeWithPosition.y - (node.measured?.height ?? 36) / 2,
       },
-      targetPosition: isHorizontal ? 'left' : 'top',
-      sourcePosition: isHorizontal ? 'right' : 'bottom',
+      targetPosition: isHorizontal ? "left" : "top",
+      sourcePosition: isHorizontal ? "right" : "bottom",
     };
   });
 
@@ -79,11 +79,8 @@ function LayoutFlow() {
 
   const onLayout = useCallback(
     (direction) => {
-      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
-        nodes,
-        edges,
-        direction,
-      );
+      const { nodes: layoutedNodes, edges: layoutedEdges } =
+        getLayoutedElements(nodes, edges, direction);
       setNodes([...layoutedNodes]);
       setEdges([...layoutedEdges]);
     },
@@ -93,8 +90,8 @@ function LayoutFlow() {
   return (
     <ReactFlow nodes={nodes} edges={edges} fitView>
       <Panel position="top-right">
-        <button onClick={() => onLayout('TB')}>Vertical</button>
-        <button onClick={() => onLayout('LR')}>Horizontal</button>
+        <button onClick={() => onLayout("TB")}>Vertical</button>
+        <button onClick={() => onLayout("LR")}>Horizontal</button>
       </Panel>
     </ReactFlow>
   );
@@ -108,26 +105,26 @@ function LayoutFlow() {
 Best for complex graphs needing edge routing and advanced layout options.
 
 ```tsx
-import ELK from 'elkjs/lib/elk.bundled.js';
+import ELK from "elkjs/lib/elk.bundled.js";
 
 const elk = new ELK();
 
 const elkOptions = {
-  'elk.algorithm': 'layered',
-  'elk.layered.spacing.nodeNodeBetweenLayers': '100',
-  'elk.spacing.nodeNode': '80',
+  "elk.algorithm": "layered",
+  "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+  "elk.spacing.nodeNode": "80",
 };
 
 async function getLayoutedElements(nodes, edges, options = {}) {
   const graph = {
-    id: 'root',
+    id: "root",
     layoutOptions: { ...elkOptions, ...options },
     children: nodes.map((node) => ({
       id: node.id,
       width: node.measured?.width ?? 150,
       height: node.measured?.height ?? 50,
-      targetPosition: 'top',
-      sourcePosition: 'bottom',
+      targetPosition: "top",
+      sourcePosition: "bottom",
     })),
     edges: edges.map((edge) => ({
       id: edge.id,
@@ -157,7 +154,7 @@ async function getLayoutedElements(nodes, edges, options = {}) {
 Best for tree structures with a single root node.
 
 ```tsx
-import { stratify, tree } from 'd3-hierarchy';
+import { stratify, tree } from "d3-hierarchy";
 
 function getLayoutedElements(nodes, edges) {
   const hierarchy = stratify()
@@ -185,7 +182,13 @@ function getLayoutedElements(nodes, edges) {
 Best for organic, physics-based layouts with interactive simulation.
 
 ```tsx
-import { forceSimulation, forceLink, forceManyBody, forceX, forceY } from 'd3-force';
+import {
+  forceSimulation,
+  forceLink,
+  forceManyBody,
+  forceX,
+  forceY,
+} from "d3-force";
 
 function useLayoutedElements() {
   const { getNodes, getEdges, setNodes } = useReactFlow();
@@ -195,12 +198,17 @@ function useLayoutedElements() {
     const edges = getEdges();
 
     const simulation = forceSimulation(nodes)
-      .force('link', forceLink(edges).id((d) => d.id).distance(100))
-      .force('charge', forceManyBody().strength(-200))
-      .force('x', forceX().strength(0.05))
-      .force('y', forceY().strength(0.05));
+      .force(
+        "link",
+        forceLink(edges)
+          .id((d) => d.id)
+          .distance(100),
+      )
+      .force("charge", forceManyBody().strength(-200))
+      .force("x", forceX().strength(0.05))
+      .force("y", forceY().strength(0.05));
 
-    simulation.on('end', () => {
+    simulation.on("end", () => {
       setNodes(
         nodes.map((node) => ({
           ...node,
@@ -224,24 +232,24 @@ Set `parentId` on child nodes. Children are positioned relative to their parent'
 const nodes = [
   // Parent must come BEFORE children in the array
   {
-    id: 'group-1',
-    type: 'group',
+    id: "group-1",
+    type: "group",
     position: { x: 0, y: 0 },
     style: { width: 400, height: 300 },
     data: {},
   },
   {
-    id: 'child-1',
-    parentId: 'group-1',
+    id: "child-1",
+    parentId: "group-1",
     position: { x: 20, y: 50 }, // relative to parent
-    data: { label: 'Child Node' },
+    data: { label: "Child Node" },
   },
   {
-    id: 'child-2',
-    parentId: 'group-1',
+    id: "child-2",
+    parentId: "group-1",
     position: { x: 200, y: 50 },
-    data: { label: 'Another Child' },
-    extent: 'parent', // restrict movement to parent bounds
+    data: { label: "Another Child" },
+    extent: "parent", // restrict movement to parent bounds
   },
 ];
 ```
@@ -258,10 +266,14 @@ const nodes = [
 
 ```tsx
 // Constrain child to parent bounds
-{ extent: 'parent' }
+{
+  extent: "parent";
+}
 
 // Auto-expand parent when child is dragged to edge
-{ expandParent: true }
+{
+  expandParent: true;
+}
 ```
 
 ### The group node type
@@ -283,7 +295,7 @@ Child nodes can have edges to nodes outside their parent group. This creates con
 To layout nodes after they've been measured (so you have accurate dimensions):
 
 ```tsx
-import { useNodesInitialized } from '@xyflow/react';
+import { useNodesInitialized } from "@xyflow/react";
 
 function Flow() {
   const nodesInitialized = useNodesInitialized();
@@ -305,18 +317,18 @@ function Flow() {
 Reusable hook that auto-layouts on initialization and exposes a `runLayout` function:
 
 ```tsx
-import { useCallback, useEffect, useRef } from 'react';
-import { useReactFlow, useNodesInitialized } from '@xyflow/react';
-import dagre from '@dagrejs/dagre';
+import { useCallback, useEffect, useRef } from "react";
+import { useReactFlow, useNodesInitialized } from "@xyflow/react";
+import dagre from "@dagrejs/dagre";
 
 interface UseAutoLayoutOptions {
-  direction?: 'TB' | 'BT' | 'LR' | 'RL';
+  direction?: "TB" | "BT" | "LR" | "RL";
   nodesep?: number;
   ranksep?: number;
 }
 
 export function useAutoLayout(options: UseAutoLayoutOptions = {}) {
-  const { direction = 'TB', nodesep = 50, ranksep = 50 } = options;
+  const { direction = "TB", nodesep = 50, ranksep = 50 } = options;
   const { getNodes, getEdges, setNodes, fitView } = useReactFlow();
   const nodesInitialized = useNodesInitialized();
   const layoutApplied = useRef(false);

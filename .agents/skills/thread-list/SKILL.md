@@ -22,7 +22,10 @@ Thread list is available with `useChatRuntime` + cloud:
 
 ```tsx
 import { AssistantCloud } from "assistant-cloud";
-import { useChatRuntime, AssistantChatTransport } from "@assistant-ui/react-ai-sdk";
+import {
+  useChatRuntime,
+  AssistantChatTransport,
+} from "@assistant-ui/react-ai-sdk";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { ThreadList } from "@/components/assistant-ui/thread-list";
 import { Thread } from "@/components/assistant-ui/thread";
@@ -76,7 +79,10 @@ await item.delete();
 ## Custom Thread List
 
 ```tsx
-import { ThreadListPrimitive, ThreadListItemPrimitive } from "@assistant-ui/react";
+import {
+  ThreadListPrimitive,
+  ThreadListItemPrimitive,
+} from "@assistant-ui/react";
 
 function CustomThreadList() {
   return (
@@ -90,8 +96,12 @@ function CustomThreadList() {
           <ThreadListItemPrimitive.Trigger className="flex-1">
             <ThreadListItemPrimitive.Title />
           </ThreadListItemPrimitive.Trigger>
-          <ThreadListItemPrimitive.Archive>Archive</ThreadListItemPrimitive.Archive>
-          <ThreadListItemPrimitive.Delete>Delete</ThreadListItemPrimitive.Delete>
+          <ThreadListItemPrimitive.Archive>
+            Archive
+          </ThreadListItemPrimitive.Archive>
+          <ThreadListItemPrimitive.Delete>
+            Delete
+          </ThreadListItemPrimitive.Delete>
         </ThreadListItemPrimitive.Root>
       </ThreadListPrimitive.Items>
     </ThreadListPrimitive.Root>
@@ -116,9 +126,11 @@ const runtime = useRemoteThreadListRuntime({
 ## Common Gotchas
 
 **ThreadList not showing**
+
 - Pass `cloud` to runtime
 - Check authentication
 
 **Threads not persisting**
+
 - Verify cloud connection
 - Check network requests

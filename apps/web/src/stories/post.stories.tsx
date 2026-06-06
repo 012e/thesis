@@ -49,7 +49,11 @@ function greet(name) {
   upvoteCount: 42,
   downvoteCount: 3,
   currentUserReaction: null,
+  currentUserUpvoted: false,
+  currentUserDownvoted: false,
   currentUserSubscribed: false,
+  currentUserBookmarked: false,
+  tags: [],
 };
 
 const postWithImages: PostDto = {
@@ -112,6 +116,7 @@ const postUpvoted: PostDto = {
   upvoteCount: 15,
   downvoteCount: 1,
   currentUserReaction: "upvote",
+  currentUserUpvoted: true,
 };
 
 // --- MSW handlers ---

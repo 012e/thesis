@@ -97,6 +97,9 @@ export class PostsSearchService {
 
     const dtos = result.rows.map((row) => {
       const r = row as Record<string, unknown>;
+      const currentUserReaction =
+        (r["user_reaction_type"] as ReactionTypeDto | null) ?? null;
+
       return {
         id: r["id"] as string,
         authorId: r["author_id"] as string,
@@ -115,8 +118,9 @@ export class PostsSearchService {
         upvoteCount: Number(r["upvote_count"]),
         downvoteCount: Number(r["downvote_count"]),
         commentCount: Number(r["comment_count"]),
-        currentUserReaction:
-          (r["user_reaction_type"] as ReactionTypeDto | null) ?? null,
+        currentUserReaction,
+        currentUserUpvoted: currentUserReaction === "upvote",
+        currentUserDownvoted: currentUserReaction === "downvote",
         currentUserSubscribed: Boolean(r["current_user_subscribed"]),
         currentUserBookmarked: Boolean(r["current_user_bookmarked"]),
         tags: [],

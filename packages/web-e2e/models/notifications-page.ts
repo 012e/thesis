@@ -19,9 +19,7 @@ export class NotificationsPage {
   }
 
   async expectEmpty() {
-    await expect(
-      this.page.getByText("No notifications yet"),
-    ).toBeVisible();
+    await expect(this.page.getByText("No notifications yet")).toBeVisible();
   }
 
   async markAllAsRead() {

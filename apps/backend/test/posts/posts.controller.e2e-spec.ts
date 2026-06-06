@@ -135,6 +135,9 @@ describe("PostsController integration", () => {
       expect(res.body.author.email).toBeTruthy();
       expect(res.body.upvoteCount).toBe(0);
       expect(res.body.downvoteCount).toBe(0);
+      expect(res.body.currentUserReaction).toBeNull();
+      expect(res.body.currentUserUpvoted).toBe(false);
+      expect(res.body.currentUserDownvoted).toBe(false);
       expect(res.body.currentUserSubscribed).toBe(true);
     });
 
@@ -197,6 +200,64 @@ describe("PostsController integration", () => {
       expect(res.body.author.id).toBe(created.body.author.id);
       expect(res.body.upvoteCount).toBe(0);
       expect(res.body.downvoteCount).toBe(0);
+      expect(res.body.currentUserReaction).toBeNull();
+      expect(res.body.currentUserUpvoted).toBe(false);
+      expect(res.body.currentUserDownvoted).toBe(false);
+    });
+
+    it("returns the current user's upvote and downvote status", async () => {
+      const server = request(testApp.app.getHttpServer());
+
+      const upvoted = await server
+        .post("/posts")
+        .set("Cookie", userBCookie)
+        .send({ content: { text: "Post user A upvotes" } })
+        .expect(201);
+      const downvoted = await server
+        .post("/posts")
+        .set("Cookie", userBCookie)
+        .send({ content: { text: "Post user A downvotes" } })
+        .expect(201);
+
+      await server
+        .put(`/posts/${upvoted.body.id}/reaction`)
+        .set("Cookie", userACookie)
+        .send({ type: "upvote" })
+        .expect(200);
+      await server
+        .put(`/posts/${downvoted.body.id}/reaction`)
+        .set("Cookie", userACookie)
+        .send({ type: "downvote" })
+        .expect(200);
+
+      const upvotedForA = await server
+        .get(`/posts/${upvoted.body.id}`)
+        .set("Cookie", userACookie)
+        .expect(200);
+      const downvotedForA = await server
+        .get(`/posts/${downvoted.body.id}`)
+        .set("Cookie", userACookie)
+        .expect(200);
+      const upvotedForB = await server
+        .get(`/posts/${upvoted.body.id}`)
+        .set("Cookie", userBCookie)
+        .expect(200);
+
+      expect(upvotedForA.body).toMatchObject({
+        currentUserReaction: "upvote",
+        currentUserUpvoted: true,
+        currentUserDownvoted: false,
+      });
+      expect(downvotedForA.body).toMatchObject({
+        currentUserReaction: "downvote",
+        currentUserUpvoted: false,
+        currentUserDownvoted: true,
+      });
+      expect(upvotedForB.body).toMatchObject({
+        currentUserReaction: null,
+        currentUserUpvoted: false,
+        currentUserDownvoted: false,
+      });
     });
 
     it("returns 404 for a non-existent post", async () => {

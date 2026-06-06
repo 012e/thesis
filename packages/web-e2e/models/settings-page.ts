@@ -15,9 +15,7 @@ export class SettingsPage {
   }
 
   async expectAccountOverviewVisible() {
-    await expect(
-      this.page.getByText("Account Overview"),
-    ).toBeVisible();
+    await expect(this.page.getByText("Account Overview")).toBeVisible();
   }
 
   async updateDisplayName(newName: string) {
@@ -25,9 +23,7 @@ export class SettingsPage {
     await nameInput.clear();
     await nameInput.fill(newName);
     // Find the save button in the Profile Identity card
-    const profileCard = this.page
-      .locator("form")
-      .filter({ has: nameInput });
+    const profileCard = this.page.locator("form").filter({ has: nameInput });
     await profileCard.getByRole("button", { name: /save/i }).click();
   }
 

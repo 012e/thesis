@@ -22,6 +22,7 @@ test.describe("Authentication", () => {
       await registerPage.goto();
 
       await expect(page.locator("#name")).toBeVisible();
+      await expect(page.locator("#username")).toBeVisible();
       await expect(page.locator("#email")).toBeVisible();
       await expect(page.locator("#password")).toBeVisible();
       await expect(page.locator("#confirmPassword")).toBeVisible();
@@ -38,14 +39,13 @@ test.describe("Authentication", () => {
       await expect(loginLink).toBeVisible();
     });
 
-    test("should show validation error for weak password", async ({
-      page,
-    }) => {
+    test("should show validation error for weak password", async ({ page }) => {
       const registerPage = new RegisterPage(page);
       await registerPage.goto();
 
       await registerPage.fillForm({
         name: "Test User",
+        username: `test${Date.now()}`,
         email: `test-${Date.now()}@example.com`,
         password: "weak",
       });
@@ -149,9 +149,7 @@ test.describe("Authentication", () => {
       await expect(page).toHaveURL(/\/auth\/login/);
     });
 
-    test("should redirect to requested page after login", async ({
-      page,
-    }) => {
+    test("should redirect to requested page after login", async ({ page }) => {
       // Register first
       const registerPage = new RegisterPage(page);
       await registerPage.goto();

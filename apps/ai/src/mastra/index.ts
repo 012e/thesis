@@ -6,7 +6,8 @@ import { identityAgent } from "./agents/identity-agent";
 import { postCreationAgent } from "./agents/post-creation-agent";
 import { postDiscoveryAgent } from "./agents/post-discovery-agent";
 import { interactionsAgent } from "./agents/interactions-agent";
-import { reasoningAgent } from "./agents/reasoning-agent";
+import { navigationAgent } from "./agents/navigation-agent";
+import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
 import { pgStore } from "./memory";
 import { streamRoute } from "./routes/stream";
@@ -22,8 +23,9 @@ import { RequestContext } from "@mastra/core/request-context";
  * - postCreationAgent — post write ops (Studio preview only)
  * - postDiscoveryAgent — post read ops (Studio preview only)
  * - interactionsAgent — engagement ops (Studio preview only)
- * - reasoningAgent  — complex reasoning with the strongest model
- * - searchAgent     — web search via DuckDuckGo (Studio preview only)
+ * - navigationAgent — app page/tool discovery (Studio preview only)
+ * - planningAgent   — explicit execution planning with the strongest model
+ * - searchAgent     — web search via OpenAI web search
  *
  * Note: the sub-agents registered here have NO tools attached because MCP
  * toolsets require per-request auth. The live /chat route uses
@@ -37,7 +39,8 @@ export const mastra = new Mastra({
     postCreationAgent,
     postDiscoveryAgent,
     interactionsAgent,
-    reasoningAgent,
+    navigationAgent,
+    planningAgent,
     searchAgent,
   },
   storage: pgStore,

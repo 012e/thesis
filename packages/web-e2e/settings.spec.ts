@@ -3,9 +3,7 @@ import { SettingsPage } from "@/models/settings-page";
 
 test.describe("Settings", () => {
   test.describe("Page layout", () => {
-    test("should display settings heading", async ({
-      authedPage: page,
-    }) => {
+    test("should display settings heading", async ({ authedPage: page }) => {
       const settingsPage = new SettingsPage(page);
       await settingsPage.goto();
 
@@ -46,19 +44,13 @@ test.describe("Settings", () => {
   });
 
   test.describe("Change password", () => {
-    test("should show password change form", async ({
-      authedPage: page,
-    }) => {
+    test("should show password change form", async ({ authedPage: page }) => {
       const settingsPage = new SettingsPage(page);
       await settingsPage.goto();
 
       // Should have current password, new password, and confirm fields
-      await expect(
-        page.getByLabel(/current password/i).first(),
-      ).toBeVisible();
-      await expect(
-        page.getByLabel(/new password/i).first(),
-      ).toBeVisible();
+      await expect(page.getByLabel(/current password/i).first()).toBeVisible();
+      await expect(page.getByLabel(/new password/i).first()).toBeVisible();
     });
 
     test("should change password successfully", async ({
@@ -83,14 +75,14 @@ test.describe("Settings", () => {
   });
 
   test.describe("Logout", () => {
-    test("should logout successfully", async ({
-      authedPage: page,
-    }) => {
+    test("should logout successfully", async ({ authedPage: page }) => {
       const settingsPage = new SettingsPage(page);
       await settingsPage.goto();
 
       // Click logout button
-      const logoutButton = page.getByRole("button", { name: /logout|sign out|log out/i });
+      const logoutButton = page.getByRole("button", {
+        name: /logout|sign out|log out/i,
+      });
       if (await logoutButton.isVisible()) {
         await logoutButton.click();
 

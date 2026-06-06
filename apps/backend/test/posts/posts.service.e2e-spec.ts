@@ -154,6 +154,9 @@ describe("PostsService integration", () => {
     expect(created.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
     expect(created.upvoteCount).toBe(0);
     expect(created.downvoteCount).toBe(0);
+    expect(created.currentUserReaction).toBeNull();
+    expect(created.currentUserUpvoted).toBe(false);
+    expect(created.currentUserDownvoted).toBe(false);
     expect(created.currentUserSubscribed).toBe(true);
   });
 
@@ -184,8 +187,56 @@ describe("PostsService integration", () => {
     expect(listedPosts[1].author.id).toBe("author-1");
     expect(listedPosts[0].upvoteCount).toBe(0);
     expect(listedPosts[0].downvoteCount).toBe(0);
+    expect(listedPosts[0].currentUserReaction).toBeNull();
+    expect(listedPosts[0].currentUserUpvoted).toBe(false);
+    expect(listedPosts[0].currentUserDownvoted).toBe(false);
     expect(listedPosts[1].upvoteCount).toBe(0);
     expect(listedPosts[1].downvoteCount).toBe(0);
+  });
+
+  it("returns the requesting user's post reaction status", async () => {
+    const upvotedPost = await postsService.create("author-1", {
+      content: { text: "Upvoted by requester" },
+    });
+    const downvotedPost = await postsService.create("author-2", {
+      content: { text: "Downvoted by requester" },
+    });
+    const otherUserPost = await postsService.create("author-1", {
+      content: { text: "Reacted to by someone else" },
+    });
+
+    await databaseService.db.insert(postReactions).values([
+      { postId: upvotedPost.id, userId: "viewer", type: "upvote" },
+      { postId: downvotedPost.id, userId: "viewer", type: "downvote" },
+      { postId: otherUserPost.id, userId: "other-user", type: "upvote" },
+    ]);
+
+    const listedPosts = await postsService.list("viewer");
+    const listedById = new Map(listedPosts.map((post) => [post.id, post]));
+
+    expect(listedById.get(upvotedPost.id)).toMatchObject({
+      currentUserReaction: "upvote",
+      currentUserUpvoted: true,
+      currentUserDownvoted: false,
+    });
+    expect(listedById.get(downvotedPost.id)).toMatchObject({
+      currentUserReaction: "downvote",
+      currentUserUpvoted: false,
+      currentUserDownvoted: true,
+    });
+    expect(listedById.get(otherUserPost.id)).toMatchObject({
+      currentUserReaction: null,
+      currentUserUpvoted: false,
+      currentUserDownvoted: false,
+    });
+
+    await expect(
+      postsService.getById(upvotedPost.id, "viewer"),
+    ).resolves.toMatchObject({
+      currentUserReaction: "upvote",
+      currentUserUpvoted: true,
+      currentUserDownvoted: false,
+    });
   });
 
   it("excludes hidden posts from the main list", async () => {

@@ -59,9 +59,11 @@ export async function registerAndGetSessionCookie(
   password = "TestPassword123!",
   name = "Test User",
 ): Promise<string> {
+  const username =
+    email.split("@")[0]?.replace(/[^a-zA-Z0-9_.]/g, "") ?? "user";
   const res = await server
     .post("/api/auth/sign-up/email")
-    .send({ email, password, name })
+    .send({ email, username, password, name })
     .expect(200);
 
   const setCookieHeader = res.headers["set-cookie"] as string[] | string;

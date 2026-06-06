@@ -1,6 +1,10 @@
 import { registerApiRoute } from "@mastra/core/server";
 import { toAISdkStream } from "@mastra/ai-sdk";
-import { createUIMessageStreamResponse, type ToolSet } from "ai";
+import {
+  createUIMessageStream,
+  createUIMessageStreamResponse,
+  type ToolSet,
+} from "ai";
 import { z } from "zod";
 import {
   AIContextPayloadSchema,
@@ -151,6 +155,7 @@ export const streamRoute = registerApiRoute("/chat", {
         requestContext,
         resolvedMode,
         userContext,
+        clientTools,
       );
 
       const messagesWithContext = injectContextMessage(messages, userContext);
@@ -169,13 +174,20 @@ export const streamRoute = registerApiRoute("/chat", {
           : undefined,
       });
 
-      return createUIMessageStreamResponse({
-        // Cast resolves Node.js vs Web Streams API ambient type mismatch; runtime is correct
-        stream: toAISdkStream(agentStream, {
-          from: "agent",
-          sendReasoning: true,
-        }) as any,
+      const stream = createUIMessageStream({
+        originalMessages: messages,
+        execute: async ({ writer }) => {
+          for await (const part of toAISdkStream(agentStream, {
+            from: "agent",
+            version: "v6",
+            sendReasoning: true,
+          })) {
+            writer.write(part);
+          }
+        },
       });
+
+      return createUIMessageStreamResponse({ stream });
     } catch (error) {
       console.error("Stream route error:", error);
       return c.json(

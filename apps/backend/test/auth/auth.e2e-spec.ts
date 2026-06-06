@@ -37,7 +37,7 @@ describe("Auth integration", () => {
 
       const { data, error } = await authClient.register({
         email,
-        username: `user-${Date.now()}`,
+        username: `user${Date.now()}`,
         password: "TestPassword123!",
         name: "Test User",
       });
@@ -55,7 +55,7 @@ describe("Auth integration", () => {
 
       const first = await authClient.register({
         email,
-        username: `first-${Date.now()}`,
+        username: `first${Date.now()}`,
         password: "TestPassword123!",
         name: "First User",
       });
@@ -63,7 +63,7 @@ describe("Auth integration", () => {
 
       const second = await authClient.register({
         email,
-        username: `second-${Date.now()}`,
+        username: `second${Date.now()}`,
         password: "TestPassword123!",
         name: "Second User",
       });
@@ -74,7 +74,7 @@ describe("Auth integration", () => {
     it("rejects registration with a weak password", async () => {
       const { error } = await authClient.register({
         email: `weak-${Date.now()}@example.com`,
-        username: `weak-${Date.now()}`,
+        username: `weak${Date.now()}`,
         password: "short",
         name: "Weak Password User",
       });
@@ -85,7 +85,7 @@ describe("Auth integration", () => {
     it("returns a session token after successful registration", async () => {
       const { data, error } = await authClient.register({
         email: `session-${Date.now()}@example.com`,
-        username: `session-${Date.now()}`,
+        username: `session${Date.now()}`,
         password: "TestPassword123!",
         name: "Session User",
       });
@@ -105,7 +105,7 @@ describe("Auth integration", () => {
     beforeAll(async () => {
       await authClient.register({
         email,
-        username: `login-user-${Date.now()}`,
+        username: `loginuser${Date.now()}`,
         password,
         name: "Login User",
       });
@@ -145,6 +145,7 @@ describe("Auth integration", () => {
         .post("/api/auth/sign-up/email")
         .send({
           email: `session-check-${Date.now()}@example.com`,
+          username: `sessioncheck${Date.now()}`,
           password: "TestPassword123!",
           name: "Session Check User",
         })
@@ -185,6 +186,7 @@ describe("Auth integration", () => {
         .post("/api/auth/sign-up/email")
         .send({
           email: `signout-${Date.now()}@example.com`,
+          username: `signout${Date.now()}`,
           password: "TestPassword123!",
           name: "Sign Out User",
         })
@@ -222,6 +224,7 @@ describe("Auth integration", () => {
         .post("/api/auth/sign-up/email")
         .send({
           email,
+          username: `httpsession${Date.now()}`,
           password: "TestPassword123!",
           name: "HTTP Session User",
         })

@@ -7,24 +7,57 @@ import { z } from "zod";
 import { useAtomValue, useSetAtom } from "jotai";
 import { executeCode } from "@/lib/api/playground";
 import type { ExecutionResult } from "@repo/rest-contracts";
+import { useAssistantPageReady } from "@/lib/assistant/page-readiness";
 import { isOutputMinimizedAtom } from "./-types";
 import {
   codeAtom,
+  editFlashAtom,
   languageAtom,
   resultAtom,
   setCodeAtom,
   setLanguageAtom,
   setResultAtom,
 } from "./-playground-state";
+import type { Language } from "./-types";
 
 const PlaygroundLanguageSchema = z.enum(["javascript", "typescript"]);
+const VirtualFilePathSchema = z.enum([
+  "/playground/index.js",
+  "/playground/index.ts",
+]);
 
-const GetPlaygroundCodeInput = z.object({
+const VIRTUAL_FILE_BY_LANGUAGE: Record<
+  Language,
+  z.infer<typeof VirtualFilePathSchema>
+> = {
+  javascript: "/playground/index.js",
+  typescript: "/playground/index.ts",
+};
+
+const LANGUAGE_BY_VIRTUAL_FILE: Record<
+  z.infer<typeof VirtualFilePathSchema>,
+  Language
+> = {
+  "/playground/index.js": "javascript",
+  "/playground/index.ts": "typescript",
+};
+
+const ReadFileInput = z.object({
+  path: VirtualFilePathSchema.optional(),
   includeOutput: z.boolean().optional(),
 });
 
-const SetPlaygroundCodeInput = z.object({
-  code: z.string().max(102400),
+const EditFileInput = z.object({
+  path: VirtualFilePathSchema,
+  old_string: z.string().min(1).max(102400),
+  new_string: z.string().max(102400),
+  expected_version: z.number().int().nonnegative(),
+});
+
+const WriteFileInput = z.object({
+  path: VirtualFilePathSchema,
+  content: z.string().max(102400),
+  expected_version: z.number().int().nonnegative(),
   language: PlaygroundLanguageSchema.optional(),
 });
 
@@ -43,25 +76,61 @@ export function PlaygroundAssistantTools() {
   const setCode = useSetAtom(setCodeAtom);
   const setLanguage = useSetAtom(setLanguageAtom);
   const setResult = useSetAtom(setResultAtom);
+  const setEditFlash = useSetAtom(editFlashAtom);
   const setIsOutputMinimized = useSetAtom(isOutputMinimizedAtom);
-  const stateRef = useRef({ code, language, result });
-  stateRef.current = { code, language, result };
+  const stateRef = useRef({
+    code,
+    language,
+    result,
+    version: 0,
+  });
+
+  if (
+    stateRef.current.code !== code ||
+    stateRef.current.language !== language
+  ) {
+    stateRef.current = {
+      code,
+      language,
+      result,
+      version: stateRef.current.version + 1,
+    };
+  } else {
+    stateRef.current = {
+      ...stateRef.current,
+      result,
+    };
+  }
 
   useAssistantInstructions(
-    `The user is on the code playground. You have page-scoped tools that can read the current editor, replace the editor contents, change the playground language, and run the code. Use those tools for playground code edits and execution. Do not say code was changed or run unless the corresponding tool call succeeds. Current language: ${language}. Current code length: ${code.length} characters.`,
+    `The user is on the code playground. The editor is exposed to you as one virtual file, currently ${VIRTUAL_FILE_BY_LANGUAGE[language]}. Use read_file before editing. Prefer edit_file with an exact old_string/new_string replacement. Use write_file only for intentional full-file rewrites. Both edit_file and write_file require the expected_version returned by read_file; if a write is stale, read_file again and reapply the change against the latest content. Use run_playground_code to execute the current file. Do not say code was changed or run unless the corresponding tool call returns success. Current language: ${language}. Current code length: ${code.length} characters.`,
   );
 
-  const getCodeTool = useMemo(
+  const readFileTool = useMemo(
     () => ({
-      toolName: "get_playground_code",
+      toolName: "read_file",
       description:
-        "Read the current playground editor contents, selected language, and optionally the latest execution output.",
-      parameters: GetPlaygroundCodeInput,
-      execute: ({ includeOutput }: z.infer<typeof GetPlaygroundCodeInput>) => {
+        "Read the current playground editor as a virtual file. Returns content and version; use that version for edit_file or write_file.",
+      parameters: ReadFileInput,
+      execute: ({ path, includeOutput }: z.infer<typeof ReadFileInput>) => {
         const current = stateRef.current;
+        const currentPath = VIRTUAL_FILE_BY_LANGUAGE[current.language];
+
+        if (path && path !== currentPath) {
+          return {
+            status: "not_found",
+            path,
+            currentPath,
+            message: "Only the current playground file can be read.",
+          };
+        }
+
         return {
+          status: "success",
+          path: currentPath,
           language: current.language,
-          code: current.code,
+          version: current.version,
+          content: current.code,
           output: includeOutput ? current.result : undefined,
         };
       },
@@ -69,27 +138,162 @@ export function PlaygroundAssistantTools() {
     [],
   );
 
-  const setCodeTool = useMemo(
+  const editFileTool = useMemo(
     () => ({
-      toolName: "set_playground_code",
+      toolName: "edit_file",
       description:
-        "Replace the current playground editor contents. Optionally also switch the editor language.",
-      parameters: SetPlaygroundCodeInput,
+        "Apply an exact replacement to the current playground virtual file. Requires the expected_version from read_file and rejects stale, missing, or ambiguous replacements.",
+      parameters: EditFileInput,
       execute: ({
-        code: nextCode,
-        language: nextLanguage,
-      }: z.infer<typeof SetPlaygroundCodeInput>) => {
+        path,
+        old_string: oldString,
+        new_string: newString,
+        expected_version: expectedVersion,
+      }: z.infer<typeof EditFileInput>) => {
+        const current = stateRef.current;
+        const currentPath = VIRTUAL_FILE_BY_LANGUAGE[current.language];
+
+        if (path !== currentPath) {
+          return {
+            status: "not_found",
+            path,
+            currentPath,
+            currentVersion: current.version,
+            message: "Only the current playground file can be edited.",
+          };
+        }
+
+        if (expectedVersion !== current.version) {
+          return {
+            status: "stale",
+            path,
+            currentVersion: current.version,
+            expectedVersion,
+            message:
+              "The playground changed after your read. Read the file again before editing.",
+          };
+        }
+
+        const firstIndex = current.code.indexOf(oldString);
+        if (firstIndex === -1) {
+          return {
+            status: "not_found",
+            path,
+            currentVersion: current.version,
+            message: "old_string was not found in the current file.",
+          };
+        }
+
+        if (
+          current.code.indexOf(oldString, firstIndex + oldString.length) !== -1
+        ) {
+          return {
+            status: "ambiguous",
+            path,
+            currentVersion: current.version,
+            message:
+              "old_string appears more than once. Read the file and use a more specific replacement.",
+          };
+        }
+
+        const nextCode =
+          current.code.slice(0, firstIndex) +
+          newString +
+          current.code.slice(firstIndex + oldString.length);
+        const nextVersion = current.version + 1;
+        stateRef.current = {
+          ...current,
+          code: nextCode,
+          version: nextVersion,
+        };
         setCode(nextCode);
-        if (nextLanguage) setLanguage(nextLanguage);
+        if (newString.length > 0) {
+          setEditFlash({
+            id: nextVersion,
+            startOffset: firstIndex,
+            endOffset: firstIndex + newString.length,
+          });
+        }
 
         return {
-          status: "updated",
-          language: nextLanguage ?? stateRef.current.language,
-          codeLength: nextCode.length,
+          status: "success",
+          path,
+          language: current.language,
+          previousVersion: current.version,
+          nextVersion,
+          contentLength: nextCode.length,
         };
       },
     }),
-    [setCode, setLanguage],
+    [setCode, setEditFlash],
+  );
+
+  const writeFileTool = useMemo(
+    () => ({
+      toolName: "write_file",
+      description:
+        "Replace the whole playground virtual file after read_file. Requires expected_version so user edits are not overwritten.",
+      parameters: WriteFileInput,
+      execute: ({
+        path,
+        content,
+        expected_version: expectedVersion,
+        language: requestedLanguage,
+      }: z.infer<typeof WriteFileInput>) => {
+        const current = stateRef.current;
+        const pathLanguage = LANGUAGE_BY_VIRTUAL_FILE[path];
+        const nextLanguage = requestedLanguage ?? pathLanguage;
+
+        if (VIRTUAL_FILE_BY_LANGUAGE[nextLanguage] !== path) {
+          return {
+            status: "invalid_request",
+            path,
+            language: nextLanguage,
+            currentVersion: current.version,
+            message:
+              "The requested language must match the virtual file path extension.",
+          };
+        }
+
+        if (expectedVersion !== current.version) {
+          return {
+            status: "stale",
+            path,
+            currentVersion: current.version,
+            expectedVersion,
+            message:
+              "The playground changed after your read. Read the file again before writing.",
+          };
+        }
+
+        const nextVersion = current.version + 1;
+        stateRef.current = {
+          ...current,
+          code: content,
+          language: nextLanguage,
+          version: nextVersion,
+        };
+        setCode(content);
+        if (nextLanguage !== current.language) setLanguage(nextLanguage);
+        if (content.length > 0) {
+          setEditFlash({
+            id: nextVersion,
+            startOffset: 0,
+            endOffset: content.length,
+          });
+        }
+
+        return {
+          status: "success",
+          path,
+          language: nextLanguage,
+          previousVersion: current.version,
+          nextVersion,
+          contentLength: content.length,
+        };
+      },
+    }),
+    [setCode, setEditFlash, setLanguage],
   );
 
   const setLanguageTool = useMemo(
@@ -101,8 +305,21 @@ export function PlaygroundAssistantTools() {
       execute: ({
         language: nextLanguage,
       }: z.infer<typeof SetPlaygroundLanguageInput>) => {
+        const current = stateRef.current;
+        stateRef.current = {
+          ...current,
+          language: nextLanguage,
+          version:
+            nextLanguage === current.language
+              ? current.version
+              : current.version + 1,
+        };
         setLanguage(nextLanguage);
-        return { status: "updated", language: nextLanguage };
+        return {
+          status: "updated",
+          language: nextLanguage,
+          version: stateRef.current.version,
+        };
       },
     }),
     [setLanguage],
@@ -141,10 +358,12 @@ export function PlaygroundAssistantTools() {
     [setIsOutputMinimized, setResult],
   );
 
-  useAssistantTool(getCodeTool);
-  useAssistantTool(setCodeTool);
+  useAssistantTool(readFileTool);
+  useAssistantTool(editFileTool);
+  useAssistantTool(writeFileTool);
   useAssistantTool(setLanguageTool);
   useAssistantTool(runCodeTool);
+  useAssistantPageReady("playground");
 
   return null;
 }

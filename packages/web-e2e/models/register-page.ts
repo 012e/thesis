@@ -4,6 +4,7 @@ import { pathTo } from "@/utils/path";
 
 export type UserCredential = {
   name: string;
+  username: string;
   email: string;
   password: string;
 };
@@ -17,7 +18,10 @@ export class RegisterPage {
   }
 
   private getRandomCred(): UserCredential {
-    const firstName = faker.person.firstName().toLowerCase();
+    const firstName = faker.person
+      .firstName()
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
     const timestamp = Date.now();
 
     return {
@@ -25,11 +29,13 @@ export class RegisterPage {
       email: `${firstName}-${timestamp}@example.com`,
       password: "Test@" + faker.string.alphanumeric(8) + "1",
       name: faker.person.fullName(),
+      username: `${firstName}${timestamp}`,
     };
   }
 
   async fillForm(cred: UserCredential) {
     await this.page.locator("#name").fill(cred.name);
+    await this.page.locator("#username").fill(cred.username);
     await this.page.locator("#email").fill(cred.email);
     await this.page.locator("#password").fill(cred.password);
     await this.page.locator("#confirmPassword").fill(cred.password);

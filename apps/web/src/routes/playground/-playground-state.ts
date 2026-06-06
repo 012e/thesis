@@ -16,6 +16,12 @@ type PlaygroundState = {
   isChatCollapsed: boolean;
 };
 
+export type PlaygroundEditFlash = {
+  id: number;
+  startOffset: number;
+  endOffset: number;
+};
+
 const initialPlaygroundState: PlaygroundState = {
   code: DEFAULT_CODE.javascript,
   language: "javascript",
@@ -25,6 +31,8 @@ const initialPlaygroundState: PlaygroundState = {
 
 const playgroundStateAtom = atom<PlaygroundState>(initialPlaygroundState);
 const beforeChatCollapseAtom = atom<{ callback: () => void } | null>(null);
+
+export const editFlashAtom = atom<PlaygroundEditFlash | null>(null);
 
 export const codeAtom = selectAtom(playgroundStateAtom, (state) => state.code);
 export const languageAtom = selectAtom(

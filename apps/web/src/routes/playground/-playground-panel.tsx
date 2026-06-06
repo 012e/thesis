@@ -1,6 +1,7 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { PointerEvent } from "react";
 import Editor from "@monaco-editor/react";
+import type { OnMount } from "@monaco-editor/react";
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import {
   IconPlayerPlay,
@@ -29,6 +30,7 @@ import { useIsDark } from "./-hooks";
 import {
   changeLanguageAtom,
   codeAtom,
+  editFlashAtom,
   isChatCollapsedAtom,
   languageAtom,
   resultAtom,
@@ -42,6 +44,7 @@ import { Spinner } from "@/components/ui/spinner";
 
 export function PlaygroundPanel() {
   const code = useAtomValue(codeAtom);
+  const editFlash = useAtomValue(editFlashAtom);
   const language = useAtomValue(languageAtom);
   const result = useAtomValue(resultAtom);
   const isOutputMinimized = useAtomValue(isOutputMinimizedAtom);
@@ -54,6 +57,10 @@ export function PlaygroundPanel() {
   const isDark = useIsDark();
   const [settings, setSettings] = useAtom(playgroundSettingsAtom);
   const playgroundRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<Parameters<OnMount>[0] | null>(null);
+  const flashDecorationsRef = useRef<ReturnType<
+    Parameters<OnMount>[0]["createDecorationsCollection"]
+  > | null>(null);
 
   const editorTheme =
     settings.theme === "auto"
@@ -65,6 +72,47 @@ export function PlaygroundPanel() {
         : "vs";
 
   const currentLanguageLabel = PLAYGROUND_LANGUAGE_LABELS[language];
+
+  const handleEditorMount: OnMount = useCallback((editor) => {
+    editorRef.current = editor;
+  }, []);
+
+  useEffect(() => {
+    const editor = editorRef.current;
+    const model = editor?.getModel();
+
+    if (!editor || !model || !editFlash) return;
+
+    const startOffset = Math.min(editFlash.startOffset, model.getValueLength());
+    const endOffset = Math.min(editFlash.endOffset, model.getValueLength());
+    if (endOffset <= startOffset) return;
+
+    const startPosition = model.getPositionAt(startOffset);
+    const endPosition = model.getPositionAt(endOffset);
+
+    flashDecorationsRef.current?.clear();
+    flashDecorationsRef.current = editor.createDecorationsCollection([
+      {
+        range: {
+          startLineNumber: startPosition.lineNumber,
+          startColumn: startPosition.column,
+          endLineNumber: endPosition.lineNumber,
+          endColumn: endPosition.column,
+        },
+        options: {
+          className: "playground-edit-flash-line",
+          isWholeLine: true,
+        },
+      },
+    ]);
+
+    const timeoutId = window.setTimeout(() => {
+      flashDecorationsRef.current?.clear();
+      flashDecorationsRef.current = null;
+    }, 2000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [editFlash]);
 
   const handleResizeStart = useCallback(
     (event: PointerEvent<HTMLButtonElement>) => {
@@ -187,6 +235,7 @@ export function PlaygroundPanel() {
             language={language}
             value={code}
             theme={editorTheme}
+            onMount={handleEditorMount}
             onChange={(value) => setCode(value ?? "")}
             loading={<Spinner />}
             options={{

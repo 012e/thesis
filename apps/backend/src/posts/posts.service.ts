@@ -133,10 +133,7 @@ export class PostsService {
     );
   }
 
-  toDto(
-    row: PostDtoRow,
-    userReactionType?: ReactionTypeDto | null,
-  ): PostDto {
+  toDto(row: PostDtoRow, userReactionType?: ReactionTypeDto | null): PostDto {
     return this.postsPresenter.toDto(row, userReactionType);
   }
 

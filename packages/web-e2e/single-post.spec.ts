@@ -39,9 +39,7 @@ test.describe("Single Post Page", () => {
   }
 
   test.describe("Post display", () => {
-    test("should display a single post page", async ({
-      authedPage: page,
-    }) => {
+    test("should display a single post page", async ({ authedPage: page }) => {
       const postContent = await createPostAndGetId(page);
       await navigateToSinglePost(page, postContent);
 
@@ -85,9 +83,9 @@ test.describe("Single Post Page", () => {
       await navigateToSinglePost(page, postContent);
 
       // Comments section should be visible (inline, not in dialog)
-      await expect(
-        page.getByText(/comment/i).first(),
-      ).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(/comment/i).first()).toBeVisible({
+        timeout: 15_000,
+      });
     });
 
     test("should add a comment on single post page", async ({
@@ -97,9 +95,7 @@ test.describe("Single Post Page", () => {
       await navigateToSinglePost(page, postContent);
 
       // Wait for comments section to load
-      const commentEditor = page
-        .locator('[contenteditable="true"]')
-        .last();
+      const commentEditor = page.locator('[contenteditable="true"]').last();
       await commentEditor.waitFor({ state: "visible", timeout: 15_000 });
       await commentEditor.click();
 
@@ -149,9 +145,7 @@ test.describe("Single Post Page", () => {
       await bookmarkButton.click();
 
       // Should change to "Remove bookmark"
-      await expect(
-        page.getByTitle("Remove bookmark").first(),
-      ).toBeVisible();
+      await expect(page.getByTitle("Remove bookmark").first()).toBeVisible();
     });
   });
 });

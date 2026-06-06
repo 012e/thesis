@@ -13,10 +13,9 @@ export class PostsPresenterService {
     private readonly tagsService: TagsService,
   ) {}
 
-  toDto(
-    row: PostDtoRow,
-    userReactionType?: ReactionTypeDto | null,
-  ): PostDto {
+  toDto(row: PostDtoRow, userReactionType?: ReactionTypeDto | null): PostDto {
+    const currentUserReaction = userReactionType ?? null;
+
     return {
       id: row.id,
       authorId: row.authorId,
@@ -33,7 +32,9 @@ export class PostsPresenterService {
       upvoteCount: row.upvoteCount,
       downvoteCount: row.downvoteCount,
       commentCount: row.commentCount,
-      currentUserReaction: userReactionType ?? null,
+      currentUserReaction,
+      currentUserUpvoted: currentUserReaction === "upvote",
+      currentUserDownvoted: currentUserReaction === "downvote",
       currentUserSubscribed: row.currentUserSubscribed ?? false,
       currentUserBookmarked: row.currentUserBookmarked ?? false,
       tags: [],

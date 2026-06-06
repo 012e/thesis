@@ -8,7 +8,12 @@ import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import { and, eq } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
-import { postReactions, posts, postSubscriptions, usersView } from "@/db/schema";
+import {
+  postReactions,
+  posts,
+  postSubscriptions,
+  usersView,
+} from "@/db/schema";
 import {
   EMBEDDING_SERVICE,
   type IEmbeddingService,

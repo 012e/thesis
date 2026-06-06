@@ -29,6 +29,44 @@ import store from "@/lib/atoms/store";
 
 const DEFAULT_MODE: ModelMode = "fast";
 
+type AutoSendMessage = {
+  role: string;
+  parts?: readonly AutoSendPart[];
+};
+
+type AutoSendPart = {
+  type: string;
+  state?: string;
+  providerExecuted?: boolean;
+};
+
+function lastAssistantMessageIsCompleteWithToolCalls({
+  messages,
+}: {
+  messages: readonly AutoSendMessage[];
+}) {
+  const message = messages.at(-1);
+  if (!message || message.role !== "assistant") return false;
+
+  const parts = message.parts ?? [];
+  const lastStepStartIndex = parts.reduce(
+    (lastIndex, part, index) =>
+      part.type === "step-start" ? index : lastIndex,
+    -1,
+  );
+  const toolParts = parts
+    .slice(lastStepStartIndex + 1)
+    .filter((part) => part.type.startsWith("tool-") && !part.providerExecuted);
+
+  return (
+    toolParts.length > 0 &&
+    toolParts.every(
+      (part) =>
+        part.state === "output-available" || part.state === "output-error",
+    )
+  );
+}
+
 /**
  * Rendered inside AssistantRuntimeProvider so it has full access to
  * useAuiState. Updates modeRef synchronously during render so the transport's
@@ -75,6 +113,7 @@ export const ChatRuntimeProvider: FC<{ children: ReactNode }> = ({
             context: serializeAIContext(store.get(globalAIContextAtom)),
           }),
         }),
+        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         adapters: { history },
       });
     },

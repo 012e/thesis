@@ -1,14 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useAuiState } from "@assistant-ui/react";
 import { LeftSidebar } from "@/components/layout/left-sidebar";
+import { ChatPageAssistantTools } from "./-assistant-tools";
 import { ChatWorkspace } from "./-chat-workspace";
-import {
-  CreatePlanToolUI,
-  OpenFormToolUI,
-  SetFormFieldToolUI,
-  SubmitFormToolUI,
-  UpdatePlanItemToolUI,
-} from "./-tool-uis";
 import { ThreadSelector } from "./-thread-selector";
 
 export const Route = createFileRoute("/chat/")({
@@ -18,11 +12,7 @@ export const Route = createFileRoute("/chat/")({
 export function ChatPage() {
   return (
     <>
-      <OpenFormToolUI />
-      <SetFormFieldToolUI />
-      <SubmitFormToolUI />
-      <CreatePlanToolUI />
-      <UpdatePlanItemToolUI />
+      <ChatPageAssistantTools />
       <div className="flex h-screen overflow-hidden">
         <LeftSidebar />
 

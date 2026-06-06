@@ -13,7 +13,7 @@ export interface RegisterParams {
   name: string;
   email: string;
   password: string;
-  username?: string;
+  username: string;
 }
 
 export interface UpdateProfileParams {

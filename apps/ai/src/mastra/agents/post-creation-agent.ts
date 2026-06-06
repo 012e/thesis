@@ -1,5 +1,14 @@
 import { Agent } from "@mastra/core/agent";
 import { MODEL_CONFIG } from "../constants";
+import { PROMPTS } from "../../prompts";
+
+export const POST_CREATION_AGENT_CONFIG = {
+  id: "post-creation-agent",
+  name: "Post Creation Agent",
+  description:
+    "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent directly for simple post write tasks; use the planning agent first when the task is complex or needs multiple steps. Does NOT handle comments or reactions.",
+  instructions: PROMPTS.postCreationAgent,
+} as const;
 
 /**
  * Post-creation agent — owns all write operations on posts.
@@ -13,22 +22,6 @@ import { MODEL_CONFIG } from "../constants";
  * HTTP request carries its own authentication context.
  */
 export const postCreationAgent = new Agent({
-  id: "post-creation-agent",
-  name: "Post Creation Agent",
-  description:
-    "Handles write operations on posts: creating new posts, updating the text of existing posts, and deleting posts. Use this agent whenever the user wants to publish, edit, or remove content. Does NOT handle comments or reactions.",
-  instructions: `You are the content publishing specialist for a social media platform.
-
-Your responsibilities:
-- Create new text posts on behalf of the current user
-- Update the text content of posts the current user has authored
-- Delete posts the current user has authored
-
-Guidelines:
-- Only the post author can update or delete a post; the backend enforces this
-- When creating a post, use the exact text the user provides — do not paraphrase
-- After creating or updating a post, confirm success and return the post ID
-- After deleting a post, confirm the deletion by post ID
-- Do not read or list posts, fetch threads, or handle comments/reactions; delegate that elsewhere`,
+  ...POST_CREATION_AGENT_CONFIG,
   model: MODEL_CONFIG.POST_CREATION_AGENT.model,
 });

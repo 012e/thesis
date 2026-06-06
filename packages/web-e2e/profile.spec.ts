@@ -49,9 +49,9 @@ test.describe("Profile", () => {
       await profilePage.goto();
 
       // Should show edit button or avatar click to edit
-      await expect(
-        page.getByText(/edit/i).first(),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/edit/i).first()).toBeVisible({
+        timeout: 10_000,
+      });
     });
   });
 
@@ -78,27 +78,29 @@ test.describe("Profile", () => {
   });
 
   test.describe("Followers and Following", () => {
-    test("should navigate to followers page", async ({
-      authedPage: page,
-    }) => {
+    test("should navigate to followers page", async ({ authedPage: page }) => {
       const profilePage = new ProfilePage(page);
       await profilePage.goto();
 
       // Click on followers count/link
-      await page.getByText(/followers/i).first().click();
+      await page
+        .getByText(/followers/i)
+        .first()
+        .click();
 
       // Should show followers page
       await expect(page).toHaveURL(/followers/);
     });
 
-    test("should navigate to following page", async ({
-      authedPage: page,
-    }) => {
+    test("should navigate to following page", async ({ authedPage: page }) => {
       const profilePage = new ProfilePage(page);
       await profilePage.goto();
 
       // Click on following count/link
-      await page.getByText(/following/i).first().click();
+      await page
+        .getByText(/following/i)
+        .first()
+        .click();
 
       // Should show following page
       await expect(page).toHaveURL(/following/);

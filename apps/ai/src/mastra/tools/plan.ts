@@ -11,7 +11,7 @@ export const createPlanTool = createTool({
   id: "create_plan",
   description: `Creates a step-by-step plan for a complex, multi-step task and presents it to the user for approval before execution begins.
 
-Use this tool when the task requires 3 or more distinct steps, involves multiple systems or files, or could have significant side effects that benefit from user review.
+Use this tool when the user asked for a visible plan, the task needs user review, or the task could have significant side effects that benefit from explicit approval. Do not use it merely because an internal execution sequence has multiple steps.
 
 After calling this tool:
 - End your response with a short message asking the user to approve or reject the plan.

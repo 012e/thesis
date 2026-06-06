@@ -62,9 +62,7 @@ test.describe("Home Feed", () => {
       authedPage: page,
     }) => {
       // The post composer has a textarea placeholder
-      await expect(
-        page.getByText("What's happening").first(),
-      ).toBeVisible();
+      await expect(page.getByText("What's happening").first()).toBeVisible();
     });
 
     test("should create a new post", async ({ authedPage: page }) => {

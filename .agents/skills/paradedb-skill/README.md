@@ -74,7 +74,7 @@ if [[ "$DOC_PATH" != *.md && "$DOC_PATH" != *.txt ]]; then
 fi
 
 curl -fsSL "https://docs.paradedb.com/$DOC_PATH"
-``` 
+```
 
 ### Example Prompts
 

@@ -1,5 +1,14 @@
 import { Agent } from "@mastra/core/agent";
 import { MODEL_CONFIG } from "../constants";
+import { PROMPTS } from "../../prompts";
+
+export const INTERACTIONS_AGENT_CONFIG = {
+  id: "interactions-agent",
+  name: "Interactions Agent",
+  description:
+    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent directly for simple engagement tasks; use the planning agent first when the task is complex or needs multiple steps.",
+  instructions: PROMPTS.interactionsAgent,
+} as const;
 
 /**
  * Interactions agent — owns all engagement operations.
@@ -13,23 +22,6 @@ import { MODEL_CONFIG } from "../constants";
  * HTTP request carries its own authentication context.
  */
 export const interactionsAgent = new Agent({
-  id: "interactions-agent",
-  name: "Interactions Agent",
-  description:
-    "Handles all engagement and interaction operations: commenting on posts (including nested replies), upvoting or downvoting posts, and removing reactions. Use this agent whenever the user wants to respond to, react to, or engage with content.",
-  instructions: `You are the engagement specialist for a social media platform.
-
-Your responsibilities:
-- Post comments on any post on behalf of the current user
-- Post nested replies by supplying the parent comment ID
-- Upvote or downvote posts (an existing reaction of a different type is replaced automatically)
-- Remove the current user's reaction from a post
-
-Guidelines:
-- When commenting, use the exact text the user provides — do not paraphrase
-- Confirm the comment ID after successfully creating a comment
-- When reacting, confirm whether the reaction was created or replaced a previous one
-- Do not read or list posts; if the user needs to see a thread first, ask the orchestrator to use the post-discovery agent
-- Do not create or modify posts; delegate that to the post-creation agent`,
+  ...INTERACTIONS_AGENT_CONFIG,
   model: MODEL_CONFIG.INTERACTIONS_AGENT.model,
 });

@@ -17,20 +17,25 @@ Use this file when choosing between controlled and uncontrolled flows, integrati
 
 ## State management approaches
 
-| Approach | Best for | Complexity |
-|----------|----------|------------|
-| `useState` + `applyChanges` | Simple flows, demos | Low |
-| `useNodesState` / `useEdgesState` | Quick prototypes | Low |
-| Zustand store | Production apps, shared state | Medium |
-| Redux / Jotai / Recoil | Existing app integration | Medium-High |
+| Approach                          | Best for                      | Complexity  |
+| --------------------------------- | ----------------------------- | ----------- |
+| `useState` + `applyChanges`       | Simple flows, demos           | Low         |
+| `useNodesState` / `useEdgesState` | Quick prototypes              | Low         |
+| Zustand store                     | Production apps, shared state | Medium      |
+| Redux / Jotai / Recoil            | Existing app integration      | Medium-High |
 
 ## Approach 1: useState with apply helpers
 
 The standard controlled flow pattern:
 
 ```tsx
-import { useState, useCallback } from 'react';
-import { ReactFlow, applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
+import { useState, useCallback } from "react";
+import {
+  ReactFlow,
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+} from "@xyflow/react";
 
 function Flow() {
   const [nodes, setNodes] = useState(initialNodes);
@@ -69,7 +74,12 @@ function Flow() {
 Convenience hooks that bundle state + change handler:
 
 ```tsx
-import { ReactFlow, useNodesState, useEdgesState, addEdge } from '@xyflow/react';
+import {
+  ReactFlow,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+} from "@xyflow/react";
 
 function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -102,9 +112,15 @@ React Flow uses Zustand internally, making it a natural fit. This pattern elimin
 ### Store definition
 
 ```tsx
-import { create } from 'zustand';
-import { applyNodeChanges, applyEdgeChanges, addEdge } from '@xyflow/react';
-import type { Node, Edge, OnNodesChange, OnEdgesChange, OnConnect } from '@xyflow/react';
+import { create } from "zustand";
+import { applyNodeChanges, applyEdgeChanges, addEdge } from "@xyflow/react";
+import type {
+  Node,
+  Edge,
+  OnNodesChange,
+  OnEdgesChange,
+  OnConnect,
+} from "@xyflow/react";
 
 type FlowState = {
   nodes: Node[];
@@ -152,13 +168,14 @@ export default useFlowStore;
 ### Flow component
 
 ```tsx
-import { ReactFlow } from '@xyflow/react';
-import useFlowStore from './store';
+import { ReactFlow } from "@xyflow/react";
+import useFlowStore from "./store";
 
 const nodeTypes = { custom: CustomNode };
 
 function Flow() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = useFlowStore();
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } =
+    useFlowStore();
 
   return (
     <ReactFlow
@@ -177,8 +194,8 @@ function Flow() {
 ### Custom node accessing store
 
 ```tsx
-import { Handle, Position, useNodeId } from '@xyflow/react';
-import useFlowStore from './store';
+import { Handle, Position, useNodeId } from "@xyflow/react";
+import useFlowStore from "./store";
 
 function CustomNode({ data }) {
   const id = useNodeId();
@@ -207,13 +224,15 @@ React Flow detects changes by reference comparison. Always create new objects:
 // CORRECT — new object created
 set({
   nodes: get().nodes.map((node) =>
-    node.id === id ? { ...node, data: { ...node.data, label: 'Updated' } } : node,
+    node.id === id
+      ? { ...node, data: { ...node.data, label: "Updated" } }
+      : node,
   ),
 });
 
 // WRONG — mutation not detected
 const node = get().nodes.find((n) => n.id === id);
-node.data.label = 'Updated'; // mutation!
+node.data.label = "Updated"; // mutation!
 set({ nodes: get().nodes });
 ```
 
@@ -222,19 +241,20 @@ set({ nodes: get().nodes });
 The `useReactFlow` hook provides methods that automatically trigger the correct change handlers:
 
 ```tsx
-const { setNodes, addNodes, updateNode, updateNodeData, deleteElements } = useReactFlow();
+const { setNodes, addNodes, updateNode, updateNodeData, deleteElements } =
+  useReactFlow();
 
 // Update a single node
-updateNode('node-1', { position: { x: 100, y: 200 } });
+updateNode("node-1", { position: { x: 100, y: 200 } });
 
 // Update just node data
-updateNodeData('node-1', { label: 'New Label' });
+updateNodeData("node-1", { label: "New Label" });
 
 // Add nodes
-addNodes([{ id: 'new', position: { x: 0, y: 0 }, data: { label: 'New' } }]);
+addNodes([{ id: "new", position: { x: 0, y: 0 }, data: { label: "New" } }]);
 
 // Delete elements
-await deleteElements({ nodes: [{ id: 'node-1' }] });
+await deleteElements({ nodes: [{ id: "node-1" }] });
 ```
 
 **Key advantage**: `useReactFlow` does NOT cause re-renders when state changes — it reads state on demand.
@@ -246,19 +266,22 @@ For flows that compute/transform data through connected nodes:
 ### Pattern: Store data in nodes, read from connections
 
 ```tsx
-import { useEffect } from 'react';
-import { useNodeConnections, useNodesData, useReactFlow } from '@xyflow/react';
+import { useEffect } from "react";
+import { useNodeConnections, useNodesData, useReactFlow } from "@xyflow/react";
 
 function ProcessorNode({ id, data }) {
   const { updateNodeData } = useReactFlow();
 
   // Get connected source nodes
-  const connections = useNodeConnections({ handleType: 'target' });
+  const connections = useNodeConnections({ handleType: "target" });
   const connectedData = useNodesData(connections.map((c) => c.source));
 
   // Compute output when inputs change
   useEffect(() => {
-    const sum = connectedData.reduce((acc, d) => acc + (d?.data?.value ?? 0), 0);
+    const sum = connectedData.reduce(
+      (acc, d) => acc + (d?.data?.value ?? 0),
+      0,
+    );
     updateNodeData(id, { result: sum });
   }, [connectedData, id, updateNodeData]);
 
@@ -282,7 +305,9 @@ function InputNode({ id, data }) {
     updateNodeData(id, { value: v });
   };
 
-  return <input type="number" value={value} onChange={onChange} className="nodrag" />;
+  return (
+    <input type="number" value={value} onChange={onChange} className="nodrag" />
+  );
 }
 ```
 
@@ -295,7 +320,7 @@ const { toObject } = useReactFlow();
 
 const saveFlow = () => {
   const flowData = toObject(); // { nodes, edges, viewport }
-  localStorage.setItem('flow', JSON.stringify(flowData));
+  localStorage.setItem("flow", JSON.stringify(flowData));
 };
 ```
 
@@ -305,7 +330,7 @@ const saveFlow = () => {
 const { setNodes, setEdges, setViewport } = useReactFlow();
 
 const restoreFlow = () => {
-  const data = JSON.parse(localStorage.getItem('flow'));
+  const data = JSON.parse(localStorage.getItem("flow"));
   if (data) {
     setNodes(data.nodes);
     setEdges(data.edges);

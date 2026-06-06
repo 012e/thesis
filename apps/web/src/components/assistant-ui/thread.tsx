@@ -25,6 +25,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  type ReactNode,
   type PropsWithChildren,
 } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
@@ -47,18 +48,16 @@ import {
 } from "@/components/assistant-ui/attachment";
 import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
-import { useAtomValue } from "jotai";
-import { FormRegistry } from "@/components/forms/registry";
-import { threadActiveFormAtomFamily } from "@/lib/atoms/chat-state";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
 import { Separator } from "@/components/ui/separator";
 
 interface ThreadProps {
   scrollToEndKey?: unknown;
+  footerContent?: ReactNode;
 }
 
-export function Thread({ scrollToEndKey }: ThreadProps) {
+export function Thread({ scrollToEndKey, footerContent }: ThreadProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const threadId = useAuiState(
     (s) => s.threadListItem.remoteId ?? s.threadListItem.id,
@@ -104,29 +103,12 @@ export function Thread({ scrollToEndKey }: ThreadProps) {
         <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
           <ThreadScrollToBottom />
           <AIContextIndicator />
-          <ActiveVerticalForm />
+          {footerContent}
           <PlanProgressBar />
           <Composer />
         </ThreadPrimitive.ViewportFooter>
       </ThreadPrimitive.Viewport>
     </ThreadPrimitive.Root>
-  );
-}
-
-function ActiveVerticalForm() {
-  const { id: localId, remoteId } = useAuiState((s) => s.threadListItem);
-  const threadId = remoteId ?? localId;
-  const activeForm = useAtomValue(threadActiveFormAtomFamily(threadId));
-
-  if (!activeForm) return null;
-  const config = FormRegistry[activeForm];
-  if (config?.layout !== "vertical") return null;
-
-  const Form = config.form;
-  return (
-    <div className="w-full max-w-2xl p-4 bg-muted/30 border border-border shadow-sm">
-      <Form threadId={threadId} />
-    </div>
   );
 }
 

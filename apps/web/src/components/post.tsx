@@ -221,6 +221,13 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const openChat = useOpenChat();
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
+  const initialUserReaction =
+    initialReactionSummary?.userReaction ??
+    (post.currentUserUpvoted
+      ? "upvote"
+      : post.currentUserDownvoted
+        ? "downvote"
+        : post.currentUserReaction);
   const {
     isSubscribed,
     isPending: isSubscriptionPending,
@@ -242,19 +249,23 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const [reactionSummary, setReactionSummary] = useState(() => ({
     upvotes: initialReactionSummary?.upvotes ?? post.upvoteCount,
     downvotes: initialReactionSummary?.downvotes ?? post.downvoteCount,
-    userReaction: initialReactionSummary?.userReaction ?? null,
+    userReaction: initialUserReaction,
   }));
 
   useEffect(() => {
     setReactionSummary({
       upvotes: initialReactionSummary?.upvotes ?? post.upvoteCount,
       downvotes: initialReactionSummary?.downvotes ?? post.downvoteCount,
-      userReaction: initialReactionSummary?.userReaction ?? null,
+      userReaction: initialUserReaction,
     });
   }, [
     initialReactionSummary?.downvotes,
     initialReactionSummary?.upvotes,
     initialReactionSummary?.userReaction,
+    initialUserReaction,
+    post.currentUserDownvoted,
+    post.currentUserReaction,
+    post.currentUserUpvoted,
     post.downvoteCount,
     post.upvoteCount,
     post.id,

@@ -22,6 +22,15 @@ import { register } from "@/lib/auth";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
+  username: z
+    .string()
+    .trim()
+    .min(3, "Username must be at least 3 characters")
+    .max(30, "Username must be at most 30 characters")
+    .regex(
+      /^[a-zA-Z0-9_.]+$/,
+      "Username can only contain letters, numbers, underscores, and dots",
+    ),
   email: z.email("Invalid email address"),
   password: z
     .string()
@@ -41,6 +50,7 @@ export function RegisterForm({
   const form = useForm({
     defaultValues: {
       name: "",
+      username: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -52,7 +62,7 @@ export function RegisterForm({
         return;
       }
 
-      if (value.password !== value.confirmPassword) {
+      if (result.data.password !== result.data.confirmPassword) {
         toast.error("Password mismatch", {
           description: "Passwords do not match",
         });
@@ -61,9 +71,10 @@ export function RegisterForm({
 
       try {
         const success = await register({
-          name: value.name,
-          email: value.email,
-          password: value.password,
+          name: result.data.name,
+          username: result.data.username,
+          email: result.data.email,
+          password: result.data.password,
         });
 
         if (success) {
@@ -121,6 +132,39 @@ export function RegisterForm({
                       name={field.name}
                       type="text"
                       placeholder="John Doe"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <span className="text-sm text-red-500">
+                        {field.state.meta.errors.join(", ")}
+                      </span>
+                    )}
+                  </Field>
+                )}
+              </form.Field>
+              <form.Field
+                name="username"
+                validators={{
+                  onChange: ({ value }) => {
+                    const result =
+                      registerSchema.shape.username.safeParse(value);
+                    if (!result.success) {
+                      return result.error.issues[0]?.message;
+                    }
+                    return undefined;
+                  },
+                }}
+              >
+                {(field) => (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>Username</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="text"
+                      placeholder="johndoe"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -234,7 +278,9 @@ export function RegisterForm({
               </form.Field>
               <Field>
                 <form.Subscribe
-                  selector={(state) => [state.values, state.isSubmitting] as const}
+                  selector={(state) =>
+                    [state.values, state.isSubmitting] as const
+                  }
                 >
                   {([values, isSubmitting]) => {
                     const isValid =
@@ -242,10 +288,7 @@ export function RegisterForm({
                       values.password === values.confirmPassword;
 
                     return (
-                      <Button
-                        type="submit"
-                        disabled={!isValid || isSubmitting}
-                      >
+                      <Button type="submit" disabled={!isValid || isSubmitting}>
                         {isSubmitting
                           ? "Creating account..."
                           : "Create account"}
