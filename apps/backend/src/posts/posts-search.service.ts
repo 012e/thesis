@@ -42,10 +42,9 @@ export class PostsSearchService {
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
   ) {
-    this.openai =
-      env.OPENAI_API_KEY && env.NODE_ENV !== "test"
-        ? new OpenAI({ apiKey: env.OPENAI_API_KEY })
-        : null;
+    this.openai = env.OPENAI_API_KEY
+      ? new OpenAI({ apiKey: env.OPENAI_API_KEY })
+      : null;
   }
 
   async search(query: string, userId: string): Promise<PostDto[]> {
@@ -216,7 +215,9 @@ export class PostsSearchService {
     const parsed = JSON.parse(content) as { rankedIds?: unknown };
     if (!Array.isArray(parsed.rankedIds)) return [];
 
-    return parsed.rankedIds.filter((id): id is string => typeof id === "string");
+    return parsed.rankedIds.filter(
+      (id): id is string => typeof id === "string",
+    );
   }
 
   private truncateForRerank(text: string): string {
