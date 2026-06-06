@@ -8,7 +8,8 @@
     "dev": "mastra dev",
     "build": "mastra build",
     "typecheck": "tsgo --noEmit",
-    "serve": "mastra dev"
+    "serve": "mastra dev",
+    "test:evals": "vitest run --config ./vitest.config.evals.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^3.0.65",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@types/node": "^22.19.17",
     "mastra": "latest",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.5"
   }
 }
