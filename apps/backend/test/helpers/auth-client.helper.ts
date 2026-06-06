@@ -25,7 +25,7 @@ export function createTestAuthClient(app: NestExpressApplication) {
       email,
       password,
       name,
-      _username,
+      username,
     }: {
       email: string;
       password: string;
@@ -34,6 +34,7 @@ export function createTestAuthClient(app: NestExpressApplication) {
     }) {
       return await client.signUp.email({
         email,
+        username,
         password,
         name: name,
       });

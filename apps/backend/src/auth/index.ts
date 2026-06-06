@@ -1,4 +1,5 @@
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
@@ -12,5 +13,18 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   advanced: { disableOriginCheck: true },
   emailAndPassword: { enabled: true },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email") {
+        return;
+      }
+
+      if (typeof ctx.body?.username !== "string" || !ctx.body.username.trim()) {
+        throw new APIError("BAD_REQUEST", {
+          message: "Username is required",
+        });
+      }
+    }),
+  },
   plugins: [username(), jwt(), bearer(), admin()],
 });

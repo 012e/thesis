@@ -30,7 +30,11 @@ export class NotificationJobsService {
     private readonly transports: NotificationTransport[],
   ) {}
 
-  @Job(DELIVER_NOTIFICATION_JOB, { teamSize: 5, teamConcurrency: 2 })
+  @Job(DELIVER_NOTIFICATION_JOB, {
+    batchSize: 5,
+    localConcurrency: 2,
+    includeMetadata: true,
+  })
   async handleDeliverNotification(
     jobs: JobWithMetadata<DeliverNotificationJobData>[],
   ): Promise<void> {
