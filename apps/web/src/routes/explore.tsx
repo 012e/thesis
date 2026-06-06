@@ -299,23 +299,12 @@ function PostsResults({ q }: { q: string }) {
 
 // ─── Exported content component (used by Storybook) ──────────────────────────
 
-export interface ExplorePageContentProps {
-  /** Active query string. Empty string = show the empty prompt. */
+interface ExploreSearchHeaderProps {
   q: string;
-  /** Active tab. */
-  tab: "posts" | "people";
-  /** Called when the user submits a new search query. */
   onSearch: (q: string) => void;
-  /** Called when the user switches tabs. */
-  onTabChange: (tab: "posts" | "people") => void;
 }
 
-export function ExplorePageContent({
-  q,
-  tab,
-  onSearch,
-  onTabChange,
-}: ExplorePageContentProps) {
+function ExploreSearchHeader({ q, onSearch }: ExploreSearchHeaderProps) {
   const [inputValue, setInputValue] = useState(q);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -344,34 +333,56 @@ export function ExplorePageContent({
     inputRef.current?.focus();
   }
 
+  return (
+    <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
+      <form onSubmit={handleFormSubmit} className="relative">
+        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+        <Input
+          ref={inputRef}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Search posts and people..."
+          className="px-15 py-7 h-11 bg-muted border-0 focus-visible:ring-1"
+        />
+        {inputValue && (
+          <button
+            type="button"
+            onClick={clearSearch}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+          >
+            <IconX className="w-4 h-4" />
+          </button>
+        )}
+      </form>
+    </div>
+  );
+}
+
+export interface ExplorePageContentProps {
+  /** Active query string. Empty string = show the empty prompt. */
+  q: string;
+  /** Active tab. */
+  tab: "posts" | "people";
+  /** Called when the user submits a new search query. */
+  onSearch: (q: string) => void;
+  /** Called when the user switches tabs. */
+  onTabChange: (tab: "posts" | "people") => void;
+}
+
+export function ExplorePageContent({
+  q,
+  tab,
+  onSearch,
+  onTabChange,
+}: ExplorePageContentProps) {
   const activeQ = q.trim();
 
   return (
     <>
       {/* Sticky header: search bar */}
-      <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <form onSubmit={handleFormSubmit} className="relative">
-          <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-          <Input
-            ref={inputRef}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Search posts and people..."
-            className="px-15 py-7 h-11 bg-muted border-0 focus-visible:ring-1"
-          />
-          {inputValue && (
-            <button
-              type="button"
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Clear search"
-            >
-              <IconX className="w-4 h-4" />
-            </button>
-          )}
-        </form>
-      </div>
+      <ExploreSearchHeader q={q} onSearch={onSearch} />
 
       {/* Tab bar — only visible when there's a query */}
       {activeQ && (
