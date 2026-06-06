@@ -89,7 +89,7 @@ export const ASSISTANT_PAGE_DEFINITIONS = [
           "Submit the active chat workspace form after confirmation.",
       },
     ],
-    requiresAssistantReady: false,
+    requiresAssistantReady: true,
   },
   {
     id: "playground",

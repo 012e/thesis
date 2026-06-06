@@ -1,4 +1,3 @@
-import { useAssistantInstructions } from "@assistant-ui/react";
 import { Thread } from "@/components/assistant-ui/thread";
 import { FormRegistry } from "@/components/forms/registry";
 import {
@@ -9,11 +8,7 @@ import {
 import { useChatState } from "@/hooks/use-chat-state";
 
 export function ChatWorkspace() {
-  const { threadId, activeForm, draftData } = useChatState();
-
-  useAssistantInstructions(
-    `Current Active Form: ${activeForm ?? "None"}\nCurrent Form State: ${JSON.stringify(draftData)}\n\nUse the open_form tool to select a form, and set_form_field to edit fields.`,
-  );
+  const { threadId, activeForm } = useChatState();
 
   const activeFormConfig = activeForm ? FormRegistry[activeForm] : null;
   const ActiveForm = activeFormConfig?.form;
@@ -41,8 +36,23 @@ export function ChatWorkspace() {
         minSize={30}
         className="bg-background"
       >
-        <Thread />
+        <Thread footerContent={<ActiveVerticalForm />} />
       </ResizablePanel>
     </ResizablePanelGroup>
+  );
+}
+
+function ActiveVerticalForm() {
+  const { threadId, activeForm } = useChatState();
+
+  if (!activeForm) return null;
+  const config = FormRegistry[activeForm];
+  if (config?.layout !== "vertical") return null;
+
+  const Form = config.form;
+  return (
+    <div className="w-full max-w-2xl p-4 bg-muted/30 border border-border shadow-sm">
+      <Form threadId={threadId} />
+    </div>
   );
 }

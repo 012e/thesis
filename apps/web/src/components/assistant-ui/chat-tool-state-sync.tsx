@@ -14,7 +14,13 @@ type ToolCallPart = {
 
 type ToolArgs = Record<string, unknown>;
 
-export function ChatToolStateSync({ syncForms = false }: { syncForms?: boolean }) {
+export function ChatToolStateSync({
+  syncForms = false,
+  syncPlans = true,
+}: {
+  syncForms?: boolean;
+  syncPlans?: boolean;
+}) {
   const { id: localId, remoteId } = useAuiState((s) => s.threadListItem);
   const threadId = remoteId ?? localId;
   const messages = useAuiState((s) => s.thread.messages);
@@ -88,47 +94,49 @@ export function ChatToolStateSync({ syncForms = false }: { syncForms?: boolean }
       });
     }
 
-    setPlanStates((prev) => {
-      if (!latestPlanArgs) {
-        if (prev[threadId] !== null && prev[threadId] !== undefined) {
-          return { ...prev, [threadId]: null };
+    if (syncPlans) {
+      setPlanStates((prev) => {
+        if (!latestPlanArgs) {
+          if (prev[threadId] !== null && prev[threadId] !== undefined) {
+            return { ...prev, [threadId]: null };
+          }
+          return prev;
         }
-        return prev;
-      }
 
-      const items: PlanItem[] = latestPlanArgs.items.map((item) => ({
-        ...item,
-        status: itemUpdates[item.id]?.status ?? "pending",
-        notes: itemUpdates[item.id]?.notes,
-      }));
+        const items: PlanItem[] = latestPlanArgs.items.map((item) => ({
+          ...item,
+          status: itemUpdates[item.id]?.status ?? "pending",
+          notes: itemUpdates[item.id]?.notes,
+        }));
 
-      const hasAnyUpdate = Object.keys(itemUpdates).length > 0;
-      const allDone = items.every(
-        (i) => i.status === "completed" || i.status === "skipped",
-      );
-      const approvalStatus = allDone
-        ? "completed"
-        : hasAnyUpdate
-          ? "approved"
-          : "pending_approval";
+        const hasAnyUpdate = Object.keys(itemUpdates).length > 0;
+        const allDone = items.every(
+          (i) => i.status === "completed" || i.status === "skipped",
+        );
+        const approvalStatus = allDone
+          ? "completed"
+          : hasAnyUpdate
+            ? "approved"
+            : "pending_approval";
 
-      const previousApprovalStatus = prev[threadId]?.approvalStatus;
-      const resolvedApprovalStatus =
-        approvalStatus === "pending_approval" &&
-        previousApprovalStatus === "approved"
-          ? "approved"
-          : approvalStatus;
+        const previousApprovalStatus = prev[threadId]?.approvalStatus;
+        const resolvedApprovalStatus =
+          approvalStatus === "pending_approval" &&
+          previousApprovalStatus === "approved"
+            ? "approved"
+            : approvalStatus;
 
-      return {
-        ...prev,
-        [threadId]: {
-          title: latestPlanArgs.title,
-          items,
-          approvalStatus: resolvedApprovalStatus,
-        },
-      };
-    });
-  }, [messages, syncForms, threadId, setDrafts, setPlanStates]);
+        return {
+          ...prev,
+          [threadId]: {
+            title: latestPlanArgs.title,
+            items,
+            approvalStatus: resolvedApprovalStatus,
+          },
+        };
+      });
+    }
+  }, [messages, syncForms, syncPlans, threadId, setDrafts, setPlanStates]);
 
   return null;
 }

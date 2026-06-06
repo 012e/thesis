@@ -121,9 +121,7 @@ export function RootComponent() {
       <PageViewTracker />
       <AuthGuard>
         <AppNavigationAssistantTools />
-        {!isAuthRoute && !isApiRoute && (
-          <ChatAssistantEffects syncForms={isChatRoute} />
-        )}
+        {!isAuthRoute && !isApiRoute && <ChatAssistantEffects />}
         {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
           <Outlet />
         ) : isHomeRoute ? (
