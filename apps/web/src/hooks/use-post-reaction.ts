@@ -22,8 +22,7 @@ export function usePostReaction() {
       }
     },
     onSuccess: (_data, { postId, type }) => {
-      // Invalidate recommendations query to refresh post list with updated reaction counts
-      queryClient.invalidateQueries({ queryKey: ["recommendations"] });
+      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
 
       if (type === "upvote") {
         track("post_like", { postId });

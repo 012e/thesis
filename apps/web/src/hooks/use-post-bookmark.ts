@@ -29,7 +29,6 @@ export function usePostBookmark({
         return (
           key === "post" ||
           key === "posts" ||
-          key === "recommendations" ||
           key === "bookmarks" ||
           q.queryKey.includes("post") ||
           q.queryKey.includes("posts") ||
