@@ -10,6 +10,7 @@
     "typecheck": "nest build --type-check --path tsconfig.typecheck.json",
     "auth:migrate": "pnpm dlx auth@latest generate --output=src/db/auth-schema.ts",
     "db:check": "drizzle-kit check",
+    "db:view": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

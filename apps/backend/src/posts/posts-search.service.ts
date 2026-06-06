@@ -1,5 +1,6 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { sql } from "drizzle-orm";
+import OpenAI from "openai";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 import { toSql } from "pgvector";
 
@@ -8,9 +9,15 @@ import {
   EMBEDDING_SERVICE,
   type IEmbeddingService,
 } from "@/embedding/embedding.interface";
+import { env } from "@/env";
 import { UsersService } from "@/users/users.service";
 
 import { PostsService } from "./posts.service";
+
+const FIRST_STAGE_CANDIDATE_LIMIT = 100;
+const RERANK_CANDIDATE_LIMIT = 100;
+const RERANK_MODEL = "gpt-4.1-nano";
+const RERANK_SNIPPET_MAX_LENGTH = 700;
 
 /**
  * Handles post search using hybrid BM25 + vector similarity (Reciprocal Rank Fusion).
@@ -25,13 +32,21 @@ import { PostsService } from "./posts.service";
  */
 @Injectable()
 export class PostsSearchService {
+  private readonly logger = new Logger(PostsSearchService.name);
+  private readonly openai: OpenAI | null;
+
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly usersService: UsersService,
     private readonly postsService: PostsService,
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
-  ) {}
+  ) {
+    this.openai =
+      env.OPENAI_API_KEY && env.NODE_ENV !== "test"
+        ? new OpenAI({ apiKey: env.OPENAI_API_KEY })
+        : null;
+  }
 
   async search(query: string, userId: string): Promise<PostDto[]> {
     const queryEmbedding = await this.embeddingService.embed(query);
@@ -43,7 +58,7 @@ export class PostsSearchService {
         FROM posts
         WHERE hidden = false
           AND id @@@ paradedb.match('content.text', ${query})
-        LIMIT 50
+        LIMIT ${FIRST_STAGE_CANDIDATE_LIMIT}
       ),
       vec AS (
         SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${queryVector}::vector ASC) AS vec_rank
@@ -51,7 +66,7 @@ export class PostsSearchService {
         WHERE hidden = false
           AND embedding IS NOT NULL
         ORDER BY embedding <=> ${queryVector}::vector
-        LIMIT 50
+        LIMIT ${FIRST_STAGE_CANDIDATE_LIMIT}
       ),
       rrf AS (
         SELECT
@@ -93,6 +108,7 @@ export class PostsSearchService {
       GROUP BY p.id, p.author_id, p.content, p.created_at, p.updated_at,
                u.id, u.username, u.email, u.name, u.image, rrf.rrf_score
       ORDER BY rrf.rrf_score DESC
+      LIMIT ${RERANK_CANDIDATE_LIMIT}
     `);
 
     const dtos = result.rows.map((row) => {
@@ -127,7 +143,85 @@ export class PostsSearchService {
       } satisfies PostDto;
     });
 
-    // Hydrate tags for search results
-    return this.postsService.hydrateTags(dtos);
+    const hydrated = await this.postsService.hydrateTags(dtos);
+    return this.rerankWithOpenAi(query, hydrated);
+  }
+
+  private async rerankWithOpenAi(
+    query: string,
+    posts: PostDto[],
+  ): Promise<PostDto[]> {
+    if (!this.openai || posts.length < 2) return posts;
+
+    const candidates = posts.map((post, index) => ({
+      id: post.id,
+      rank: index + 1,
+      text: this.truncateForRerank(post.content.text ?? ""),
+    }));
+
+    try {
+      const response = await this.openai.chat.completions.create({
+        model: RERANK_MODEL,
+        temperature: 0,
+        max_tokens: 1200,
+        response_format: { type: "json_object" },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You rerank social post search results. Return only valid JSON with rankedIds. Prefer posts that directly and specifically satisfy the search query. Keep all provided ids exactly once when possible.",
+          },
+          {
+            role: "user",
+            content: JSON.stringify({
+              query,
+              candidates,
+              responseShape: { rankedIds: ["post-id"] },
+            }),
+          },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) return posts;
+
+      const rankedIds = this.parseRankedIds(content);
+      if (rankedIds.length === 0) return posts;
+
+      const postById = new Map(posts.map((post) => [post.id, post]));
+      const usedIds = new Set<string>();
+      const reranked: PostDto[] = [];
+
+      for (const id of rankedIds) {
+        const post = postById.get(id);
+        if (!post || usedIds.has(id)) continue;
+        reranked.push(post);
+        usedIds.add(id);
+      }
+
+      for (const post of posts) {
+        if (!usedIds.has(post.id)) reranked.push(post);
+      }
+
+      return reranked;
+    } catch (error) {
+      this.logger.warn(
+        `OpenAI search reranking failed; using hybrid order: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return posts;
+    }
+  }
+
+  private parseRankedIds(content: string): string[] {
+    const parsed = JSON.parse(content) as { rankedIds?: unknown };
+    if (!Array.isArray(parsed.rankedIds)) return [];
+
+    return parsed.rankedIds.filter((id): id is string => typeof id === "string");
+  }
+
+  private truncateForRerank(text: string): string {
+    return text.length > RERANK_SNIPPET_MAX_LENGTH
+      ? `${text.slice(0, RERANK_SNIPPET_MAX_LENGTH)}...`
+      : text;
   }
 }
