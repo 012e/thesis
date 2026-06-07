@@ -26,17 +26,18 @@ describe("Tag preferences controller", () => {
     pool = new Pool({ connectionString: containers.databaseUrl });
 
     const server = request(testApp.app.getHttpServer());
+    const suffix = Date.now();
     const userSession = await registerAndGetSession(
       server,
-      `tagpref-user-${Date.now()}@example.com`,
-      `tagpref-user-${Date.now()}`,
+      `tagprefuser${suffix}@example.com`,
+      `tagprefuser${suffix}`,
     );
     userCookie = userSession.cookie;
 
     const authorSession = await registerAndGetSession(
       server,
-      `tagpref-author-${Date.now()}@example.com`,
-      `tagpref-author-${Date.now()}`,
+      `tagprefauthor${suffix}@example.com`,
+      `tagprefauthor${suffix}`,
     );
     authorCookie = authorSession.cookie;
   }, 120000);
