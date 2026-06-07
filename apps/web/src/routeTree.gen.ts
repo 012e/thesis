@@ -15,6 +15,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as BookmarksRouteImport } from './routes/bookmarks'
 import { Route as ApiRouteImport } from './routes/api'
+import { Route as ActivityRouteImport } from './routes/activity'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as PlaygroundIndexRouteImport } from './routes/playground/index'
@@ -59,6 +60,11 @@ const BookmarksRoute = BookmarksRouteImport.update({
 const ApiRoute = ApiRouteImport.update({
   id: '/api',
   path: '/api',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivityRoute = ActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -139,6 +145,7 @@ const AdminModerationIndexRoute = AdminModerationIndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
@@ -186,6 +194,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activity': typeof ActivityRoute
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
@@ -211,6 +220,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activity'
     | '/api'
     | '/bookmarks'
     | '/explore'
@@ -234,6 +244,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activity'
     | '/api'
     | '/bookmarks'
     | '/explore'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/activity'
     | '/api'
     | '/bookmarks'
     | '/explore'
@@ -281,6 +293,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivityRoute: typeof ActivityRoute
   ApiRoute: typeof ApiRoute
   BookmarksRoute: typeof BookmarksRoute
   ExploreRoute: typeof ExploreRoute
@@ -345,6 +358,13 @@ declare module '@tanstack/react-router' {
       path: '/api'
       fullPath: '/api'
       preLoaderRoute: typeof ApiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activity': {
+      id: '/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof ActivityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -457,6 +477,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivityRoute: ActivityRoute,
   ApiRoute: ApiRoute,
   BookmarksRoute: BookmarksRoute,
   ExploreRoute: ExploreRoute,

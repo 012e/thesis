@@ -32,12 +32,14 @@ export async function fetchMyAnalyticsEvents(options?: {
   limit?: number;
   offset?: number;
   type?: string;
+  importantOnly?: boolean;
 }) {
   const response = await client.getMyEvents({
     query: {
       limit: options?.limit,
       offset: options?.offset,
       type: options?.type,
+      importantOnly: options?.importantOnly,
     },
   });
 

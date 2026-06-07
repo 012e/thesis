@@ -26,6 +26,7 @@ export const analyticsContract = c.router({
       limit: z.coerce.number().int().positive().max(100).optional(),
       offset: z.coerce.number().int().nonnegative().optional(),
       type: z.string().optional(),
+      importantOnly: z.coerce.boolean().optional(),
     }),
     responses: {
       200: AnalyticsEventsPage,

@@ -3,6 +3,7 @@ export type AssistantPageId =
   | "explore"
   | "bookmarks"
   | "notifications"
+  | "activity"
   | "settings"
   | "chat"
   | "playground";
@@ -56,6 +57,15 @@ export const ASSISTANT_PAGE_DEFINITIONS = [
     path: "/notifications",
     description: "Notifications and recent account activity.",
     aliases: ["notifications", "activity"],
+    assistantTools: [],
+    requiresAssistantReady: false,
+  },
+  {
+    id: "activity",
+    label: "Activity",
+    path: "/activity",
+    description: "Newest user analytics events and interactions.",
+    aliases: ["activity", "events", "interactions"],
     assistantTools: [],
     requiresAssistantReady: false,
   },

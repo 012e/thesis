@@ -11,6 +11,7 @@ import {
   IconUser,
   IconSettings,
   IconLogout,
+  IconActivity,
 } from "@tabler/icons-react";
 import { logout } from "@/lib/auth";
 import { useRouter } from "@tanstack/react-router";
@@ -37,6 +38,10 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
 
   const handleSettings = () => {
     router.navigate({ to: "/settings" });
+  };
+
+  const handleActivity = () => {
+    router.navigate({ to: "/activity" });
   };
 
   const user = session?.user;
@@ -87,6 +92,10 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
         <DropdownMenuItem onClick={handleSettings}>
           <IconSettings />
           Settings
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleActivity}>
+          <IconActivity />
+          Activity
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={handleLogout}>
