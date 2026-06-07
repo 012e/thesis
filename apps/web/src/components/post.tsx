@@ -273,9 +273,6 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
 
   const handleAuthorClick = (e: MouseEvent) => {
     e.stopPropagation();
-    if (!isOwnPost) {
-      openChat(post.authorId);
-    }
   };
 
   const {

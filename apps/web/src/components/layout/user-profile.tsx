@@ -89,13 +89,13 @@ export function UserProfile({ isCollapsed = false }: UserProfileProps) {
           <IconUser />
           View Profile
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSettings}>
-          <IconSettings />
-          Settings
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleActivity}>
           <IconActivity />
           Activity
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSettings}>
+          <IconSettings />
+          Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onClick={handleLogout}>

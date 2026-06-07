@@ -3,7 +3,7 @@ import { eq, and, desc, count, inArray } from "drizzle-orm";
 import type { PostContentDto } from "@repo/shared-dto";
 
 import { DatabaseService } from "@/db/database.service";
-import { analyticsEvents, posts, usersView } from "@/db/schema";
+import { analyticsEvents, comments, posts, usersView } from "@/db/schema";
 
 const IMPORTANT_EVENT_TYPES = [
   "post_view",
@@ -36,6 +36,7 @@ export interface AnalyticsEventDto {
   clientTimestamp: string;
   createdAt: string;
   post: AnalyticsEventPostDto | null;
+  comment: AnalyticsEventCommentDto | null;
 }
 
 export interface AnalyticsEventPostDto {
@@ -45,6 +46,16 @@ export interface AnalyticsEventPostDto {
   authorUsername: string | null;
   contentPreview: string;
   imageUrl: string | null;
+  createdAt: string;
+}
+
+export interface AnalyticsEventCommentDto {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string | null;
+  authorUsername: string | null;
+  contentPreview: string;
   createdAt: string;
 }
 
@@ -117,10 +128,19 @@ export class AnalyticsService {
       .limit(limit)
       .offset(offset);
 
-    const postsById = await this.getPostSummaries(rows);
+    const [postsById, commentsById] = await Promise.all([
+      this.getPostSummaries(rows),
+      this.getCommentSummaries(rows),
+    ]);
 
     return {
-      items: rows.map((r) => this.toDto(r, postsById.get(this.getPostId(r.metadata)))),
+      items: rows.map((r) =>
+        this.toDto(
+          r,
+          postsById.get(this.getPostId(r.metadata)),
+          commentsById.get(this.getCommentId(r.metadata)),
+        ),
+      ),
       total: totalRow?.cnt ?? 0,
     };
   }
@@ -167,10 +187,62 @@ export class AnalyticsService {
     );
   }
 
+  private async getCommentSummaries(
+    rows: Array<typeof analyticsEvents.$inferSelect>,
+  ) {
+    const commentIds = [
+      ...new Set(
+        rows
+          .map((row) => this.getCommentId(row.metadata))
+          .filter((commentId): commentId is string => commentId !== null),
+      ),
+    ];
+
+    if (commentIds.length === 0) {
+      return new Map<string, AnalyticsEventCommentDto>();
+    }
+
+    const commentRows = await this.databaseService.db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        authorId: comments.authorId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        authorName: usersView.name,
+        authorUsername: usersView.username,
+      })
+      .from(comments)
+      .leftJoin(usersView, eq(usersView.id, comments.authorId))
+      .where(inArray(comments.id, commentIds));
+
+    return new Map(
+      commentRows.map((comment) => [
+        comment.id,
+        {
+          id: comment.id,
+          postId: comment.postId,
+          authorId: comment.authorId,
+          authorName: comment.authorName ?? null,
+          authorUsername: comment.authorUsername ?? null,
+          contentPreview: this.truncatePreview(comment.content),
+          createdAt: comment.createdAt.toISOString(),
+        } satisfies AnalyticsEventCommentDto,
+      ]),
+    );
+  }
+
   private getPostId(metadata: Record<string, unknown> | null): string | null {
     return typeof metadata?.postId === "string" &&
       UUID_PATTERN.test(metadata.postId)
       ? metadata.postId
+      : null;
+  }
+
+  private getCommentId(metadata: Record<string, unknown> | null): string | null {
+    return typeof metadata?.commentId === "string" &&
+      UUID_PATTERN.test(metadata.commentId)
+      ? metadata.commentId
       : null;
   }
 
@@ -181,12 +253,17 @@ export class AnalyticsService {
       content.visualization?.title ??
       (content.images?.length ? "Image post" : "Post");
 
-    return preview.length > 140 ? `${preview.slice(0, 137).trimEnd()}...` : preview;
+    return this.truncatePreview(preview);
+  }
+
+  private truncatePreview(value: string): string {
+    return value.length > 140 ? `${value.slice(0, 137).trimEnd()}...` : value;
   }
 
   private toDto(
     row: typeof analyticsEvents.$inferSelect,
     post?: AnalyticsEventPostDto,
+    comment?: AnalyticsEventCommentDto,
   ): AnalyticsEventDto {
     return {
       id: row.id,
@@ -196,6 +273,7 @@ export class AnalyticsService {
       clientTimestamp: row.clientTimestamp.toISOString(),
       createdAt: row.createdAt.toISOString(),
       post: post ?? null,
+      comment: comment ?? null,
     };
   }
 }

@@ -69,6 +69,17 @@ export const AnalyticsEventRow = z.object({
       createdAt: z.string().datetime(),
     })
     .nullable(),
+  comment: z
+    .object({
+      id: z.string().uuid(),
+      postId: z.string().uuid(),
+      authorId: z.string(),
+      authorName: z.string().nullable(),
+      authorUsername: z.string().nullable(),
+      contentPreview: z.string(),
+      createdAt: z.string().datetime(),
+    })
+    .nullable(),
 });
 
 /** Paginated list of analytics events for the current user. */

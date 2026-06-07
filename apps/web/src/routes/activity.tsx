@@ -130,9 +130,8 @@ export function ActivityPage() {
 
 function ActivityItem({ event }: { event: AnalyticsEventRowType }) {
   const Icon = eventIcons[event.type];
-
-  return (
-    <article className="flex gap-3 border-b px-4 py-4 transition-colors hover:bg-accent/30">
+  const content = (
+    <>
       <div className="flex h-9 w-9 shrink-0 items-center justify-center border bg-muted text-muted-foreground">
         <Icon className="h-5 w-5" />
       </div>
@@ -146,12 +145,19 @@ function ActivityItem({ event }: { event: AnalyticsEventRowType }) {
             {formatRelativeTime(event.clientTimestamp)}
           </time>
         </div>
+        {event.comment && (
+          <div className="mt-2 border bg-background p-3">
+            <p className="line-clamp-2 text-sm">{event.comment.contentPreview}</p>
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              comment by{" "}
+              {event.comment.authorName ??
+                event.comment.authorUsername ??
+                "Unknown user"}
+            </p>
+          </div>
+        )}
         {event.post && (
-          <Link
-            to="/posts/$postId"
-            params={{ postId: event.post.id }}
-            className="mt-2 flex gap-3 border bg-background p-3 transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
+          <div className="mt-2 flex gap-3 border bg-background p-3">
             {event.post.imageUrl && (
               <img
                 src={event.post.imageUrl}
@@ -164,15 +170,33 @@ function ActivityItem({ event }: { event: AnalyticsEventRowType }) {
                 {event.post.contentPreview}
               </p>
               <p className="mt-1 truncate text-xs text-muted-foreground">
-                by{" "}
+                post by{" "}
                 {event.post.authorName ??
                   event.post.authorUsername ??
                   "Unknown user"}
               </p>
             </div>
-          </Link>
+          </div>
         )}
       </div>
+    </>
+  );
+
+  if (event.post) {
+    return (
+      <Link
+        to="/posts/$postId"
+        params={{ postId: event.post.id }}
+        className="flex gap-3 border-b px-4 py-4 transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <article className="flex gap-3 border-b px-4 py-4 transition-colors hover:bg-accent/30">
+      {content}
     </article>
   );
 }
