@@ -205,6 +205,20 @@ This separation prevents the explicit preference feature from polluting profile 
 
 ## Rollout Plan
 
+## Backend Implementation Checklist
+
+- [x] Add `user_tag_preferences` storage with `preferred` and `blocked` kinds.
+- [x] Add typed REST contracts and DTO/schema coverage for listing, setting, and deleting tag preferences.
+- [x] Implement authenticated preference APIs under `/users/me/tag-preferences`.
+- [x] Enforce one preference kind per user/tag through a composite primary key and upsert replacement.
+- [x] Clear unserved recommendation queue items after preference changes.
+- [x] Exclude blocked-tag posts during recommendation candidate generation.
+- [x] Exclude blocked-tag posts again when reading queued recommendations.
+- [x] Exclude blocked-tag posts from `/posts/following` and the legacy `/posts`/direct recommendation read paths.
+- [x] Boost preferred-tag posts in recommendation ranking without making non-preferred posts invisible.
+- [x] Add backend integration tests for preference lifecycle and blocked-feed behavior.
+- [ ] Add web settings/tag-page/explore/home UI changes.
+
 Phase 1: Preference Management
 
 - Add user-tag preference storage and APIs.
@@ -258,4 +272,3 @@ Avoid initially:
 - New standalone interests pages.
 - Public profile preference display.
 - Admin preference management.
-

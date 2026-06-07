@@ -6,8 +6,10 @@ import { DatabaseService } from "@/db/database.service";
 import {
   postBookmarks,
   postReactions,
+  postTags,
   posts,
   userFollows,
+  userTagPreferences,
   usersView,
 } from "@/db/schema";
 
@@ -144,7 +146,7 @@ export class PostsReadService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
+      .where(and(eq(posts.hidden, false), this.excludesBlockedTags(userId)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -208,6 +210,7 @@ export class PostsReadService {
         cursorDate && parsed
           ? and(
               eq(posts.hidden, false),
+              this.excludesBlockedTags(userId),
               or(
                 lt(createdAtCursorValue, cursorDate),
                 and(
@@ -216,7 +219,7 @@ export class PostsReadService {
                 ),
               ),
             )
-          : eq(posts.hidden, false),
+          : and(eq(posts.hidden, false), this.excludesBlockedTags(userId)),
       )
       .groupBy(
         posts.id,
@@ -338,7 +341,7 @@ export class PostsReadService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
+      .where(and(eq(posts.hidden, false), this.excludesBlockedTags(userId)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -471,5 +474,16 @@ export class PostsReadService {
     await this.postsPresenter.hydrateTags(bookmarkDtos);
 
     return { items: bookmarkDtos, nextCursor };
+  }
+
+  private excludesBlockedTags(userId: string) {
+    return sql<boolean>`NOT EXISTS (
+      SELECT 1 FROM ${postTags}
+      INNER JOIN ${userTagPreferences}
+        ON ${userTagPreferences.tagId} = ${postTags.tagId}
+      WHERE ${postTags.postId} = ${posts.id}
+        AND ${userTagPreferences.userId} = ${userId}
+        AND ${userTagPreferences.preference} = 'blocked'
+    )`;
   }
 }

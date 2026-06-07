@@ -467,6 +467,23 @@ export interface PostTagDto {
   displayName: string;
 }
 
+export type TagPreferenceKindDto = "preferred" | "blocked";
+
+export interface TagPreferenceDto {
+  id: string;
+  slug: string;
+  displayName: string;
+  postCount: number;
+  preference: TagPreferenceKindDto;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UserTagPreferencesDto {
+  preferred: TagPreferenceDto[];
+  blocked: TagPreferenceDto[];
+}
+
 // ─── Content Moderation ──────────────────────────────────────────────────────
 
 export type ModerationStatusDto =

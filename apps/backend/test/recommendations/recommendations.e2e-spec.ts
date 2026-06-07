@@ -57,7 +57,7 @@ describe("Recommendations integration", () => {
 
   beforeEach(async () => {
     await pool.query(
-      "TRUNCATE TABLE recommendation_items, recommendation_batches, user_recommendation_profiles, analytics_events, notifications, posts RESTART IDENTITY CASCADE",
+      "TRUNCATE TABLE user_tag_preferences, recommendation_items, recommendation_batches, user_recommendation_profiles, analytics_events, notifications, user_follows, posts RESTART IDENTITY CASCADE",
     );
   });
 
@@ -92,6 +92,14 @@ describe("Recommendations integration", () => {
         })),
       })
       .expect(201);
+  }
+
+  async function setBlockedTag(cookie: string, slug: string): Promise<void> {
+    await request(testApp.app.getHttpServer())
+      .put(`/users/me/tag-preferences/${slug}`)
+      .set("Cookie", cookie)
+      .send({ preference: "blocked" })
+      .expect(200);
   }
 
   // ─── Cold-start: returns recommendations with no prior queue ───────────────
@@ -221,6 +229,42 @@ describe("Recommendations integration", () => {
 
       // Should include at least the new post
       expect(res2.body.items.length).toBeGreaterThan(0);
+    });
+
+    it("excludes posts with blocked tags from recommendations", async () => {
+      const blockedPostId = await createPost(userBCookie, "Blocked #React post");
+      const visiblePostId = await createPost(userBCookie, "Allowed #TypeScript post");
+
+      await setBlockedTag(userACookie, "react");
+
+      const res = await request(testApp.app.getHttpServer())
+        .get("/recommendations")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      const ids = res.body.items.map((item: { id: string }) => item.id);
+      expect(ids).not.toContain(blockedPostId);
+      expect(ids).toContain(visiblePostId);
+    });
+
+    it("excludes posts with blocked tags from the following feed", async () => {
+      const blockedPostId = await createPost(userBCookie, "Blocked #React post");
+      const visiblePostId = await createPost(userBCookie, "Allowed #TypeScript post");
+
+      await pool.query(
+        "INSERT INTO user_follows (follower_id, followee_id) VALUES ($1, $2)",
+        [userAId, userBId],
+      );
+      await setBlockedTag(userACookie, "react");
+
+      const res = await request(testApp.app.getHttpServer())
+        .get("/posts/following")
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      const ids = res.body.items.map((item: { id: string }) => item.id);
+      expect(ids).not.toContain(blockedPostId);
+      expect(ids).toContain(visiblePostId);
     });
   });
 

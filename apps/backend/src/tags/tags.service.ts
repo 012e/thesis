@@ -13,17 +13,26 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { PostDto, PostTagDto, ReactionTypeDto } from "@repo/shared-dto";
+import type {
+  PostDto,
+  PostTagDto,
+  ReactionTypeDto,
+  TagPreferenceDto,
+  TagPreferenceKindDto,
+  UserTagPreferencesDto,
+} from "@repo/shared-dto";
 
 import { DatabaseService } from "@/db/database.service";
 import {
   comments,
   postBookmarks,
   postReactions,
+  recommendationItems,
   posts,
   postSubscriptions,
   postTags,
   tags,
+  userTagPreferences,
   usersView,
 } from "@/db/schema";
 import { UsersService } from "@/users/users.service";
@@ -190,6 +199,114 @@ export class TagsService {
       .limit(1);
 
     return row ?? null;
+  }
+
+  async listUserTagPreferences(
+    userId: string,
+  ): Promise<UserTagPreferencesDto> {
+    const rows = await this.db.db
+      .select({
+        id: tags.id,
+        slug: tags.slug,
+        displayName: tags.displayName,
+        postCount: tags.postCount,
+        preference: userTagPreferences.preference,
+        createdAt: userTagPreferences.createdAt,
+        updatedAt: userTagPreferences.updatedAt,
+      })
+      .from(userTagPreferences)
+      .innerJoin(tags, eq(userTagPreferences.tagId, tags.id))
+      .where(eq(userTagPreferences.userId, userId))
+      .orderBy(desc(userTagPreferences.updatedAt), asc(tags.slug));
+
+    const preferred: TagPreferenceDto[] = [];
+    const blocked: TagPreferenceDto[] = [];
+
+    for (const row of rows) {
+      const dto = this.toTagPreferenceDto(row);
+      if (dto.preference === "preferred") {
+        preferred.push(dto);
+      } else {
+        blocked.push(dto);
+      }
+    }
+
+    return { preferred, blocked };
+  }
+
+  async setUserTagPreference(
+    userId: string,
+    slug: string,
+    preference: TagPreferenceKindDto,
+  ): Promise<TagPreferenceDto | null> {
+    const tag = await this.getTag(slug);
+    if (!tag) return null;
+
+    const now = new Date();
+
+    await this.db.db
+      .insert(userTagPreferences)
+      .values({
+        userId,
+        tagId: tag.id,
+        preference,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .onConflictDoUpdate({
+        target: [userTagPreferences.userId, userTagPreferences.tagId],
+        set: {
+          preference,
+          updatedAt: now,
+        },
+      });
+
+    await this.clearUnservedRecommendationQueue(userId);
+
+    const [row] = await this.db.db
+      .select({
+        id: tags.id,
+        slug: tags.slug,
+        displayName: tags.displayName,
+        postCount: tags.postCount,
+        preference: userTagPreferences.preference,
+        createdAt: userTagPreferences.createdAt,
+        updatedAt: userTagPreferences.updatedAt,
+      })
+      .from(userTagPreferences)
+      .innerJoin(tags, eq(userTagPreferences.tagId, tags.id))
+      .where(
+        and(
+          eq(userTagPreferences.userId, userId),
+          eq(userTagPreferences.tagId, tag.id),
+        ),
+      )
+      .limit(1);
+
+    return row ? this.toTagPreferenceDto(row) : null;
+  }
+
+  async deleteUserTagPreference(
+    userId: string,
+    slug: string,
+  ): Promise<boolean> {
+    const tag = await this.getTag(slug);
+    if (!tag) return false;
+
+    const deleted = await this.db.db
+      .delete(userTagPreferences)
+      .where(
+        and(
+          eq(userTagPreferences.userId, userId),
+          eq(userTagPreferences.tagId, tag.id),
+        ),
+      )
+      .returning({ tagId: userTagPreferences.tagId });
+
+    if (deleted.length === 0) return false;
+
+    await this.clearUnservedRecommendationQueue(userId);
+    return true;
   }
 
   // ─── Tag Feed ────────────────────────────────────────────────────────────────
@@ -449,6 +566,37 @@ export class TagsService {
       currentUserBookmarked: row.currentUserBookmarked ?? false,
       tags: postTagDtos,
     };
+  }
+
+  private toTagPreferenceDto(row: {
+    id: string;
+    slug: string;
+    displayName: string;
+    postCount: number;
+    preference: TagPreferenceKindDto;
+    createdAt: Date;
+    updatedAt: Date;
+  }): TagPreferenceDto {
+    return {
+      id: row.id,
+      slug: row.slug,
+      displayName: row.displayName,
+      postCount: row.postCount,
+      preference: row.preference,
+      createdAt: row.createdAt.toISOString(),
+      updatedAt: row.updatedAt.toISOString(),
+    };
+  }
+
+  private async clearUnservedRecommendationQueue(userId: string): Promise<void> {
+    await this.db.db
+      .delete(recommendationItems)
+      .where(
+        and(
+          eq(recommendationItems.userId, userId),
+          sql`${recommendationItems.servedAt} IS NULL`,
+        ),
+      );
   }
 
   private encodeCursor(cursor: { createdAt: string; postId: string }): string {

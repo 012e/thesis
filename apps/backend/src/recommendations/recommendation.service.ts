@@ -14,6 +14,8 @@ import {
   comments,
   postBookmarks,
   postSubscriptions,
+  postTags,
+  userTagPreferences,
 } from "@/db/schema";
 import {
   upvoteCount,
@@ -84,6 +86,7 @@ export class RecommendationService {
     const baseCondition = and(
       eq(recommendationItems.userId, userId),
       isNull(recommendationItems.servedAt),
+      this.excludesBlockedQueuedPost(userId),
     );
 
     const whereCondition = parsed
@@ -181,7 +184,13 @@ export class RecommendationService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(and(inArray(posts.id, postIds), eq(posts.hidden, false)))
+      .where(
+        and(
+          inArray(posts.id, postIds),
+          eq(posts.hidden, false),
+          this.excludesBlockedPost(userId),
+        ),
+      )
       .groupBy(
         posts.id,
         usersView.id,
@@ -213,6 +222,7 @@ export class RecommendationService {
         and(
           eq(recommendationItems.userId, userId),
           isNull(recommendationItems.servedAt),
+          this.excludesBlockedQueuedPost(userId),
         ),
       );
 
@@ -258,5 +268,27 @@ export class RecommendationService {
     this.logger.debug(
       `Enqueued recommendation generation for user ${userId} (trigger: ${trigger})`,
     );
+  }
+
+  private excludesBlockedQueuedPost(userId: string) {
+    return sql<boolean>`NOT EXISTS (
+      SELECT 1 FROM ${postTags}
+      INNER JOIN ${userTagPreferences}
+        ON ${userTagPreferences.tagId} = ${postTags.tagId}
+      WHERE ${postTags.postId} = ${recommendationItems.postId}
+        AND ${userTagPreferences.userId} = ${userId}
+        AND ${userTagPreferences.preference} = 'blocked'
+    )`;
+  }
+
+  private excludesBlockedPost(userId: string) {
+    return sql<boolean>`NOT EXISTS (
+      SELECT 1 FROM ${postTags}
+      INNER JOIN ${userTagPreferences}
+        ON ${userTagPreferences.tagId} = ${postTags.tagId}
+      WHERE ${postTags.postId} = ${posts.id}
+        AND ${userTagPreferences.userId} = ${userId}
+        AND ${userTagPreferences.preference} = 'blocked'
+    )`;
   }
 }

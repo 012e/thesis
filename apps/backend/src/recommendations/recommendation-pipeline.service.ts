@@ -12,7 +12,13 @@ import {
 import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
-import { posts, recommendationBatches, recommendationItems } from "@/db/schema";
+import {
+  postTags,
+  posts,
+  recommendationBatches,
+  recommendationItems,
+  userTagPreferences,
+} from "@/db/schema";
 
 import {
   RECOMMENDATION_FILTERS,
@@ -131,7 +137,13 @@ export class RecommendationPipelineService {
     const rows = await this.databaseService.db
       .select({ id: posts.id })
       .from(posts)
-      .where(and(eq(posts.hidden, false), sql`${posts.authorId} != ${userId}`))
+      .where(
+        and(
+          eq(posts.hidden, false),
+          sql`${posts.authorId} != ${userId}`,
+          this.excludesBlockedTags(userId),
+        ),
+      )
       .orderBy(desc(posts.createdAt))
       .limit(DEFAULT_CANDIDATE_LIMIT);
 
@@ -183,11 +195,11 @@ export class RecommendationPipelineService {
   ): Promise<{ postId: string; score: number }[]> {
     if (postIds.length === 0) return [];
 
-    if (userVector) {
-      return this.rankByVectorSimilarity(postIds, userVector);
-    }
+    const ranked = userVector
+      ? await this.rankByVectorSimilarity(postIds, userVector)
+      : await this.rankByRecency(postIds);
 
-    return this.rankByRecency(postIds);
+    return this.applyPreferredTagBoost(userId, ranked);
   }
 
   /**
@@ -237,6 +249,61 @@ export class RecommendationPipelineService {
       postId: r.id,
       score: 1.0 / (1 + index * 0.1),
     }));
+  }
+
+  private async applyPreferredTagBoost(
+    userId: string,
+    ranked: { postId: string; score: number }[],
+  ): Promise<{ postId: string; score: number }[]> {
+    if (ranked.length === 0) return ranked;
+
+    const preferredPostIds = await this.getPostsWithPreference(
+      userId,
+      ranked.map((item) => item.postId),
+      "preferred",
+    );
+
+    if (preferredPostIds.size === 0) return ranked;
+
+    return ranked
+      .map((item) => ({
+        postId: item.postId,
+        score: item.score + (preferredPostIds.has(item.postId) ? 0.2 : 0),
+      }))
+      .sort((a, b) => b.score - a.score || a.postId.localeCompare(b.postId));
+  }
+
+  private async getPostsWithPreference(
+    userId: string,
+    postIds: string[],
+    preference: "preferred" | "blocked",
+  ): Promise<Set<string>> {
+    if (postIds.length === 0) return new Set();
+
+    const rows = await this.databaseService.db
+      .select({ postId: postTags.postId })
+      .from(postTags)
+      .innerJoin(userTagPreferences, eq(userTagPreferences.tagId, postTags.tagId))
+      .where(
+        and(
+          inArray(postTags.postId, postIds),
+          eq(userTagPreferences.userId, userId),
+          eq(userTagPreferences.preference, preference),
+        ),
+      );
+
+    return new Set(rows.map((row) => row.postId));
+  }
+
+  private excludesBlockedTags(userId: string) {
+    return sql<boolean>`NOT EXISTS (
+      SELECT 1 FROM ${postTags}
+      INNER JOIN ${userTagPreferences}
+        ON ${userTagPreferences.tagId} = ${postTags.tagId}
+      WHERE ${postTags.postId} = ${posts.id}
+        AND ${userTagPreferences.userId} = ${userId}
+        AND ${userTagPreferences.preference} = 'blocked'
+    )`;
   }
 
   private async completeBatch(

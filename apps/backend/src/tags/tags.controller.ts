@@ -87,6 +87,71 @@ export class TagsController {
     );
   }
 
+  @TsRestHandler(tagsContract.getMyTagPreferences)
+  getMyTagPreferences(@Session() session: UserSession) {
+    return tsRestHandler(tagsContract.getMyTagPreferences, async () => {
+      const result = await this.tagsService.listUserTagPreferences(
+        session.user.id,
+      );
+
+      return {
+        status: 200 as const,
+        body: result,
+      };
+    });
+  }
+
+  @TsRestHandler(tagsContract.setMyTagPreference)
+  setMyTagPreference(@Session() session: UserSession) {
+    return tsRestHandler(
+      tagsContract.setMyTagPreference,
+      async ({ params, body }) => {
+        const preference = await this.tagsService.setUserTagPreference(
+          session.user.id,
+          params.slug,
+          body.preference,
+        );
+
+        if (!preference) {
+          return {
+            status: 404 as const,
+            body: null,
+          };
+        }
+
+        return {
+          status: 200 as const,
+          body: preference,
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(tagsContract.deleteMyTagPreference)
+  deleteMyTagPreference(@Session() session: UserSession) {
+    return tsRestHandler(
+      tagsContract.deleteMyTagPreference,
+      async ({ params }) => {
+        const deleted = await this.tagsService.deleteUserTagPreference(
+          session.user.id,
+          params.slug,
+        );
+
+        if (!deleted) {
+          return {
+            status: 404 as const,
+            body: null,
+          };
+        }
+
+        return {
+          status: 204 as const,
+          body: undefined,
+        };
+      },
+    );
+  }
+
   private parseWindowHours(window?: string): number {
     if (!window) return 24;
     const match = window.match(/^(\d+)h$/);
