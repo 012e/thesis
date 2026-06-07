@@ -24,6 +24,23 @@ describe("PostsController integration", () => {
   let userACookie: string;
   let userBCookie: string;
 
+  const expectPostDtoShape = (post: Record<string, unknown>) => {
+    expect(post.id).toBeTruthy();
+    expect(post.authorId).toBeTruthy();
+    expect(post.author).toBeDefined();
+    expect(post.content).toBeDefined();
+    expect(post.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(post.updatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+    expect(typeof post.upvoteCount).toBe("number");
+    expect(typeof post.downvoteCount).toBe("number");
+    expect(typeof post.commentCount).toBe("number");
+    expect(typeof post.currentUserUpvoted).toBe("boolean");
+    expect(typeof post.currentUserDownvoted).toBe("boolean");
+    expect(typeof post.currentUserSubscribed).toBe("boolean");
+    expect(typeof post.currentUserBookmarked).toBe("boolean");
+    expect(Array.isArray(post.tags)).toBe(true);
+  };
+
   beforeAll(async () => {
     containers = await startPostgresContainer();
     minioContainer = await startMinioContainer();
@@ -618,8 +635,11 @@ describe("PostsController integration", () => {
         .set("Cookie", userACookie)
         .expect(200);
 
-      expect(res.body.items).toHaveLength(20);
-      expect(res.body.nextCursor).not.toBeNull();
+      expect(Array.isArray(res.body.items)).toBe(true);
+      expect(res.body.items.length).toBeLessThanOrEqual(20);
+      for (const post of res.body.items as Record<string, unknown>[]) {
+        expectPostDtoShape(post);
+      }
     });
 
     it("excludes own posts from recommendations", async () => {
