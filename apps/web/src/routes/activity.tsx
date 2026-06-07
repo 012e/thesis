@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   IconActivity,
   IconBookmark,
@@ -57,20 +56,33 @@ const eventIcons: Record<AnalyticsEventTypeEnum, typeof IconActivity> = {
 };
 
 export function ActivityPage() {
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const { data, isError, isLoading, isFetching } = useQuery({
-    queryKey: ["analytics-events", visibleCount],
-    queryFn: () =>
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isError,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["analytics-events", "important"],
+    initialPageParam: 0,
+    queryFn: ({ pageParam }) =>
       fetchMyAnalyticsEvents({
-        limit: visibleCount,
-        offset: 0,
+        limit: PAGE_SIZE,
+        offset: pageParam,
         importantOnly: true,
       }),
+    getNextPageParam: (lastPage, allPages) => {
+      const loadedCount = allPages.reduce(
+        (count, page) => count + page.items.length,
+        0,
+      );
+
+      return loadedCount < lastPage.total ? loadedCount : undefined;
+    },
   });
 
-  const events = data?.items ?? [];
-  const total = data?.total ?? 0;
-  const canLoadMore = events.length < total;
+  const events = data?.pages.flatMap((page) => page.items) ?? [];
 
   return (
     <>
@@ -107,13 +119,13 @@ export function ActivityPage() {
 
         {events.length > 0 && (
           <div className="flex justify-center border-t p-4">
-            {canLoadMore ? (
+            {hasNextPage ? (
               <Button
                 variant="outline"
-                onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                disabled={isFetching}
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
               >
-                {isFetching ? <Spinner /> : <IconRefresh />}
+                {isFetchingNextPage ? <Spinner /> : <IconRefresh />}
                 Load more
               </Button>
             ) : (

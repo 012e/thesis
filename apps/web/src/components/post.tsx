@@ -218,7 +218,6 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
   const [isTagHoverCardOpen, setIsTagHoverCardOpen] = useState(false);
   const { data: session } = useSession();
   const isAdmin = useIsAdmin();
-  const openChat = useOpenChat();
 
   const isOwnPost = isOwner ?? session?.user?.id === post.authorId;
   const initialUserReaction =
