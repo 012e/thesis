@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { PostComposer } from "@/components/ui/post-composer";
 import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useFollowingPosts } from "@/hooks/use-following-posts";
+import { useTagPreferences } from "@/hooks/use-tag-preferences";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { useState } from "react";
 
@@ -26,8 +27,21 @@ export function Index() {
     limit: 20,
     enabled: activeTab === "following",
   });
+  const tagPreferences = useTagPreferences();
   const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
   const isSwitchingFeed = refreshingTab === activeTab;
+  const hasTagPreferences =
+    (tagPreferences.data?.preferred.length ?? 0) > 0 ||
+    (tagPreferences.data?.blocked.length ?? 0) > 0;
+  const hasForYouPosts =
+    (recommendations.data?.pages.flatMap((page) => page.items).length ?? 0) >
+    0;
+  const showInterestsPrompt =
+    activeTab === "for-you" &&
+    !tagPreferences.isLoading &&
+    !hasTagPreferences &&
+    !recommendations.isLoading &&
+    !hasForYouPosts;
 
   const handleTabChange = (nextTab: FeedTab) => {
     if (nextTab === activeTab) {
@@ -82,6 +96,22 @@ export function Index() {
         </div>
       </div>
       <PostComposer />
+      {showInterestsPrompt && (
+        <div className="border-b bg-muted/30 px-4 py-3 text-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-muted-foreground">
+              Choose topics to improve your feed.
+            </span>
+            <Link
+              to="/settings"
+              search={{ tab: "interests" }}
+              className="font-semibold text-primary hover:underline"
+            >
+              Open interests
+            </Link>
+          </div>
+        </div>
+      )}
       <PostsFeed
         key={activeTab}
         data={isSwitchingFeed ? undefined : activeFeed.data}
