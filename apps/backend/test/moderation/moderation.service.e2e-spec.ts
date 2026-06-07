@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 import { Test, TestingModule } from "@nestjs/testing";
 import { eq } from "drizzle-orm";
 import { Pool } from "pg";
@@ -57,7 +65,10 @@ describe("ModerationService integration", () => {
       providers: [
         { provide: DATABASE_POOL, useValue: pool },
         DatabaseService,
-        { provide: NotificationsService, useValue: { deliver: vi.fn() } },
+        {
+          provide: NotificationsService,
+          useValue: { deliver: vi.fn().mockResolvedValue(null) },
+        },
         ModerationService,
       ],
     }).compile();
