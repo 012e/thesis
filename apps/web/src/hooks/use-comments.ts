@@ -27,9 +27,9 @@ export function useCreateComment(postId: string) {
 
   return useMutation({
     mutationFn: (data: CreateCommentBodyType) => createComment(postId, data),
-    onSuccess: () => {
+    onSuccess: (comment) => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
-      track("comment_create", { postId });
+      track("comment_create", { postId, commentId: comment.id });
       toast.success("Comment posted successfully!");
     },
     onError: (error: Error) => {
@@ -50,9 +50,9 @@ export function useCreateReply(postId: string) {
       commentId: string;
       content: string;
     }) => createReply(commentId, content),
-    onSuccess: () => {
+    onSuccess: (comment) => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
-      track("comment_create", { postId });
+      track("comment_create", { postId, commentId: comment.id });
       toast.success("Reply posted successfully!");
     },
     onError: (error: Error) => {

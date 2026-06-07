@@ -58,6 +58,28 @@ export const AnalyticsEventRow = z.object({
   metadata: z.record(z.string(), z.unknown()).nullable(),
   clientTimestamp: z.string().datetime(),
   createdAt: z.string().datetime(),
+  post: z
+    .object({
+      id: z.string().uuid(),
+      authorId: z.string(),
+      authorName: z.string().nullable(),
+      authorUsername: z.string().nullable(),
+      contentPreview: z.string(),
+      imageUrl: z.string().url().nullable(),
+      createdAt: z.string().datetime(),
+    })
+    .nullable(),
+  comment: z
+    .object({
+      id: z.string().uuid(),
+      postId: z.string().uuid(),
+      authorId: z.string(),
+      authorName: z.string().nullable(),
+      authorUsername: z.string().nullable(),
+      contentPreview: z.string(),
+      createdAt: z.string().datetime(),
+    })
+    .nullable(),
 });
 
 /** Paginated list of analytics events for the current user. */

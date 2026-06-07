@@ -41,6 +41,7 @@ export class AnalyticsController {
           limit: query.limit,
           offset: query.offset,
           type: query.type,
+          importantOnly: query.importantOnly,
         },
       );
 
