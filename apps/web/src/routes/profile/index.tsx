@@ -65,6 +65,7 @@ export function ProfileContent({
             : null,
         }}
         postsData={userPosts.data}
+        postsQueryKey={["users", userId, "posts"]}
         fetchNextPage={userPosts.fetchNextPage}
         hasNextPage={userPosts.hasNextPage}
         isFetchingNextPage={userPosts.isFetchingNextPage}

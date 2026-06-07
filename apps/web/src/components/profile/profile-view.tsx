@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
-import type { InfiniteData } from "@tanstack/react-query";
+import type { InfiniteData, QueryKey } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,6 +39,7 @@ export interface ProfileViewProps {
     createdAt: string | null;
   };
   postsData: InfiniteData<PostsPageData> | undefined;
+  postsQueryKey: QueryKey;
   fetchNextPage: () => void;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
@@ -57,6 +58,7 @@ export interface ProfileViewProps {
 export function ProfileView({
   profile,
   postsData,
+  postsQueryKey,
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
@@ -306,6 +308,7 @@ export function ProfileView({
           <h2 className="mb-4 text-xl font-semibold px-4">Posts</h2>
           <PostsFeed
             data={postsData}
+            queryKey={postsQueryKey}
             fetchNextPage={fetchNextPage}
             hasNextPage={hasNextPage}
             isFetchingNextPage={isFetchingNextPage}

@@ -27,6 +27,10 @@ export function Index() {
     limit: 20,
     enabled: activeTab === "following",
   });
+  const activeFeedQueryKey =
+    activeTab === "for-you"
+      ? (["recommendations"] as const)
+      : (["posts", "following"] as const);
   const tagPreferences = useTagPreferences();
   const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
   const isSwitchingFeed = refreshingTab === activeTab;
@@ -115,6 +119,7 @@ export function Index() {
       <PostsFeed
         key={activeTab}
         data={isSwitchingFeed ? undefined : activeFeed.data}
+        queryKey={activeFeedQueryKey}
         fetchNextPage={activeFeed.fetchNextPage}
         hasNextPage={activeFeed.hasNextPage}
         isFetchingNextPage={activeFeed.isFetchingNextPage}

@@ -212,6 +212,7 @@ function TagPage() {
       {/* Feed */}
       <PostsFeed
         data={data}
+        queryKey={["tags", slug, "posts"]}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage ?? false}
         isFetchingNextPage={isFetchingNextPage}

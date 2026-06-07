@@ -56,6 +56,7 @@ function BookmarksPage() {
       ) : (
         <PostsFeed
           data={bookmarks.data}
+          queryKey={["bookmarks", userId]}
           fetchNextPage={bookmarks.fetchNextPage}
           hasNextPage={bookmarks.hasNextPage}
           isFetchingNextPage={bookmarks.isFetchingNextPage}
