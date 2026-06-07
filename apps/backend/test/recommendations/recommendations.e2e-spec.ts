@@ -206,10 +206,9 @@ describe("Recommendations integration", () => {
 
       // Need to clear served status so a new generation can happen
       // Trigger another generation by clearing queue (simulate low queue scenario)
-      await pool.query(
-        "DELETE FROM recommendation_items WHERE user_id = $1",
-        [userAId],
-      );
+      await pool.query("DELETE FROM recommendation_items WHERE user_id = $1", [
+        userAId,
+      ]);
       await pool.query(
         "UPDATE recommendation_batches SET status = 'completed' WHERE user_id = $1",
         [userAId],
@@ -283,10 +282,9 @@ describe("Recommendations integration", () => {
 
       expect(res.body.nextCursor).not.toBeNull();
       // Cursor should be base64url encoded
-      const decoded = Buffer.from(
-        res.body.nextCursor,
-        "base64url",
-      ).toString("utf8");
+      const decoded = Buffer.from(res.body.nextCursor, "base64url").toString(
+        "utf8",
+      );
       const parsed = JSON.parse(decoded);
       // Should have rank-based cursor, not reactionCount
       expect(parsed).toHaveProperty("rank");
@@ -353,9 +351,7 @@ describe("Recommendations integration", () => {
       // Create posts by user B
       const postIds: string[] = [];
       for (let i = 0; i < 3; i++) {
-        postIds.push(
-          await createPost(userBCookie, `Analytics test post ${i}`),
-        );
+        postIds.push(await createPost(userBCookie, `Analytics test post ${i}`));
       }
 
       // User A interacts with some posts to build preferences

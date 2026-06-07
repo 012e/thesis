@@ -84,14 +84,14 @@ CREATE TYPE reaction_type AS ENUM ('upvote', 'downvote');
 
 One row per user. Stores the normalized preference vector built from the user's analytics events.
 
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `user_id` | `text` PRIMARY KEY | Better Auth user ID. |
-| `vector` | `vector(1536)` | Normalized preference vector (pgvector); `null` for cold-start users. |
-| `event_count` | `integer DEFAULT 0` | Number of analytics events used to build the vector. |
-| `last_generated_at` | `timestamptz` | When the vector was last rebuilt. |
-| `source_window_start` | `timestamptz` | Start of the 30-day analytics window. |
-| `source_window_end` | `timestamptz` | End of the analytics window. |
+| Column                | Type                | Notes                                                                 |
+| --------------------- | ------------------- | --------------------------------------------------------------------- |
+| `user_id`             | `text` PRIMARY KEY  | Better Auth user ID.                                                  |
+| `vector`              | `vector(1536)`      | Normalized preference vector (pgvector); `null` for cold-start users. |
+| `event_count`         | `integer DEFAULT 0` | Number of analytics events used to build the vector.                  |
+| `last_generated_at`   | `timestamptz`       | When the vector was last rebuilt.                                     |
+| `source_window_start` | `timestamptz`       | Start of the 30-day analytics window.                                 |
+| `source_window_end`   | `timestamptz`       | End of the analytics window.                                          |
 
 ### `recommendation_batch_status` enum
 
@@ -103,45 +103,45 @@ CREATE TYPE recommendation_batch_status AS ENUM ('pending', 'running', 'complete
 
 One row per generation run. Acts as an audit log for pipeline executions.
 
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `id` | `uuid` PRIMARY KEY | Auto-generated with `gen_random_uuid()`. |
-| `user_id` | `text` NOT NULL | Requesting user. |
-| `status` | `recommendation_batch_status DEFAULT 'pending'` | Lifecycle state. |
-| `trigger` | `text` | Why the batch was created, e.g. `cold_start`, `low_queue`, `manual`. |
-| `created_at` | `timestamptz` | Set to `now()` on insert. |
-| `completed_at` | `timestamptz` | `null` until the run finishes or fails. |
-| `error` | `text` | Error message when `status = 'failed'`. |
+| Column         | Type                                            | Notes                                                                |
+| -------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
+| `id`           | `uuid` PRIMARY KEY                              | Auto-generated with `gen_random_uuid()`.                             |
+| `user_id`      | `text` NOT NULL                                 | Requesting user.                                                     |
+| `status`       | `recommendation_batch_status DEFAULT 'pending'` | Lifecycle state.                                                     |
+| `trigger`      | `text`                                          | Why the batch was created, e.g. `cold_start`, `low_queue`, `manual`. |
+| `created_at`   | `timestamptz`                                   | Set to `now()` on insert.                                            |
+| `completed_at` | `timestamptz`                                   | `null` until the run finishes or fails.                              |
+| `error`        | `text`                                          | Error message when `status = 'failed'`.                              |
 
 ### `recommendation_items` table
 
 Up to 100 rows per batch. Represents the pre-ranked queue served to the user.
 
-| Column | Type | Notes |
-| ------ | ---- | ----- |
-| `id` | `uuid` PRIMARY KEY | Auto-generated. |
-| `batch_id` | `uuid` NOT NULL | FK → `recommendation_batches.id` `ON DELETE CASCADE`. |
-| `user_id` | `text` NOT NULL | Denormalized for fast reads without a join to `recommendation_batches`. |
-| `post_id` | `uuid` NOT NULL | FK → `posts.id` `ON DELETE CASCADE`. |
-| `rank` | `integer` NOT NULL | 1-based position from the ranking step. |
-| `score` | `double precision` NOT NULL | Cosine similarity (warm) or recency score (cold-start). |
-| `filter_reasons` | `jsonb` (`string[]`) | Debug: reasons each candidate post was nearly filtered out. |
-| `served_at` | `timestamptz` | `null` = unserved; set to `now()` on first read. |
+| Column           | Type                        | Notes                                                                   |
+| ---------------- | --------------------------- | ----------------------------------------------------------------------- |
+| `id`             | `uuid` PRIMARY KEY          | Auto-generated.                                                         |
+| `batch_id`       | `uuid` NOT NULL             | FK → `recommendation_batches.id` `ON DELETE CASCADE`.                   |
+| `user_id`        | `text` NOT NULL             | Denormalized for fast reads without a join to `recommendation_batches`. |
+| `post_id`        | `uuid` NOT NULL             | FK → `posts.id` `ON DELETE CASCADE`.                                    |
+| `rank`           | `integer` NOT NULL          | 1-based position from the ranking step.                                 |
+| `score`          | `double precision` NOT NULL | Cosine similarity (warm) or recency score (cold-start).                 |
+| `filter_reasons` | `jsonb` (`string[]`)        | Debug: reasons each candidate post was nearly filtered out.             |
+| `served_at`      | `timestamptz`               | `null` = unserved; set to `now()` on first read.                        |
 
 **Indexes:**
 
-| Index | Columns | Purpose |
-| ----- | ------- | ------- |
+| Index                                    | Columns                      | Purpose                                                       |
+| ---------------------------------------- | ---------------------------- | ------------------------------------------------------------- |
 | `idx_recommendation_items_user_unserved` | `(user_id, served_at, rank)` | Primary read path: fetch next unserved items ordered by rank. |
-| `idx_recommendation_items_user_post` | `(user_id, post_id)` | Deduplication lookup in `AlreadyQueuedFilter`. |
+| `idx_recommendation_items_user_post`     | `(user_id, post_id)`         | Deduplication lookup in `AlreadyQueuedFilter`.                |
 
 ## Migration history
 
-| File | Description |
-| ---- | ----------- |
-| `drizzle/0000_nifty_spectrum.sql` | Creates `posts` table and enables `pgcrypto` extension. |
-| `drizzle/0001_add_users_view.sql` | Creates `users_view` over the Better Auth `"user"` table. |
-| `drizzle/0002_add_post_reactions.sql` | Creates `reaction_type` enum and `post_reactions` table. |
+| File                                       | Description                                                                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `drizzle/0000_nifty_spectrum.sql`          | Creates `posts` table and enables `pgcrypto` extension.                                                                                                |
+| `drizzle/0001_add_users_view.sql`          | Creates `users_view` over the Better Auth `"user"` table.                                                                                              |
+| `drizzle/0002_add_post_reactions.sql`      | Creates `reaction_type` enum and `post_reactions` table.                                                                                               |
 | `drizzle/0024_recommendation_pipeline.sql` | Creates `recommendation_batch_status` enum, `user_recommendation_profiles`, `recommendation_batches`, `recommendation_items` tables and their indexes. |
 
 Better Auth migrations are managed and applied by the Better Auth CLI (see `pnpm --filter backend run auth:migrate` for helper scripts). They create the `user`, `session`, `account`, and `verification` tables and are separate from the Drizzle-managed application migrations.
