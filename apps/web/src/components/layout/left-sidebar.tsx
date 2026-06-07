@@ -92,12 +92,6 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
               label: "Moderation",
               href: "/admin/moderation",
             },
-            {
-              icon: IconFlask,
-              selectedIcon: IconFlaskFilled,
-              label: "Testing",
-              href: "/testing",
-            },
           ]
         : []),
     ],
@@ -117,7 +111,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex flex-col gap-1">
+        <nav className="flex flex-col">
           {navigationItems.map((item) => (
             <Link
               key={item.href}

@@ -102,6 +102,14 @@ describe("Recommendations integration", () => {
       .expect(200);
   }
 
+  async function setPreferredTag(cookie: string, slug: string): Promise<void> {
+    await request(testApp.app.getHttpServer())
+      .put(`/users/me/tag-preferences/${slug}`)
+      .set("Cookie", cookie)
+      .send({ preference: "preferred" })
+      .expect(200);
+  }
+
   // ─── Cold-start: returns recommendations with no prior queue ───────────────
 
   describe("Cold-start recommendations", () => {
@@ -245,6 +253,26 @@ describe("Recommendations integration", () => {
       const ids = res.body.items.map((item: { id: string }) => item.id);
       expect(ids).not.toContain(blockedPostId);
       expect(ids).toContain(visiblePostId);
+    });
+
+    it("ranks preferred tags through hybrid full-text search", async () => {
+      const preferredPostId = await createPost(
+        userBCookie,
+        "Deep dive into #React server components",
+      );
+      await createPost(userBCookie, "Fresh #TypeScript release notes");
+
+      await setPreferredTag(userACookie, "react");
+
+      const res = await request(testApp.app.getHttpServer())
+        .get("/recommendations")
+        .query({ limit: 2 })
+        .set("Cookie", userACookie)
+        .expect(200);
+
+      expect(res.body.items.map((item: { id: string }) => item.id)[0]).toBe(
+        preferredPostId,
+      );
     });
 
     it("excludes posts with blocked tags from the following feed", async () => {
