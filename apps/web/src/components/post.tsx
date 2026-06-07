@@ -35,7 +35,6 @@ import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
 import { useSession } from "@/hooks/use-session";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { useOpenChat } from "@/hooks/use-open-chat";
 import { useDeletePost } from "@/hooks/use-delete-post";
 import { usePostSubscription } from "@/hooks/use-post-subscription";
 import { usePostBookmark } from "@/hooks/use-post-bookmark";
