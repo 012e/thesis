@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS "user_tag_preferences" (
 );
 
 ALTER TABLE "user_tag_preferences"
+  ADD CONSTRAINT "user_tag_preferences_user_id_users_id_fk"
+  FOREIGN KEY ("user_id") REFERENCES "public"."user"("id")
+  ON DELETE CASCADE ON UPDATE NO ACTION;
+
+ALTER TABLE "user_tag_preferences"
   ADD CONSTRAINT "user_tag_preferences_tag_id_tags_id_fk"
   FOREIGN KEY ("tag_id") REFERENCES "public"."tags"("id")
   ON DELETE CASCADE ON UPDATE NO ACTION;
