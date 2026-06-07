@@ -7,9 +7,8 @@ import { user } from "@/db/auth-schema";
 import { userFollows, posts, userProfiles } from "@/db/schema";
 import { ImageProcessorService } from "@/storage/image-processor.service";
 import { StorageService } from "@/storage/storage.service";
+import { DEFAULT_AVATAR_KEY } from "@/users/default-avatar";
 import type { UserProfileDto, UserSearchResultDto } from "@repo/shared-dto";
-
-const DEFAULT_AVATAR_KEY = "defaults/default-avatar.webp";
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {

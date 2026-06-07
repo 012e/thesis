@@ -6,6 +6,7 @@ import { env } from "@/env";
 import { username, jwt, bearer, admin } from "better-auth/plugins";
 import db from "@/db";
 import { userProfiles } from "@/db/schema";
+import { getDefaultAvatarUrl } from "@/users/default-avatar";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg" }),
@@ -20,7 +21,7 @@ export const auth = betterAuth({
         after: async (user) => {
           await db
             .insert(userProfiles)
-            .values({ userId: user.id })
+            .values({ userId: user.id, avatarUrl: getDefaultAvatarUrl() })
             .onConflictDoNothing();
         },
       },

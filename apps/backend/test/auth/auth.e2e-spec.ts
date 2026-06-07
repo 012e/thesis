@@ -6,6 +6,7 @@ import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import { DatabaseService } from "@/db/database.service";
 import { userProfiles } from "@/db/schema";
+import { getDefaultAvatarUrl } from "@/users/default-avatar";
 import {
   createTestAuthClient,
   type TestAuthClient,
@@ -72,7 +73,7 @@ describe("Auth integration", () => {
 
       expect(profile).toEqual({
         userId: data!.user.id,
-        avatarUrl: null,
+        avatarUrl: getDefaultAvatarUrl(),
         coverPhotoUrl: null,
         bio: null,
       });
