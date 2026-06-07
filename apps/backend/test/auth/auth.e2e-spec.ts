@@ -1,12 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
-import { eq } from "drizzle-orm";
+import { Pool } from "pg";
 
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
-import { DatabaseService } from "@/db/database.service";
-import { userProfiles } from "@/db/schema";
-import { getDefaultAvatarUrl } from "@/users/default-avatar";
 import {
   createTestAuthClient,
   type TestAuthClient,
@@ -21,7 +18,7 @@ describe("Auth integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let authClient: TestAuthClient;
-  let databaseService: DatabaseService;
+  let pool: Pool;
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -29,10 +26,11 @@ describe("Auth integration", () => {
 
     testApp = await createTestApp(containers);
     authClient = createTestAuthClient(testApp.app);
-    databaseService = testApp.app.get(DatabaseService);
+    pool = new Pool({ connectionString: containers.databaseUrl });
   }, 120000);
 
   afterAll(async () => {
+    await pool.end();
     await closeTestApp(testApp);
     await stopPostgresContainer(containers);
   });
@@ -66,15 +64,27 @@ describe("Auth integration", () => {
 
       expect(error).toBeNull();
 
-      const [profile] = await databaseService.db
-        .select()
-        .from(userProfiles)
-        .where(eq(userProfiles.userId, data!.user.id));
+      const profileResult = await pool.query<{
+        user_id: string;
+        avatar_url: string | null;
+        cover_photo_url: string | null;
+        bio: string | null;
+      }>(
+        `
+          SELECT user_id, avatar_url, cover_photo_url, bio
+          FROM user_profiles
+          WHERE user_id = $1
+        `,
+        [data!.user.id],
+      );
+
+      const [profile] = profileResult.rows;
+      const expectedAvatarUrl = `${process.env.MINIO_PUBLIC_URL ?? "http://localhost:9000"}/${process.env.MINIO_BUCKET ?? "posts-images"}/defaults/default-avatar.webp`;
 
       expect(profile).toEqual({
-        userId: data!.user.id,
-        avatarUrl: getDefaultAvatarUrl(),
-        coverPhotoUrl: null,
+        user_id: data!.user.id,
+        avatar_url: expectedAvatarUrl,
+        cover_photo_url: null,
         bio: null,
       });
     });

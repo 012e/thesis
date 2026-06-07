@@ -191,3 +191,6 @@ ai +COMMAND:
 # Run a command in the rest-contracts package directory
 rest-contracts +COMMAND:
     (cd packages/rest-contracts && {{ COMMAND }})
+
+db:
+    pnpm --filter backend db:view
