@@ -26,6 +26,19 @@ export const moderationContract = c.router({
     },
     summary: "List moderation records with filters (admin only)",
   },
+  listReports: {
+    method: "GET",
+    path: "/admin/moderation/reports",
+    query: z.object({
+      page: z.coerce.number().int().nonnegative().optional(),
+      pageSize: z.coerce.number().int().positive().max(100).optional(),
+    }),
+    responses: {
+      200: ReportsPage,
+      403: z.null(),
+    },
+    summary: "List user reports (admin only)",
+  },
   getModeration: {
     method: "GET",
     path: "/admin/moderation/:id",
@@ -70,19 +83,6 @@ export const moderationContract = c.router({
       404: z.null(),
     },
     summary: "Flag a post manually with a priority level (admin only)",
-  },
-  listReports: {
-    method: "GET",
-    path: "/admin/moderation/reports",
-    query: z.object({
-      page: z.coerce.number().int().nonnegative().optional(),
-      pageSize: z.coerce.number().int().positive().max(100).optional(),
-    }),
-    responses: {
-      200: ReportsPage,
-      403: z.null(),
-    },
-    summary: "List user reports (admin only)",
   },
   reportPost: {
     method: "POST",

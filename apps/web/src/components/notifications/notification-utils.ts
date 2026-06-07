@@ -41,6 +41,8 @@ export function getNotificationText(notification: NotificationDto): string {
       return `${actorName} ${getReactionVerb(payload)} your comment`;
     case "direct_message":
       return `New message from ${actorName}`;
+    case "post_hidden":
+      return "Your post was hidden by moderation";
     default:
       return "New notification";
   }
@@ -88,6 +90,10 @@ export function getNotificationContextText(
     }
     case "direct_message":
       return getQuotedPreview("Message", getPayloadPreview(payload));
+    case "post_hidden": {
+      const post = getPayloadPost(payload);
+      return post ? formatPostContext(post) : null;
+    }
     case "follow":
       return null;
     default:

@@ -26,7 +26,10 @@ const RECOMMENDATION_EVENT_TYPES = [
   "post_unbookmark",
 ] as const satisfies readonly AnalyticsEvent["type"][];
 
-const EVENT_WEIGHTS: Record<(typeof RECOMMENDATION_EVENT_TYPES)[number], number> = {
+const EVENT_WEIGHTS: Record<
+  (typeof RECOMMENDATION_EVENT_TYPES)[number],
+  number
+> = {
   post_view: 1,
   poll_vote: 2,
   post_share: 3,
@@ -64,10 +67,7 @@ export class UserPreferenceVectorService {
       .from(analyticsEvents)
       .innerJoin(
         posts,
-        eq(
-          sql`${analyticsEvents.metadata}->>'postId'`,
-          sql`${posts.id}::text`,
-        ),
+        eq(sql`${analyticsEvents.metadata}->>'postId'`, sql`${posts.id}::text`),
       )
       .where(
         and(

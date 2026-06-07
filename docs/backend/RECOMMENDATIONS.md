@@ -8,12 +8,12 @@ persisted queue. The queue is replenished in the background before it runs dry.
 
 The pipeline runs in four stages:
 
-| Stage | Service | Responsibility |
-| ----- | ------- | -------------- |
-| A | `UserPreferenceVectorService` | Build and persist a user preference vector from analytics events |
-| B | `RecommendationPipelineService` | Fetch candidates, apply filters, rank, persist to queue |
-| C | `RecommendationService` | Serve items from queue; trigger Stage A+B when needed |
-| D | `RecommendationJobsService` | PgBoss background job handler for asynchronous Stage A+B |
+| Stage | Service                         | Responsibility                                                   |
+| ----- | ------------------------------- | ---------------------------------------------------------------- |
+| A     | `UserPreferenceVectorService`   | Build and persist a user preference vector from analytics events |
+| B     | `RecommendationPipelineService` | Fetch candidates, apply filters, rank, persist to queue          |
+| C     | `RecommendationService`         | Serve items from queue; trigger Stage A+B when needed            |
+| D     | `RecommendationJobsService`     | PgBoss background job handler for asynchronous Stage A+B         |
 
 ## Directory layout
 
@@ -43,16 +43,16 @@ The resulting vector is L2-normalized and stored in `user_recommendation_profile
 
 ### Event weights
 
-| Event | Weight |
-| ----- | ------ |
-| `post_bookmark` | +5 |
-| `comment_create` | +4 |
-| `post_like` | +4 |
-| `post_share` | +3 |
-| `poll_vote` | +2 |
-| `post_view` | +1 |
-| `post_unbookmark` | −3 |
-| `post_unlike` | −2 |
+| Event             | Weight |
+| ----------------- | ------ |
+| `post_bookmark`   | +5     |
+| `comment_create`  | +4     |
+| `post_like`       | +4     |
+| `post_share`      | +3     |
+| `poll_vote`       | +2     |
+| `post_view`       | +1     |
+| `post_unbookmark` | −3     |
+| `post_unlike`     | −2     |
 
 Returns `false` (cold-start) when fewer than 3 qualifying events exist.
 
@@ -95,7 +95,10 @@ via `PostsPresenterService`, and returns a `RecommendationPage` with a keyset cu
 The pagination cursor is a base64url-encoded JSON blob:
 
 ```ts
-{ rank: number; itemId: string /* UUID */ }
+{
+  rank: number;
+  itemId: string; /* UUID */
+}
 ```
 
 Encoding and decoding are handled by `recommendation-cursors.ts`.
@@ -127,9 +130,9 @@ GET /recommendations
 
 ```ts
 z.object({
-  items:      z.array(Post),
+  items: z.array(Post),
   nextCursor: z.string().nullable(),
-})
+});
 ```
 
 The handler lives in `PostsController.getRecommendations` (not a separate
@@ -137,21 +140,21 @@ controller) and requires an authenticated `@Session()`.
 
 ## Integration points
 
-| Dependency | How |
-| ---------- | --- |
-| **PostsModule** | `PostsController` injects `RecommendationService`. `PostsModule` uses `forwardRef(() => RecommendationsModule)` to break the circular dependency. |
-| **PostsPresenterService** | `RecommendationService.hydratePostIds` reuses this service to convert raw DB rows to `PostDto` (including tag hydration). |
-| **AnalyticsModule** | `UserPreferenceVectorService` and `AlreadyInteractedFilter` both read `analytics_events`. Event `metadata.postId` links events to posts. |
-| **EmbeddingModule** | Posts carry a `vector(1536)` `embedding` column. Similarity ranking uses pgvector's `<=>` operator against this column. |
-| **PgBossModule** | `@wavezync/nestjs-pgboss` provides the job queue. `RecommendationJobsService` registers a `@Job` subscriber. |
-| **AppModule** | `RecommendationsModule` is imported at the root; `PgBossModule.forRootAsync` is also configured there. |
-| **MCP PostTools** | `apps/backend/src/mcp/posts/post.tools.ts` still calls the **legacy** `PostsService.recommendations()` (reaction-count ranking). The MCP layer has not been migrated to the queue-based pipeline. |
+| Dependency                | How                                                                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **PostsModule**           | `PostsController` injects `RecommendationService`. `PostsModule` uses `forwardRef(() => RecommendationsModule)` to break the circular dependency.                                                 |
+| **PostsPresenterService** | `RecommendationService.hydratePostIds` reuses this service to convert raw DB rows to `PostDto` (including tag hydration).                                                                         |
+| **AnalyticsModule**       | `UserPreferenceVectorService` and `AlreadyInteractedFilter` both read `analytics_events`. Event `metadata.postId` links events to posts.                                                          |
+| **EmbeddingModule**       | Posts carry a `vector(1536)` `embedding` column. Similarity ranking uses pgvector's `<=>` operator against this column.                                                                           |
+| **PgBossModule**          | `@wavezync/nestjs-pgboss` provides the job queue. `RecommendationJobsService` registers a `@Job` subscriber.                                                                                      |
+| **AppModule**             | `RecommendationsModule` is imported at the root; `PgBossModule.forRootAsync` is also configured there.                                                                                            |
+| **MCP PostTools**         | `apps/backend/src/mcp/posts/post.tools.ts` still calls the **legacy** `PostsService.recommendations()` (reaction-count ranking). The MCP layer has not been migrated to the queue-based pipeline. |
 
 ## Web integration
 
-| File | Role |
-| ---- | ---- |
-| `apps/web/src/lib/api/recommendations.ts` | `fetchRecommendations()` — ts-rest client call |
+| File                                        | Role                                                                                                                       |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/lib/api/recommendations.ts`   | `fetchRecommendations()` — ts-rest client call                                                                             |
 | `apps/web/src/hooks/use-recommendations.ts` | `useRecommendations()` — TanStack Query infinite query (5 min stale time). Prepends session-storage new posts into page 0. |
 
 ## Testing

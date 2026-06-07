@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
+import { Pool } from "pg";
 
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
@@ -17,6 +18,7 @@ describe("Auth integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let authClient: TestAuthClient;
+  let pool: Pool;
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -24,9 +26,11 @@ describe("Auth integration", () => {
 
     testApp = await createTestApp(containers);
     authClient = createTestAuthClient(testApp.app);
+    pool = new Pool({ connectionString: containers.databaseUrl });
   }, 120000);
 
   afterAll(async () => {
+    await pool.end();
     await closeTestApp(testApp);
     await stopPostgresContainer(containers);
   });
@@ -48,6 +52,41 @@ describe("Auth integration", () => {
       expect(data!.user.id).toBeTruthy();
       expect(data!.user.email).toBe(email);
       expect(data!.user.name).toBe("Test User");
+    });
+
+    it("creates a default user profile row", async () => {
+      const { data, error } = await authClient.register({
+        email: `profile-${Date.now()}@example.com`,
+        username: `profile${Date.now()}`,
+        password: "TestPassword123!",
+        name: "Profile User",
+      });
+
+      expect(error).toBeNull();
+
+      const profileResult = await pool.query<{
+        user_id: string;
+        avatar_url: string | null;
+        cover_photo_url: string | null;
+        bio: string | null;
+      }>(
+        `
+          SELECT user_id, avatar_url, cover_photo_url, bio
+          FROM user_profiles
+          WHERE user_id = $1
+        `,
+        [data!.user.id],
+      );
+
+      const [profile] = profileResult.rows;
+      const expectedAvatarUrl = `${process.env.MINIO_PUBLIC_URL ?? "http://localhost:9000"}/${process.env.MINIO_BUCKET ?? "posts-images"}/defaults/default-avatar.webp`;
+
+      expect(profile).toEqual({
+        user_id: data!.user.id,
+        avatar_url: expectedAvatarUrl,
+        cover_photo_url: null,
+        bio: null,
+      });
     });
 
     it("rejects duplicate email registrations", async () => {

@@ -259,7 +259,8 @@ export type NotificationTypeDto =
   | "post_update"
   | "post_reaction"
   | "comment_reaction"
-  | "direct_message";
+  | "direct_message"
+  | "post_hidden";
 
 export interface NotificationUserContextDto {
   id: string;
@@ -339,6 +340,14 @@ export interface DirectMessageNotificationPayload {
   preview: string;
 }
 
+/** The recipient's post was hidden by the moderation system. */
+export interface PostHiddenNotificationPayload {
+  postId: string;
+  /** Human-readable reason why the post was hidden (e.g. moderation source). */
+  reason: string | null;
+  post?: NotificationPostContextDto;
+}
+
 /** Discriminated union of all possible notification payloads. */
 export type NotificationPayloadDto =
   | FollowNotificationPayload
@@ -347,7 +356,8 @@ export type NotificationPayloadDto =
   | PostUpdateNotificationPayload
   | PostReactionNotificationPayload
   | CommentReactionNotificationPayload
-  | DirectMessageNotificationPayload;
+  | DirectMessageNotificationPayload
+  | PostHiddenNotificationPayload;
 
 // ─── AI Context ──────────────────────────────────────────────────────────────
 

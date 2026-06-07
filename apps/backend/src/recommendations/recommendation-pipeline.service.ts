@@ -1,13 +1,18 @@
 import { Inject, Injectable, Logger } from "@nestjs/common";
-import { and, desc, eq, isNotNull, isNull, inArray, sql, asc } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  isNotNull,
+  isNull,
+  inArray,
+  sql,
+  asc,
+} from "drizzle-orm";
 import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
-import {
-  posts,
-  recommendationBatches,
-  recommendationItems,
-} from "@/db/schema";
+import { posts, recommendationBatches, recommendationItems } from "@/db/schema";
 
 import {
   RECOMMENDATION_FILTERS,
@@ -86,15 +91,15 @@ export class RecommendationPipelineService {
       const ranked = await this.rankCandidates(userId, filteredIds, userVector);
 
       // Step 5: Persist items
-      const itemsToInsert = ranked.slice(0, DEFAULT_OUTPUT_LIMIT).map(
-        (item, index) => ({
+      const itemsToInsert = ranked
+        .slice(0, DEFAULT_OUTPUT_LIMIT)
+        .map((item, index) => ({
           batchId: batch.id,
           userId,
           postId: item.postId,
           rank: index + 1,
           score: item.score,
-        }),
-      );
+        }));
 
       if (itemsToInsert.length > 0) {
         await this.databaseService.db
@@ -110,8 +115,7 @@ export class RecommendationPipelineService {
 
       return batch.id;
     } catch (error) {
-      const errorMsg =
-        error instanceof Error ? error.message : String(error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
       await this.completeBatch(batch.id, "failed", errorMsg);
       throw error;
     }
@@ -127,12 +131,7 @@ export class RecommendationPipelineService {
     const rows = await this.databaseService.db
       .select({ id: posts.id })
       .from(posts)
-      .where(
-        and(
-          eq(posts.hidden, false),
-          sql`${posts.authorId} != ${userId}`,
-        ),
-      )
+      .where(and(eq(posts.hidden, false), sql`${posts.authorId} != ${userId}`))
       .orderBy(desc(posts.createdAt))
       .limit(DEFAULT_CANDIDATE_LIMIT);
 
@@ -206,12 +205,7 @@ export class RecommendationPipelineService {
         similarity: sql<number>`1 - (${posts.embedding} <=> ${queryVector}::vector)`,
       })
       .from(posts)
-      .where(
-        and(
-          inArray(posts.id, postIds),
-          isNotNull(posts.embedding),
-        ),
-      )
+      .where(and(inArray(posts.id, postIds), isNotNull(posts.embedding)))
       .orderBy(
         asc(sql`${posts.embedding} <=> ${queryVector}::vector`),
         desc(posts.createdAt),

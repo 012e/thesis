@@ -1,16 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PgBossService } from "@wavezync/nestjs-pgboss";
-import {
-  and,
-  asc,
-  count,
-  eq,
-  gt,
-  inArray,
-  isNull,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, asc, count, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
 
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 
@@ -41,10 +31,7 @@ import {
   GENERATE_RECOMMENDATIONS_JOB,
   type GenerateRecommendationsJobData,
 } from "./recommendation-jobs.service";
-import {
-  encodeQueueCursor,
-  decodeQueueCursor,
-} from "./recommendation-cursors";
+import { encodeQueueCursor, decodeQueueCursor } from "./recommendation-cursors";
 
 const GENERATION_THRESHOLD = 20;
 
@@ -121,10 +108,7 @@ export class RecommendationService {
       })
       .from(recommendationItems)
       .where(whereCondition)
-      .orderBy(
-        asc(recommendationItems.rank),
-        asc(recommendationItems.id),
-      )
+      .orderBy(asc(recommendationItems.rank), asc(recommendationItems.id))
       .limit(limit + 1);
 
     const hasMore = rows.length > limit;
@@ -197,12 +181,7 @@ export class RecommendationService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(
-        and(
-          inArray(posts.id, postIds),
-          eq(posts.hidden, false),
-        ),
-      )
+      .where(and(inArray(posts.id, postIds), eq(posts.hidden, false)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -268,9 +247,13 @@ export class RecommendationService {
     }
 
     const jobData: GenerateRecommendationsJobData = { userId, trigger };
-    await this.pgBossService.scheduleJob(GENERATE_RECOMMENDATIONS_JOB, jobData, {
-      singletonKey: `rec-${userId}`,
-    });
+    await this.pgBossService.scheduleJob(
+      GENERATE_RECOMMENDATIONS_JOB,
+      jobData,
+      {
+        singletonKey: `rec-${userId}`,
+      },
+    );
 
     this.logger.debug(
       `Enqueued recommendation generation for user ${userId} (trigger: ${trigger})`,

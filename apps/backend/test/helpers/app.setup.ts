@@ -1,6 +1,8 @@
 import { Test, TestingModule, TestingModuleBuilder } from "@nestjs/testing";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { IoAdapter } from "@nestjs/platform-socket.io";
+import { PgBossService } from "@wavezync/nestjs-pgboss";
+import { PGBOSS_TOKEN } from "@wavezync/nestjs-pgboss/dist/utils/consts";
 import getPort from "get-port";
 
 import type {
@@ -48,6 +50,17 @@ export async function createTestApp(
   let moduleBuilder: TestingModuleBuilder = Test.createTestingModule({
     imports: [AppModule],
   });
+
+  moduleBuilder = moduleBuilder
+    .overrideProvider(PGBOSS_TOKEN)
+    .useValue({ on: () => undefined, stop: async () => undefined })
+    .overrideProvider(PgBossService)
+    .useValue({
+      scheduleJob: async () => undefined,
+      scheduleCronJob: async () => undefined,
+      registerJob: async () => undefined,
+      registerCronJob: async () => undefined,
+    });
 
   if (overrides) {
     moduleBuilder = overrides(moduleBuilder);

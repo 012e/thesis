@@ -30,10 +30,7 @@ export class VisiblePostFilter implements RecommendationFilter {
       .select({ id: posts.id })
       .from(posts)
       .where(
-        and(
-          inArray(posts.id, input.candidatePostIds),
-          eq(posts.hidden, true),
-        ),
+        and(inArray(posts.id, input.candidatePostIds), eq(posts.hidden, true)),
       );
 
     const hiddenSet = new Set(hiddenRows.map((r) => r.id));

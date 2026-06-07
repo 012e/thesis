@@ -40,6 +40,22 @@ export class ModerationController {
     );
   }
 
+  @TsRestHandler(moderationContract.listReports)
+  listReports(@Session() session: UserSession) {
+    return tsRestHandler(moderationContract.listReports, async ({ query }) => {
+      if ((session.user as any).role !== "admin") {
+        return { status: 403, body: null };
+      }
+
+      const result = await this.moderationService.listReports({
+        page: query.page,
+        pageSize: query.pageSize,
+      });
+
+      return { status: 200, body: result as any };
+    });
+  }
+
   @TsRestHandler(moderationContract.getModeration)
   getModeration(@Session() session: UserSession) {
     return tsRestHandler(
@@ -129,22 +145,6 @@ export class ModerationController {
       });
 
       return { status: 201, body: flag as any };
-    });
-  }
-
-  @TsRestHandler(moderationContract.listReports)
-  listReports(@Session() session: UserSession) {
-    return tsRestHandler(moderationContract.listReports, async ({ query }) => {
-      if ((session.user as any).role !== "admin") {
-        return { status: 403, body: null };
-      }
-
-      const result = await this.moderationService.listReports({
-        page: query.page,
-        pageSize: query.pageSize,
-      });
-
-      return { status: 200, body: result as any };
     });
   }
 

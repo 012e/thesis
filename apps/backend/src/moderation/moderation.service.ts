@@ -14,12 +14,14 @@ import {
   usersView,
   type PostModeration as PostModerationRow,
 } from "@/db/schema";
+import { NotificationsService } from "@/notifications/notifications.service";
 
 import type {
   ModerationStatusDto,
   ModerationSourceDto,
   FlagPriorityDto,
   ReportReasonDto,
+  PostContentDto,
   PostTagDto,
 } from "@repo/shared-dto";
 import type {
@@ -55,7 +57,10 @@ const commentCount =
 export class ModerationService {
   private readonly logger = new Logger(ModerationService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   private get db() {
     return this.databaseService.db;
@@ -726,10 +731,57 @@ export class ModerationService {
   // ─── Post Visibility ──────────────────────────────────────────────────
 
   async hidePost(postId: string): Promise<void> {
+    // Fetch the post author and content before hiding
+    const [post] = await this.db
+      .select({
+        authorId: posts.authorId,
+        content: posts.content,
+        authorUsername: usersView.username,
+        authorName: usersView.name,
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .where(eq(posts.id, postId))
+      .limit(1);
+
     await this.db
       .update(posts)
       .set({ hidden: true })
       .where(eq(posts.id, postId));
+
+    // Send notification to the post owner
+    if (post) {
+      const content = post.content as PostContentDto | null | undefined;
+      const preview = content ? this.getPostPreview(content) : null;
+
+      await this.notificationsService
+        .deliver(
+          {
+            userId: post.authorId,
+            actorId: null,
+            type: "post_hidden",
+            payload: {
+              postId,
+              reason: null,
+              post: {
+                id: postId,
+                preview,
+                author: {
+                  id: post.authorId,
+                  username: post.authorUsername,
+                  name: post.authorName,
+                },
+              },
+            },
+          },
+          ["websocket"],
+        )
+        .catch((err: unknown) => {
+          this.logger.warn(
+            `Failed to send post_hidden notification for post ${postId} (author=${post.authorId}): ${(err as Error)?.message ?? err}`,
+          );
+        });
+    }
   }
 
   async unhidePost(postId: string): Promise<void> {
@@ -893,5 +945,16 @@ export class ModerationService {
     if (!post) return null;
     const content = post.content as any;
     return content?.text ?? null;
+  }
+
+  private getPostPreview(content: PostContentDto): string | null {
+    if (content.text?.trim()) return content.text.slice(0, 100);
+    if (content.poll?.question.trim()) {
+      return content.poll.question.slice(0, 100);
+    }
+    if (content.visualization?.title.trim()) {
+      return content.visualization.title.slice(0, 100);
+    }
+    return null;
   }
 }

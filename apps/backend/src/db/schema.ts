@@ -355,6 +355,7 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "post_reaction",
   "comment_reaction",
   "direct_message",
+  "post_hidden",
 ]);
 
 /**

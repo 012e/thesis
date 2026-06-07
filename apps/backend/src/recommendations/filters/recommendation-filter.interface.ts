@@ -29,7 +29,5 @@ export interface RecommendationFilterResult {
 
 export interface RecommendationFilter {
   readonly name: string;
-  apply(
-    input: RecommendationFilterInput,
-  ): Promise<RecommendationFilterResult>;
+  apply(input: RecommendationFilterInput): Promise<RecommendationFilterResult>;
 }
