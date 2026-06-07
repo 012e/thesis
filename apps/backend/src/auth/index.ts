@@ -5,6 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/env";
 import { username, jwt, bearer, admin } from "better-auth/plugins";
 import db from "@/db";
+import { userProfiles } from "@/db/schema";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg" }),
@@ -13,6 +14,18 @@ export const auth = betterAuth({
   baseURL: env.BETTER_AUTH_URL,
   advanced: { disableOriginCheck: true },
   emailAndPassword: { enabled: true },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) => {
+          await db
+            .insert(userProfiles)
+            .values({ userId: user.id })
+            .onConflictDoNothing();
+        },
+      },
+    },
+  },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") {

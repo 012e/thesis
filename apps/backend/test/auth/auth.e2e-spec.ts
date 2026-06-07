@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
+import { eq } from "drizzle-orm";
 
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
+import { DatabaseService } from "@/db/database.service";
+import { userProfiles } from "@/db/schema";
 import {
   createTestAuthClient,
   type TestAuthClient,
@@ -17,6 +20,7 @@ describe("Auth integration", () => {
   let testApp: Awaited<ReturnType<typeof createTestApp>>;
   let containers: PostgresContainerContext;
   let authClient: TestAuthClient;
+  let databaseService: DatabaseService;
 
   beforeAll(async () => {
     containers = await startPostgresContainer();
@@ -24,6 +28,7 @@ describe("Auth integration", () => {
 
     testApp = await createTestApp(containers);
     authClient = createTestAuthClient(testApp.app);
+    databaseService = testApp.app.get(DatabaseService);
   }, 120000);
 
   afterAll(async () => {
@@ -48,6 +53,29 @@ describe("Auth integration", () => {
       expect(data!.user.id).toBeTruthy();
       expect(data!.user.email).toBe(email);
       expect(data!.user.name).toBe("Test User");
+    });
+
+    it("creates a default user profile row", async () => {
+      const { data, error } = await authClient.register({
+        email: `profile-${Date.now()}@example.com`,
+        username: `profile${Date.now()}`,
+        password: "TestPassword123!",
+        name: "Profile User",
+      });
+
+      expect(error).toBeNull();
+
+      const [profile] = await databaseService.db
+        .select()
+        .from(userProfiles)
+        .where(eq(userProfiles.userId, data!.user.id));
+
+      expect(profile).toEqual({
+        userId: data!.user.id,
+        avatarUrl: null,
+        coverPhotoUrl: null,
+        bio: null,
+      });
     });
 
     it("rejects duplicate email registrations", async () => {
