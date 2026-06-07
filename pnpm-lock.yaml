@@ -107,7 +107,7 @@ importers:
         version: 3.1033.0
       '@nestjs/axios':
         specifier: ^4.0.1
-        version: 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.16.1)(rxjs@7.8.2)
+        version: 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.17.0)(rxjs@7.8.2)
       '@nestjs/common':
         specifier: ^11.1.19
         version: 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -122,7 +122,7 @@ importers:
         version: 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/websockets@11.1.19)(rxjs@7.8.2)
       '@nestjs/terminus':
         specifier: ^11.1.1
-        version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.16.1)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+        version: 11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.17.0)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/websockets':
         specifier: ^11.1.19
         version: 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(@nestjs/platform-socket.io@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -155,7 +155,7 @@ importers:
         version: 6.0.0(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(pg-boss@12.15.0)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       axios:
         specifier: ^1.15.1
-        version: 1.16.1
+        version: 1.17.0
       better-auth:
         specifier: ^1.4.18
         version: 1.6.6(@opentelemetry/api@1.9.0)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@opentelemetry/api@1.9.0)(@types/pg@8.20.0)(kysely@0.28.16)(pg@8.20.0))(pg@8.20.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(solid-js@1.9.12)(vitest@4.1.5)(vue@3.5.32(typescript@5.9.3))
@@ -342,7 +342,7 @@ importers:
         version: link:../../packages/shared-dto
       '@scalar/api-reference-react':
         specifier: ^0.9.24
-        version: 0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(react@19.2.6)(tailwindcss@4.2.4)(typescript@5.9.3)
+        version: 0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(react@19.2.6)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@t3-oss/env-core':
         specifier: ^0.13.11
         version: 0.13.11(typescript@5.9.3)(zod@4.3.6)
@@ -7651,6 +7651,9 @@ packages:
   '@types/node@22.19.17':
     resolution: {integrity: sha512-wGdMcf+vPYM6jikpS/qhg6WiqSV/OhG+jeeHT/KlVqxYfD40iYJf9/AE1uQxVWFvU7MipKRkRv8NSHiCGgPr8Q==}
 
+  '@types/node@22.19.20':
+    resolution: {integrity: sha512-6tELRwSDYWW9EdZhbeZmYGZ1/7Djkt+Ah3/ScEYT9cDord7UJzasR/4D3VONg9tQI5CDp+/CZC1AXj2pCFOvpw==}
+
   '@types/node@24.12.2':
     resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
 
@@ -8406,8 +8409,8 @@ packages:
   axios@1.16.0:
     resolution: {integrity: sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==}
 
-  axios@1.16.1:
-    resolution: {integrity: sha512-caYkukvroVPO8KrzuJEb50Hm07KwfBZPEC3VeFHTsqWHvKTsy54hjJz9BS/cdaypROE2rH6xvm9mHX4fgWkr3A==}
+  axios@1.17.0:
+    resolution: {integrity: sha512-J8SwNxprqqpbfenehxWYXE7CW+wM1BB4w3+N+g+/Wx40xM4rsLrfPmHHxSWIxJLYDgSY/HqlFPIYb2/S3rxafw==}
 
   b4a@1.8.0:
     resolution: {integrity: sha512-qRuSmNSkGQaHwNbM7J78Wwy+ghLEYF1zNrSeMxj4Kgw6y33O3mXcQ6Ie9fRvfU/YnxWkOchPXbaLb73TkIsfdg==}
@@ -18322,10 +18325,10 @@ snapshots:
       '@tybys/wasm-util': 0.10.2
     optional: true
 
-  '@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.16.1)(rxjs@7.8.2)':
+  '@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.17.0)(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      axios: 1.16.1
+      axios: 1.17.0
       rxjs: 7.8.2
 
   '@nestjs/cli@11.0.21(@swc/cli@0.8.1(@swc/core@1.15.30(@swc/helpers@0.5.21))(chokidar@4.0.3))(@swc/core@1.15.30(@swc/helpers@0.5.21))(@types/node@22.19.17)(esbuild@0.27.7)(prettier@3.8.3)':
@@ -18441,7 +18444,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.16.1)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
+  '@nestjs/terminus@11.1.1(@grpc/grpc-js@1.14.3)(@grpc/proto-loader@0.8.0)(@nestjs/axios@4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.17.0)(rxjs@7.8.2))(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.24)(@nestjs/websockets@11.1.19)(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -18452,7 +18455,7 @@ snapshots:
     optionalDependencies:
       '@grpc/grpc-js': 1.14.3
       '@grpc/proto-loader': 0.8.0
-      '@nestjs/axios': 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.16.1)(rxjs@7.8.2)
+      '@nestjs/axios': 4.0.1(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(axios@1.17.0)(rxjs@7.8.2)
 
   '@nestjs/testing@11.1.19(@nestjs/common@11.1.19(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.19)(@nestjs/platform-express@11.1.24)':
     dependencies:
@@ -20290,10 +20293,10 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.61.1':
     optional: true
 
-  '@scalar/agent-chat@0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/agent-chat@0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@ai-sdk/vue': 3.0.33(vue@3.5.32(typescript@5.9.3))(zod@4.4.3)
-      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/components': 0.22.1(typescript@5.9.3)
       '@scalar/helpers': 0.5.1
       '@scalar/icons': 0.7.2(typescript@5.9.3)
@@ -20329,7 +20332,7 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-client@3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-client@3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@headlessui/tailwindcss': 0.2.2(tailwindcss@4.2.4)
       '@headlessui/vue': 1.7.23(vue@3.5.32(typescript@5.9.3))
@@ -20351,7 +20354,7 @@ snapshots:
       '@scalar/workspace-store': 0.46.1(typescript@5.9.3)
       '@types/har-format': 1.2.16
       '@vueuse/core': 13.9.0(vue@3.5.32(typescript@5.9.3))
-      '@vueuse/integrations': 13.9.0(axios@1.16.1)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))
+      '@vueuse/integrations': 13.9.0(axios@1.17.0)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))
       cookie: 1.1.1
       focus-trap: 7.8.0
       fuse.js: 7.3.0
@@ -20387,9 +20390,9 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference-react@0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(react@19.2.6)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-reference-react@0.9.24(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(react@19.2.6)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
-      '@scalar/api-reference': 1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-reference': 1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/types': 0.9.1
       react: 19.2.6
     transitivePeerDependencies:
@@ -20411,11 +20414,11 @@ snapshots:
       - typescript
       - universal-cookie
 
-  '@scalar/api-reference@1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)':
+  '@scalar/api-reference@1.52.3(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)':
     dependencies:
       '@headlessui/vue': 1.7.23(vue@3.5.32(typescript@5.9.3))
-      '@scalar/agent-chat': 0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)
-      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.16.1)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/agent-chat': 0.10.5(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)
+      '@scalar/api-client': 3.1.0(@vue/compiler-sfc@3.5.32)(axios@1.17.0)(tailwindcss@4.2.4)(typescript@5.9.3)
       '@scalar/code-highlight': 0.3.3
       '@scalar/components': 0.22.1(typescript@5.9.3)
       '@scalar/helpers': 0.5.1
@@ -21859,7 +21862,7 @@ snapshots:
   '@types/jsonwebtoken@9.0.10':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 25.6.0
+      '@types/node': 22.19.20
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -21882,6 +21885,10 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/node@22.19.17':
+    dependencies:
+      undici-types: 6.21.0
+
+  '@types/node@22.19.20':
     dependencies:
       undici-types: 6.21.0
 
@@ -22296,13 +22303,13 @@ snapshots:
       '@vueuse/shared': 13.9.0(vue@3.5.32(typescript@5.9.3))
       vue: 3.5.32(typescript@5.9.3)
 
-  '@vueuse/integrations@13.9.0(axios@1.16.1)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))':
+  '@vueuse/integrations@13.9.0(axios@1.17.0)(focus-trap@7.8.0)(fuse.js@7.3.0)(vue@3.5.32(typescript@5.9.3))':
     dependencies:
       '@vueuse/core': 13.9.0(vue@3.5.32(typescript@5.9.3))
       '@vueuse/shared': 13.9.0(vue@3.5.32(typescript@5.9.3))
       vue: 3.5.32(typescript@5.9.3)
     optionalDependencies:
-      axios: 1.16.1
+      axios: 1.17.0
       focus-trap: 7.8.0
       fuse.js: 7.3.0
 
@@ -22811,7 +22818,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  axios@1.16.1:
+  axios@1.17.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
