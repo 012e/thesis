@@ -19,12 +19,13 @@ The server starts on `PORT` (default `3000`). Copy `.env.example` to `.env` and 
 
 ## Feature modules
 
-| Module            | Description                                                                             |
-| ----------------- | --------------------------------------------------------------------------------------- |
-| `AuthModule`      | Mounts Better Auth middleware at `/api/auth/*`. Handles sign-up, sign-in, session, JWT. |
-| `PostsModule`     | CRUD for social-media-style posts with rich content (text / poll / visualization).      |
-| `ReactionsModule` | Upvote / downvote reactions on posts; summary counts and reactor lists.                 |
-| `DatabaseModule`  | Global module providing the `pg.Pool` and Drizzle `DatabaseService` to all modules.     |
+| Module                  | Description                                                                             |
+| ----------------------- | --------------------------------------------------------------------------------------- |
+| `AuthModule`            | Mounts Better Auth middleware at `/api/auth/*`. Handles sign-up, sign-in, session, JWT. |
+| `PostsModule`           | CRUD for social-media-style posts with rich content (text / poll / visualization).      |
+| `ReactionsModule`       | Upvote / downvote reactions on posts; summary counts and reactor lists.                 |
+| `RecommendationsModule` | Personalized post recommendations via a precomputed queue; PgBoss background pipeline.  |
+| `DatabaseModule`        | Global module providing the `pg.Pool` and Drizzle `DatabaseService` to all modules.     |
 
 ## Key technology choices
 
@@ -39,3 +40,4 @@ The server starts on `PORT` (default `3000`). Copy `.env.example` to `.env` and 
 - [CONFIG.md](./CONFIG.md) – environment variable reference
 - [ARCHITECTURE.md](./ARCHITECTURE.md) – module structure, request lifecycle, and design decisions
 - [DATABASE.md](./DATABASE.md) – schema, migrations, and database conventions
+- [RECOMMENDATIONS.md](./RECOMMENDATIONS.md) – recommendation pipeline design and API

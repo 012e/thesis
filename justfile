@@ -112,6 +112,9 @@ test-tags: build-backend
 test-analytics: build-backend
     pnpm --filter backend test:analytics
 
+test-recommendations: build-backend
+    pnpm --filter backend test:recommendations
+
 test-web: build-web-packages
     pnpm --filter web test
 

@@ -8,12 +8,14 @@ import { postsContract } from "@repo/rest-contracts";
 import { PostsSearchService } from "./posts-search.service";
 import { createPostSchema, updatePostSchema } from "./posts.schemas";
 import { PostsService } from "./posts.service";
+import { RecommendationService } from "@/recommendations/recommendation.service";
 
 @Controller()
 export class PostsController {
   constructor(
     private readonly postsService: PostsService,
     private readonly postsSearchService: PostsSearchService,
+    private readonly recommendationService: RecommendationService,
   ) {}
 
   @TsRestHandler(postsContract.listPosts)
@@ -204,7 +206,7 @@ export class PostsController {
       postsContract.getRecommendations,
       async ({ query }) => {
         const limit = query.limit ?? 20;
-        const result = await this.postsService.recommendations(
+        const result = await this.recommendationService.getRecommendations(
           session.user.id,
           limit,
           query.cursor,

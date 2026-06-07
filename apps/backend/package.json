@@ -10,6 +10,7 @@
     "typecheck": "nest build --type-check --path tsconfig.typecheck.json",
     "auth:migrate": "pnpm dlx auth@latest generate --output=src/db/auth-schema.ts",
     "db:check": "drizzle-kit check",
+    "db:view": "drizzle-kit studio",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -45,6 +46,7 @@
     "test:moderation": "vitest run --silent=true test/moderation/",
     "test:tags": "vitest run --silent=true test/tags/",
     "test:analytics": "vitest run --silent=true test/analytics/",
+    "test:recommendations": "vitest run --silent=true test/recommendations/",
     "seed": "tsx seed.ts",
     "seed:watch": "tsx watch seed.ts"
   },

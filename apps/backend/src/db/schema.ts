@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   date,
+  doublePrecision,
   foreignKey,
   index,
   integer,
@@ -592,3 +593,96 @@ export const analyticsEvents = pgTable(
 
 export type AnalyticsEvent = typeof analyticsEvents.$inferSelect;
 export type NewAnalyticsEvent = typeof analyticsEvents.$inferInsert;
+
+// ─── Recommendations ─────────────────────────────────────────────────────────
+
+/**
+ * Per-user preference vector built from aggregated analytics events.
+ * Used to rank recommendation candidates by cosine similarity.
+ */
+export const userRecommendationProfiles = pgTable(
+  "user_recommendation_profiles",
+  {
+    userId: text("user_id").primaryKey(),
+    /** Aggregated preference vector (same dimensionality as post embeddings). */
+    vector: vector("vector", { dimensions: EMBEDDING_DIMENSIONS }),
+    /** Number of analytics events used to build this vector. */
+    eventCount: integer("event_count").notNull().default(0),
+    lastGeneratedAt: timestamp("last_generated_at", {
+      withTimezone: true,
+    }),
+    /** Start of the analytics event window used for this vector. */
+    sourceWindowStart: timestamp("source_window_start", {
+      withTimezone: true,
+    }),
+    /** End of the analytics event window used for this vector. */
+    sourceWindowEnd: timestamp("source_window_end", { withTimezone: true }),
+  },
+);
+
+export type UserRecommendationProfile =
+  typeof userRecommendationProfiles.$inferSelect;
+export type NewUserRecommendationProfile =
+  typeof userRecommendationProfiles.$inferInsert;
+
+/**
+ * Status of a recommendation generation batch.
+ */
+export const recommendationBatchStatusEnum = pgEnum(
+  "recommendation_batch_status",
+  ["pending", "running", "completed", "failed"],
+);
+
+/**
+ * Tracks each recommendation generation run for a user.
+ */
+export const recommendationBatches = pgTable("recommendation_batches", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: text("user_id").notNull(),
+  status: recommendationBatchStatusEnum("status").default("pending").notNull(),
+  /** What triggered this generation (e.g. 'cold_start', 'low_queue', 'manual'). */
+  trigger: text("trigger"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+  error: text("error"),
+});
+
+export type RecommendationBatch = typeof recommendationBatches.$inferSelect;
+export type NewRecommendationBatch = typeof recommendationBatches.$inferInsert;
+
+/**
+ * Individual recommended post items within a batch.
+ * Ordered by rank; servedAt is set when the item is returned via the API.
+ */
+export const recommendationItems = pgTable(
+  "recommendation_items",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    batchId: uuid("batch_id")
+      .notNull()
+      .references(() => recommendationBatches.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    postId: uuid("post_id")
+      .notNull()
+      .references(() => posts.id, { onDelete: "cascade" }),
+    rank: integer("rank").notNull(),
+    score: doublePrecision("score").notNull(),
+    /** JSON array of reasons a post was nearly filtered out, for debugging. */
+    filterReasons: jsonb("filter_reasons").$type<string[]>(),
+    /** Set when the item is served to the user via the API. */
+    servedAt: timestamp("served_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("idx_recommendation_items_user_unserved").on(
+      table.userId,
+      table.servedAt,
+      table.rank,
+    ),
+    index("idx_recommendation_items_user_post").on(table.userId, table.postId),
+  ],
+);
+
+export type RecommendationItem = typeof recommendationItems.$inferSelect;
+export type NewRecommendationItem = typeof recommendationItems.$inferInsert;

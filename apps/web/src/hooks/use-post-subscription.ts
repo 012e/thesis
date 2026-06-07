@@ -27,7 +27,6 @@ export function usePostSubscription({
         return (
           key === "post" ||
           key === "posts" ||
-          key === "recommendations" ||
           q.queryKey.includes("post") ||
           q.queryKey.includes("posts")
         );

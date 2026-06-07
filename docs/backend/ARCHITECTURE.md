@@ -28,6 +28,14 @@ apps/backend/
 │   │   ├── reactions.module.ts
 │   │   ├── reactions.controller.ts  # ts-rest handlers for react / unreact / summary / reactors
 │   │   └── reactions.service.ts     # Business logic; upsert/delete via Drizzle
+│   ├── recommendations/
+│   │   ├── recommendations.module.ts           # Wires services and filter providers
+│   │   ├── recommendation.service.ts           # Queue reads, cold-start, PgBoss job enqueue
+│   │   ├── recommendation-pipeline.service.ts  # Full pipeline: vector → filter → rank → persist
+│   │   ├── user-preference-vector.service.ts   # Builds user_recommendation_profiles
+│   │   ├── recommendation-jobs.service.ts      # PgBoss @Job handler
+│   │   ├── recommendation-cursors.ts           # Keyset cursor encode/decode
+│   │   └── filters/                            # Sequential candidate filters
 │   └── types/
 │       └── user.types.ts        # BetterAuthUser interface (used for type narrowing)
 ├── test/
@@ -61,14 +69,22 @@ AppModule
 │   ├── provides DATABASE_POOL (pg.Pool singleton)
 │   └── provides DatabaseService (Drizzle wrapper)
 ├── PostsModule
-│   ├── PostsController
-│   └── PostsService  ← injects DatabaseService
-└── ReactionsModule
-    ├── ReactionsController
-    └── ReactionsService  ← injects DatabaseService
+│   ├── PostsController         ← injects RecommendationService (forwardRef)
+│   └── PostsService            ← injects DatabaseService
+├── ReactionsModule
+│   ├── ReactionsController
+│   └── ReactionsService        ← injects DatabaseService
+└── RecommendationsModule
+    ├── RecommendationService           ← queue reads + job enqueue
+    ├── RecommendationPipelineService   ← vector → filter → rank → persist
+    ├── UserPreferenceVectorService     ← analytics → preference vector
+    ├── RecommendationJobsService       ← PgBoss background worker
+    └── Filters (x4)                   ← VisiblePost, OwnPost, AlreadyInteracted, AlreadyQueued
 ```
 
 `DatabaseModule` is decorated `@Global()`, so `DatabaseService` is available to every module without explicit imports.
+
+`PostsModule` and `RecommendationsModule` have a circular dependency: `PostsController` injects `RecommendationService` while `RecommendationPipelineService` reuses `PostsPresenterService`. The cycle is broken with `forwardRef(() => RecommendationsModule)` in `PostsModule` and `forwardRef(() => PostsModule)` in `RecommendationsModule`.
 
 ## Request lifecycle
 

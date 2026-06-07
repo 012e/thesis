@@ -406,14 +406,14 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           placeholder="Aa"
-          className="flex-1 text-sm bg-muted rounded-full px-3 py-1.5 outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-primary/50 transition-shadow"
+          className="flex-1 text-sm bg-muted px-3 py-1.5 outline-none placeholder:text-muted-foreground focus:ring-1 focus:ring-primary/50 transition-shadow"
         />
         <button
           type="button"
           onClick={handleSend}
           disabled={!inputText.trim()}
           className={cn(
-            "p-1.5 rounded-full transition-colors",
+            "p-1.5 transition-colors",
             inputText.trim()
               ? "text-primary hover:bg-primary/10"
               : "text-muted-foreground cursor-not-allowed",
