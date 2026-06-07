@@ -10,6 +10,10 @@ import { RECOMMENDATIONS_QUERY_KEY } from "@/hooks/use-recommendations";
 
 export const TAG_PREFERENCES_QUERY_KEY = ["tags", "preferences"] as const;
 
+interface TagPreferenceMutationOptions {
+  invalidate?: boolean;
+}
+
 export function useTagPreferences() {
   return useQuery({
     queryKey: TAG_PREFERENCES_QUERY_KEY,
@@ -43,8 +47,11 @@ function useInvalidateTagPreferenceSurfaces() {
   };
 }
 
-export function useSetTagPreference() {
+export function useSetTagPreference(
+  options: TagPreferenceMutationOptions = {},
+) {
   const invalidate = useInvalidateTagPreferenceSurfaces();
+  const shouldInvalidate = options.invalidate ?? true;
 
   return useMutation({
     mutationFn: (params: {
@@ -52,18 +59,25 @@ export function useSetTagPreference() {
       preference: TagPreferenceKindDto;
     }) => setMyTagPreference(params),
     onSuccess: () => {
-      void invalidate();
+      if (shouldInvalidate) {
+        void invalidate();
+      }
     },
   });
 }
 
-export function useDeleteTagPreference() {
+export function useDeleteTagPreference(
+  options: TagPreferenceMutationOptions = {},
+) {
   const invalidate = useInvalidateTagPreferenceSurfaces();
+  const shouldInvalidate = options.invalidate ?? true;
 
   return useMutation({
     mutationFn: (slug: string) => deleteMyTagPreference(slug),
     onSuccess: () => {
-      void invalidate();
+      if (shouldInvalidate) {
+        void invalidate();
+      }
     },
   });
 }

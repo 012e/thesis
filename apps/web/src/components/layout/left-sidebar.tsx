@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { Link } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import {
   IconHome,
   IconHomeFilled,
@@ -22,6 +23,7 @@ import {
 import { Logo } from "@/components/logo";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { homeFeedRefreshRequestAtom } from "@/lib/atoms/feed-refresh";
 import { cn } from "@/lib/utils";
 import { UserProfile } from "./user-profile";
 
@@ -72,6 +74,7 @@ interface LeftSidebarProps {
 export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
   const { unreadCount } = useNotifications();
   const isAdmin = useIsAdmin();
+  const requestHomeFeedRefresh = useSetAtom(homeFeedRefreshRequestAtom);
 
   const navigationItems = useMemo(
     () => [
@@ -96,6 +99,14 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
     [isAdmin],
   );
 
+  const handleNavigate = (href: string) => {
+    if (href === "/") {
+      requestHomeFeedRefresh((request) => request + 1);
+    }
+
+    onNavigate?.();
+  };
+
   return (
     <div className="sticky top-0 flex h-screen w-68.75 flex-col justify-between overflow-x-hidden border-r py-2 transition-all duration-300">
       <div className="flex flex-col gap-2">
@@ -103,7 +114,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
         <Link
           to="/"
           className="w-full hover:bg-foreground/8 h-full px-2.5 py-1"
-          onClick={onNavigate}
+          onClick={() => handleNavigate("/")}
         >
           <Logo className="h-10 w-22" />
         </Link>
@@ -116,7 +127,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
               to={item.href}
               title={item.label}
               aria-label={item.label}
-              onClick={onNavigate}
+              onClick={() => handleNavigate(item.href)}
             >
               {({ isActive }) => {
                 const Icon = isActive ? item.selectedIcon : item.icon;

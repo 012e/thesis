@@ -36,6 +36,7 @@ export interface PostsFeedProps {
   loadingMoreLabel?: string;
   errorLabel: string;
   emptyLabel: string;
+  refreshSignal?: number;
 }
 
 function PostFeedItem({
@@ -83,10 +84,12 @@ export function PostsFeed({
   loadingMoreLabel = "Loading more posts...",
   errorLabel,
   emptyLabel,
+  refreshSignal,
 }: PostsFeedProps) {
   const queryClient = useQueryClient();
   const observerTarget = useRef<HTMLDivElement>(null);
   const lastEndInvalidatedKeyRef = useRef<string | null>(null);
+  const lastRefreshSignalRef = useRef(0);
   const createdPost = useAtomValue(createdPostAtom);
   const createdPostGlowId = useAtomValue(createdPostGlowIdAtom);
   const queryKeySignature = JSON.stringify(queryKey);
@@ -101,6 +104,16 @@ export function PostsFeed({
 
   // Track which post is most visible and sync to the global AI context.
   usePostInViewTracker(allPosts);
+
+  useEffect(() => {
+    if (!refreshSignal || refreshSignal === lastRefreshSignalRef.current) {
+      return;
+    }
+
+    lastRefreshSignalRef.current = refreshSignal;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    void queryClient.invalidateQueries({ queryKey, refetchType: "all" });
+  }, [queryClient, queryKey, refreshSignal]);
 
   // Infinite scroll — load next page when the sentinel div enters the viewport.
   useEffect(() => {

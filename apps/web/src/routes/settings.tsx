@@ -342,7 +342,7 @@ function PreferenceList({
           #{tag.displayName}
           <button
             type="button"
-            className="rounded-sm p-0.5 hover:bg-muted-foreground/15 disabled:opacity-50"
+            className="p-0.5 hover:bg-muted-foreground/15 disabled:opacity-50"
             disabled={isPending}
             onClick={() => onRemove(tag.slug)}
             aria-label={`Remove ${tag.displayName}`}

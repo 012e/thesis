@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { PostComposer } from "@/components/ui/post-composer";
 import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useFollowingPosts } from "@/hooks/use-following-posts";
 import { useTagPreferences } from "@/hooks/use-tag-preferences";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
-import { useState } from "react";
+import { homeFeedRefreshRequestAtom } from "@/lib/atoms/feed-refresh";
 
 type FeedTab = "for-you" | "following";
 
@@ -19,6 +21,7 @@ export const Route = createFileRoute("/")({
 export function Index() {
   const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
   const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
+  const homeFeedRefreshRequest = useAtomValue(homeFeedRefreshRequestAtom);
   const recommendations = useRecommendations({
     limit: 20,
     enabled: activeTab === "for-you",
@@ -141,6 +144,7 @@ export function Index() {
             ? "No posts available yet"
             : "No posts from people you follow yet"
         }
+        refreshSignal={homeFeedRefreshRequest}
       />
     </div>
   );
