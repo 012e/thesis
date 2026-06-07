@@ -12,7 +12,14 @@ import {
 import { toSql } from "pgvector";
 
 import { DatabaseService } from "@/db/database.service";
-import { posts, recommendationBatches, recommendationItems } from "@/db/schema";
+import {
+  posts,
+  recommendationBatches,
+  recommendationItems,
+  tags,
+  userTagPreferences,
+} from "@/db/schema";
+import { excludesBlockedTags } from "@/tags/tags-query.helpers";
 
 import {
   RECOMMENDATION_FILTERS,
@@ -23,6 +30,7 @@ import { UserPreferenceVectorService } from "./user-preference-vector.service";
 
 const DEFAULT_CANDIDATE_LIMIT = 500;
 const DEFAULT_OUTPUT_LIMIT = 100;
+const RRF_K = 60;
 
 @Injectable()
 export class RecommendationPipelineService {
@@ -131,7 +139,13 @@ export class RecommendationPipelineService {
     const rows = await this.databaseService.db
       .select({ id: posts.id })
       .from(posts)
-      .where(and(eq(posts.hidden, false), sql`${posts.authorId} != ${userId}`))
+      .where(
+        and(
+          eq(posts.hidden, false),
+          sql`${posts.authorId} != ${userId}`,
+          excludesBlockedTags(userId, posts.id),
+        ),
+      )
       .orderBy(desc(posts.createdAt))
       .limit(DEFAULT_CANDIDATE_LIMIT);
 
@@ -183,11 +197,100 @@ export class RecommendationPipelineService {
   ): Promise<{ postId: string; score: number }[]> {
     if (postIds.length === 0) return [];
 
-    if (userVector) {
-      return this.rankByVectorSimilarity(postIds, userVector);
+    const preferredTagQuery = await this.getPreferredTagSearchQuery(userId);
+
+    if (preferredTagQuery) {
+      return userVector
+        ? this.rankByHybridPreferredTagAndVector(
+            postIds,
+            preferredTagQuery,
+            userVector,
+          )
+        : this.rankByHybridPreferredTagAndRecency(postIds, preferredTagQuery);
     }
 
-    return this.rankByRecency(postIds);
+    return userVector
+      ? await this.rankByVectorSimilarity(postIds, userVector)
+      : await this.rankByRecency(postIds);
+  }
+
+  private async rankByHybridPreferredTagAndVector(
+    postIds: string[],
+    preferredTagQuery: string,
+    userVector: number[],
+  ): Promise<{ postId: string; score: number }[]> {
+    const queryVector = toSql(userVector);
+    const postIdArray = this.toUuidArraySql(postIds);
+
+    const result = await this.databaseService.db.execute(sql`
+      WITH bm25 AS (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY paradedb.score(id) DESC) AS bm25_rank
+        FROM posts
+        WHERE id = ANY(${postIdArray})
+          AND id @@@ paradedb.match('content.text', ${preferredTagQuery})
+        LIMIT ${DEFAULT_CANDIDATE_LIMIT}
+      ),
+      vec AS (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY embedding <=> ${queryVector}::vector ASC) AS vec_rank
+        FROM posts
+        WHERE id = ANY(${postIdArray})
+          AND embedding IS NOT NULL
+        ORDER BY embedding <=> ${queryVector}::vector
+        LIMIT ${DEFAULT_CANDIDATE_LIMIT}
+      ),
+      rrf AS (
+        SELECT
+          COALESCE(bm25.id, vec.id) AS post_id,
+          (COALESCE(1.0 / (${RRF_K} + bm25.bm25_rank), 0) +
+           COALESCE(1.0 / (${RRF_K} + vec.vec_rank),  0)) AS score
+        FROM bm25
+        FULL OUTER JOIN vec ON bm25.id = vec.id
+      )
+      SELECT post_id, score
+      FROM rrf
+      WHERE post_id IS NOT NULL
+      ORDER BY score DESC, post_id ASC
+    `);
+
+    return this.mapRankRows(result.rows);
+  }
+
+  private async rankByHybridPreferredTagAndRecency(
+    postIds: string[],
+    preferredTagQuery: string,
+  ): Promise<{ postId: string; score: number }[]> {
+    const postIdArray = this.toUuidArraySql(postIds);
+
+    const result = await this.databaseService.db.execute(sql`
+      WITH bm25 AS (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY paradedb.score(id) DESC) AS bm25_rank
+        FROM posts
+        WHERE id = ANY(${postIdArray})
+          AND id @@@ paradedb.match('content.text', ${preferredTagQuery})
+        LIMIT ${DEFAULT_CANDIDATE_LIMIT}
+      ),
+      recent AS (
+        SELECT id, ROW_NUMBER() OVER (ORDER BY created_at DESC) AS recent_rank
+        FROM posts
+        WHERE id = ANY(${postIdArray})
+        ORDER BY created_at DESC
+        LIMIT ${DEFAULT_CANDIDATE_LIMIT}
+      ),
+      rrf AS (
+        SELECT
+          COALESCE(bm25.id, recent.id) AS post_id,
+          (COALESCE(1.0 / (${RRF_K} + bm25.bm25_rank), 0) +
+           COALESCE(1.0 / (${RRF_K} + recent.recent_rank), 0)) AS score
+        FROM bm25
+        FULL OUTER JOIN recent ON bm25.id = recent.id
+      )
+      SELECT post_id, score
+      FROM rrf
+      WHERE post_id IS NOT NULL
+      ORDER BY score DESC, post_id ASC
+    `);
+
+    return this.mapRankRows(result.rows);
   }
 
   /**
@@ -236,6 +339,54 @@ export class RecommendationPipelineService {
     return rows.map((r, index) => ({
       postId: r.id,
       score: 1.0 / (1 + index * 0.1),
+    }));
+  }
+
+  private async getPreferredTagSearchQuery(
+    userId: string,
+  ): Promise<string | null> {
+    const rows = await this.databaseService.db
+      .select({ slug: tags.slug, displayName: tags.displayName })
+      .from(userTagPreferences)
+      .innerJoin(tags, eq(tags.id, userTagPreferences.tagId))
+      .where(
+        and(
+          eq(userTagPreferences.userId, userId),
+          eq(userTagPreferences.preference, "preferred"),
+        ),
+      )
+      .orderBy(desc(userTagPreferences.updatedAt), asc(tags.slug))
+      .limit(20);
+
+    const terms = new Set<string>();
+
+    for (const row of rows) {
+      this.addSearchTerms(terms, row.slug);
+      this.addSearchTerms(terms, row.displayName);
+    }
+
+    return terms.size > 0 ? [...terms].join(" ") : null;
+  }
+
+  private addSearchTerms(terms: Set<string>, value: string): void {
+    for (const term of value.toLowerCase().split(/[^a-z0-9]+/)) {
+      if (term.length > 1) terms.add(term);
+    }
+  }
+
+  private toUuidArraySql(postIds: string[]) {
+    return sql`ARRAY[${sql.join(
+      postIds.map((id) => sql`${id}::uuid`),
+      sql`, `,
+    )}]::uuid[]`;
+  }
+
+  private mapRankRows(
+    rows: { [column: string]: unknown }[],
+  ): { postId: string; score: number }[] {
+    return rows.map((row) => ({
+      postId: row["post_id"] as string,
+      score: Number(row["score"]) || 0,
     }));
   }
 

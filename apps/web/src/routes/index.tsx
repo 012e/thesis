@@ -1,10 +1,13 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useAtomValue } from "jotai";
 import { PostComposer } from "@/components/ui/post-composer";
 import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useFollowingPosts } from "@/hooks/use-following-posts";
+import { useTagPreferences } from "@/hooks/use-tag-preferences";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
-import { useState } from "react";
+import { homeFeedRefreshRequestAtom } from "@/lib/atoms/feed-refresh";
 
 type FeedTab = "for-you" | "following";
 
@@ -18,6 +21,7 @@ export const Route = createFileRoute("/")({
 export function Index() {
   const [activeTab, setActiveTab] = useState<FeedTab>("for-you");
   const [refreshingTab, setRefreshingTab] = useState<FeedTab | null>(null);
+  const homeFeedRefreshRequest = useAtomValue(homeFeedRefreshRequestAtom);
   const recommendations = useRecommendations({
     limit: 20,
     enabled: activeTab === "for-you",
@@ -26,8 +30,25 @@ export function Index() {
     limit: 20,
     enabled: activeTab === "following",
   });
+  const activeFeedQueryKey =
+    activeTab === "for-you"
+      ? (["recommendations"] as const)
+      : (["posts", "following"] as const);
+  const tagPreferences = useTagPreferences();
   const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
   const isSwitchingFeed = refreshingTab === activeTab;
+  const hasTagPreferences =
+    (tagPreferences.data?.preferred.length ?? 0) > 0 ||
+    (tagPreferences.data?.blocked.length ?? 0) > 0;
+  const hasForYouPosts =
+    (recommendations.data?.pages.flatMap((page) => page.items).length ?? 0) >
+    0;
+  const showInterestsPrompt =
+    activeTab === "for-you" &&
+    !tagPreferences.isLoading &&
+    !hasTagPreferences &&
+    !recommendations.isLoading &&
+    !hasForYouPosts;
 
   const handleTabChange = (nextTab: FeedTab) => {
     if (nextTab === activeTab) {
@@ -82,9 +103,26 @@ export function Index() {
         </div>
       </div>
       <PostComposer />
+      {showInterestsPrompt && (
+        <div className="border-b bg-muted/30 px-4 py-3 text-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-muted-foreground">
+              Choose topics to improve your feed.
+            </span>
+            <Link
+              to="/settings"
+              search={{ tab: "interests" }}
+              className="font-semibold text-primary hover:underline"
+            >
+              Open interests
+            </Link>
+          </div>
+        </div>
+      )}
       <PostsFeed
         key={activeTab}
         data={isSwitchingFeed ? undefined : activeFeed.data}
+        queryKey={activeFeedQueryKey}
         fetchNextPage={activeFeed.fetchNextPage}
         hasNextPage={activeFeed.hasNextPage}
         isFetchingNextPage={activeFeed.isFetchingNextPage}
@@ -106,6 +144,7 @@ export function Index() {
             ? "No posts available yet"
             : "No posts from people you follow yet"
         }
+        refreshSignal={homeFeedRefreshRequest}
       />
     </div>
   );

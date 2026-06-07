@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PgBossService } from "@wavezync/nestjs-pgboss";
 import { and, asc, count, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
 
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 
@@ -25,6 +26,7 @@ import {
 } from "@/posts/posts-query.helpers";
 import { PostsPresenterService } from "@/posts/posts-presenter.service";
 import type { PostFeedPage } from "@/posts/posts.types";
+import { excludesBlockedTags } from "@/tags/tags-query.helpers";
 
 import { RecommendationPipelineService } from "./recommendation-pipeline.service";
 import {
@@ -34,6 +36,7 @@ import {
 import { encodeQueueCursor, decodeQueueCursor } from "./recommendation-cursors";
 
 const GENERATION_THRESHOLD = 20;
+const SHUFFLE_BUCKET_SIZE = 4;
 
 @Injectable()
 export class RecommendationService {
@@ -84,6 +87,7 @@ export class RecommendationService {
     const baseCondition = and(
       eq(recommendationItems.userId, userId),
       isNull(recommendationItems.servedAt),
+      excludesBlockedTags(userId, recommendationItems.postId),
     );
 
     const whereCondition = parsed
@@ -134,17 +138,54 @@ export class RecommendationService {
       .set({ servedAt: new Date() })
       .where(inArray(recommendationItems.id, itemIds));
 
+    const shuffledItems = this.boundedShuffleItems(items, userId, cursor);
+
     // Hydrate post data
-    const postIds = items.map((i) => i.postId);
+    const postIds = shuffledItems.map((i) => i.postId);
     const postDtos = await this.hydratePostIds(postIds, userId);
 
-    // Maintain rank order
+    // Maintain bounded-shuffled serving order
     const postMap = new Map(postDtos.map((p) => [p.id, p]));
-    const orderedDtos = items
+    const orderedDtos = shuffledItems
       .map((i) => postMap.get(i.postId))
       .filter((p): p is PostDto => p !== undefined);
 
     return { items: orderedDtos, nextCursor };
+  }
+
+  private boundedShuffleItems<T extends { itemId: string; rank: number }>(
+    items: T[],
+    userId: string,
+    cursor?: string,
+  ): T[] {
+    if (items.length <= 1) return items;
+
+    const shuffled: T[] = [];
+    for (let i = 0; i < items.length; i += SHUFFLE_BUCKET_SIZE) {
+      const bucket = items.slice(i, i + SHUFFLE_BUCKET_SIZE);
+      shuffled.push(
+        ...bucket
+          .map((item) => ({
+            item,
+            key: this.shuffleKey(userId, cursor, item.itemId, item.rank),
+          }))
+          .sort((a, b) => a.key.localeCompare(b.key))
+          .map(({ item }) => item),
+      );
+    }
+
+    return shuffled;
+  }
+
+  private shuffleKey(
+    userId: string,
+    cursor: string | undefined,
+    itemId: string,
+    rank: number,
+  ): string {
+    return createHash("sha256")
+      .update(`${userId}:${cursor ?? "first"}:${itemId}:${rank}`)
+      .digest("hex");
   }
 
   /**
@@ -181,7 +222,13 @@ export class RecommendationService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(and(inArray(posts.id, postIds), eq(posts.hidden, false)))
+      .where(
+        and(
+          inArray(posts.id, postIds),
+          eq(posts.hidden, false),
+          excludesBlockedTags(userId, posts.id),
+        ),
+      )
       .groupBy(
         posts.id,
         usersView.id,
@@ -213,6 +260,7 @@ export class RecommendationService {
         and(
           eq(recommendationItems.userId, userId),
           isNull(recommendationItems.servedAt),
+          excludesBlockedTags(userId, recommendationItems.postId),
         ),
       );
 
@@ -259,4 +307,5 @@ export class RecommendationService {
       `Enqueued recommendation generation for user ${userId} (trigger: ${trigger})`,
     );
   }
+
 }

@@ -1,5 +1,9 @@
 import { useEffect, useRef } from "react";
-import type { InfiniteData } from "@tanstack/react-query";
+import {
+  useQueryClient,
+  type InfiniteData,
+  type QueryKey,
+} from "@tanstack/react-query";
 import { useAtomValue } from "jotai";
 import { motion } from "motion/react";
 import type { PostDto } from "@repo/shared-dto";
@@ -21,6 +25,7 @@ interface PostsPageData {
 
 export interface PostsFeedProps {
   data: InfiniteData<PostsPageData> | undefined;
+  queryKey: QueryKey;
   fetchNextPage: () => void;
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
@@ -31,6 +36,7 @@ export interface PostsFeedProps {
   loadingMoreLabel?: string;
   errorLabel: string;
   emptyLabel: string;
+  refreshSignal?: number;
 }
 
 function PostFeedItem({
@@ -67,6 +73,7 @@ function PostFeedItem({
 
 export function PostsFeed({
   data,
+  queryKey,
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
@@ -77,10 +84,15 @@ export function PostsFeed({
   loadingMoreLabel = "Loading more posts...",
   errorLabel,
   emptyLabel,
+  refreshSignal,
 }: PostsFeedProps) {
+  const queryClient = useQueryClient();
   const observerTarget = useRef<HTMLDivElement>(null);
+  const lastEndInvalidatedKeyRef = useRef<string | null>(null);
+  const lastRefreshSignalRef = useRef(0);
   const createdPost = useAtomValue(createdPostAtom);
   const createdPostGlowId = useAtomValue(createdPostGlowIdAtom);
+  const queryKeySignature = JSON.stringify(queryKey);
 
   const fetchedPosts = data?.pages.flatMap((page) => page.items) ?? [];
   const allPosts = createdPost
@@ -92,6 +104,16 @@ export function PostsFeed({
 
   // Track which post is most visible and sync to the global AI context.
   usePostInViewTracker(allPosts);
+
+  useEffect(() => {
+    if (!refreshSignal || refreshSignal === lastRefreshSignalRef.current) {
+      return;
+    }
+
+    lastRefreshSignalRef.current = refreshSignal;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    void queryClient.invalidateQueries({ queryKey, refetchType: "all" });
+  }, [queryClient, queryKey, refreshSignal]);
 
   // Infinite scroll — load next page when the sentinel div enters the viewport.
   useEffect(() => {
@@ -115,6 +137,33 @@ export function PostsFeed({
       }
     };
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    if (hasNextPage) {
+      lastEndInvalidatedKeyRef.current = null;
+      return;
+    }
+
+    if (
+      allPosts.length === 0 ||
+      isFetchingNextPage ||
+      lastEndInvalidatedKeyRef.current === queryKeySignature
+    ) {
+      return;
+    }
+
+    lastEndInvalidatedKeyRef.current = queryKeySignature;
+    void queryClient
+      .invalidateQueries({ queryKey, refetchType: "all" })
+      .then(() => queryClient.refetchQueries({ queryKey, type: "all" }));
+  }, [
+    allPosts.length,
+    hasNextPage,
+    isFetchingNextPage,
+    queryClient,
+    queryKey,
+    queryKeySignature,
+  ]);
 
   if (isLoading) {
     return (
@@ -145,17 +194,12 @@ export function PostsFeed({
         />
       ))}
       <div ref={observerTarget} className="min-h-px">
-        {isFetchingNextPage && (
+        {(isFetchingNextPage || (!hasNextPage && allPosts.length > 0)) && (
           <div
             className="flex justify-center p-4"
             aria-label={loadingMoreLabel}
           >
             <Spinner className="w-5 h-5" />
-          </div>
-        )}
-        {!hasNextPage && allPosts.length > 0 && (
-          <div className="p-4 text-center text-muted-foreground">
-            You&apos;ve reached the end
           </div>
         )}
       </div>

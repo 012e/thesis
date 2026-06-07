@@ -1,11 +1,17 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
-import { ArrowLeft, Hash } from "lucide-react";
+import { ArrowLeft, Ban, Hash, Star, X } from "lucide-react";
 import { PostsFeed } from "@/components/posts-feed";
 import { useTag } from "@/hooks/use-tag";
+import {
+  useDeleteTagPreference,
+  useSetTagPreference,
+  useTagPreference,
+} from "@/hooks/use-tag-preferences";
 import { useTagPosts } from "@/hooks/use-tag-posts";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
+import { useToast as toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const tagSearchSchema = z.object({
@@ -21,6 +27,9 @@ function TagPage() {
   const { slug } = Route.useParams();
   const { sort = "top" } = Route.useSearch();
   const navigate = useNavigate();
+  const tagPreference = useTagPreference(slug);
+  const setPreference = useSetTagPreference();
+  const deletePreference = useDeleteTagPreference();
 
   const {
     data: tag,
@@ -44,6 +53,31 @@ function TagPage() {
       params: { slug },
       search: { sort: newSort },
       replace: true,
+    });
+  };
+
+  const handleSetPreference = (preference: "preferred" | "blocked") => {
+    setPreference.mutate(
+      { slug, preference },
+      {
+        onSuccess: (updated) => {
+          if (!updated) {
+            toast.error("Tag not found");
+            return;
+          }
+          toast.success(
+            preference === "preferred" ? "Tag preferred" : "Tag blocked",
+          );
+        },
+        onError: (error: Error) => toast.error(error.message),
+      },
+    );
+  };
+
+  const handleDeletePreference = () => {
+    deletePreference.mutate(slug, {
+      onSuccess: () => toast.success("Tag preference removed"),
+      onError: (error: Error) => toast.error(error.message),
     });
   };
 
@@ -89,8 +123,63 @@ function TagPage() {
               {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
             </p>
           </div>
+          <div className="ml-auto flex flex-wrap justify-end gap-2">
+            {tagPreference.preference?.preference === "preferred" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={deletePreference.isPending}
+                onClick={handleDeletePreference}
+              >
+                <X className="h-4 w-4" />
+                Unprefer
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={setPreference.isPending}
+                onClick={() => handleSetPreference("preferred")}
+              >
+                <Star className="h-4 w-4" />
+                Prefer
+              </Button>
+            )}
+            {tagPreference.preference?.preference === "blocked" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={deletePreference.isPending}
+                onClick={handleDeletePreference}
+              >
+                <X className="h-4 w-4" />
+                Unblock
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={setPreference.isPending}
+                onClick={() => handleSetPreference("blocked")}
+              >
+                <Ban className="h-4 w-4" />
+                Block
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {tagPreference.preference?.preference === "blocked" && (
+        <div className="border-b bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          You blocked this tag. You can still view it because you opened it
+          directly.
+        </div>
+      )}
 
       {/* Sort tabs */}
       <div className="flex border-b">
@@ -123,6 +212,7 @@ function TagPage() {
       {/* Feed */}
       <PostsFeed
         data={data}
+        queryKey={["tags", slug, "posts"]}
         fetchNextPage={fetchNextPage}
         hasNextPage={hasNextPage ?? false}
         isFetchingNextPage={isFetchingNextPage}

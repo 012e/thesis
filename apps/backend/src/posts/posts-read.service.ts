@@ -10,6 +10,7 @@ import {
   userFollows,
   usersView,
 } from "@/db/schema";
+import { excludesBlockedTags } from "@/tags/tags-query.helpers";
 
 import {
   decodeCreatedAtCursor,
@@ -144,7 +145,7 @@ export class PostsReadService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
+      .where(and(eq(posts.hidden, false), excludesBlockedTags(userId, posts.id)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -208,6 +209,7 @@ export class PostsReadService {
         cursorDate && parsed
           ? and(
               eq(posts.hidden, false),
+              excludesBlockedTags(userId, posts.id),
               or(
                 lt(createdAtCursorValue, cursorDate),
                 and(
@@ -216,7 +218,7 @@ export class PostsReadService {
                 ),
               ),
             )
-          : eq(posts.hidden, false),
+          : and(eq(posts.hidden, false), excludesBlockedTags(userId, posts.id)),
       )
       .groupBy(
         posts.id,
@@ -338,7 +340,7 @@ export class PostsReadService {
       .from(posts)
       .innerJoin(usersView, eq(posts.authorId, usersView.id))
       .leftJoin(postReactions, eq(posts.id, postReactions.postId))
-      .where(eq(posts.hidden, false))
+      .where(and(eq(posts.hidden, false), excludesBlockedTags(userId, posts.id)))
       .groupBy(
         posts.id,
         usersView.id,
@@ -472,4 +474,5 @@ export class PostsReadService {
 
     return { items: bookmarkDtos, nextCursor };
   }
+
 }

@@ -1,6 +1,13 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { Tag, TrendingTagsPage, TagSuggestionsPage } from "../schemas/tag";
+import {
+  Tag,
+  TagPreference,
+  TagPreferenceKind,
+  TrendingTagsPage,
+  TagSuggestionsPage,
+  UserTagPreferences,
+} from "../schemas/tag";
 import { Post } from "../schemas/post";
 
 const c = initContract();
@@ -58,6 +65,35 @@ export const tagsContract = c.router({
     },
     summary:
       "Get paginated posts for a tag, ordered by sort (top or latest). Paginated with keyset cursor.",
+  },
+  getMyTagPreferences: {
+    method: "GET",
+    path: "/users/me/tag-preferences",
+    responses: {
+      200: UserTagPreferences,
+    },
+    summary: "Get the authenticated user's preferred and blocked tags.",
+  },
+  setMyTagPreference: {
+    method: "PUT",
+    path: "/users/me/tag-preferences/:slug",
+    pathParams: z.object({ slug: z.string() }),
+    body: z.object({ preference: TagPreferenceKind }),
+    responses: {
+      200: TagPreference,
+      404: z.null(),
+    },
+    summary: "Set or replace the authenticated user's preference for a tag.",
+  },
+  deleteMyTagPreference: {
+    method: "DELETE",
+    path: "/users/me/tag-preferences/:slug",
+    pathParams: z.object({ slug: z.string() }),
+    responses: {
+      204: z.undefined(),
+      404: z.null(),
+    },
+    summary: "Remove the authenticated user's preference for a tag.",
   },
 });
 

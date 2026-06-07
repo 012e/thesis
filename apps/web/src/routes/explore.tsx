@@ -14,6 +14,9 @@ import {
   IconUserPlus,
   IconUserMinus,
   IconX,
+  IconHash,
+  IconStar,
+  IconBan,
 } from "@tabler/icons-react";
 
 import { Post } from "@/components/post";
@@ -23,6 +26,11 @@ import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { useSearchPosts, useSearchUsers } from "@/hooks/use-search";
 import { useSession } from "@/hooks/use-session";
+import { useTagSuggestions } from "@/hooks/use-tag-suggestions";
+import {
+  useSetTagPreference,
+  useTagPreferences,
+} from "@/hooks/use-tag-preferences";
 import { SEARCH_USERS_QUERY_KEY } from "@/hooks/use-search";
 import { client } from "@/lib/api";
 import { handleAuthFailure } from "@/lib/auth";
@@ -32,7 +40,7 @@ import type { UserSearchResultType } from "@repo/rest-contracts";
 
 const exploreSearchSchema = z.object({
   q: z.string().optional(),
-  tab: z.enum(["posts", "people"]).optional(),
+  tab: z.enum(["posts", "people", "tags"]).optional(),
 });
 
 export const Route = createFileRoute("/explore")({
@@ -297,6 +305,111 @@ function PostsResults({ q }: { q: string }) {
   );
 }
 
+// ─── Tags tab ────────────────────────────────────────────────────────────────
+
+function TagsResults({ q }: { q: string }) {
+  const normalizedQuery = q.replace(/^#/, "");
+  const { data, isLoading, isError, error } = useTagSuggestions(
+    normalizedQuery,
+    12,
+  );
+  const preferences = useTagPreferences();
+  const setPreference = useSetTagPreference();
+
+  const currentPreferenceBySlug = new Map<string, "preferred" | "blocked">();
+  for (const tag of preferences.data?.preferred ?? []) {
+    currentPreferenceBySlug.set(tag.slug, "preferred");
+  }
+  for (const tag of preferences.data?.blocked ?? []) {
+    currentPreferenceBySlug.set(tag.slug, "blocked");
+  }
+
+  if (!q.trim()) return null;
+
+  if (isLoading)
+    return (
+      <div className="flex justify-center p-12">
+        <Spinner className="w-6 h-6" />
+      </div>
+    );
+
+  if (isError)
+    return (
+      <div className="p-8 text-center text-destructive">
+        Error: {error?.message}
+      </div>
+    );
+
+  if (!data || data.items.length === 0)
+    return (
+      <div className="p-12 text-center text-muted-foreground">
+        No tags found for &ldquo;{q}&rdquo;
+      </div>
+    );
+
+  return (
+    <div className="divide-y">
+      {data.items.map((tag) => {
+        const currentPreference = currentPreferenceBySlug.get(tag.slug);
+        const isPending =
+          setPreference.isPending && setPreference.variables?.slug === tag.slug;
+
+        return (
+          <div
+            key={tag.slug}
+            className="flex flex-col gap-3 px-4 py-3 transition-colors hover:bg-accent sm:flex-row sm:items-center"
+          >
+            <Link
+              to="/tags/$slug"
+              params={{ slug: tag.slug }}
+              className="flex min-w-0 flex-1 items-start gap-3"
+            >
+              <IconHash className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+              <div className="min-w-0">
+                <p className="truncate font-semibold leading-tight">
+                  #{tag.displayName}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
+                  {currentPreference ? ` · ${currentPreference}` : ""}
+                </p>
+              </div>
+            </Link>
+            <div className="flex gap-2 pl-8 sm:pl-0">
+              <Button
+                type="button"
+                size="sm"
+                variant={currentPreference === "preferred" ? "default" : "outline"}
+                disabled={isPending}
+                onClick={() =>
+                  setPreference.mutate({ slug: tag.slug, preference: "preferred" })
+                }
+              >
+                <IconStar className="size-4" />
+                Prefer
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={
+                  currentPreference === "blocked" ? "destructive" : "outline"
+                }
+                disabled={isPending}
+                onClick={() =>
+                  setPreference.mutate({ slug: tag.slug, preference: "blocked" })
+                }
+              >
+                <IconBan className="size-4" />
+                Block
+              </Button>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Exported content component (used by Storybook) ──────────────────────────
 
 interface ExploreSearchHeaderProps {
@@ -364,11 +477,11 @@ export interface ExplorePageContentProps {
   /** Active query string. Empty string = show the empty prompt. */
   q: string;
   /** Active tab. */
-  tab: "posts" | "people";
+  tab: "posts" | "people" | "tags";
   /** Called when the user submits a new search query. */
   onSearch: (q: string) => void;
   /** Called when the user switches tabs. */
-  onTabChange: (tab: "posts" | "people") => void;
+  onTabChange: (tab: "posts" | "people" | "tags") => void;
 }
 
 export function ExplorePageContent({
@@ -415,6 +528,20 @@ export function ExplorePageContent({
               <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-16 rounded-t-full bg-primary" />
             )}
           </button>
+          <button
+            type="button"
+            onClick={() => onTabChange("tags")}
+            className={`flex-1 py-4 text-center font-semibold text-sm transition-colors hover:bg-accent relative ${
+              tab === "tags"
+                ? "font-bold text-foreground"
+                : "text-muted-foreground"
+            }`}
+          >
+            Tags
+            {tab === "tags" && (
+              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-1 w-16 rounded-t-full bg-primary" />
+            )}
+          </button>
         </div>
       )}
 
@@ -422,15 +549,17 @@ export function ExplorePageContent({
       {!activeQ ? (
         <div className="flex flex-col items-center justify-center gap-4 py-24 text-muted-foreground select-none">
           <IconSearch className="w-12 h-12 opacity-20" />
-          <p className="text-lg font-medium">Search for posts and people</p>
+          <p className="text-lg font-medium">Search posts, people, and tags</p>
           <p className="text-sm opacity-70">
             Try searching for a topic, username, or keyword
           </p>
         </div>
       ) : tab === "posts" ? (
         <PostsResults q={activeQ} />
-      ) : (
+      ) : tab === "people" ? (
         <PeopleResults q={activeQ} />
+      ) : (
+        <TagsResults q={activeQ} />
       )}
     </>
   );
@@ -438,7 +567,7 @@ export function ExplorePageContent({
 
 // ─── Route-connected wrapper ──────────────────────────────────────────────────
 
-type ExploreSearch = { q?: string; tab?: "posts" | "people" };
+type ExploreSearch = { q?: string; tab?: "posts" | "people" | "tags" };
 
 function ExplorePage() {
   const { q = "", tab = "posts" } = Route.useSearch();
@@ -457,7 +586,7 @@ function ExplorePage() {
     });
   }
 
-  function handleTabChange(newTab: "posts" | "people") {
+  function handleTabChange(newTab: "posts" | "people" | "tags") {
     void navigate({
       search: (prev: ExploreSearch) => ({ ...prev, tab: newTab }),
     });

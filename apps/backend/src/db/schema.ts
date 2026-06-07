@@ -98,6 +98,39 @@ export const tagDailyStats = pgTable(
   (table) => [primaryKey({ columns: [table.tagId, table.day] })],
 );
 
+export const tagPreferenceKindEnum = pgEnum("tag_preference_kind", [
+  "preferred",
+  "blocked",
+]);
+
+export const userTagPreferences = pgTable(
+  "user_tag_preferences",
+  {
+    userId: text("user_id").notNull(),
+    tagId: uuid("tag_id")
+      .notNull()
+      .references(() => tags.id, { onDelete: "cascade" }),
+    preference: tagPreferenceKindEnum("preference").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.tagId] }),
+    index("idx_user_tag_preferences_user_preference").on(
+      table.userId,
+      table.preference,
+    ),
+    index("idx_user_tag_preferences_tag").on(table.tagId),
+  ],
+);
+
+export type UserTagPreference = typeof userTagPreferences.$inferSelect;
+export type NewUserTagPreference = typeof userTagPreferences.$inferInsert;
+
 /**
  * Stores user avatar URLs separately from Better Auth's `user` table.
  * Better Auth does not persist the `image` field to the DB in this project,

@@ -62,6 +62,7 @@ export function UserProfilePage() {
         createdAt: profile.createdAt,
       }}
       postsData={userPosts.data}
+      postsQueryKey={["users", userId, "posts"]}
       fetchNextPage={userPosts.fetchNextPage}
       hasNextPage={userPosts.hasNextPage}
       isFetchingNextPage={userPosts.isFetchingNextPage}
