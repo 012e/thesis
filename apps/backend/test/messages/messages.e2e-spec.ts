@@ -60,6 +60,8 @@ describe("MessagesController integration", () => {
       `
         INSERT INTO user_profiles (user_id, avatar_url)
         VALUES ($1, $2), ($3, $4)
+        ON CONFLICT (user_id) DO UPDATE
+        SET avatar_url = EXCLUDED.avatar_url
       `,
       [userAId, userAAvatarUrl, userBId, userBAvatarUrl],
     );
