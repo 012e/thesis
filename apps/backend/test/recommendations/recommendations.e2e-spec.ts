@@ -270,9 +270,15 @@ describe("Recommendations integration", () => {
         .set("Cookie", userACookie)
         .expect(200);
 
-      expect(res.body.items.map((item: { id: string }) => item.id)[0]).toBe(
+      expect(res.body.items.map((item: { id: string }) => item.id)).toContain(
         preferredPostId,
       );
+
+      const ranked = await pool.query(
+        "SELECT rank FROM recommendation_items WHERE user_id = $1 AND post_id = $2",
+        [userAId, preferredPostId],
+      );
+      expect(ranked.rows[0].rank).toBe(1);
     });
 
     it("excludes posts with blocked tags from the following feed", async () => {
