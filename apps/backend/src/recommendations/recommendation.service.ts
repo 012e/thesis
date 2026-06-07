@@ -14,8 +14,6 @@ import {
   comments,
   postBookmarks,
   postSubscriptions,
-  postTags,
-  userTagPreferences,
 } from "@/db/schema";
 import {
   upvoteCount,
@@ -27,6 +25,7 @@ import {
 } from "@/posts/posts-query.helpers";
 import { PostsPresenterService } from "@/posts/posts-presenter.service";
 import type { PostFeedPage } from "@/posts/posts.types";
+import { excludesBlockedTags } from "@/tags/tags-query.helpers";
 
 import { RecommendationPipelineService } from "./recommendation-pipeline.service";
 import {
@@ -86,7 +85,7 @@ export class RecommendationService {
     const baseCondition = and(
       eq(recommendationItems.userId, userId),
       isNull(recommendationItems.servedAt),
-      this.excludesBlockedQueuedPost(userId),
+      excludesBlockedTags(userId, recommendationItems.postId),
     );
 
     const whereCondition = parsed
@@ -188,7 +187,7 @@ export class RecommendationService {
         and(
           inArray(posts.id, postIds),
           eq(posts.hidden, false),
-          this.excludesBlockedPost(userId),
+          excludesBlockedTags(userId, posts.id),
         ),
       )
       .groupBy(
@@ -222,7 +221,7 @@ export class RecommendationService {
         and(
           eq(recommendationItems.userId, userId),
           isNull(recommendationItems.servedAt),
-          this.excludesBlockedQueuedPost(userId),
+          excludesBlockedTags(userId, recommendationItems.postId),
         ),
       );
 
@@ -270,25 +269,4 @@ export class RecommendationService {
     );
   }
 
-  private excludesBlockedQueuedPost(userId: string) {
-    return sql<boolean>`NOT EXISTS (
-      SELECT 1 FROM ${postTags}
-      INNER JOIN ${userTagPreferences}
-        ON ${userTagPreferences.tagId} = ${postTags.tagId}
-      WHERE ${postTags.postId} = ${recommendationItems.postId}
-        AND ${userTagPreferences.userId} = ${userId}
-        AND ${userTagPreferences.preference} = 'blocked'
-    )`;
-  }
-
-  private excludesBlockedPost(userId: string) {
-    return sql<boolean>`NOT EXISTS (
-      SELECT 1 FROM ${postTags}
-      INNER JOIN ${userTagPreferences}
-        ON ${userTagPreferences.tagId} = ${postTags.tagId}
-      WHERE ${postTags.postId} = ${posts.id}
-        AND ${userTagPreferences.userId} = ${userId}
-        AND ${userTagPreferences.preference} = 'blocked'
-    )`;
-  }
 }

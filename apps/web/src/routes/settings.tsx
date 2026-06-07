@@ -231,7 +231,7 @@ function InterestsTab() {
               className="pl-9"
             />
           </div>
-          <div className="divide-y rounded-md border">
+          <div className="divide-y border">
             {query.trim().length === 0 ? (
               <div className="p-4 text-sm text-muted-foreground">
                 Type a tag name to add it.
@@ -266,14 +266,11 @@ function InterestsTab() {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">#{tag.displayName}</span>
                         {currentPreference && (
-                          <Badge variant="secondary">
-                            {currentPreference}
-                          </Badge>
+                          <Badge variant="secondary">{currentPreference}</Badge>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        {tag.postCount}{" "}
-                        {tag.postCount === 1 ? "post" : "posts"}
+                        {tag.postCount} {tag.postCount === 1 ? "post" : "posts"}
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -302,9 +299,7 @@ function InterestsTab() {
                             : "outline"
                         }
                         disabled={isPending}
-                        onClick={() =>
-                          handleSetPreference(tag.slug, "blocked")
-                        }
+                        onClick={() => handleSetPreference(tag.slug, "blocked")}
                       >
                         <IconBan />
                         Block

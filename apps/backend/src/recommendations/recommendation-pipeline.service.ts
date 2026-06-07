@@ -19,6 +19,7 @@ import {
   recommendationItems,
   userTagPreferences,
 } from "@/db/schema";
+import { excludesBlockedTags } from "@/tags/tags-query.helpers";
 
 import {
   RECOMMENDATION_FILTERS,
@@ -141,7 +142,7 @@ export class RecommendationPipelineService {
         and(
           eq(posts.hidden, false),
           sql`${posts.authorId} != ${userId}`,
-          this.excludesBlockedTags(userId),
+          excludesBlockedTags(userId, posts.id),
         ),
       )
       .orderBy(desc(posts.createdAt))
@@ -293,17 +294,6 @@ export class RecommendationPipelineService {
       );
 
     return new Set(rows.map((row) => row.postId));
-  }
-
-  private excludesBlockedTags(userId: string) {
-    return sql<boolean>`NOT EXISTS (
-      SELECT 1 FROM ${postTags}
-      INNER JOIN ${userTagPreferences}
-        ON ${userTagPreferences.tagId} = ${postTags.tagId}
-      WHERE ${postTags.postId} = ${posts.id}
-        AND ${userTagPreferences.userId} = ${userId}
-        AND ${userTagPreferences.preference} = 'blocked'
-    )`;
   }
 
   private async completeBatch(
