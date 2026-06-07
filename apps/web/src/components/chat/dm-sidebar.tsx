@@ -130,15 +130,15 @@ function ListView({ onSelect, onClose }: ListViewProps) {
           type="button"
           onClick={onClose}
           aria-label="Close messages"
-          className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="flex items-center justify-center w-7 h-7 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           <IconX className="size-4" />
         </button>
       </div>
 
       {/* Search */}
-      <div className="px-3 py-2 border-b border-border shrink-0">
-        <div className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5">
+      <div className="px-3 py-2 border-b border-border shrink-0 bg-muted ">
+        <div className="flex items-center gap-2 px-3 py-1.5">
           <IconSearch className="size-3.5 text-muted-foreground shrink-0" />
           <input
             type="text"
@@ -311,7 +311,7 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
           type="button"
           onClick={onBack}
           aria-label="Back to conversations"
-          className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+          className="flex items-center justify-center w-7 h-7 text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
         >
           <IconArrowLeft className="size-4" />
         </button>
@@ -364,10 +364,10 @@ function DetailView({ conversationId, onBack }: DetailViewProps) {
             >
               <div
                 className={cn(
-                  "max-w-[85%] rounded-2xl px-3 py-1.5 text-sm break-words",
+                  "max-w-[85%] px-3 py-1.5 text-sm wrap-break-word",
                   isMine
-                    ? "bg-primary text-primary-foreground rounded-br-sm"
-                    : "bg-muted text-foreground rounded-bl-sm",
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground",
                 )}
               >
                 {msg.content}
