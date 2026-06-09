@@ -13,6 +13,8 @@ export const createPlanTool = createTool({
 
 Use this tool when the user asked for a visible plan, the task needs user review, or the task could have significant side effects that benefit from explicit approval. Do not use it merely because an internal execution sequence has multiple steps.
 
+Plan items must be executable checkpoints that can be marked completed or skipped during execution. Do not make the final item a passive review step when a submit/publish action still remains; include the final submit/publish action as its own item.
+
 After calling this tool:
 - End your response with a short message asking the user to approve or reject the plan.
 - Do NOT start executing steps until the user explicitly approves.
@@ -64,7 +66,9 @@ export const updatePlanItemTool = createTool({
   id: "update_plan_item",
   description: `Updates the status of a step in the current plan. Use this to track progress so the user can see which steps are done, in progress, or skipped in real time.
 
-Call with "in_progress" when starting a step, "completed" when done, and "skipped" if the step is not needed.`,
+Call with "in_progress" when starting a step, "completed" when done, and "skipped" if the step is not needed.
+
+After the user approves, confirms, or says yes to a review step, immediately mark that review step completed. After the final tool call or handoff finishes, mark the final plan item completed before sending the final response. Never leave the last plan item pending after the task has been executed.`,
   inputSchema: z.object({
     id: z.string().describe("The id of the plan item to update, e.g. 'step-1'"),
     status: z
