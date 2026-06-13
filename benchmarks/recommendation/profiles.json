@@ -1,0 +1,22 @@
+[
+  {
+    "username": "frontend.bench@gmail.com",
+    "password": "Demo@123",
+    "preferences": "Prefers frontend engineering posts about React, TypeScript, component architecture, UI state management, accessibility, and debugging browser rendering issues."
+  },
+  {
+    "username": "backend.bench@gmail.com",
+    "password": "Demo@123",
+    "preferences": "Interested in backend development with NestJS, Java, API design, authentication, authorization, background jobs, PostgreSQL schemas, and production debugging."
+  },
+  {
+    "username": "database.bench@gmail.com",
+    "password": "Demo@123",
+    "preferences": "Prefers database-focused posts about PostgreSQL indexing, query optimization, migrations, data modeling, transactions, and performance troubleshooting."
+  },
+  {
+    "username": "devops.bench@gmail.com",
+    "password": "Demo@123",
+    "preferences": "Interested in DevOps and deployment topics including Docker, CI/CD pipelines, cloud hosting, observability, logs, monitoring, and incident response."
+  }
+]

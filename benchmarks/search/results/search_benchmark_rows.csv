@@ -1,0 +1,691 @@
+query,method,rank,post_id,llm_score,rerank_score,text,tags,llm_reason
+React useEffect dependency error,hybrid,1,98a5f452-339e-43f0-911d-1f28245ec529,90.0,0.9953180551528931,"# react-hooks/exhaustive-deps ignores useRef
+
+This code snippet yields \`react-hooks/exhaustive-deps\` error:
+```typescript
+  let isDarkMode = false
+
+  useEffect(() => {
+    if (isDarkMode) {
+      console.log('dark mode')
+    }
+  }, [])
+```
+This does not:
+```typescript
+const App = ({ mode }: { mode: string }) => {
+  const isDarkMode = useRef(false)
+  isDarkMode.current = !!mode
+
+  useEffect(() => {
+    if (isDarkMode.current) {
+      console.log('dark mode')
+    }
+  }, [])
+
+  return <div />
+}
+`","typescript, react",The post content directly addresses the React useEffect dependency error related to the react-hooks/exhaustive-deps warning. It explains why useRef is ignored in the dependency array and provides code examples illustrating the issue and the warning message. This is highly relevant to the query.
+React useEffect dependency error,hybrid,2,46161c74-fef4-4c90-b159-a22b1f5d83f3,85.0,0.9758440256118774,"# React hook useEffect missing dependency
+
+Hi everyone, I was working on a project based on jsmastery's mern stack tutorial. While working on the project I have an issue with the useEffect dependecy. I would like to know on how will I be able to fix this?  
+
+ Here's the code:
+```javascript
+const location = useLocation()
+const logout =()=>{
+dispatch({type:'LOGOUT'})
+history.push('/')
+setUser(null)
+}
+useEffect(() => {
+const token=user?.token
+//jwt
+if (token) {
+const decodedToken = decode(token);
+
+",react,"The post content directly addresses the React useEffect dependency issue mentioned in the query. It includes a code snippet showing the useEffect hook with dependencies and discusses the problem of missing dependencies, which is highly relevant to the query."
+React useEffect dependency error,hybrid,3,3a1d053c-3aaf-4ce3-a95a-9f8b41bcbdb8,90.0,0.9743711948394775,"# Hooks Question: Can someone explain this warming to me
+
+Why do I get the warming ""React Hook useEffect has a missing dependency: 'dispatch'. Either include it or remove the dependency array  react-hooks/exhaustive-deps"" when I use
+```typescript
+const dispatch = useDispatch()
+
+    useEffect(() => {
+        dispatch(resetCorrectAnswer())
+    }, [])
+```
+but it goes away when I include dispatch inside of the array bracket
+```typescript
+const dispatch = useDispatch()
+
+    useEffect(() => {
+        ",typescript,"The post directly addresses the React useEffect dependency warning related to missing 'dispatch' in the dependency array, explaining why the warning occurs and how including 'dispatch' resolves it. This matches the query about React useEffect dependency errors closely."
+React useEffect dependency error,hybrid,4,41204fa1-0ae5-4a03-a614-48b6480553c6,90.0,0.8285465836524963,"# useEffect hook dependency array issue
+
+Hey everyone, I have an issue with useEffect hook on my project, I use my hook to change some prop that I get from parent element, but when I create infinite loop because I listen to the prop I change,   
+But, I have to include this prop in the dependency array even though I don't want my function to get called when it changes, and that's because the eslint.  
+
+useEffect(() => {  
+ const images = props.product.images;  
+ props.changeProduct(info, images);",,"The post content directly addresses the issue of useEffect dependency array errors, specifically the problem of infinite loops caused by including certain dependencies and ESLint warnings. It discusses the exact scenario described in the query, making it highly relevant."
+React useEffect dependency error,hybrid,5,66959642-453b-4fff-8c17-3c7074dd9ab2,85.0,0.9375448822975159,"# Making a useEffect function for a microsoft graph api
+
+Im currently following this tutorial 
+
+but im having some issues creating a decent useeffect hook for it.
+
+I currently have this:
+```javascript
+     useEffect(() => {
+        const data = window.localStorage.getItem('current-user');
+        setCurrentUser(JSON.parse(data));
+    }, []);
+
+    useEffect(() => {
+        window.localStorage.setItem('current-user', JSON.stringify(currentUser));
+
+    }, [currentUser]);
+```
+but I get a console err","api, react","The post content directly addresses a React useEffect dependency error, including code examples and the specific warning message about state updates on unmounted components. It discusses the useEffect hook and dependency arrays, which are central to the query. Therefore, it is highly relevant to the query."
+React useEffect dependency error,random,1,2862f071-ebbd-4744-bca0-ad5f40ac5485,10.0,0.00014989642659202218,"# Feel like I've replaced all my marketable skills with proprietary systems knowledge -- mid level engineer looking to move on
+
+I've been with the same company for four years as a web & cloud engineer. While my data structures / algorithms game is strong, I realized today I no longer remember how to do things like: boostrap a react app; create a new postgres db; create a user account + login scheme.
+
+I was really good at that stuff. Then our proprietary build systems and SDKs hid all of those la",,"The post content is about a mid-level engineer reflecting on their skills and career direction, with no mention or discussion of React useEffect dependency errors. It is irrelevant to the query."
+React useEffect dependency error,random,2,6bfc1345-0086-47e5-8cd3-5c6c10c62867,10.0,3.739959356607869e-05,"# Feedback: To add a shopping cart, use Redux?
+
+I'm building an e-commerce store and I was just hoping to get some directional feedback.
+
+I would be grateful if you could take a quick peek at my code and provide some general advice on how to go about implementing an update that allows users to add selected items to the shopping cart.
+
+From what I gather, using Redux is the best approach? Any advice would be greatly appreciated.",,"The post content is about adding a shopping cart using Redux in an e-commerce store, which is unrelated to the query about React useEffect dependency errors."
+React useEffect dependency error,random,3,aa4cea91-6b8e-4e10-8973-e6df607c1044,10.0,8.315825107274577e-05,"# [JavaScript] How to check if a variable is a NaN?
+
+```typescript
+let z = 'abc';
+z = parseInt(z); //z becomes a NaN data type (not-a-number)
+    
+    if (typeof z === 'number') {
+      console.log('Z became a number');
+    } //true
+    
+    if (typeof z === 'string') {
+      console.log('Z still a string');
+    } //false
+    
+    if (/*What to put here?*/) {
+      console.log('Z is Not-a-Number');
+    }
+```
+
+Am I right that Z becomes a NaN data type? If so, how can I make a condition about it b",javascript,"The post content is about checking if a variable is NaN in JavaScript, which is unrelated to the query about React useEffect dependency errors."
+React useEffect dependency error,random,4,ad59afb0-c0f7-4abf-ac64-f88e64ab9320,10.0,3.737716906471178e-05,"# For what software dev unrelated jobs can person who study programming apply to and have a chance?
+
+I am studying in a bootcamp that is a year long and it's pretty intense. I can barely scratch up 2 hours during workday to study.
+
+Currently I am working 9 hours a day repairing phones, and I need an hour to get to my work.. So I'm thinking about changing jobs to something remote and add up additional 3 hours to study (4 possibly with my morning getting ready time).
+
+It's just... I don't know wha",,"The post content is about job options for someone studying programming and does not mention React, useEffect, or dependency errors. It is unrelated to the query."
+React useEffect dependency error,random,5,db456755-e077-4ef8-b036-651f27389010,10.0,0.0005032276385463774,"# Trying to make a left sided triangle with height =2
+
+So for height =2 , row 1 has # and row 2 has ##. I was told that the outer for loop is right but I’m struggling with creating the j loop. Any pointers or leads? I know the problem has to do with the middle condition of the j look.
+
+Basically I want the code to produce this:
+
+X
+
+XX
+
+===========
+
+This is the code: 
+
+int main( ) {
+```
+for (int i = 0; i is less than 2 ; i++)
+    {
+        for (int j = i + 1 ; j is greater than i; j++)
+          ",,"The post content is about creating a left sided triangle pattern in C using nested loops, which is unrelated to the query about React useEffect dependency errors."
+PostgreSQL vector search,hybrid,1,880c4ae7-6206-419c-8cde-192ca78e8ca9,40.0,0.005381986033171415,"# Implementing fuzzy search on a DB for website
+
+I am trying to implement fuzzy search on a Postgres db on 2 columns, I tried using like and the most popular plugins however the speed is pretty disappointing. (300-700ms) the goal is to get a 200ms and below since it will be used on a searchbar. I feel like what I tried is not the way to do it and hope to get some help. There will be 10000-15000 rows in the db. 
+
+Since there is several ways to implement this I don’t think this is a Postgres only ",postgresql,"The post discusses implementing fuzzy search on PostgreSQL, focusing on performance issues with LIKE and plugins, but does not mention or relate to vector search techniques specifically."
+PostgreSQL vector search,hybrid,2,835d23e5-341b-4482-8678-c5a12febf66a,21.0,0.0023912223987281322,"# Is there something like MongoDB Atlas, but for PostgreSQL?
+
+I want to find a good service that will host a PostgreSQL for me, ideally with a free tier. Can you recommend me one?
+
+#postgresql #mongodb
+mongodb
+postgresql","mongodb, postgresql","The post discusses hosting services for PostgreSQL with a free tier, which is only weakly related to the query about PostgreSQL vector search. It does not address vector search capabilities or related technologies."
+PostgreSQL vector search,hybrid,3,a085c760-9937-4d73-881d-f5b2156a8a70,20.0,0.0027815981302410364,"# What is the best way to use PostgreSQL with Go?
+
+I'm starting a new web project. This will be the first time i will use PostgreSQL. So i made a little research and I found these 3 repository. < I found more but these are the most suggested ones >  
+
+So which one should I prefer? Thanks in advance.
+
+#postgresql
+postgresql",postgresql,"The post discusses using PostgreSQL with Go for a web project and choosing repositories, but does not mention or relate to vector search in PostgreSQL."
+PostgreSQL vector search,hybrid,4,fc38571f-778c-4e5f-9098-2ed0f36299d5,21.0,0.0016039450420066714,"# Doesn't go sql support text[] type?
+
+I'm using postgres and I have a struct like
+```
+type Post struct {
+    ...
+    Tech []string
+}
+```
+In my db table, the column type is **text\[\]**
+
+If \[""go"", ""python""\] is given, it's saved well as below
+```
+// postgres Post table
+some column ... tech
+                {go, python}
+```
+but it gives me an error when I try select query.
+
+**select \* from post where id=<id>**  gives me an error as below
+
+unsupported Scan, storing driver.Value type string into t","postgresql, python","The post discusses handling PostgreSQL text[] type in Go and related errors, but does not address vector search in PostgreSQL, which is the query topic."
+PostgreSQL vector search,hybrid,5,445ab222-a8af-40b1-a385-3b90807fc1e1,20.0,0.007044977508485317,"# Best way to deploy a separated backend and frontend
+
+Hi everyone, I hope you are doing great!
+
+I am currently building a webapp with a friend of mine. It consists of a frontend developed in React.js and a backend API developed in Flask. They each have their own repos on Git and the idea is to keep them separated. Everything works fine when we run in a local environment during development, however, since none of us are DevOps qualified, we have some questions about how to deploy this most optim","api, postgresql, python","The post discusses deployment strategies for a separated backend and frontend using Flask, React, and Heroku with PostgreSQL, but it does not mention or relate to PostgreSQL vector search or any vector search functionality."
+PostgreSQL vector search,random,1,22a76bce-e763-459c-abff-94e212db01e2,10.0,3.733851190190762e-05,"# Question about Dotnet for MacOS
+
+So I'm learning c# and using Dotnet and VScode (the mac version) for that. When I try to run something in Terminal instead of the built-in console, it shows an error like this:
+
+*A fatal error was encountered. The library 'libhostpolicy.dylib' required to execute the application was not found in '/Users/aleksosaurus/Desktop/files/a lot of stuff/digital/gamedev stuff/bin/Debug/netcoreapp3.1/'.* 
+
+  
+*Failed to run as a self-contained app. If this should be a fra",dotnet,The post content is about a .NET Core runtime error on MacOS and does not mention PostgreSQL or vector search. It is unrelated to the query about PostgreSQL vector search.
+PostgreSQL vector search,random,2,4bf74970-f300-42ec-933a-ae01c17675d7,10.0,3.73842594854068e-05,"# [Raspberry Pi 4 / Python] Using a waveshare ADS1256 to read voltages @ 30 KHz - only getting ~244 Hz?
+
+I have a Raspberry Pi 4 and a Waveshare ADS1256 embedded board]( to read voltages. I am using the included [Python3 library to interface with the board.
+
+My issue is that I have the setting for the board in software to read data at 30 KHz. However, when I have a simple python file read the inputs as fast as possible and average how many readings it gets over a long period of time, I'm only ge",python,"The post content is about using a Raspberry Pi and a Waveshare ADS1256 board to read voltages with Python, focusing on hardware and data reading speed issues. It does not mention PostgreSQL or vector search, so it is irrelevant to the query."
+PostgreSQL vector search,random,3,cbc1ed33-1120-4432-924f-26106a3d4261,10.0,4.057475962326862e-05,"# How important are data structures, algorithms, and other core computing concepts for an entry level iOS dev interview?
+
+I am very familiar with iOS development in general, and can continue to fill holes in my knowledge, but have only a passing knowledge of data structures and algorithms (self-taught). Do I need to be fluent in those for junior / entry level iOS interviews? Are they going to be testing mainly for iOS concepts or for general computer science concepts?
+
+#ios
+ios",ios,"The content is about the importance of data structures and algorithms for entry-level iOS developer interviews, which is unrelated to the query about PostgreSQL vector search."
+PostgreSQL vector search,random,4,d2b01ad1-840f-4125-b964-46810d0e3de5,1.0,3.816347452811897e-05,"# Is there open source but non-gpl software?
+
+Out of my curiosity, just wanted to know. Are there any open source but with proprietary licensed software?
+
+Edit: Sorry for using wrong terminology. My question is about ""Source Available but not FOSS"" software.",,"The post content discusses open source licensing and proprietary licenses, which is unrelated to the query about PostgreSQL vector search."
+PostgreSQL vector search,random,5,bcd245d3-3b47-4cf3-ac2c-7da5a214aaa7,10.0,0.0001141119355452247,"# Vimtex disable conceal replacement
+
+Hi, 
+
+as the title indicates i want the conceal feature but not the actual replacement to unicode characters, since i sync my documents between Linux and Windows which lead to problems in the past when it came to such things...
+I messed quite a lot with it now, googled and i can't find something useful anymore. 
+So iam curious is it even possible? 
+
+Would be happy about any informations ✌",,"The post content is about Vimtex conceal feature and syncing documents between Linux and Windows, which is unrelated to the query about PostgreSQL vector search."
+lỗi đăng nhập email,hybrid,1,a15711ec-46a2-40ef-981a-bed1b63c6344,60.0,0.008252897299826145,"# [UX] Best way to allow login with email or phone?
+
+I have a web app where users often don't have a work email and they do a lot of work in the field on a phone or tablet, so we let them register (and then log in) with either an email or phone number.
+
+I'm not comfortable with the flow of our login process though. We use magic links, so there's no password field. The user enters his email or phone number, receives the magic link, clicks it and they're in!
+
+Should I have:
+
+* just one field for e",email_phone,"The post discusses login methods using email or phone, which is related to login issues, but it does not specifically address 'lỗi đăng nhập email' (email login errors). It focuses more on design choices rather than troubleshooting login errors."
+lỗi đăng nhập email,hybrid,2,284c4f04-6a07-4f39-addc-3c6596d102d9,80.0,0.0035493557807058096,"# Check if an entered string is a valid email
+
+\#include <iostream>
+
+\#include <cstring>
+
+\#include <ctype.h>
+
+using namespace std;
+
+int main()
+
+{
+
+ 
+
+string email;
+
+cout<<""Enter the email to check whether it is valid or not: "";
+
+getline(cin, email);
+
+size\_t at = email.find('@');
+
+if(at == string::npos)
+
+{
+
+cout<<""@ missing:"";
+
+return 1;
+
+}
+
+size\_t dot = email.find('.', at + 1);
+
+ if(dot == string::npos)
+
+  {
+
+cout<<"". Missing:""<<endl;
+
+}
+
+string str = email.substr(0,2);
+
+if(isdigit(str)){
+
+co",,"The post content is a C++ program attempting to validate an email address, addressing the presence of '@' and '.' characters, and trying to check if the first three characters are alphabets. The user explicitly asks for help with the error in checking the alphabets, which directly relates to the query about 'lỗi đăng nhập email' (email login error). Although the content is about email validation rather than login errors per se, it is highly relevant to the query's context of email-related errors."
+lỗi đăng nhập email,hybrid,3,f8b8db30-2478-43ad-9378-e3fe42862a88,70.0,0.0003383438743185252,"# How to check check if a string contains a specific character(s) using range() functions and bools in Python?
+
+I'm trying to check in Python GUI if the user's email is valid after every key release. So I set global bool variables, which are \`at\` and \`dotcom\` for email validity, but every time I input a valid email format. the bools are still set to false.
+
+This is my function for checking the email validity
+```python
+def keyup_email(e):
+
+global at
+
+global dotcom
+
+for x in range(len(custemai","check, gets, python","The post content discusses a Python GUI email validation function that checks for '@' and '.com' in the email string, which is directly related to the query about 'lỗi đăng nhập email' (email login error). Although the post focuses on coding and validation logic rather than login errors specifically, it is relevant because email format validation is a common cause of login issues. Therefore, it is relevant but not highly specific to login errors."
+lỗi đăng nhập email,hybrid,4,94a64a47-1446-48a4-8b4d-7b366e36a739,20.0,0.049287863075733185,"# Help me find out the error in gender .
+
+<!DOCTYPE html>    
+
+<html lang=""en"">    
+<head>    
+ <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">    
+ <title>Document</title>    
+</head>    
+<body>    
+
+<form method=""post"" action=""<?php echo htmlspecialchars($\\\_SERVER\\\[""PHP\\\_SELF""\\\]);?>"">    
+ <table >    
+ <tr>    
+ <td>Name</td>    
+ <td><input type=""text"" name=""name""/></td>    
+ </tr>    
+ <tr>    
+ <td>E-mail</td>    
+ <td><input type=""email"" name=""email""/></td> ",html,"The post content is about an HTML form and PHP code handling form input, including gender selection, but it does not address or mention any issues related to email login errors, which is the query topic."
+lỗi đăng nhập email,hybrid,5,97d6554c-087f-4bea-ba43-9b63efbbb3e7,41.0,0.03275107964873314,"# Does this look right for firebase to use uid?
+
+I tried to add the uid to my signup .... does this look right? 
+It dosnt error.... but it just goes to a white screen
+
+The previous way is above it, BUT, the new way didn’t create any users:
+```javascript
+
+//OLD WAY......
+
+  function signup(email, password) {
+    return auth.createUserWithEmailAndPassword(email, password)
+  }
+  
+
+  function login(email, password) {
+    return auth.signInWithEmailAndPassword(email, password)
+  }
+  
+
+// THIS IS MY N",firebase,"The post discusses Firebase authentication and user signup issues, which is somewhat related to 'lỗi đăng nhập email' (email login error). However, it focuses more on user creation and UID usage rather than directly addressing email login errors."
+lỗi đăng nhập email,random,1,8e801ba9-455f-4052-bcb4-3913d5b1cb65,10.0,3.740993997780606e-05,"# DevOps / GitOps way to manage Operations tools
+
+Formatting warning as I am on mobile.
+
+I am the sole NOC Engineer for my company, and have been creating a bunch of PowerShell/python (Soon C# to manage Microsoft products) tools for my team. No one in my operations team is able to script or develop tools, and I only have half a year of experience writing and maintaining code in a professional environment.
+
+I have made tools that have drastically reduced toil, so we no longer create user and lice",azure,"The post content discusses DevOps and tool management in Azure but does not address email login errors or issues related to 'lỗi đăng nhập email'. Therefore, it is irrelevant to the query."
+lỗi đăng nhập email,random,2,c23f02bc-68ca-4507-a9bf-23cf8a0211d8,10.0,3.7381978472694755e-05,"# A Linkedin for opern source projects ?
+
+I don't know why but the other day I came up with the idea of something like a Likendin but for open source projects and contributors.
+
+Exists something alike? Surelly is a stupid idea, otherwise it would exist.",,"The post content is about a LinkedIn-like platform for open source projects, which is unrelated to the query about email login errors."
+lỗi đăng nhập email,random,3,b9e5ba1b-1930-41f1-b039-9ccbf03b81ad,10.0,3.74067276425194e-05,"# How do I make an android version of my PC game?
+
+I created a simulation game available for PC using Unity that is over 20GB with this minimum requirements:
+
+Graphics Card: NVIDIA GeForce 8500 GT
+CPU: Intel Core i3-2340UE
+File Size: 20 GB
+OS: WINDOWS® 7 / 8.1 / 10 (64-bit required)
+
+But I'm quite a novice as to how to convert or make games in android and I want to upload this work of mine in both PC and Android version but I don't know how to convert it or make it an android version like some c",android,"The query is about 'lỗi đăng nhập email' (email login error), but the post content discusses converting a PC game to an Android version using Unity, which is unrelated to email login issues."
+lỗi đăng nhập email,random,4,f7489126-f343-4cd0-9c53-100a333c688a,10.0,3.7288875319063663e-05,"# Finally convinced my brother to use linux!
+
+He has been on chrome OS for a while and used windows from time to time, i gave him my old laptop which was having a hard time with modern windows, i told him about linux and he agreed to try it, it will be cool to teach him about it! 
+
+I am super excited and wanted to share my excitement with the community!
+
+#linux
+linux",linux,The post content is about convincing someone to use Linux and does not mention or relate to email login errors.
+lỗi đăng nhập email,random,5,a66312e7-7c48-456c-8f38-0851c612162d,10.0,3.739478052011691e-05,"# How are unpaid internships seen in the job market?
+
+Hi all. I have done an unpaid internship, and am currently doing three more. Each of the three deals with a specific area (one is Divi/WordPress, another is machine learning, and the other is Vue.js). The time commitment is okay, as I receive manageable assignments from them, and due to the pandemic, I find that I have more time to work on coding.
+
+My question is, should I cease working in these unpaid internships? I feel that I am learning a",,"The query is about 'lỗi đăng nhập email' (email login error), but the post content discusses unpaid internships and their perception in the job market, which is completely unrelated to the query."
+BM25 ParadeDB,hybrid,1,ef265d50-0a03-41f7-b218-08ba5228f114,1.0,8.068900206126273e-05,"# This is giving me this weird error
+
+```sql
+SET SERVEROUTPUT ON;
+
+DECLARE
+    CURSOR cur_location IS
+    SELECT
+        tmname,
+        arena,
+        views,
+        city,
+        country
+    FROM
+        tournament_location;
+
+    TYPE type_location IS RECORD (
+        tname         tournament_location.tmname%TYPE,
+        arenaname     tournament_location.arena%TYPE,
+        viewcount     tournament_location.views%TYPE,
+        cityname      tournament_location.city%TYPE,
+        countryname  ",,"The query is about 'BM25 ParadeDB', which suggests a focus on a specific information retrieval model or database. The post content is about a PL/SQL error related to a cursor and variable naming in an Oracle database, which is unrelated to BM25 or ParadeDB. Therefore, the content is irrelevant to the query."
+BM25 ParadeDB,hybrid,2,b9f6c544-782d-40ff-aede-d96e390aaa9d,10.0,9.40750032896176e-05,"# D&D 5E player app for blind friend?
+
+I have started to fill a mind map (thinking a set of nested tables holding the values and modifiers) and having the interface to it as swipe up/down to scroll through list and swipe left/right to open sublist / go back up one parent level. is there a directory tree type structure better for holding the character data? I started using freeplane and it seems a good fit. I will learn if values can be made dependent on others (like in a spreadsheet with formula",,"The post content is about a D&D 5E player app and data structure ideas for character data, which is unrelated to the query 'BM25 ParadeDB'. There is no mention or connection to BM25 or ParadeDB."
+BM25 ParadeDB,hybrid,3,4bc2c06c-7019-4116-8915-0908e22c79d9,20.0,9.958206646842882e-05,"# Re-Compiling System.Data for debugging purposes. Cannot build.
+
+I've decompiled `System.Data.dll` with ILSpy to a project and need to recompile it.  However, I get over 500 errors due to `__FnPtr` not being found.  Where can I find this type?
+
+num1 = __calli((__FnPtr<int (IntPtr, _GUID*, void**)>) *(long*) *(long*) pointer2)((void**) iunknownPtr, (_GUID*) ref local1, (IntPtr) ref local2);
+causes
+```vba
+1>    C:\_OneTeam\System.Data\System.Data\NativeOledbWrapper.cs(41,31,41,34): error CS1525: ",,"The content discusses errors encountered when recompiling System.Data.dll and mentions __FnPtr, but does not provide any information about BM25 or ParadeDB, which are the focus of the query."
+BM25 ParadeDB,hybrid,4,93db6c2f-d06f-4263-8f91-cfaac3f5e9e3,10.0,3.7309826439013705e-05,"# New Keynote Added for EOC 2021: Mars Perseverance Software
+
+We are very excited to announce a second Keynote presentation for the upcoming Embedded Online Conference avionics. 
+
+**48 hours Reddit Promo Code**: REDDIT60 (expires at noon on Sunday 03/28)",,"The post content does not mention BM25 or ParadeDB, nor does it relate to the query topic. It discusses a keynote presentation and a Reddit promo code unrelated to the query."
+BM25 ParadeDB,hybrid,5,d7448c5b-0ff4-4605-b734-91ae7b9a6d1d,1.0,0.0011384185636416078,"# Playground tutorial on you to implement mixins in Typescript; easily and readably, using class-syntax and clean code
+
+Everything in this demo is well-documented using comments.
+
+This system allows parent constructors to be called by children, child prototypes to inherit methods from parent prototypes etc. Uses clean-code and class-based syntax.
+
+In short, this system allows you to use multi inheritance in typescript in a clean and manageable way.
+
+Here is the link:
+
+#code/PQKgsAUABDt-D4FoWpVAk","typescript, code","The post content is about implementing mixins in TypeScript and does not mention BM25 or ParadeDB, which are the focus of the query."
+BM25 ParadeDB,random,1,fe22795f-0e1d-4d11-bdaa-d85b99b12e90,10.0,3.7358171539381146e-05,"# Why is ClubHouse allowed to use Stripe instead of in-app payments?
+
+Hey. ClubHouse recently launched ""Tipping"" as a way for users to pay content creators. What's interesting is that ClubHouse is using Stripe as a payments provider and not the in-app purchase functionality from Apple and Google. Therefore avoiding the 15%-30% Apple/Google tax. 
+
+Does anyone know what it is in the terms of service from Apple and Google that allows them to do this? Purely online services with no offline component",apple_google,"The content is about ClubHouse using Stripe for payments and Apple/Google payment policies, which is unrelated to the query about BM25 ParadeDB."
+BM25 ParadeDB,random,2,c6dace7c-2fda-438d-8919-74aae1495cd3,1.0,0.00015699521463830024,"# Switching careers into becoming a frontend web developer. Any advice?
+
+I’m switching careers into becoming a frontend web developer. I don’t have any relevant background experience or degree. What advice and tips do you have for someone who is starting off? What are some of the languages and skill sets I need to know? I was wondering if anyone knows any goods websites, tutorials or anything at all that can help me further my goal. Do I need to know backend development as a frontend web develop",,"The query is about 'BM25 ParadeDB', which likely refers to a specific information retrieval model or database, but the post content is about switching careers to frontend web development and does not mention BM25, ParadeDB, or anything related to information retrieval or databases."
+BM25 ParadeDB,random,3,955b2fa9-98c9-4bd7-a5c9-f8abb7de1022,10.0,0.00044967621215619147,"# Publishing Websites as a new Developer
+
+Hey team!
+
+So I've just been getting started in web development (primarily frontend, using HTML, CSS, and PHP), and as I've been learning more about the field, I've found myself thinking several times, ""Oh dang, that'd be a fun project to work on!"" I started a list of potential projects I'd like to work on in the future when I have a little more spare time, including several that would be for companies of family / friends. My thought is that these would ",,"The post content is about web development, website hosting, and maintenance, which is unrelated to the query 'BM25 ParadeDB' that likely refers to a specific database or information retrieval topic. There is no mention or discussion of BM25 or ParadeDB in the content."
+BM25 ParadeDB,random,4,51d4c884-a6dc-4b53-a9fe-51a5db42a72b,10.0,3.806831227848306e-05,"# Why does it say invalid syntax?
+
+For i in range(x):
+
+if input\_str\[x\] == '!':
+
+input\_str\[x\] = '.'
+
+exclamation\_count +=1
+
+newstring = newstring+input\_str\[x\]
+
+I tried 4 space formatting. Just wont work. I dont know why.",,"The query is about 'BM25 ParadeDB', which likely refers to a specific information retrieval model or database, but the post content is about a Python syntax error unrelated to BM25 or ParadeDB. Therefore, the result is irrelevant to the query."
+BM25 ParadeDB,random,5,01006ca3-c66c-4c42-b603-537ea8426d6e,10.0,3.7293888453859836e-05,"# exp dev getting owned by leetcode easys
+
+I've been working as a frontend dev for about 5 years. Recently I lost my job so I started to practice technical interview questions on leetcode. I try and organize my approach by spending 20 min max on each question, then after the 20 min I review the results (I have leetcode premium) and try and learn the underlying principles of the question. I will document each question and record hints on strategies I should use and retry them. I have been attempt",,"The post content is about personal experience with practicing technical interview questions on LeetCode and does not mention BM25 or ParadeDB, nor does it relate to information retrieval or database topics. Therefore, it is irrelevant to the query 'BM25 ParadeDB'."
+authentication token,hybrid,1,4c66831a-f359-40a9-8b40-1bce0f1f4562,90.0,0.5960556864738464,"# Token based authentication for API calls?
+
+Is the workflow really like this:  
+- Initial request, no token, ask server for token  
+- Server authenticates credentials, returns token  
+- Make request with token  
+
+Future requests:  
+- Token expired, make request to server with token anyways  
+- Server sees the token is expired, returns expiration error  
+- Client sees expiration response, asks server for new token, then makes the request again with the new token
+
+#authentication #api
+api
+authent","api, authentication","The post directly discusses the workflow of token-based authentication, including token issuance, usage, expiration, and renewal, which is highly relevant to the query 'authentication token'."
+authentication token,hybrid,2,09472193-b89e-445f-86a9-6a2f0cf96524,85.0,0.5890927910804749,"# Token based authentication for logins
+
+Ive looked at many different websites and articles and I have an okay understanding of it. The question that I have is, Where do we store this token once the user signs in so we can have it handy for ajax calls and other api calls? What other info should we capture when creating the token to be saved into the database to ensure the security? the server that created it and the time? would that be good enough?
+Thank you for your help in advance!
+
+#authentic",authentication,"The post directly discusses token-based authentication, specifically focusing on where to store the token and what information to include for security, which aligns well with the query about 'authentication token'."
+authentication token,hybrid,3,4314d80f-54e0-471b-a5f9-2c9bd1cab9e7,85.0,0.6386666893959045,"# Mallicious-Community Server Issue [beginner authentication question]
+
+Say you got a game like, Steam or Minecraft (Steam isn't a game but I think ya get my point)
+
+the client sends over to the community server an auth token which it gets from the auth server, the community server asks the auth server if the auth token is correct, and if it is, it lets the client in.
+
+My issue is that the community server could log the token and use it to log in as that player on another server, I don't see tha",authentication,"The post directly discusses the use of authentication tokens in a client-server context, the security concern of token misuse, and asks for solutions, which is highly relevant to the query 'authentication token'."
+authentication token,hybrid,4,d94c4ecc-e7a0-4d74-8a66-fb59848ed041,90.0,0.7710820436477661,"# How should I do token-based authentication with Rocket?
+
+I'm working on a web server with Rocket and need to add a way to authenticate users. I've got username/password storage done via PostgreSQL but now I need to work on a way to give users a token they can auth with. I'd like to use token-based authentication, where the server generates and stores a token for the user. I don't want to use JWTs since I've heard you can't easily revoke them. Are there any packages/predefined ways of doing thi",authentication,"The post directly discusses token-based authentication, specifically in the context of generating and storing tokens for user authentication, which matches the query 'authentication token'. It also mentions avoiding JWTs and the use of Rocket framework, which is relevant to the query. The content is highly relevant to the query's intent."
+authentication token,hybrid,5,3caa9d5a-5de5-40ed-a3ac-7b5ad52fdb46,90.0,0.23842543363571167,"# Hot Chocolate GraphQL Authentication In Pure Code First Technique
+
+Hot Chocolate GraphQL Authentication In Pure Code First Technique
+
+Part1 User Registration  
+
+Part2 Generating JWT Access Token  
+
+Part3 Different Authorization Techniques  
+
+Part4 Generating Refresh Token And Renew Access Token Using Refresh Token
+
+#authentication #graphql
+graphql
+authentication","graphql, authentication","The post content directly discusses authentication in GraphQL, including generating JWT access tokens and refresh tokens, which are types of authentication tokens. This matches the query 'authentication token' closely, making it highly relevant."
+authentication token,random,1,d04952ef-6f3a-4513-beb1-493e50f29d2a,10.0,3.7322497519198805e-05,"# The Pros and Cons of doing a PhD in my situation
+
+Hello,
+
+I'm 22 years old from and living in Algeria and i've got a master's degree in computer science last year. During my last year of master i published a paper revolving around computer vision and machine learning.
+
+I worked as a freelance full stack dev on upwork ( django mainly ) and did web scraping as well
+
+This year i got an offer for a fully funded 3 to 4 years PhD fellowship in machine learning in a european country.
+
+For me this is ",,The post content is about deciding whether to pursue a PhD and does not mention or relate to 'authentication token' in any way.
+authentication token,random,2,1b556a7f-6586-47c0-bee7-93c3790cf5d2,1.0,3.7376736145233735e-05,"# If I make a website for a friend, could any issues arise from reposting the code as a public site on GitHub, even if I get their consent?
+
+My friend wants to run a mini-online business and I'm thinking of creating a site for them while getting a project done for my portfolio.
+
+I'm not sure if the friend will always have the site live so we discussed and I'm thinking about re-posting the code when I'm done and maybe changing the business name and other names for privacy and having it as a sampl",github,"The query is about reposting website code on GitHub and potential issues, but the post content does not mention authentication tokens or related concepts, making it irrelevant to the query."
+authentication token,random,3,2582ee08-e0ee-443d-ad0b-10aacec44cfc,10.0,3.731039396370761e-05,"# DIY wake-up light alarm clock
+
+Hi guys,
+
+I built a wake-up light alarm clock in my free time. I made a PCB with an STM32F405 microcontroller and wrote a Zephyr app. Features include:
+
+\- Ethernet (to get the initial time)
+
+\- Automatic daylight saving
+
+\- Data backup with battery
+
+Here is a picture:
+
+I put all in a git:
+
+Tell me what you think :)",,The post content is about a DIY wake-up light alarm clock project and does not mention or relate to authentication tokens.
+authentication token,random,4,612325ea-d540-4dc2-9992-9587703ffeed,10.0,4.250442725606263e-05,"# Pushed a big to prod, should I talk to my manager about it?
+
+I started a new job about 3 months ago. I’ve been working in the industry for about 2.5 years. 
+
+Today, one of my PRs introduced a bug in prod affecting only a subset of users. I was able to deploy a hot fix quickly, and I’ll be doing a post-mortem report. The unfortunate part is, last week another one of my PRs caused another minor issue (nothing broke, and it was related to some buried code that wasn’t easily identifiable during de",,"The post content is about a personal work incident involving bugs and communication with a manager, which is unrelated to the query about 'authentication token'."
+authentication token,random,5,2121ac1d-4b02-42be-a975-1f6edd7c05f5,1.0,3.9024595025694e-05,"# Compose Ui StateFlow.collectAsState() not working for StateFlow<ArrayList<*>>
+
+I am working on a small project in which I am experimenting on Jetpack Compose Ui. I am using StateFlow for purposes like passing on states to composables with the collectAsState() extension function. StateFlow.collectAsState() works perfectly for types like String, Long etc. Below is some pseudocode
+```kotlin
+In the ViewModel;
+{
+    private var upBytes = MutableStateFlow(0L)
+    val uploadBytes: StateFlow<Long> = u",,"The post content is about Jetpack Compose StateFlow usage and recomposition issues with ArrayList, which is unrelated to the query about 'authentication token'."
+short ambiguous bug,hybrid,1,23a844a7-f3b5-47c5-97cc-d349b00e216b,90.0,0.0036829225718975067,"# The Most Annoying Bug I've Had To Track Down
+
+I recently had this  bug reported to me.
+
+The user came at me with a full backtrace so I thought it would be an easy fix. The bug appeared to be in the c bindings I was using, so clearly there's some subtle UB/error not being handled somewhere.
+
+Yet I couldn't find anything wrong. No matter how many null checks and assertions I put around the place.
+
+Then I figured out what wrong: 
+
+Perviously, when getting a pointer to a union the code did
+```rust",rust,"The post discusses a subtle and ambiguous bug related to Rust's unsafe code and references, which aligns well with the query 'short ambiguous bug'. The content explains a tricky bug involving temporary variables and unsafe blocks, making it highly relevant."
+short ambiguous bug,hybrid,2,65f291a5-e681-4f41-bcb8-dba3ef418818,85.0,0.0015650637215003371,"# Bug in golint OR a fringe case?
+
+I spent way too long debugging a piece of code and I discovered either a bug in the standard golinter OR this is a fringe case that isn't well documented. Somehow I was able to redeclare a chan string as a string inside of a case statement.
+
+ 
+
+Obviously there is an error in the logic here on my part. However when running the code it simply doesn't continue after line 128 and just hangs there forever, no error is thrown and the linter does not show redeclaring ",,"The post discusses a potential bug or ambiguous behavior in golint related to redeclaring a channel of string as a string, which aligns well with the query about a 'short ambiguous bug'. The content is highly relevant as it directly addresses ambiguity and a bug-like scenario in code linting."
+short ambiguous bug,hybrid,3,0c11c2ba-95db-4a40-8faa-256c3c45c314,90.0,0.0009172356221824884,"# Why does formatprg + Prettier work for all supported file formats apart from TypeScript? Bug?
+
+Works:
+```
+  au FileType markdown setlocal formatprg=prettier\ --parser\ markdown
+  au FileType javascript setlocal formatprg=prettier\ --parser\ typescript
+  au FileType javascript.jsx setlocal formatprg=prettier\ --parser\ typescript
+  au FileType css setlocal formatprg=prettier\ --parser\ css
+  au FileType html setlocal formatprg=prettier\ --parser\ html
+  au FileType json setlocal formatprg=prett","typescript, css","The post directly addresses a bug related to formatting TypeScript files with Prettier, which matches the query about a 'short ambiguous bug' involving TypeScript formatting. It includes detailed examples, a description of the issue, and a workaround, making it highly relevant."
+short ambiguous bug,hybrid,4,af7dd484-1a79-4c3a-93ab-584d855a13f8,90.0,0.0003518806188367307,"# How do you deal with bugs that have a positive effect.
+
+I currently find myself in a akward position. I found out that a bug actually causes my system to work properly 99% of the time. The issue is that it doesn't work 100% of the time and fixing the bug takes a lot of work. Should I just leave it be? How do you generally deal with bugs that have an positive effect?",,"The post directly addresses the query about dealing with bugs that have a positive effect, discussing the dilemma of whether to fix a bug that mostly benefits the system but is not perfect. This matches the query's focus on ambiguous or beneficial bugs."
+short ambiguous bug,hybrid,5,d95ea4a9-140d-482a-a0d0-9b34d1ff5995,90.0,0.0014097521780058742,"# [D] PSA: Buggy caching behaviour in Huggingfaces (old) run_glue script
+
+After chasing an Out Of Index bug in our Glue Evaluation script, we found out that the caching behaviour in `run_glue.py` is not what you would expect.  Huggingface downloads glue data, tokenizes and featurizes the text using the supplied tokenizer, and caches the result. The problem is that the cache treats **all tokenizers of the same class as identical**. See this issue.
+
+This is a major problem if you (like us) are eva",,"The post directly discusses a bug related to ambiguous caching behavior in the Huggingface run_glue script, which can cause cryptic Out Of Index errors. This matches the query about a 'short ambiguous bug' closely, providing detailed context about the bug's nature and impact."
+short ambiguous bug,random,1,982f7611-9bb8-4ee2-9470-7e397cbc1fc1,10.0,3.731352626346052e-05,"# [Utility] Announcing version-checker - It Does What It Says on the Tin and More, Trust Me
+
+**version-checker** is a crate built for use in projects of any size, its primary goal is to read your Cargo.toml and check for out of date dependencies and potential security advisories courtesy of RustSec]( Check out the project on [GitHub]( or install it via [Cargo/Crates.io today!
+
+An example of the version checker in action.",,The post content is about a version-checker tool for Rust dependencies and does not mention or relate to 'short ambiguous bug' in any way.
+short ambiguous bug,random,2,03e3cadd-c2a5-4d9e-9b43-11263dce9f7c,1.0,3.742014087038115e-05,"# What are good training courses for being a better culture fit when you go on interviews? I'm not interesting in tech skills/tech training.
+
+I've attended Outco and they focus heavily on the tech/whiteboard side of interviews. I now want to go with a setup that is focused more on the soft skills side of interview and career prep. Something that will turn me into person that is compatible with more companies. So that more interviewers will think, ""this guy is nice, I would want him as my co-work",,"The post content is about training courses for improving soft skills and cultural fit in interviews, which is unrelated to the query about 'short ambiguous bug'."
+short ambiguous bug,random,3,e7e15bc8-9ce5-46fe-97ef-a0dcf2692fc2,20.0,5.759911800851114e-05,"# [D] Software stack to replicate Azure ML / Google Auto ML on premise
+
+If I were to build my own Machine Learning stack, what software should I then use? The use case is as follows.
+
+*This situation uses a local client without GPU and a server with GPU.*
+
+1. The client submits multiple jobs to the server, the server executes theses jobs in order.
+2. The results of these jobs are saved on the server and a dashboard containing all previous runs with the code, dataset, loss and accuracy.
+
+There ar",azure,"The post discusses software stacks for replicating Azure ML or Google Auto ML on premise, focusing on job execution and result tracking. It does not mention or relate to 'short ambiguous bug' or any bug-related topic, making it irrelevant to the query."
+short ambiguous bug,random,4,a62b410a-7240-43f5-8155-42052bc92ac1,1.0,3.749984171008691e-05,"# Am I being an idiot? Quit a job at mid size well respected company after 1 year to join a series A startup as employee #1 because I am burned out and not meeting my boss' expectations but they keep giving me chances.
+
+Title says it all pretty much..
+
+I work as a data engineer, very in demand field where I live. 
+
+My current team is great, all very smart and effective people, my boss most of all, working with him has made me a lot better but I still have a long way to go. But whatever the cause",,"The post content is about a personal career decision and burnout, with no mention or discussion of 'short ambiguous bug' or any related technical issue."
+short ambiguous bug,random,5,e6026849-e4f2-4978-9bea-71e9f7e7fff2,20.0,3.729289164766669e-05,"# I've been doxxed and hacked. I am known. Is a career in ethical hacking actually a bad idea for me?
+
+I have a pretty unusual question. I'm interested in penetration testing, but I'm ""known"", and it really is a mortifying ordeal. I've been the target of an enormous harassment campaign that followed me into the offline world. I've been hacked on numerous occasions. I've been the target of troll farms. (This is a throwaway account.)
+
+I'm currently absolutely obsessed with pentesting/ethical hacki",ethical_hacking,"The query 'short ambiguous bug' is about a brief and unclear software bug, but the post discusses ethical hacking career concerns and personal harassment, which is unrelated to the query topic."
+không có kết quả phù hợp xyznotreal,hybrid,1,917b9b64-0b9d-49d8-a4d0-644ed45ddaf2,20.0,0.014333730563521385,"# Is there a Boolean operator for “does not match”
+
+is there a Boolean operator or something for “_ and _ do not match” in Java any help would be appreciated",,"The query is in Vietnamese and mentions 'không có kết quả phù hợp xyznotreal' which translates to 'no matching results xyznotreal', indicating a search for no results or a negative match. The post content is about a Boolean operator for 'does not match' in Java, which is somewhat related to the concept of 'does not match' but does not address the query's context or the specific term 'xyznotreal'. Therefore, the result is weakly related at best."
+không có kết quả phù hợp xyznotreal,hybrid,2,4cbacc0a-169e-4050-bcef-c1b8998e4f7c,10.0,0.0002499569091014564,"# Is there a better algorithm to check in a list if X XOR Y = 0?
+
+I have tried to come up with one but i do not know where is the issue..im fairly new in data structure so please do not flame me.
+```python
+def xor(theSeq):
+
+    n = len(theSeq)
+
+    for i in range(1, n):
+        for j in range(i):
+            if (theSeq[j] ^ theSeq[j + 1]) != 0:
+                print(""Not Same"")
+            else:
+                print(""Same"")
+
+number = [1, 2, 3, 3, 4, 4, 4, 10, 10, 10]
+xor(number)
+print(number)
+`",,"The query is about 'không có kết quả phù hợp xyznotreal' which suggests a search for no matching results or a specific term 'xyznotreal'. The post content is about a Python algorithm to check if X XOR Y equals 0 in a list, which is unrelated to the query. Therefore, the result is irrelevant."
+không có kết quả phù hợp xyznotreal,hybrid,3,a4900e52-5b5c-416c-b152-ae6a25e79e37,20.0,4.962278762832284e-05,"# Mappings not working for completion menu in command mode
+
+Hi!
+
+I have had for sometime the following mappings to manage the completion menu created by `nvim-lua/completion-nvim`:
+```snap
+inoremap <expr> <C-j>     pumvisible() ? ""<C-n>"" : ""<C-j>""
+inoremap <expr> <C-k>     pumvisible() ? ""<C-p>"" : ""<C-k>""
+inoremap <expr> <C-d>     pumvisible() ? ""<PageDown><C-p><C-n>"" : ""<C-d>""
+inoremap <expr> <C-u>     pumvisible() ? ""<PageUp><C-p><C-n>"" : ""<C-u>""
+inoremap <expr> <Tab>     pumvisible() ? ""<C-n>",inoremap_expr,"The post content discusses mappings in nvim-lua/completion-nvim related to inoremap and cnoremap, which is unrelated to the query 'không có kết quả phù hợp xyznotreal' (no matching results xyznotreal). The content does not address the query topic or provide relevant information."
+không có kết quả phù hợp xyznotreal,hybrid,4,237fb0f3-18df-4288-a699-3a5672c92b0e,10.0,0.00016372176469303668,"# x does not work at the end of the line
+
+Currently, I am using the nightly build of neovim, and whenever I press the x key at the end of a line in normal mode, it does not do anything. This means that it does not delete the characters at the end of the line. When I press X (capital), it works, but this should be expected behavior. Is there any way I can solve this? My init.vim config is below.",,"The query is in Vietnamese asking about 'no matching results xyznotreal', but the post content is about a technical issue with the 'x' key in neovim, which is unrelated to the query. There is no mention of 'xyznotreal' or anything about search results."
+không có kết quả phù hợp xyznotreal,hybrid,5,8c06cd05-238e-425d-8a3d-5d27c1a77391,1.0,5.532570867217146e-05,"# Unable to get snippets working for clangd(using nvim-compe and nvim-lsp)
+
+As you can see with coc I do get snippet completion for clangd
+
+With is not available for nvim-compe
+
+As you can see I am unable to get snippets with nvim-compe when though if I hit alt-enter(which I have set to expand ultisnip) it expands the snippets, but for some reason snippets aren't showing in nvim-compe
+```lua
+--- plugins.lua
+    use {'SirVer/ultisnips'}
+use {'honza/vim-snippets'}
+
+use {
+    'neovim/nvim-lspconfig",nvim_compe,"The query explicitly states 'không có kết quả phù hợp xyznotreal' which means 'no matching results xyznotreal'. The post content is a detailed technical discussion about configuring snippet completion in neovim with clangd and nvim-compe, which is unrelated to the query's mention of no matching results or the term 'xyznotreal'. Therefore, the content is irrelevant to the query."
+không có kết quả phù hợp xyznotreal,random,1,6a2c6d13-9838-405b-898d-5ade09196ce0,1.0,3.729236050276086e-05,"# Is it practical to develop in a guest OS running in something like Virtual Box?
+
+I have a gaming PC that I built a while back that is running Windows 10.
+
+Due to some hardware in it, trying to dual boot Ubuntu along side it as a dev box has been a real PITA to set up and I’ve had to totally reformat my computer a few times trying to get it to work.
+
+At this point, I’m considering just running Ubuntu in VirtualBox and using that to develop.
+
+So far I’ve played around with the OS running in virt",,"The query contains the phrase 'không có kết quả phù hợp xyznotreal' which translates to 'no matching results xyznotreal', indicating a search for no results or a test phrase. The post content is a detailed discussion about running Ubuntu in VirtualBox for development purposes, which is unrelated to the query. Therefore, the result is irrelevant."
+không có kết quả phù hợp xyznotreal,random,2,474a1903-6ba5-45fc-8f73-dd72e9bc7a05,10.0,3.737641964107752e-05,"# Accidentally deleted all backios
+
+So I just started my first internship 5 weeks ago as an IT guys/ software dev for a small scale company. I was tasked with figuring out how to automate one drive backups and using robocopy /purge, I accidentally deleted all the backups from the last 6 months. I’m terrified now, what do I do??",,"The query is about 'không có kết quả phù hợp xyznotreal' which suggests no relevant results for a specific term, while the post content is about accidentally deleting backups using robocopy. The content does not address the query or mention anything related to 'xyznotreal' or lack of results, making it irrelevant."
+không có kết quả phù hợp xyznotreal,random,3,86a9e577-bb99-4b9b-bae1-0b395f00980e,10.0,3.7334881199058145e-05,"# How can I do that with vimwiki ?
+
+Hi, I've discover vimwiki which I love using for taking notes. 
+I would like to know I could I do in order to generate my HTML file within my working directory and not within the default one in my home dir.
+I would like to have something similar to pandoc in order to decide where the output could be generated.",,"The query is about 'không có kết quả phù hợp xyznotreal' which suggests no relevant results for a specific term, possibly in Vietnamese. The post content is about using vimwiki to generate HTML files in a specific directory, which is unrelated to the query. There is no mention or connection to the query terms or the concept of no results."
+không có kết quả phù hợp xyznotreal,random,4,55bc2ae4-7e43-4877-b759-2f9202e4237f,1.0,3.7307687307475135e-05,"# Dear programmers of reddit this is a question from a beginner (me)
+
+I started learning java 3 days ago.. and I can pretty much comprehend much of the basics.. my question is when does things getting serious and it's time to reconsider your choices.. or will this phase ever arrive? Will it get so much difficult that I may be considering to leave it?
+I started java because I was a python user before and thought to once agin step into the coding game but this time be serious about it and do some ",java,"The query contains a nonsensical term 'xyznotreal' indicating no relevant results expected. The post content is about a beginner's question on learning Java, which does not match the query's indication of no relevant results."
+không có kết quả phù hợp xyznotreal,random,5,75e3d3d2-e509-468f-953e-bff8878f1f55,10.0,3.740622923942283e-05,"# How do I make the last line of a file scrollable all the way to the top like in VSCode.
+
+I don’t like to edit the last lines of my code in the bottom of my screen, and I would like to scroll the file up even when I have reached the end of it, as it happens in VSCode.
+
+Is this possible? Do I need any plugins to do it? 
+
+(I am currently using neovim and I am new to the Vim world)",,"The query indicates no relevant results with a nonsensical term 'xyznotreal', while the post content discusses scrolling behavior in code editors, specifically neovim and VSCode, which is unrelated to the query. Therefore, the result is irrelevant."
