@@ -66,7 +66,7 @@ function ToolFallbackRoot({
       open={isOpen}
       onOpenChange={handleOpenChange}
       className={cn(
-        "aui-tool-fallback-root group/tool-fallback-root w-full border py-3",
+        "aui-tool-fallback-root group/tool-fallback-root w-full border bg-background py-3",
         className,
       )}
       style={
@@ -91,10 +91,32 @@ const statusIconMap: Record<ToolStatus, React.ElementType> = {
 };
 
 function formatToolName(toolName: string) {
-  const sentence = toolName.replace(/[_-]+/g, " ").trim().toLowerCase();
+  const words = toolName
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase()
+    .split(" ")
+    .filter(Boolean);
 
-  return sentence
-    ? sentence.charAt(0).toUpperCase() + sentence.slice(1)
+  if (words[0] === "agent") {
+    words.shift();
+  }
+
+  const lastWord = words.at(-1);
+  if (lastWord === "agent") {
+    words.pop();
+  } else if (lastWord?.endsWith("agent")) {
+    words[words.length - 1] = lastWord.slice(0, -"agent".length);
+  }
+
+  if (toolName.toLowerCase().includes("agent")) {
+    words.push("agent");
+  }
+
+  return words.length
+    ? words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
     : toolName;
 }
 
@@ -113,8 +135,10 @@ function ToolFallbackTrigger({
     status?.type === "incomplete" && status.reason === "cancelled";
 
   const Icon = statusIconMap[statusType];
-  const label = isCancelled ? "Cancelled tool" : "Used tool";
   const formattedToolName = formatToolName(toolName);
+  const isAgentCall = formattedToolName.endsWith(" Agent");
+  const label = isCancelled ? "Cancelled tool" : "Used tool";
+  const agentLabel = `${isCancelled ? "Cancelled" : "Calling"} ${formattedToolName}`;
 
   return (
     <CollapsibleTrigger
@@ -141,7 +165,13 @@ function ToolFallbackTrigger({
         )}
       >
         <span>
-          {label}: <b>{formattedToolName}</b>
+          {isAgentCall ? (
+            <b>{agentLabel}</b>
+          ) : (
+            <>
+              {label}: <b>{formattedToolName}</b>
+            </>
+          )}
         </span>
         {isRunning && (
           <span
@@ -149,7 +179,13 @@ function ToolFallbackTrigger({
             data-slot="tool-fallback-trigger-shimmer"
             className="aui-tool-fallback-trigger-shimmer shimmer pointer-events-none absolute inset-0 motion-reduce:animate-none"
           >
-            {label}: <b>{formattedToolName}</b>
+            {isAgentCall ? (
+              <b>{agentLabel}</b>
+            ) : (
+              <>
+                {label}: <b>{formattedToolName}</b>
+              </>
+            )}
           </span>
         )}
       </span>

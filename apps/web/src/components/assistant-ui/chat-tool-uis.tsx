@@ -1,4 +1,5 @@
-import { makeAssistantToolUI } from "@assistant-ui/react";
+import { makeAssistantToolUI, useAuiState } from "@assistant-ui/react";
+import { useAtomValue } from "jotai";
 import type { ComponentType } from "react";
 import {
   IconCheck,
@@ -10,6 +11,7 @@ import {
   IconPencil,
 } from "@tabler/icons-react";
 
+import { planStatesAtom } from "@/lib/atoms/plan-state";
 import { cn } from "@/lib/utils";
 
 type ToolTraceProps = {
@@ -18,6 +20,17 @@ type ToolTraceProps = {
   detail?: string;
   state: "running" | "complete";
 };
+
+function formatIdentifier(value: string) {
+  const words = value
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : value;
+}
 
 export function ToolTrace({
   icon: Icon,
@@ -29,29 +42,28 @@ export function ToolTrace({
 
   return (
     <div
+      data-slot="tool-trace"
       className={cn(
-        "my-2 flex w-fit max-w-full items-center gap-2 border bg-background px-3 py-2 font-mono text-sm leading-none",
+        "flex w-full items-center gap-2 border bg-background px-4 py-3 text-sm leading-none",
         isRunning
           ? "border-primary/30 text-primary"
-          : "border-border/80 text-muted-foreground",
+          : "border-border text-muted-foreground",
       )}
     >
-      <span
-        className={cn(
-          "flex size-5 shrink-0 items-center justify-center border bg-primary/10 text-primary",
-          isRunning ? "border-primary/40" : "border-primary/30",
-        )}
-      >
-        {isRunning ? (
-          <IconLoader2 className="size-3.5 animate-spin" />
-        ) : (
-          <Icon className="size-3.5" />
+      {isRunning ? (
+        <IconLoader2 className="size-4 shrink-0 animate-spin" />
+      ) : (
+        <Icon className="size-4 shrink-0 text-foreground" />
+      )}
+      <span className="min-w-0 grow truncate text-left text-foreground">
+        {label}
+        {detail && (
+          <>
+            :{" "}
+            <span className="font-medium text-muted-foreground">{detail}</span>
+          </>
         )}
       </span>
-      <span className="min-w-0 truncate text-foreground">{label}</span>
-      {detail && (
-        <span className="min-w-0 truncate text-muted-foreground">{detail}</span>
-      )}
     </div>
   );
 }
@@ -59,7 +71,10 @@ export function ToolTrace({
 const OpenFormToolUIImpl = makeAssistantToolUI({
   toolName: "open_form",
   render: ({ args, status }) => {
-    const formName = typeof args.formName === "string" ? args.formName : "form";
+    const formName =
+      typeof args.formName === "string"
+        ? formatIdentifier(args.formName)
+        : "Form";
 
     if (status.type === "running")
       return (
@@ -166,22 +181,50 @@ export function CreatePlanToolUI() {
   return <CreatePlanToolUIImpl />;
 }
 
+function PlanItemToolTrace({
+  id,
+  updateStatus,
+  running,
+}: {
+  id?: string;
+  updateStatus?: string;
+  running: boolean;
+}) {
+  const { id: localId, remoteId } = useAuiState((s) => s.threadListItem);
+  const planStates = useAtomValue(planStatesAtom);
+  const plan = planStates[remoteId ?? localId];
+  const item = plan?.items.find((candidate) => candidate.id === id);
+
+  const label = running
+    ? "Updating step"
+    : updateStatus === "in_progress"
+      ? "Started step"
+      : updateStatus === "completed"
+        ? "Completed step"
+        : updateStatus === "skipped"
+          ? "Skipped step"
+          : "Updated step";
+
+  return (
+    <ToolTrace
+      icon={running ? IconEdit : IconCheck}
+      label={label}
+      detail={item?.label ?? (id ? formatIdentifier(id) : "Step")}
+      state={running ? "running" : "complete"}
+    />
+  );
+}
+
 const UpdatePlanItemToolUIImpl = makeAssistantToolUI({
   toolName: "update_plan_item",
   render: ({ args, status }) => {
-    if (status.type === "running") {
-      return (
-        <ToolTrace icon={IconEdit} label="Updating step" state="running" />
-      );
-    }
-
-    const label = typeof args.id === "string" ? args.id : "step";
     return (
-      <ToolTrace
-        icon={IconCheck}
-        label="Updated step"
-        detail={label}
-        state="complete"
+      <PlanItemToolTrace
+        id={typeof args.id === "string" ? args.id : undefined}
+        updateStatus={
+          typeof args.status === "string" ? args.status : undefined
+        }
+        running={status.type === "running"}
       />
     );
   },

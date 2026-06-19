@@ -164,14 +164,17 @@ export const streamRoute = registerApiRoute("/chat", {
         maxSteps: 20,
         system,
         clientTools,
-        providerOptions: orchestratorModelConfig.reasoningEffort
-          ? {
-              openai: {
-                reasoningEffort: orchestratorModelConfig.reasoningEffort,
-                reasoningSummary: "detailed",
-              },
-            }
-          : undefined,
+        providerOptions: {
+          openai: {
+            parallelToolCalls: false,
+            ...(orchestratorModelConfig.reasoningEffort
+              ? {
+                  reasoningEffort: orchestratorModelConfig.reasoningEffort,
+                  reasoningSummary: "detailed" as const,
+                }
+              : {}),
+          },
+        },
       });
 
       const stream = createUIMessageStream({
