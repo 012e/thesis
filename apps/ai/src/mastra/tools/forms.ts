@@ -18,10 +18,16 @@ export const openFormTool = createTool({
 export const setFormFieldTool = createTool({
   id: "set_form_field",
   description:
-    "Updates a specific field in the currently active form. The frontend will intercept this and update the UI.",
+    "Updates a field in the active form. For PostCreationForm, write the post text to the content field.",
   inputSchema: z.object({
-    formName: z.string().describe("The name of the currently active form"),
-    field: z.string().describe("The name of the field to update"),
+    formName: z
+      .enum(["PostCreationForm"])
+      .describe("The name of the currently active form"),
+    field: z
+      .enum(["content", "showPollCreator", "poll"])
+      .describe(
+        "The PostCreationForm field to update. Use content for the post text.",
+      ),
     value: z.any().describe("The value to set the field to"),
   }),
   execute: async () => {

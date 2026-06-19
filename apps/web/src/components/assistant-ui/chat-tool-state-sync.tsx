@@ -1,12 +1,13 @@
 import { useAuiState } from "@assistant-ui/react";
 import { useSetAtom } from "jotai";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { formDraftsAtom } from "@/lib/atoms/form-drafts";
 import { planStatesAtom, type PlanItem } from "@/lib/atoms/plan-state";
 
 type ToolCallPart = {
   type?: unknown;
+  toolCallId?: unknown;
   toolName?: unknown;
   args?: unknown;
   status?: unknown;
@@ -26,6 +27,7 @@ export function ChatToolStateSync({
   const messages = useAuiState((s) => s.thread.messages);
   const setDrafts = useSetAtom(formDraftsAtom);
   const setPlanStates = useSetAtom(planStatesAtom);
+  const seenSubmitCallsByThread = useRef(new Map<string, Set<string>>());
 
   useEffect(() => {
     if (!messages) return;
@@ -33,7 +35,7 @@ export function ChatToolStateSync({
     // Replay completed tool calls from history to derive authoritative UI state.
     let derivedActiveForm: string | undefined = undefined;
     const derivedData: Record<string, unknown> = {};
-    let hasSubmit = false;
+    const completedSubmitCalls = new Set<string>();
 
     let latestPlanArgs: {
       title: string;
@@ -44,10 +46,10 @@ export function ChatToolStateSync({
       { status: PlanItem["status"]; notes?: string }
     > = {};
 
-    for (const msg of messages) {
+    for (const [messageIndex, msg] of messages.entries()) {
       if (msg.role !== "assistant") continue;
 
-      for (const part of getToolCallParts(msg)) {
+      for (const [partIndex, part] of getToolCallParts(msg).entries()) {
         if (isRunningToolCall(part)) continue;
 
         const args = getToolArgs(part.args);
@@ -56,9 +58,11 @@ export function ChatToolStateSync({
           derivedActiveForm = getStringArg(args, "formName");
         } else if (part.toolName === "set_form_field") {
           const field = getStringArg(args, "field");
-          if (field) derivedData[field] = args.value;
+          if (field) derivedData[normalizeFormField(field)] = args.value;
         } else if (part.toolName === "submit_form") {
-          hasSubmit = true;
+          completedSubmitCalls.add(
+            getToolCallKey(part, messageIndex, partIndex),
+          );
         } else if (part.toolName === "create_plan") {
           const title = getStringArg(args, "title");
           const items = getPlanItems(args.items);
@@ -80,15 +84,41 @@ export function ChatToolStateSync({
     }
 
     if (syncForms) {
+      const seenSubmitCalls = seenSubmitCallsByThread.current.get(threadId);
+      const shouldSubmit =
+        seenSubmitCalls !== undefined &&
+        [...completedSubmitCalls].some((callId) => !seenSubmitCalls.has(callId));
+
+      // The first snapshot for a thread is history, not a new tool event.
+      // Record it as already handled so revisiting a thread cannot resubmit.
+      if (seenSubmitCalls) {
+        completedSubmitCalls.forEach((callId) => seenSubmitCalls.add(callId));
+      } else {
+        seenSubmitCallsByThread.current.set(threadId, completedSubmitCalls);
+      }
+
       setDrafts((prev) => {
         const current = prev[threadId];
+        const submitRequest =
+          shouldSubmit || (current?.submitRequest ?? false);
+
+        if (
+          current !== undefined &&
+          current.activeForm === derivedActiveForm &&
+          recordsEqual(current.data, derivedData) &&
+          (current.submitRequest ?? false) === submitRequest
+        ) {
+          return prev;
+        }
+
         return {
           ...prev,
           [threadId]: {
             activeForm: derivedActiveForm,
             data: derivedData,
-            // Only set submitRequest; PostCreationForm clears it after submission.
-            submitRequest: hasSubmit || (current?.submitRequest ?? false),
+            // Only a newly completed submit_form call may arm this flag.
+            // PostCreationForm clears it before starting the request.
+            submitRequest,
           },
         };
       });
@@ -160,9 +190,40 @@ function getToolArgs(args: unknown): ToolArgs {
   return isRecord(args) ? args : {};
 }
 
+function getToolCallKey(
+  part: ToolCallPart,
+  messageIndex: number,
+  partIndex: number,
+) {
+  return typeof part.toolCallId === "string"
+    ? part.toolCallId
+    : `${messageIndex}:${partIndex}`;
+}
+
 function getStringArg(args: ToolArgs, key: string) {
   const value = args[key];
   return typeof value === "string" ? value : undefined;
+}
+
+function normalizeFormField(field: string) {
+  return field === "text" ? "content" : field;
+}
+
+function recordsEqual(
+  left: Record<string, unknown>,
+  right: Record<string, unknown>,
+) {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+
+  return (
+    leftKeys.length === rightKeys.length &&
+    leftKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(right, key) &&
+        Object.is(left[key], right[key]),
+    )
+  );
 }
 
 function getPlanItems(value: unknown) {
