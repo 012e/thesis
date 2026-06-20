@@ -5,11 +5,14 @@ import {
   IconCheck,
   IconCircleDashedCheck,
   IconEdit,
+  IconExternalLink,
   IconFileCheck,
   IconLoader2,
   IconListCheck,
   IconPencil,
 } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
+import type { PostDto } from "@repo/shared-dto";
 
 import { planStatesAtom } from "@/lib/atoms/plan-state";
 import { cn } from "@/lib/utils";
@@ -131,7 +134,7 @@ export function SetFormFieldToolUI() {
 
 const SubmitFormToolUIImpl = makeAssistantToolUI({
   toolName: "submit_form",
-  render: ({ status }) => {
+  render: ({ result, status }) => {
     if (status.type === "running")
       return (
         <ToolTrace
@@ -140,12 +143,49 @@ const SubmitFormToolUIImpl = makeAssistantToolUI({
           state="running"
         />
       );
+
+    const post =
+      isRecord(result) && isPostDto(result.post) ? result.post : undefined;
+
     return (
-      <ToolTrace
-        icon={IconCircleDashedCheck}
-        label="Form submitted"
-        state="complete"
-      />
+      <div className="space-y-2">
+        <ToolTrace
+          icon={IconCircleDashedCheck}
+          label={post ? "Post created" : "Form submitted"}
+          state="complete"
+        />
+        {post && (
+          <Link
+            to="/posts/$postId"
+            params={{ postId: post.id }}
+            className="block border border-border bg-background p-4 transition-colors hover:bg-accent/50"
+          >
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <span className="truncate text-sm font-medium text-foreground">
+                {post.author.name ||
+                  post.author.username ||
+                  post.author.email}
+              </span>
+              <span className="flex shrink-0 items-center gap-1 text-xs text-primary">
+                View post
+                <IconExternalLink className="size-3.5" />
+              </span>
+            </div>
+            {post.content.text && (
+              <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">
+                {post.content.text}
+              </p>
+            )}
+            {post.content.images?.[0] && (
+              <img
+                src={post.content.images[0].url}
+                alt=""
+                className="mt-3 max-h-48 w-full object-cover"
+              />
+            )}
+          </Link>
+        )}
+      </div>
     );
   },
 });
@@ -250,5 +290,18 @@ export function FormToolUIs() {
       <SetFormFieldToolUI />
       <SubmitFormToolUI />
     </>
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isPostDto(value: unknown): value is PostDto {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    isRecord(value.author) &&
+    isRecord(value.content)
   );
 }
