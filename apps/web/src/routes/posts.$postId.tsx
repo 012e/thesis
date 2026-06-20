@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { z } from "zod";
 import { Post } from "@/components/post";
 import { PageSpinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,12 @@ import { CommentTree } from "@/components/comment-tree";
 import { CommentEditor } from "@/components/comment-editor";
 import { useCreateComment } from "@/hooks/use-comments";
 
+const postSearchSchema = z.object({
+  commentId: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/posts/$postId")({
+  validateSearch: postSearchSchema,
   beforeLoad: () => {
     setGlobalAIContext({ type: "none" });
   },
@@ -20,6 +26,7 @@ export const Route = createFileRoute("/posts/$postId")({
 
 function SinglePostPage() {
   const { postId } = Route.useParams();
+  const { commentId } = Route.useSearch();
   const { data: session } = useSession();
 
   const {
@@ -87,7 +94,11 @@ function SinglePostPage() {
           placeholder="Write a comment..."
         />
         <div className="px-4 py-4">
-          <CommentTree postId={postId} isRoot />
+          <CommentTree
+            postId={postId}
+            focusedCommentId={commentId}
+            isRoot
+          />
         </div>
       </div>
     </>

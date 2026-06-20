@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CommentItem } from "./comment-item";
 import { CommentEditor } from "./comment-editor";
 import type { CommentType } from "@repo/rest-contracts";
 import { useComments, useCreateReply } from "@/hooks/use-comments";
 import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 export interface CommentTreeProps {
   postId: string;
+  /** Scrolls the matching comment into view and highlights it. */
+  focusedCommentId?: string;
   /** When true, fetches comments internally. Pass for the root render (e.g. inside CommentsDialog). */
   isRoot?: boolean;
   /** Supply comments directly (used when isRoot is false, or in Storybook). */
@@ -68,6 +71,7 @@ interface CommentNodeRendererProps {
   onReply: (commentId: string) => void;
   replyingTo: string | null;
   onCancelReply: () => void;
+  focusedCommentId?: string;
 }
 
 function CommentNodeRenderer({
@@ -77,6 +81,7 @@ function CommentNodeRenderer({
   onReply,
   replyingTo,
   onCancelReply,
+  focusedCommentId,
 }: CommentNodeRendererProps) {
   const { mutate: createReply, isPending } = useCreateReply(postId);
 
@@ -93,12 +98,20 @@ function CommentNodeRenderer({
 
   return (
     <div className="space-y-3">
-      <CommentItem
-        comment={node}
-        postId={postId}
-        onReply={onReply}
-        level={level}
-      />
+      <div
+        id={`comment-${node.id}`}
+        className={cn(
+          "scroll-mt-20 transition-colors",
+          focusedCommentId === node.id && "bg-primary/10 ring-1 ring-primary/30",
+        )}
+      >
+        <CommentItem
+          comment={node}
+          postId={postId}
+          onReply={onReply}
+          level={level}
+        />
+      </div>
       {replyingTo === node.id && (
         <div style={{ marginLeft: `${Math.min(level + 1, 4) * 16}px` }}>
           <CommentEditor
@@ -123,6 +136,7 @@ function CommentNodeRenderer({
               onReply={onReply}
               replyingTo={replyingTo}
               onCancelReply={onCancelReply}
+              focusedCommentId={focusedCommentId}
             />
           ))}
         </div>
@@ -134,12 +148,25 @@ function CommentNodeRenderer({
 interface CommentTreeInnerProps {
   comments: CommentType[];
   postId: string;
+  focusedCommentId?: string;
 }
 
-function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
+function CommentTreeInner({
+  comments,
+  postId,
+  focusedCommentId,
+}: CommentTreeInnerProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
 
   const tree = buildCommentTree(comments);
+
+  useEffect(() => {
+    if (!focusedCommentId) return;
+
+    document
+      .getElementById(`comment-${focusedCommentId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusedCommentId, comments]);
 
   const handleReply = (commentId: string) => {
     setReplyingTo((prev) => (prev === commentId ? null : commentId));
@@ -168,6 +195,7 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
           onReply={handleReply}
           replyingTo={replyingTo}
           onCancelReply={handleCancelReply}
+          focusedCommentId={focusedCommentId}
         />
       ))}
     </div>
@@ -176,6 +204,7 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
 
 export function CommentTree({
   postId,
+  focusedCommentId,
   isRoot = false,
   comments,
 }: CommentTreeProps) {
@@ -199,8 +228,20 @@ export function CommentTree({
       );
     }
 
-    return <CommentTreeInner comments={query.data ?? []} postId={postId} />;
+    return (
+      <CommentTreeInner
+        comments={query.data ?? []}
+        postId={postId}
+        focusedCommentId={focusedCommentId}
+      />
+    );
   }
 
-  return <CommentTreeInner comments={comments ?? []} postId={postId} />;
+  return (
+    <CommentTreeInner
+      comments={comments ?? []}
+      postId={postId}
+      focusedCommentId={focusedCommentId}
+    />
+  );
 }
