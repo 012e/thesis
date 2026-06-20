@@ -1,5 +1,9 @@
 import { createContext, useContext, type ChangeEvent } from "react";
-import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
+import type {
+  PollPostContentDto,
+  PostDto,
+  PostImageDto,
+} from "@repo/shared-dto";
 
 export interface ImagePreview {
   file: File;
@@ -22,7 +26,7 @@ export interface PostComposerContextValue {
   canPost: boolean;
   totalImages: number;
   canAddMoreImages: boolean;
-  handlePost: () => Promise<void>;
+  handlePost: () => Promise<PostDto | void>;
   handleClear: () => void;
   handlePollToggle: () => void;
   handlePollClose: () => void;

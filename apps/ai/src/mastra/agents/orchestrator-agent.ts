@@ -1,6 +1,5 @@
 import { Agent } from "@mastra/core/agent";
 import { RequestContext } from "@mastra/core/request-context";
-import type { ToolSet } from "ai";
 import type { AIContextPayload } from "@repo/shared-dto";
 import { PROMPTS } from "../../prompts";
 import { getSocialMcpToolsets } from "../mcp/social";
@@ -16,7 +15,6 @@ import {
   MODEL_CONFIG,
   type ModelMode,
 } from "../constants";
-import { openFormTool, setFormFieldTool, submitFormTool } from "../tools/forms";
 import { createPlanTool, updatePlanItemTool } from "../tools/plan";
 import { createGetContextTool } from "../tools/context";
 
@@ -46,7 +44,6 @@ export async function createOrchestratorAgent(
   context: RequestContext,
   mode: ModelMode = "fast",
   userContext?: AIContextPayload,
-  clientTools?: ToolSet,
 ): Promise<Agent> {
   const orchestratorModelConfig = getOrchestratorModelConfig(mode);
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
@@ -116,9 +113,6 @@ export async function createOrchestratorAgent(
       planningAgent,
     },
     tools: {
-      open_form: openFormTool,
-      set_form_field: setFormFieldTool,
-      submit_form: submitFormTool,
       get_current_context: getContextTool,
       create_plan: createPlanTool,
       update_plan_item: updatePlanItemTool,

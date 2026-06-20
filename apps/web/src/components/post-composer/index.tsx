@@ -12,6 +12,7 @@ import { MDXEditor, type MDXEditorMethods } from "@repo/mdx-editor";
 import "@repo/mdx-editor/style.css";
 import type {
   PostContentDto,
+  PostDto,
   PollPostContentDto,
   PostImageDto,
 } from "@repo/shared-dto";
@@ -74,7 +75,7 @@ export function PostComposerProvider({
   isSubmitting = false,
   children,
 }: PostComposerProviderProps) {
-  const { mutate: createPost, isPending: isCreating } = useCreatePost();
+  const { mutateAsync: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
 
@@ -90,7 +91,7 @@ export function PostComposerProvider({
   const totalImages = selectedImages.length + uploadedImages.length;
   const canAddMoreImages = totalImages < MAX_IMAGES;
 
-  const handlePost = async () => {
+  const handlePost = async (): Promise<PostDto | void> => {
     if (!canPost) return;
 
     if (onSubmitContent) {
@@ -110,15 +111,13 @@ export function PostComposerProvider({
       if (content.trim()) postContent.text = content.trim();
       if (poll) postContent.poll = poll;
       if (images.length > 0) postContent.images = images;
-      createPost(postContent, {
-        onSuccess: () => {
-          setContent("");
-          setPoll(undefined);
-          setShowPollCreator(false);
-          setSelectedImages([]);
-          setUploadedImages([]);
-        },
-      });
+      const post = await createPost(postContent);
+      setContent("");
+      setPoll(undefined);
+      setShowPollCreator(false);
+      setSelectedImages([]);
+      setUploadedImages([]);
+      return post;
     } catch {
       // Error handling is done in the hook
     }

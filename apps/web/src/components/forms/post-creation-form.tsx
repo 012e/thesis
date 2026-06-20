@@ -31,27 +31,45 @@ import {
   type ImagePreview,
 } from "@/components/post-composer";
 import { usePostComposerContext } from "@/components/post-composer/context";
+import {
+  completeFormSubmission,
+  failFormSubmission,
+} from "@/lib/assistant/form-submission";
 
 /**
- * Watches the submitRequest flag set by the submit_form AI tool and triggers
- * handlePost() from within PostComposerProvider context. Clears the flag after
- * initiating submission so it doesn't re-fire on re-render.
+ * Watches the request set by the submit_form AI tool and resolves that tool
+ * only after the post API request has completed.
  */
 function AutoSubmit({ threadId }: { threadId: string }) {
   const { handlePost, canPost } = usePostComposerContext();
   const [drafts, setDrafts] = useAtom(formDraftsAtom);
-  const submitRequest = drafts[threadId]?.submitRequest ?? false;
+  const submitRequestId = drafts[threadId]?.submitRequestId;
 
   useEffect(() => {
-    if (!submitRequest || !canPost) return;
-    // Clear the flag first to avoid double-submit on re-render.
+    if (!submitRequestId) return;
+
     setDrafts(
       produce((d) => {
-        if (d[threadId]) d[threadId]!.submitRequest = false;
+        if (d[threadId]) d[threadId]!.submitRequestId = undefined;
       }),
     );
-    void handlePost();
-  }, [submitRequest, canPost, threadId, handlePost, setDrafts]);
+
+    if (!canPost) {
+      failFormSubmission(
+        submitRequestId,
+        "The post form is incomplete or contains invalid content.",
+      );
+      return;
+    }
+
+    void handlePost().then((post) => {
+      if (post) {
+        completeFormSubmission(submitRequestId, post);
+      } else {
+        failFormSubmission(submitRequestId, "The post could not be created.");
+      }
+    });
+  }, [submitRequestId, canPost, threadId, handlePost, setDrafts]);
 
   return null;
 }

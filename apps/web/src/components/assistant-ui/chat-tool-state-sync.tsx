@@ -1,6 +1,6 @@
 import { useAuiState } from "@assistant-ui/react";
 import { useSetAtom } from "jotai";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import { formDraftsAtom } from "@/lib/atoms/form-drafts";
 import { planStatesAtom, type PlanItem } from "@/lib/atoms/plan-state";
@@ -27,7 +27,6 @@ export function ChatToolStateSync({
   const messages = useAuiState((s) => s.thread.messages);
   const setDrafts = useSetAtom(formDraftsAtom);
   const setPlanStates = useSetAtom(planStatesAtom);
-  const seenSubmitCallsByThread = useRef(new Map<string, Set<string>>());
 
   useEffect(() => {
     if (!messages) return;
@@ -35,8 +34,6 @@ export function ChatToolStateSync({
     // Replay completed tool calls from history to derive authoritative UI state.
     let derivedActiveForm: string | undefined = undefined;
     const derivedData: Record<string, unknown> = {};
-    const completedSubmitCalls = new Set<string>();
-
     let latestPlanArgs: {
       title: string;
       items: Array<{ id: string; label: string; description?: string }>;
@@ -46,10 +43,10 @@ export function ChatToolStateSync({
       { status: PlanItem["status"]; notes?: string }
     > = {};
 
-    for (const [messageIndex, msg] of messages.entries()) {
+    for (const msg of messages) {
       if (msg.role !== "assistant") continue;
 
-      for (const [partIndex, part] of getToolCallParts(msg).entries()) {
+      for (const part of getToolCallParts(msg)) {
         if (isRunningToolCall(part)) continue;
 
         const args = getToolArgs(part.args);
@@ -59,10 +56,6 @@ export function ChatToolStateSync({
         } else if (part.toolName === "set_form_field") {
           const field = getStringArg(args, "field");
           if (field) derivedData[normalizeFormField(field)] = args.value;
-        } else if (part.toolName === "submit_form") {
-          completedSubmitCalls.add(
-            getToolCallKey(part, messageIndex, partIndex),
-          );
         } else if (part.toolName === "create_plan") {
           const title = getStringArg(args, "title");
           const items = getPlanItems(args.items);
@@ -84,29 +77,13 @@ export function ChatToolStateSync({
     }
 
     if (syncForms) {
-      const seenSubmitCalls = seenSubmitCallsByThread.current.get(threadId);
-      const shouldSubmit =
-        seenSubmitCalls !== undefined &&
-        [...completedSubmitCalls].some((callId) => !seenSubmitCalls.has(callId));
-
-      // The first snapshot for a thread is history, not a new tool event.
-      // Record it as already handled so revisiting a thread cannot resubmit.
-      if (seenSubmitCalls) {
-        completedSubmitCalls.forEach((callId) => seenSubmitCalls.add(callId));
-      } else {
-        seenSubmitCallsByThread.current.set(threadId, completedSubmitCalls);
-      }
-
       setDrafts((prev) => {
         const current = prev[threadId];
-        const submitRequest =
-          shouldSubmit || (current?.submitRequest ?? false);
 
         if (
           current !== undefined &&
           current.activeForm === derivedActiveForm &&
-          recordsEqual(current.data, derivedData) &&
-          (current.submitRequest ?? false) === submitRequest
+          recordsEqual(current.data, derivedData)
         ) {
           return prev;
         }
@@ -116,9 +93,7 @@ export function ChatToolStateSync({
           [threadId]: {
             activeForm: derivedActiveForm,
             data: derivedData,
-            // Only a newly completed submit_form call may arm this flag.
-            // PostCreationForm clears it before starting the request.
-            submitRequest,
+            submitRequestId: current?.submitRequestId,
           },
         };
       });
@@ -188,16 +163,6 @@ function isRunningToolCall(part: ToolCallPart) {
 
 function getToolArgs(args: unknown): ToolArgs {
   return isRecord(args) ? args : {};
-}
-
-function getToolCallKey(
-  part: ToolCallPart,
-  messageIndex: number,
-  partIndex: number,
-) {
-  return typeof part.toolCallId === "string"
-    ? part.toolCallId
-    : `${messageIndex}:${partIndex}`;
 }
 
 function getStringArg(args: ToolArgs, key: string) {
