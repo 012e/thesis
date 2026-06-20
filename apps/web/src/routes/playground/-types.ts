@@ -1,7 +1,9 @@
 import { atomWithStorage } from "jotai/utils";
 import type { SlotItemMap } from "swapy";
 
-export type Language = "javascript" | "typescript";
+import type { PlaygroundLanguage } from "@repo/rest-contracts";
+
+export type Language = PlaygroundLanguage;
 export type PanelId = "playground" | "chat";
 export type PanelSlotId = PanelId;
 

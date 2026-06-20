@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { useEffect } from "react";
 import { z } from "zod";
 import { Post } from "@/components/post";
 import { PageSpinner } from "@/components/ui/spinner";
@@ -43,6 +44,19 @@ function SinglePostPage() {
 
   const { mutate: createComment, isPending: isCommentPending } =
     useCreateComment(postId);
+
+  useEffect(() => {
+    if (!post) {
+      setGlobalAIContext({ type: "none" });
+      return;
+    }
+
+    setGlobalAIContext({ type: "post", post });
+
+    return () => {
+      setGlobalAIContext({ type: "none" });
+    };
+  }, [post]);
 
   const handleCommentSubmit = (content: string) => {
     createComment({ content });

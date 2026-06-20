@@ -14,7 +14,7 @@ export const playgroundContract = c.router({
       400: z.null(),
       500: z.null(),
     },
-    summary: "Execute JavaScript or TypeScript code in an isolated sandbox",
+    summary: "Execute code in an isolated Piston sandbox",
   },
 });
 

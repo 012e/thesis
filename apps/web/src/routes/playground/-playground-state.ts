@@ -10,7 +10,7 @@ import { isOutputMinimizedAtom } from "./-types";
 import type { Language } from "./-types";
 
 type PlaygroundState = {
-  code: string;
+  codeByLanguage: Record<Language, string>;
   language: Language;
   result: ExecutionResult | null;
   isChatCollapsed: boolean;
@@ -23,7 +23,7 @@ export type PlaygroundEditFlash = {
 };
 
 const initialPlaygroundState: PlaygroundState = {
-  code: DEFAULT_CODE.javascript,
+  codeByLanguage: { ...DEFAULT_CODE },
   language: "javascript",
   result: null,
   isChatCollapsed: false,
@@ -34,7 +34,14 @@ const beforeChatCollapseAtom = atom<{ callback: () => void } | null>(null);
 
 export const editFlashAtom = atom<PlaygroundEditFlash | null>(null);
 
-export const codeAtom = selectAtom(playgroundStateAtom, (state) => state.code);
+export const codeAtom = selectAtom(
+  playgroundStateAtom,
+  (state) => state.codeByLanguage[state.language],
+);
+export const codeByLanguageAtom = selectAtom(
+  playgroundStateAtom,
+  (state) => state.codeByLanguage,
+);
 export const languageAtom = selectAtom(
   playgroundStateAtom,
   (state) => state.language,
@@ -53,8 +60,31 @@ export const resetPlaygroundStateAtom = atom(null, (_get, set) => {
 });
 
 export const setCodeAtom = atom(null, (_get, set, code: string) => {
-  set(playgroundStateAtom, (current) => ({ ...current, code }));
+  set(playgroundStateAtom, (current) => ({
+    ...current,
+    codeByLanguage: {
+      ...current.codeByLanguage,
+      [current.language]: code,
+    },
+  }));
 });
+
+export const setCodeForLanguageAtom = atom(
+  null,
+  (
+    _get,
+    set,
+    { language, code }: { language: Language; code: string },
+  ) => {
+    set(playgroundStateAtom, (current) => ({
+      ...current,
+      codeByLanguage: {
+        ...current.codeByLanguage,
+        [language]: code,
+      },
+    }));
+  },
+);
 
 export const setLanguageAtom = atom(null, (_get, set, language: Language) => {
   set(playgroundStateAtom, (current) => ({ ...current, language }));
@@ -72,10 +102,6 @@ export const changeLanguageAtom = atom(
   (_get, set, language: Language) => {
     set(playgroundStateAtom, (current) => ({
       ...current,
-      code:
-        current.code === DEFAULT_CODE[current.language]
-          ? DEFAULT_CODE[language]
-          : current.code,
       language,
     }));
   },

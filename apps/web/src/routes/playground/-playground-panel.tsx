@@ -232,7 +232,7 @@ export function PlaygroundPanel() {
         >
           <Editor
             height="100%"
-            language={language}
+            language={language === "c++" ? "cpp" : language}
             value={code}
             theme={editorTheme}
             onMount={handleEditorMount}
