@@ -72,10 +72,9 @@ export const RequestUserContextToolInputSchema = z.object({
           .enum(["yes_no", "single_choice", "multiple_choice", "text"])
           .describe("Control used to answer the question"),
         options: z
-          .array(ChoiceOptionSchema)
-          .nullish()
+          .array(z.string().min(1, "Options cannot be empty."))
           .describe(
-            "Required for single_choice and multiple_choice; use null or omit for yes_no and text",
+            "Use at least two non-empty label strings for single_choice and multiple_choice. Use an empty array for yes_no and text.",
           ),
       }),
     )
@@ -245,7 +244,14 @@ function normalizeToolInput(
         return {
           ...base,
           type: question.type,
-          ...(question.options ? { options: question.options } : undefined),
+          ...(question.options
+            ? {
+                options: question.options.map((option) => ({
+                  value: option,
+                  label: option,
+                })),
+              }
+            : undefined),
         };
       }
 

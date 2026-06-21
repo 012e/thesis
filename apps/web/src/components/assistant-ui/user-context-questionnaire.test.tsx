@@ -37,30 +37,30 @@ describe("UserContextQuestionnaire", () => {
     const resultPromise = requestUserContext("thread-a", {
       title: "Launch context",
       questions: [
-        { id: "approved", prompt: "Is this approved?", type: "yes_no" },
+        {
+          id: "approved",
+          prompt: "Is this approved?",
+          type: "yes_no",
+          options: [],
+        },
         {
           id: "priority",
           prompt: "Choose a priority",
           type: "single_choice",
-          options: [
-            { value: "speed", label: "Speed" },
-            { value: "quality", label: "Quality" },
-          ],
+          options: ["Speed", "Quality"],
         },
         {
           id: "channels",
           prompt: "Choose channels",
           type: "multiple_choice",
-          options: [
-            { value: "email", label: "Email" },
-            { value: "push", label: "Push" },
-          ],
+          options: ["Email", "Push"],
         },
         {
           id: "notes",
           prompt: "Add notes",
           type: "text",
           placeholder: "Required details",
+          options: [],
         },
       ],
     });
@@ -99,8 +99,8 @@ describe("UserContextQuestionnaire", () => {
       status: "completed",
       answers: {
         approved: false,
-        priority: "quality",
-        channels: ["email", "push"],
+        priority: "Quality",
+        channels: ["Email", "Push"],
         notes: "Ship on Friday",
       },
     });
@@ -110,11 +110,15 @@ describe("UserContextQuestionnaire", () => {
     const user = userEvent.setup();
     const firstResult = requestUserContext("thread-a", {
       title: "First thread",
-      questions: [{ id: "first", prompt: "First answer", type: "text" }],
+      questions: [
+        { id: "first", prompt: "First answer", type: "text", options: [] },
+      ],
     });
     const secondResult = requestUserContext("thread-b", {
       title: "Second thread",
-      questions: [{ id: "second", prompt: "Second answer", type: "text" }],
+      questions: [
+        { id: "second", prompt: "Second answer", type: "text", options: [] },
+      ],
     });
 
     const view = renderQuestionnaire("thread-a");
