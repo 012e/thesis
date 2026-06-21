@@ -31,6 +31,7 @@ import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification
 import { PgBossService } from "@wavezync/nestjs-pgboss";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { ContentHashService } from "@/moderation/content-hash.service";
+import { XpService } from "@/xp/xp.service";
 
 describe("TagsService integration", () => {
   let containers: PostgresContainerContext;
@@ -59,6 +60,7 @@ describe("TagsService integration", () => {
         PostsNotificationsService,
         PostsPresenterService,
         TagsService,
+        XpService,
         {
           provide: StorageService,
           useValue: {

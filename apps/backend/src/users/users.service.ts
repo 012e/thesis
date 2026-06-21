@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { and, count, eq, sql } from "drizzle-orm";
 import { DatabaseService } from "@/db/database.service";
 import { user } from "@/db/auth-schema";
-import { userFollows, posts, userProfiles } from "@/db/schema";
+import { userFollows, posts, userProfiles, userXp } from "@/db/schema";
 import { ImageProcessorService } from "@/storage/image-processor.service";
 import { StorageService } from "@/storage/storage.service";
 import { DEFAULT_AVATAR_KEY } from "@/users/default-avatar";
@@ -254,9 +254,11 @@ export class UsersService implements OnApplicationBootstrap {
         followingCount: sql<number>`COALESCE((${followingCountSq}), 0)::int`,
         postCount: sql<number>`COALESCE((${postCountSq}), 0)::int`,
         isFollowingCount: sql<number>`COALESCE((${isFollowingSq}), 0)::int`,
+        xp: sql<number>`COALESCE(${userXp.total}, 0)::int`,
       })
       .from(user)
       .leftJoin(userProfiles, eq(userProfiles.userId, user.id))
+      .leftJoin(userXp, eq(userXp.userId, user.id))
       .where(eq(user.id, userId))
       .limit(1);
 
@@ -278,6 +280,7 @@ export class UsersService implements OnApplicationBootstrap {
       followingCount: row.followingCount,
       postCount: row.postCount,
       isFollowing: row.isFollowingCount > 0,
+      xp: row.xp,
     };
   }
 

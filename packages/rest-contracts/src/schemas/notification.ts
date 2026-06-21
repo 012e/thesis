@@ -76,6 +76,7 @@ export const CommentReactionNotificationPayload = z.object({
   reactionType: z.enum(["upvote", "downvote"]),
   post: NotificationPostContext.optional(),
   comment: NotificationCommentContext.optional(),
+  xpEarned: z.number().int().positive().optional(),
 });
 
 export const DirectMessageNotificationPayload = z.object({
@@ -94,6 +95,7 @@ export const AnswerAcceptedNotificationPayload = z.object({
   commentId: z.string().uuid(),
   post: NotificationPostContext.optional(),
   comment: NotificationCommentContext.optional(),
+  xpEarned: z.number().int().positive().optional(),
 });
 
 export const NotificationPayload = z.union([

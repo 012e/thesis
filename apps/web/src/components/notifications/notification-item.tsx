@@ -27,6 +27,11 @@ export function NotificationItem({
   const isUnread = notification.readAt === null;
   const isInteractive = Boolean(onActivate);
   const contextText = getNotificationContextText(notification);
+  const xpEarned =
+    notification.type === "answer_accepted" ||
+    notification.type === "comment_reaction"
+      ? (notification.payload as { xpEarned?: number }).xpEarned
+      : undefined;
 
   const handleActivate = () => {
     onActivate?.(notification);
@@ -60,6 +65,11 @@ export function NotificationItem({
         >
           {getNotificationText(notification)}
         </p>
+        {xpEarned ? (
+          <span className="mt-1 inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-semibold text-amber-600 dark:text-amber-400">
+            +{xpEarned} XP
+          </span>
+        ) : null}
         {contextText ? (
           <p
             className={cn(

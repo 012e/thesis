@@ -37,6 +37,7 @@ export interface ProfileViewProps {
     followersCount: number;
     isFollowing: boolean;
     createdAt: string | null;
+    xp: number;
   };
   postsData: InfiniteData<PostsPageData> | undefined;
   postsQueryKey: QueryKey;
@@ -259,7 +260,13 @@ export function ProfileView({
         <div className="my-6" />
 
         {/* Profile Stats */}
-        <div className="grid grid-cols-3 gap-6 text-center px-4">
+        <div className="grid grid-cols-4 gap-6 text-center px-4">
+          <Card className="p-4">
+            <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">
+              {profile.xp.toLocaleString()}
+            </div>
+            <div className="text-sm text-muted-foreground">XP</div>
+          </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold">{profile.postCount}</div>
             <div className="text-sm text-muted-foreground">Posts</div>

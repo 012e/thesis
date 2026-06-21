@@ -89,6 +89,7 @@ export class PostsSearchService {
         u.email        AS author_email,
         u.name         AS author_name,
         u.image        AS author_image,
+        u.xp           AS author_xp,
         COUNT(CASE WHEN pr.type = 'upvote'   THEN 1 END) AS upvote_count,
         COUNT(CASE WHEN pr.type = 'downvote' THEN 1 END) AS downvote_count,
         MAX(CASE WHEN pr.user_id = ${userId} THEN pr.type END) AS user_reaction_type,
@@ -109,7 +110,7 @@ export class PostsSearchService {
       WHERE p.hidden = false
       GROUP BY p.id, p.author_id, p.content, p.kind, p.accepted_comment_id,
                p.solved_at, p.created_at, p.updated_at,
-               u.id, u.username, u.email, u.name, u.image, rrf.rrf_score
+               u.id, u.username, u.email, u.name, u.image, u.xp, rrf.rrf_score
       ORDER BY rrf.rrf_score DESC
       LIMIT ${RERANK_CANDIDATE_LIMIT}
     `);
@@ -130,6 +131,7 @@ export class PostsSearchService {
           image: this.usersService.resolveAvatarUrl(
             (r["author_image"] as string | null) ?? null,
           ),
+          xp: Number(r["author_xp"] ?? 0),
         },
         content: r["content"] as PostDto["content"],
         kind: r["kind"] as PostDto["kind"],

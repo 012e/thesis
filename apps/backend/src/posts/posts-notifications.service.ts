@@ -67,6 +67,7 @@ export class PostsNotificationsService {
     commentId: string,
     actorId: string,
     recipientId: string,
+    xpEarned?: number,
   ): Promise<void> {
     if (recipientId === actorId) return;
 
@@ -106,6 +107,7 @@ export class PostsNotificationsService {
                 author: comment.author,
               }
             : undefined,
+          xpEarned,
         },
       },
       ["websocket"],

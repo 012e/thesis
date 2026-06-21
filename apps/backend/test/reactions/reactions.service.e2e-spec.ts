@@ -23,6 +23,7 @@ import { NOTIFICATION_TRANSPORTS } from "@/notifications/transports/notification
 import { PgBossService } from "@wavezync/nestjs-pgboss";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { ContentHashService } from "@/moderation/content-hash.service";
+import { XpService } from "@/xp/xp.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -101,6 +102,7 @@ describe("ReactionsService integration", () => {
         PostsNotificationsService,
         PostsPresenterService,
         TagsService,
+        XpService,
       ],
     }).compile();
 

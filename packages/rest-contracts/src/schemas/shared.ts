@@ -13,6 +13,7 @@ export const PostAuthor = z.object({
   email: z.string(),
   name: z.string().nullable(),
   image: z.string().nullable(),
+  xp: z.number().int().nonnegative(),
 });
 
 export type UserType = z.infer<typeof User>;

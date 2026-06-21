@@ -74,6 +74,8 @@ export interface PostAuthorDto {
   email: string;
   name: string | null;
   image: string | null;
+  /** Total reputation points (XP) earned by the author. */
+  xp: number;
 }
 
 /**
@@ -204,6 +206,8 @@ export interface UserProfileDto {
   followingCount: number;
   postCount: number;
   isFollowing: boolean;
+  /** Total reputation points (XP) earned by this user. */
+  xp: number;
 }
 
 export interface PollVoteDto {
@@ -347,6 +351,8 @@ export interface CommentReactionNotificationPayload {
   reactionType: ReactionTypeDto;
   post?: NotificationPostContextDto;
   comment?: NotificationCommentContextDto;
+  /** XP the recipient earned from this reaction, when any was awarded. */
+  xpEarned?: number;
 }
 
 /** Someone sent the recipient a direct message. */
@@ -370,6 +376,8 @@ export interface AnswerAcceptedNotificationPayload {
   commentId: string;
   post?: NotificationPostContextDto;
   comment?: NotificationCommentContextDto;
+  /** XP the recipient earned for having their answer accepted. */
+  xpEarned?: number;
 }
 
 /** Discriminated union of all possible notification payloads. */
