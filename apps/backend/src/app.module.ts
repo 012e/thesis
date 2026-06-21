@@ -26,6 +26,8 @@ import { RecommendationsModule } from "@/recommendations/recommendations.module"
 import { IdentityMcpModule } from "./mcp/identity/identity-mcp.module";
 import { PostsMcpModule } from "./mcp/posts/posts-mcp.module";
 import { InteractionsMcpModule } from "./mcp/interactions/interactions-mcp.module";
+import { PostManagementMcpModule } from "./mcp/post-management/post-management-mcp.module";
+import { TagsMcpModule } from "./mcp/tags/tags-mcp.module";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
 
 import { AppController } from "./app.controller";
@@ -61,6 +63,8 @@ import { LoggingMiddleware } from "@/common/middleware/logging.middleware";
     IdentityMcpModule,
     PostsMcpModule,
     InteractionsMcpModule,
+    PostManagementMcpModule,
+    TagsMcpModule,
     ModerationModule,
     TagsModule,
     AnalyticsModule,

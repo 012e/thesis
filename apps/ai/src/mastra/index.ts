@@ -7,6 +7,8 @@ import { postCreationAgent } from "./agents/post-creation-agent";
 import { postDraftingAgent } from "./agents/post-drafting-agent";
 import { postDiscoveryAgent } from "./agents/post-discovery-agent";
 import { interactionsAgent } from "./agents/interactions-agent";
+import { postManagementAgent } from "./agents/post-management-agent";
+import { tagsAgent } from "./agents/tags-agent";
 import { navigationAgent } from "./agents/navigation-agent";
 import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
@@ -25,6 +27,8 @@ import { RequestContext } from "@mastra/core/request-context";
  * - postDraftingAgent — LinkedIn-style and technical question drafting
  * - postDiscoveryAgent — post read ops (Studio preview only)
  * - interactionsAgent — engagement ops (Studio preview only)
+ * - postManagementAgent — Q&A, bookmarks, subscriptions (Studio preview only)
+ * - tagsAgent       — tag discovery and preferences (Studio preview only)
  * - navigationAgent — app page/tool discovery (Studio preview only)
  * - planningAgent   — explicit execution planning with the strongest model
  * - searchAgent     — web search via OpenAI web search
@@ -42,6 +46,8 @@ export const mastra = new Mastra({
     postDraftingAgent,
     postDiscoveryAgent,
     interactionsAgent,
+    postManagementAgent,
+    tagsAgent,
     navigationAgent,
     planningAgent,
     searchAgent,

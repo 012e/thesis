@@ -171,13 +171,18 @@ describe("ModerationService integration", () => {
       id: post.id,
       authorId: "author-1",
       content: { text: "Moderated content" },
+      kind: "discussion",
       currentUserBookmarked: false,
       tags: [{ id: tag.id, slug: "moderation", displayName: "moderation" }],
+      acceptedCommentId: null,
+      solvedAt: null,
+      needsHelp: false,
       hidden: false,
       author: {
         id: "author-1",
         username: "author-one",
         name: "Author One",
+        xp: 0,
       },
     });
   });
@@ -226,8 +231,15 @@ describe("ModerationService integration", () => {
       priority: "high",
       post: {
         id: postTwo.id,
+        kind: "discussion",
         currentUserBookmarked: false,
         tags: [],
+        acceptedCommentId: null,
+        solvedAt: null,
+        needsHelp: false,
+        author: {
+          xp: 0,
+        },
       },
     });
 

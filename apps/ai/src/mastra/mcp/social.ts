@@ -30,6 +30,14 @@ function createMcpClient(context: RequestContext) {
         url: new URL(`${env.BACKEND_URL}/mcp/interactions/sse`),
         fetch: fetchWithAuth,
       },
+      postManagement: {
+        url: new URL(`${env.BACKEND_URL}/mcp/post-management/sse`),
+        fetch: fetchWithAuth,
+      },
+      tags: {
+        url: new URL(`${env.BACKEND_URL}/mcp/tags/sse`),
+        fetch: fetchWithAuth,
+      },
     },
   });
 }
@@ -41,5 +49,7 @@ export async function getSocialMcpToolsets(context: RequestContext) {
     identityToolset: toolsets.identity,
     postsToolset: toolsets.posts,
     interactionsToolset: toolsets.interactions,
+    postManagementToolset: toolsets.postManagement,
+    tagsToolset: toolsets.tags,
   };
 }

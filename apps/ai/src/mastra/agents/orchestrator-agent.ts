@@ -9,8 +9,10 @@ import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
 import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
 import { POST_DRAFTING_AGENT_CONFIG } from "./post-drafting-agent";
 import { POST_DISCOVERY_AGENT_CONFIG } from "./post-discovery-agent";
+import { POST_MANAGEMENT_AGENT_CONFIG } from "./post-management-agent";
 import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
+import { TAGS_AGENT_CONFIG } from "./tags-agent";
 import {
   getOrchestratorModelConfig,
   MODEL_CONFIG,
@@ -25,8 +27,7 @@ import { createGetContextTool } from "../tools/context";
  * Because MCP toolsets carry per-request auth tokens, sub-agents cannot be
  * constructed once at module load time. Instead this factory:
  *
- * 1. Fetches all three MCP toolsets (identity, posts, interactions) using the
- *    current request's auth context.
+ * 1. Fetches all five MCP toolsets using the current request's auth context.
  * 2. Constructs specialised sub-agents, each receiving only the subset of
  *    tools that belongs to its domain.
  * 3. Returns an orchestrator (supervisor) agent that has all sub-agents
@@ -48,8 +49,13 @@ export async function createOrchestratorAgent(
 ): Promise<Agent> {
   const orchestratorModelConfig = getOrchestratorModelConfig(mode);
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
-  const { identityToolset, postsToolset, interactionsToolset } =
-    await getSocialMcpToolsets(context);
+  const {
+    identityToolset,
+    postsToolset,
+    interactionsToolset,
+    postManagementToolset,
+    tagsToolset,
+  } = await getSocialMcpToolsets(context);
 
   const getContextTool = createGetContextTool(userContext);
 
@@ -84,6 +90,18 @@ export async function createOrchestratorAgent(
     tools: interactionsToolset,
   });
 
+  const postManagementAgent = new Agent({
+    ...POST_MANAGEMENT_AGENT_CONFIG,
+    model: MODEL_CONFIG.POST_MANAGEMENT_AGENT.model,
+    tools: postManagementToolset,
+  });
+
+  const tagsAgent = new Agent({
+    ...TAGS_AGENT_CONFIG,
+    model: MODEL_CONFIG.TAGS_AGENT.model,
+    tools: tagsToolset,
+  });
+
   const searchAgent = new Agent({
     ...SEARCH_AGENT_CONFIG,
     model: MODEL_CONFIG.SEARCH_AGENT.model,
@@ -115,6 +133,8 @@ export async function createOrchestratorAgent(
       postDraftingAgent,
       postDiscoveryAgent,
       interactionsAgent,
+      postManagementAgent,
+      tagsAgent,
       searchAgent,
       navigationAgent,
       planningAgent,
