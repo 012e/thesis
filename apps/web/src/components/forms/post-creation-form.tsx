@@ -19,7 +19,11 @@ import {
   codeMirrorPlugin,
   linkPlugin,
 } from "@repo/mdx-editor";
-import type { PollPostContentDto, PostImageDto } from "@repo/shared-dto";
+import type {
+  PollPostContentDto,
+  PostImageDto,
+  PostKindDto,
+} from "@repo/shared-dto";
 import { POST_CODE_BLOCK_LANGUAGES } from "@/lib/code-block-languages";
 import {
   PostComposerProvider,
@@ -28,6 +32,7 @@ import {
   PostComposerImageGrid,
   PostComposerCharCounter,
   PostComposerActions,
+  PostComposerKindToggle,
   type ImagePreview,
 } from "@/components/post-composer";
 import { usePostComposerContext } from "@/components/post-composer/context";
@@ -79,6 +84,10 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
   const draft = drafts[threadId]?.data ?? {};
 
   const content = (draft.content as string) ?? "";
+  const kind =
+    draft.kind === "question" || draft.kind === "discussion"
+      ? draft.kind
+      : "discussion";
   const editorRef = useRef<MDXEditorMethods>(null);
   const lastEditorContent = useRef(content);
 
@@ -93,6 +102,16 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
       }),
     );
   };
+
+  const setKind = (val: PostKindDto) =>
+    setDrafts(
+      produce((d) => {
+        if (!d[threadId])
+          d[threadId] = { activeForm: "PostCreationForm", data: {} };
+        d[threadId]!.activeForm = "PostCreationForm";
+        d[threadId]!.data.kind = val;
+      }),
+    );
 
   const showPollCreator = (draft.showPollCreator as boolean) ?? false;
   const setShowPollCreator = (val: boolean) =>
@@ -179,6 +198,8 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
     <PostComposerProvider
       content={content}
       setContent={setContent}
+      kind={kind}
+      setKind={setKind}
       showPollCreator={showPollCreator}
       setShowPollCreator={setShowPollCreator}
       poll={poll}
@@ -194,6 +215,9 @@ export function PostCreationForm({ threadId }: { threadId: string }) {
         <div className="p-4">
           <div className="flex-1">
             <div className="mb-4">
+              <div className="mb-3">
+                <PostComposerKindToggle />
+              </div>
               <PostComposerEditor
                 ref={editorRef}
                 plugins={editorPlugins}

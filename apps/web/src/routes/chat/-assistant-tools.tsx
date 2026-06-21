@@ -20,9 +20,13 @@ const OpenFormInput = z.object({
 const SetFormFieldInput = z.object({
   formName: FormNameSchema.describe("The name of the currently active form"),
   field: z
-    .enum(["content", "showPollCreator", "poll"])
+    .enum(["content", "kind", "showPollCreator", "poll"])
     .describe("The form field to update"),
-  value: z.unknown().describe("The value to set the field to"),
+  value: z
+    .unknown()
+    .describe(
+      'The value to set. For kind, use exactly "discussion" or "question".',
+    ),
 });
 
 const SubmitFormInput = z.object({
@@ -33,7 +37,7 @@ export function ChatPageAssistantTools() {
   const { threadId, activeForm, draftData } = useChatState();
 
   useAssistantInstructions(
-    `The user is on the Chat page and the page-local form tools are available. Current Active Form: ${activeForm ?? "None"}\nCurrent Form State: ${JSON.stringify(draftData)}\n\nUse open_form to select a form and set_form_field to edit it. Only use submit_form after the user confirms submission.`,
+    `The user is on the Chat page and the page-local form tools are available. Current Active Form: ${activeForm ?? "None"}\nCurrent Form State: ${JSON.stringify(draftData)}\n\nUse open_form to select a form and set_form_field to edit it. For PostCreationForm, set kind to "question" for a help-seeking post that can accept an answer, or "discussion" for a regular post. Only use submit_form after the user confirms submission.`,
   );
 
   const openFormTool = useMemo(
@@ -55,7 +59,7 @@ export function ChatPageAssistantTools() {
     () => ({
       toolName: "set_form_field",
       description:
-        "Update a field in the active Chat workspace form. For PostCreationForm, use content for the post text.",
+        'Update a field in the active Chat workspace form. For PostCreationForm, use content for the post text and kind with "discussion" or "question" for the post type.',
       parameters: SetFormFieldInput,
       execute: ({
         formName,

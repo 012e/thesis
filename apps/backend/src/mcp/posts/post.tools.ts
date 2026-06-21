@@ -5,6 +5,8 @@ import { PostsService } from "../../posts/posts.service";
 import { PostsSearchService } from "../../posts/posts-search.service";
 import { CommentsService } from "../../comments/comments.service";
 
+const postKindSchema = z.enum(["discussion", "question"]);
+
 @Injectable()
 export class PostTools {
   constructor(
@@ -83,13 +85,22 @@ export class PostTools {
 
   @Tool({
     name: "create_post",
-    description: "Create a new post on the platform",
+    description:
+      "Create a new discussion or question post on the platform. Use question for help-seeking posts that can later accept an answer.",
     parameters: z.object({
       text: z.string().min(1).describe("Text content of the post"),
+      kind: postKindSchema
+        .default("discussion")
+        .describe(
+          "Post type: discussion for regular posts, question for help-seeking posts",
+        ),
     }),
   })
   async createPost(
-    { text }: { text: string },
+    {
+      text,
+      kind,
+    }: { text: string; kind: "discussion" | "question" },
     _context: Context,
     request: any,
   ) {
@@ -99,6 +110,7 @@ export class PostTools {
 
     const newPost = await this.postsService.create(user.id, {
       content: { text },
+      kind,
     });
 
     return {

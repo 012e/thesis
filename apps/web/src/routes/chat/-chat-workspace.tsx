@@ -1,5 +1,4 @@
 import { Thread } from "@/components/assistant-ui/thread";
-import { UserContextQuestionnaire } from "@/components/assistant-ui/user-context-questionnaire";
 import { FormRegistry } from "@/components/forms/registry";
 import {
   ResizableHandle,
@@ -39,10 +38,7 @@ export function ChatWorkspace() {
       >
         <Thread
           footerContent={
-            <>
-              <UserContextQuestionnaire threadId={threadId} />
-              <ActiveVerticalForm />
-            </>
+            <ActiveVerticalForm />
           }
         />
       </ResizablePanel>
