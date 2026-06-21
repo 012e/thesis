@@ -19,6 +19,7 @@ import {
   PostComposerImageGrid,
   PostComposerCharCounter,
   PostComposerActions,
+  PostComposerKindToggle,
   type ImagePreview,
 } from "@/components/post-composer";
 
@@ -64,6 +65,9 @@ export function PostComposer() {
         <div className="p-4">
           <div className="flex-1">
             <div className="mb-4">
+              <div className="mb-3">
+                <PostComposerKindToggle />
+              </div>
               <PostComposerEditor plugins={editorPlugins} />
               <PostComposerPoll />
               <PostComposerImageGrid />

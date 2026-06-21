@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createPost } from "@/lib/api/posts";
 import { addNewPost } from "@/lib/session-storage";
-import type { PostContentDto, PostDto } from "@repo/shared-dto";
+import type { PostContentDto, PostDto, PostKindDto } from "@repo/shared-dto";
 import { useToast as toast } from "@/hooks/use-toast";
 import { FOLLOWING_POSTS_QUERY_KEY } from "@/hooks/use-following-posts";
 import { useTrack } from "@/components/analytics-provider";
@@ -12,8 +12,11 @@ export function useCreatePost() {
   const track = useTrack();
 
   const mutation = useMutation({
-    mutationFn: async (content: PostContentDto) => {
-      const post = await createPost(content);
+    mutationFn: async (input: {
+      content: PostContentDto;
+      kind?: PostKindDto;
+    }) => {
+      const post = await createPost(input.content, input.kind);
       return post;
     },
     onSuccess: (post: PostDto) => {

@@ -9,6 +9,7 @@ import { and, eq } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
 import {
+  comments,
   postReactions,
   posts,
   postSubscriptions,
@@ -62,6 +63,7 @@ export class PostsMutationService {
       .values({
         authorId,
         content: input.content,
+        kind: input.kind,
         embedding: embedding ?? null,
         contentHash: this.contentHashService.hash(textToEmbed) ?? null,
       })
@@ -167,12 +169,88 @@ export class PostsMutationService {
     );
   }
 
+  /**
+   * Q&A primitive: accept a top-level comment as the answer to a question and
+   * mark it solved. Returns null when the comment does not belong to the post
+   * or is not top-level. Caller is responsible for author/kind authorization.
+   */
+  async acceptAnswer(
+    postId: string,
+    authorId: string,
+    commentId: string,
+  ): Promise<PostDto | null> {
+    const [comment] = await this.databaseService.db
+      .select({ authorId: comments.authorId, parentId: comments.parentId })
+      .from(comments)
+      .where(and(eq(comments.id, commentId), eq(comments.postId, postId)))
+      .limit(1);
+
+    if (!comment || comment.parentId !== null) return null;
+
+    const [updated] = await this.databaseService.db
+      .update(posts)
+      .set({
+        acceptedCommentId: commentId,
+        solvedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(posts.id, postId), eq(posts.authorId, authorId)))
+      .returning();
+
+    if (!updated) return null;
+
+    void this.postsNotificationsService
+      .deliverAnswerAcceptedNotification(
+        postId,
+        commentId,
+        authorId,
+        comment.authorId,
+      )
+      .catch((error: unknown) =>
+        this.logger.warn(
+          `Failed to notify answerer for accepted answer on post ${postId}: ${(error as Error).message}`,
+        ),
+      );
+
+    return this.loadDto(postId, authorId);
+  }
+
+  /** Q&A primitive: clear the accepted answer and re-open the question. */
+  async clearAcceptedAnswer(
+    postId: string,
+    authorId: string,
+  ): Promise<PostDto | null> {
+    const [updated] = await this.databaseService.db
+      .update(posts)
+      .set({ acceptedCommentId: null, solvedAt: null, updatedAt: new Date() })
+      .where(and(eq(posts.id, postId), eq(posts.authorId, authorId)))
+      .returning();
+
+    if (!updated) return null;
+
+    return this.loadDto(postId, authorId);
+  }
+
+  private async loadDto(id: string, userId: string): Promise<PostDto | null> {
+    const row = await this.getDtoRow(id, userId);
+    if (!row) return null;
+    const dto = this.postsPresenter.toDto(
+      row,
+      row.userReactionType as ReactionTypeDto | null,
+    );
+    await this.postsPresenter.hydrateTags([dto]);
+    return dto;
+  }
+
   private async getDtoRow(id: string, userId: string) {
     const [row] = await this.databaseService.db
       .select({
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {

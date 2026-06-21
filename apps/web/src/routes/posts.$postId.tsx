@@ -62,6 +62,10 @@ function SinglePostPage() {
     createComment({ content });
   };
 
+  const isQuestion = post?.kind === "question";
+  const canAcceptAnswers =
+    isQuestion && !!session && post?.authorId === session.user?.id;
+
   if (isPending) {
     return <PageSpinner />;
   }
@@ -91,27 +95,30 @@ function SinglePostPage() {
             <IconArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold">Post</h1>
+        <h1 className="text-xl font-bold">{isQuestion ? "Question" : "Post"}</h1>
       </div>
 
       {/* Post content */}
       <Post post={post} />
 
-      {/* Inline comments section */}
+      {/* Inline comments / answers section */}
       <div className="border-t">
         <div className="px-4 py-3 border-b">
-          <h2 className="text-lg font-semibold">Comments</h2>
+          <h2 className="text-lg font-semibold">
+            {isQuestion ? "Answers" : "Comments"}
+          </h2>
         </div>
         <CommentEditor
           onSubmit={handleCommentSubmit}
           isPending={isCommentPending}
-          placeholder="Write a comment..."
+          placeholder={isQuestion ? "Write an answer..." : "Write a comment..."}
         />
         <div className="px-4 py-4">
           <CommentTree
             postId={postId}
             focusedCommentId={commentId}
             isRoot
+            canAcceptAnswers={canAcceptAnswers}
           />
         </div>
       </div>

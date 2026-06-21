@@ -1,6 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { PostMarkdown } from "@/components/ui/post-markdown";
-import { IconTrash, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
+import {
+  IconTrash,
+  IconArrowUp,
+  IconArrowDown,
+  IconCircleCheck,
+  IconCircleCheckFilled,
+} from "@tabler/icons-react";
 import type { CommentType } from "@repo/rest-contracts";
 import { useSession } from "@/hooks/use-session";
 import { useDeleteComment } from "@/hooks/use-comments";
@@ -12,6 +18,11 @@ export interface CommentItemProps {
   postId: string;
   onReply?: (commentId: string) => void;
   level?: number;
+  /** Q&A primitive: viewer can accept answers (question author on a question). */
+  canAccept?: boolean;
+  isAcceptPending?: boolean;
+  onAccept?: (commentId: string) => void;
+  onClearAccept?: () => void;
 }
 
 export function CommentItem({
@@ -19,6 +30,10 @@ export function CommentItem({
   postId,
   onReply,
   level = 0,
+  canAccept = false,
+  isAcceptPending = false,
+  onAccept,
+  onClearAccept,
 }: CommentItemProps) {
   const { data: session } = useSession();
   const { mutate: deleteComment, isPending: isDeleting } =
@@ -81,6 +96,12 @@ export function CommentItem({
           <span className="text-xs text-muted-foreground">
             {getRelativeTime(comment.createdAt)}
           </span>
+          {comment.isAccepted && (
+            <span className="inline-flex gap-1 items-center py-0.5 px-2 text-[11px] font-medium text-emerald-700 bg-emerald-600/10 dark:text-emerald-400">
+              <IconCircleCheckFilled className="w-3.5 h-3.5" />
+              Accepted answer
+            </span>
+          )}
         </div>
         <div className="mb-2 text-sm leading-relaxed">
           <PostMarkdown content={comment.content} />
@@ -132,6 +153,29 @@ export function CommentItem({
             >
               <IconTrash className="w-3 h-3 mr-1" />
               Delete
+            </Button>
+          )}
+          {canAccept && level === 0 && !comment.isAccepted && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-emerald-700 dark:hover:text-emerald-400"
+              onClick={() => onAccept?.(comment.id)}
+              disabled={isAcceptPending}
+            >
+              <IconCircleCheck className="w-3 h-3 mr-1" />
+              Accept answer
+            </Button>
+          )}
+          {canAccept && comment.isAccepted && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => onClearAccept?.()}
+              disabled={isAcceptPending}
+            >
+              Unaccept
             </Button>
           )}
         </div>

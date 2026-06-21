@@ -3,6 +3,7 @@ import type {
   PollPostContentDto,
   PostDto,
   PostImageDto,
+  PostKindDto,
 } from "@repo/shared-dto";
 
 export interface ImagePreview {
@@ -13,6 +14,9 @@ export interface ImagePreview {
 export interface PostComposerContextValue {
   content: string;
   setContent: (val: string) => void;
+  /** Q&A primitive: whether the composed post is a question or a discussion. */
+  kind: PostKindDto;
+  setKind: (val: PostKindDto) => void;
   showPollCreator: boolean;
   poll: PollPostContentDto | undefined;
   selectedImages: ImagePreview[];

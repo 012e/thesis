@@ -350,6 +350,9 @@ export class TagsService {
       id: posts.id,
       authorId: posts.authorId,
       content: posts.content,
+      kind: posts.kind,
+      acceptedCommentId: posts.acceptedCommentId,
+      solvedAt: posts.solvedAt,
       createdAt: posts.createdAt,
       updatedAt: posts.updatedAt,
       author: {
@@ -554,6 +557,7 @@ export class TagsService {
         image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
       },
       content: row.content,
+      kind: row.kind,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       upvoteCount: row.upvoteCount,
@@ -565,6 +569,9 @@ export class TagsService {
       currentUserSubscribed: row.currentUserSubscribed ?? false,
       currentUserBookmarked: row.currentUserBookmarked ?? false,
       tags: postTagDtos,
+      acceptedCommentId: row.acceptedCommentId ?? null,
+      solvedAt: row.solvedAt ? row.solvedAt.toISOString() : null,
+      needsHelp: row.kind === "question" && !row.solvedAt,
     };
   }
 

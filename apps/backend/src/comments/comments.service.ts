@@ -8,7 +8,7 @@ import type {
 } from "@repo/shared-dto";
 import { DatabaseService } from "@/db/database.service";
 import { comments, commentReactions, posts, usersView } from "@/db/schema";
-import { eq, desc, count, sql } from "drizzle-orm";
+import { and, eq, desc, count, sql } from "drizzle-orm";
 import { UsersService } from "@/users/users.service";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { PostsService } from "@/posts/posts.service";
@@ -76,9 +76,26 @@ export class CommentsService {
       )
       .orderBy(desc(comments.createdAt));
 
+    const acceptedCommentId = await this.getAcceptedCommentId(postId);
+
     return rows.map((row) =>
-      this.toDto(row, row.userReactionType as ReactionTypeDto | null),
+      this.toDto(
+        row,
+        row.userReactionType as ReactionTypeDto | null,
+        acceptedCommentId,
+      ),
     );
+  }
+
+  /** Q&A primitive: the comment a question's author accepted as the answer. */
+  private async getAcceptedCommentId(postId: string): Promise<string | null> {
+    const [row] = await this.databaseService.db
+      .select({ acceptedCommentId: posts.acceptedCommentId })
+      .from(posts)
+      .where(eq(posts.id, postId))
+      .limit(1);
+
+    return row?.acceptedCommentId ?? null;
   }
 
   async create(
@@ -316,9 +333,15 @@ export class CommentsService {
       )
       .limit(1);
 
-    return row
-      ? this.toDto(row, row.userReactionType as ReactionTypeDto | null)
-      : null;
+    if (!row) return null;
+
+    const acceptedCommentId = await this.getAcceptedCommentId(row.postId);
+
+    return this.toDto(
+      row,
+      row.userReactionType as ReactionTypeDto | null,
+      acceptedCommentId,
+    );
   }
 
   async delete(id: string) {
@@ -326,6 +349,17 @@ export class CommentsService {
       .delete(comments)
       .where(eq(comments.id, id))
       .returning();
+
+    // Q&A primitive: if the deleted comment was the accepted answer, re-open
+    // the question (back to "needs help").
+    if (row) {
+      await this.databaseService.db
+        .update(posts)
+        .set({ acceptedCommentId: null, solvedAt: null })
+        .where(
+          and(eq(posts.id, row.postId), eq(posts.acceptedCommentId, row.id)),
+        );
+    }
 
     return row;
   }
@@ -375,6 +409,7 @@ export class CommentsService {
   private toDto(
     row: CommentRow & { upvoteCount: number; downvoteCount: number },
     userReactionType?: ReactionTypeDto | null,
+    acceptedCommentId?: string | null,
   ): CommentDto {
     return {
       id: row.id,
@@ -394,6 +429,8 @@ export class CommentsService {
       upvoteCount: row.upvoteCount,
       downvoteCount: row.downvoteCount,
       currentUserReaction: userReactionType ?? null,
+      isAccepted:
+        acceptedCommentId != null && row.id === acceptedCommentId,
     };
   }
 }

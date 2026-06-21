@@ -8,7 +8,7 @@ import type {
 import { eq } from "drizzle-orm";
 
 import { DatabaseService } from "@/db/database.service";
-import { postSubscriptions, posts, usersView } from "@/db/schema";
+import { comments, postSubscriptions, posts, usersView } from "@/db/schema";
 import { NotificationsService } from "@/notifications/notifications.service";
 
 @Injectable()
@@ -56,6 +56,60 @@ export class PostsNotificationsService {
       preview: text ? text.slice(0, 100) : null,
       post: postContext ?? undefined,
     });
+  }
+
+  /**
+   * Q&A primitive: notify the answerer that the asker accepted their comment
+   * as the answer. No-op when the asker accepts their own comment.
+   */
+  async deliverAnswerAcceptedNotification(
+    postId: string,
+    commentId: string,
+    actorId: string,
+    recipientId: string,
+  ): Promise<void> {
+    if (recipientId === actorId) return;
+
+    const [postContext, commentRows] = await Promise.all([
+      this.getPostNotificationContext(postId),
+      this.databaseService.db
+        .select({
+          id: comments.id,
+          content: comments.content,
+          author: {
+            id: usersView.id,
+            username: usersView.username,
+            name: usersView.name,
+          },
+        })
+        .from(comments)
+        .innerJoin(usersView, eq(comments.authorId, usersView.id))
+        .where(eq(comments.id, commentId))
+        .limit(1),
+    ]);
+
+    const comment = commentRows[0];
+
+    await this.notificationsService.deliver(
+      {
+        userId: recipientId,
+        actorId,
+        type: "answer_accepted",
+        payload: {
+          postId,
+          commentId,
+          post: postContext ?? undefined,
+          comment: comment
+            ? {
+                id: comment.id,
+                preview: comment.content.slice(0, 100),
+                author: comment.author,
+              }
+            : undefined,
+        },
+      },
+      ["websocket"],
+    );
   }
 
   private async getPostNotificationContext(

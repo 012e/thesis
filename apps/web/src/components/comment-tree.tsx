@@ -3,6 +3,7 @@ import { CommentItem } from "./comment-item";
 import { CommentEditor } from "./comment-editor";
 import type { CommentType } from "@repo/rest-contracts";
 import { useComments, useCreateReply } from "@/hooks/use-comments";
+import { useAcceptAnswer } from "@/hooks/use-accept-answer";
 import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,8 @@ export interface CommentTreeProps {
   isRoot?: boolean;
   /** Supply comments directly (used when isRoot is false, or in Storybook). */
   comments?: CommentType[];
+  /** Q&A primitive: viewer can accept answers (question author on a question). */
+  canAcceptAnswers?: boolean;
 }
 
 interface CommentNode extends CommentType {
@@ -46,10 +49,11 @@ function buildCommentTree(comments: CommentType[]): CommentNode[] {
     }
   });
 
-  // Sort root comments by creation date (newest first)
-  rootComments.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  // Q&A primitive: surface the accepted answer first, then newest-first.
+  rootComments.sort((a, b) => {
+    if (a.isAccepted !== b.isAccepted) return a.isAccepted ? -1 : 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   // Recursively sort replies (oldest first for replies to maintain conversation flow)
   const sortReplies = (node: CommentNode) => {
@@ -72,6 +76,10 @@ interface CommentNodeRendererProps {
   replyingTo: string | null;
   onCancelReply: () => void;
   focusedCommentId?: string;
+  canAccept?: boolean;
+  isAcceptPending?: boolean;
+  onAccept?: (commentId: string) => void;
+  onClearAccept?: () => void;
 }
 
 function CommentNodeRenderer({
@@ -82,6 +90,10 @@ function CommentNodeRenderer({
   replyingTo,
   onCancelReply,
   focusedCommentId,
+  canAccept,
+  isAcceptPending,
+  onAccept,
+  onClearAccept,
 }: CommentNodeRendererProps) {
   const { mutate: createReply, isPending } = useCreateReply(postId);
 
@@ -110,6 +122,10 @@ function CommentNodeRenderer({
           postId={postId}
           onReply={onReply}
           level={level}
+          canAccept={canAccept}
+          isAcceptPending={isAcceptPending}
+          onAccept={onAccept}
+          onClearAccept={onClearAccept}
         />
       </div>
       {replyingTo === node.id && (
@@ -137,6 +153,10 @@ function CommentNodeRenderer({
               replyingTo={replyingTo}
               onCancelReply={onCancelReply}
               focusedCommentId={focusedCommentId}
+              canAccept={canAccept}
+              isAcceptPending={isAcceptPending}
+              onAccept={onAccept}
+              onClearAccept={onClearAccept}
             />
           ))}
         </div>
@@ -149,14 +169,18 @@ interface CommentTreeInnerProps {
   comments: CommentType[];
   postId: string;
   focusedCommentId?: string;
+  canAcceptAnswers?: boolean;
 }
 
 function CommentTreeInner({
   comments,
   postId,
   focusedCommentId,
+  canAcceptAnswers = false,
 }: CommentTreeInnerProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const { accept, clear } = useAcceptAnswer(postId);
+  const isAcceptPending = accept.isPending || clear.isPending;
 
   const tree = buildCommentTree(comments);
 
@@ -196,6 +220,10 @@ function CommentTreeInner({
           replyingTo={replyingTo}
           onCancelReply={handleCancelReply}
           focusedCommentId={focusedCommentId}
+          canAccept={canAcceptAnswers}
+          isAcceptPending={isAcceptPending}
+          onAccept={(commentId) => accept.mutate(commentId)}
+          onClearAccept={() => clear.mutate()}
         />
       ))}
     </div>
@@ -207,6 +235,7 @@ export function CommentTree({
   focusedCommentId,
   isRoot = false,
   comments,
+  canAcceptAnswers = false,
 }: CommentTreeProps) {
   const query = useComments(postId, { enabled: isRoot });
 
@@ -233,6 +262,7 @@ export function CommentTree({
         comments={query.data ?? []}
         postId={postId}
         focusedCommentId={focusedCommentId}
+        canAcceptAnswers={canAcceptAnswers}
       />
     );
   }
@@ -242,6 +272,7 @@ export function CommentTree({
       comments={comments ?? []}
       postId={postId}
       focusedCommentId={focusedCommentId}
+      canAcceptAnswers={canAcceptAnswers}
     />
   );
 }

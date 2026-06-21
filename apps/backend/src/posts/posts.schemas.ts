@@ -53,6 +53,7 @@ export const postContentSchema = z
 
 export const createPostSchema = z.object({
   content: postContentSchema,
+  kind: z.enum(["discussion", "question"]).optional(),
 });
 
 export const updatePostSchema = z.object({

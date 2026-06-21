@@ -5,11 +5,12 @@ import { PostComposer } from "@/components/ui/post-composer";
 import { PostsFeed } from "@/components/posts-feed";
 import { useRecommendations } from "@/hooks/use-recommendations";
 import { useFollowingPosts } from "@/hooks/use-following-posts";
+import { useUnansweredQuestions } from "@/hooks/use-unanswered-questions";
 import { useTagPreferences } from "@/hooks/use-tag-preferences";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { homeFeedRefreshRequestAtom } from "@/lib/atoms/feed-refresh";
 
-type FeedTab = "for-you" | "following";
+type FeedTab = "for-you" | "following" | "needs-help";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
@@ -30,12 +31,23 @@ export function Index() {
     limit: 20,
     enabled: activeTab === "following",
   });
+  const unansweredQuestions = useUnansweredQuestions({
+    limit: 20,
+    enabled: activeTab === "needs-help",
+  });
+  const feedByTab = {
+    "for-you": recommendations,
+    following: followingPosts,
+    "needs-help": unansweredQuestions,
+  } as const;
   const activeFeedQueryKey =
     activeTab === "for-you"
       ? (["recommendations"] as const)
-      : (["posts", "following"] as const);
+      : activeTab === "following"
+        ? (["posts", "following"] as const)
+        : (["unanswered-questions"] as const);
   const tagPreferences = useTagPreferences();
-  const activeFeed = activeTab === "for-you" ? recommendations : followingPosts;
+  const activeFeed = feedByTab[activeTab];
   const isSwitchingFeed = refreshingTab === activeTab;
   const hasTagPreferences =
     (tagPreferences.data?.preferred.length ?? 0) > 0 ||
@@ -55,7 +67,7 @@ export function Index() {
       return;
     }
 
-    const nextFeed = nextTab === "for-you" ? recommendations : followingPosts;
+    const nextFeed = feedByTab[nextTab];
 
     setActiveTab(nextTab);
     setRefreshingTab(nextTab);
@@ -71,7 +83,7 @@ export function Index() {
   return (
     <div className="grid min-w-0 grid-cols-1">
       <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
-        <div className="grid grid-cols-2 items-center">
+        <div className="grid grid-cols-3 items-center">
           <button
             type="button"
             className={`relative min-w-0 py-4 text-center transition-colors hover:bg-accent ${
@@ -97,6 +109,20 @@ export function Index() {
           >
             Following
             {activeTab === "following" && (
+              <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
+            )}
+          </button>
+          <button
+            type="button"
+            className={`relative min-w-0 py-4 text-center transition-colors hover:bg-accent ${
+              activeTab === "needs-help"
+                ? "font-bold text-foreground"
+                : "font-semibold text-muted-foreground"
+            }`}
+            onClick={() => handleTabChange("needs-help")}
+          >
+            Needs help
+            {activeTab === "needs-help" && (
               <span className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-t-full bg-primary" />
             )}
           </button>
@@ -132,17 +158,23 @@ export function Index() {
         loadingLabel={
           activeTab === "for-you"
             ? "Loading recommendations..."
-            : "Loading following posts..."
+            : activeTab === "following"
+              ? "Loading following posts..."
+              : "Loading questions that need help..."
         }
         errorLabel={
           activeTab === "for-you"
             ? "Error loading recommendations"
-            : "Error loading following posts"
+            : activeTab === "following"
+              ? "Error loading following posts"
+              : "Error loading questions"
         }
         emptyLabel={
           activeTab === "for-you"
             ? "No posts available yet"
-            : "No posts from people you follow yet"
+            : activeTab === "following"
+              ? "No posts from people you follow yet"
+              : "No open questions right now — everything's been answered!"
         }
         refreshSignal={homeFeedRefreshRequest}
       />

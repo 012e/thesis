@@ -30,6 +30,8 @@ import {
   IconBell,
   IconFlag,
   IconShieldCheck,
+  IconHelpCircle,
+  IconCircleCheckFilled,
 } from "@tabler/icons-react";
 import type { PostDto, ReactionTypeDto, PostImageDto } from "@repo/shared-dto";
 import { usePostReaction } from "@/hooks/use-post-reaction";
@@ -384,6 +386,18 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
             <span className="text-muted-foreground">
               {getRelativeTime(post.createdAt)}
             </span>
+            {post.kind === "question" &&
+              (post.solvedAt ? (
+                <span className="inline-flex gap-1 items-center py-0.5 px-2 text-[11px] font-medium text-emerald-700 bg-emerald-600/10 dark:text-emerald-400 shrink-0">
+                  <IconCircleCheckFilled className="w-3.5 h-3.5" />
+                  Solved
+                </span>
+              ) : (
+                <span className="inline-flex gap-1 items-center py-0.5 px-2 text-[11px] font-medium text-amber-700 bg-amber-500/10 dark:text-amber-400 shrink-0">
+                  <IconHelpCircle className="w-3.5 h-3.5" />
+                  Needs help
+                </span>
+              ))}
             <DropdownMenu>
               <DropdownMenuTrigger
                 className="flex justify-center items-center ml-auto w-8 h-8 rounded-full transition-colors text-muted-foreground hover:bg-accent"

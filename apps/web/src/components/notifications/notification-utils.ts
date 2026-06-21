@@ -43,6 +43,8 @@ export function getNotificationText(notification: NotificationDto): string {
       return `New message from ${actorName}`;
     case "post_hidden":
       return "Your post was hidden by moderation";
+    case "answer_accepted":
+      return `${actorName} accepted your answer`;
     default:
       return "New notification";
   }
@@ -93,6 +95,10 @@ export function getNotificationContextText(
     case "post_hidden": {
       const post = getPayloadPost(payload);
       return post ? formatPostContext(post) : null;
+    }
+    case "answer_accepted": {
+      const post = getPayloadPost(payload);
+      return post ? `on ${formatPostContext(post)}` : null;
     }
     case "follow":
       return null;

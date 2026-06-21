@@ -2,6 +2,7 @@ import {
   useEffect,
   useImperativeHandle,
   useRef,
+  useState,
   forwardRef,
   type ReactNode,
   type ComponentProps,
@@ -15,6 +16,7 @@ import type {
   PostDto,
   PollPostContentDto,
   PostImageDto,
+  PostKindDto,
 } from "@repo/shared-dto";
 import {
   IconAlertCircle,
@@ -22,6 +24,8 @@ import {
   IconPhoto,
   IconX,
   IconChartBar,
+  IconHelpCircle,
+  IconMessage,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { PollCreator } from "@/components/poll-creator";
@@ -78,6 +82,7 @@ export function PostComposerProvider({
   const { mutateAsync: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
+  const [kind, setKind] = useState<PostKindDto>("discussion");
 
   const isPending = isCreating || isUploading || isSubmitting;
   const characterCount = content.length;
@@ -111,12 +116,13 @@ export function PostComposerProvider({
       if (content.trim()) postContent.text = content.trim();
       if (poll) postContent.poll = poll;
       if (images.length > 0) postContent.images = images;
-      const post = await createPost(postContent);
+      const post = await createPost({ content: postContent, kind });
       setContent("");
       setPoll(undefined);
       setShowPollCreator(false);
       setSelectedImages([]);
       setUploadedImages([]);
+      setKind("discussion");
       return post;
     } catch {
       // Error handling is done in the hook
@@ -180,6 +186,8 @@ export function PostComposerProvider({
       value={{
         content,
         setContent,
+        kind,
+        setKind,
         showPollCreator,
         poll,
         selectedImages,
@@ -442,6 +450,51 @@ export function PostComposerActions() {
           {isUploading ? "Uploading..." : isCreating ? "Posting..." : "Post"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+// ---- PostComposerKindToggle ------------------------------------------------
+
+/**
+ * Q&A primitive: lets the author choose whether the post is a help-seeking
+ * "question" (which unlocks the solved / accepted-answer surface) or a regular
+ * "discussion".
+ */
+export function PostComposerKindToggle() {
+  const { kind, setKind, isPending } = usePostComposerContext();
+
+  const options: Array<{
+    value: PostKindDto;
+    label: string;
+    icon: typeof IconMessage;
+  }> = [
+    { value: "discussion", label: "Discussion", icon: IconMessage },
+    { value: "question", label: "Question", icon: IconHelpCircle },
+  ];
+
+  return (
+    <div className="inline-flex gap-1 p-0.5 border bg-muted/40">
+      {options.map((option) => {
+        const Icon = option.icon;
+        const active = kind === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            disabled={isPending}
+            onClick={() => setKind(option.value)}
+            className={`inline-flex gap-1.5 items-center px-3 py-1 text-xs font-medium transition-colors ${
+              active
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {option.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
