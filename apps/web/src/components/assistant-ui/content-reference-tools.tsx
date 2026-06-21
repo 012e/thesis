@@ -9,6 +9,7 @@ import {
   IconMessageCircle,
   IconNote,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { z } from "zod";
 
@@ -68,6 +69,8 @@ const RenderCommentToolUI = makeAssistantToolUI({
 });
 
 export function ContentReferenceAssistantTools() {
+  const queryClient = useQueryClient();
+
   useAssistantInstructions(
     "The render_post and render_comment client tools are always available. After creating or presenting a specific post or comment, call the matching render tool so the user gets a clickable link. Use render_comment after a comment is created.",
   );
@@ -78,12 +81,18 @@ export function ContentReferenceAssistantTools() {
       description:
         "Render a clickable link to a specific post in the chat UI. Call this after creating or presenting a specific post.",
       parameters: RenderPostInput,
-      execute: (input: z.infer<typeof RenderPostInput>) => ({
-        status: "success",
-        ...input,
-      }),
+      execute: async (input: z.infer<typeof RenderPostInput>) => {
+        await queryClient.invalidateQueries({
+          queryKey: ["posts", input.postId],
+        });
+
+        return {
+          status: "success",
+          ...input,
+        };
+      },
     }),
-    [],
+    [queryClient],
   );
 
   const renderCommentTool = useMemo(
@@ -92,12 +101,18 @@ export function ContentReferenceAssistantTools() {
       description:
         "Render a clickable link to a specific comment in the chat UI. Call this after creating or presenting a specific comment.",
       parameters: RenderCommentInput,
-      execute: (input: z.infer<typeof RenderCommentInput>) => ({
-        status: "success",
-        ...input,
-      }),
+      execute: async (input: z.infer<typeof RenderCommentInput>) => {
+        await queryClient.invalidateQueries({
+          queryKey: ["comments", input.postId],
+        });
+
+        return {
+          status: "success",
+          ...input,
+        };
+      },
     }),
-    [],
+    [queryClient],
   );
 
   useAssistantTool(renderPostTool);

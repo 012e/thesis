@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
+import { z } from "zod";
 
 import { userContextQuestionnairesAtom } from "@/lib/atoms/user-context-questionnaires";
 import store from "@/lib/atoms/store";
@@ -6,6 +7,7 @@ import {
   cancelUserContextQuestionnaire,
   completeUserContextQuestionnaire,
   RequestUserContextInputSchema,
+  RequestUserContextToolInputSchema,
   requestUserContext,
 } from "./user-context-questionnaire";
 
@@ -14,6 +16,15 @@ afterEach(() => {
 });
 
 describe("RequestUserContextInputSchema", () => {
+  it("exposes a provider-compatible tool schema without union exclusions", () => {
+    const schema = JSON.stringify(
+      z.toJSONSchema(RequestUserContextToolInputSchema),
+    );
+
+    expect(schema).not.toContain('"oneOf"');
+    expect(schema).not.toContain('"not"');
+  });
+
   it("accepts every supported question type", () => {
     expect(
       RequestUserContextInputSchema.safeParse({
@@ -85,6 +96,100 @@ describe("RequestUserContextInputSchema", () => {
 });
 
 describe("questionnaire settlement", () => {
+  it("normalizes null and empty fields emitted for optional tool parameters", async () => {
+    const resultPromise = requestUserContext("thread-a", {
+      title: "Quick questions",
+      questions: [
+        {
+          id: "q1",
+          prompt: "What would you like help with?",
+          description: "Used to decide the next step.",
+          placeholder: "Type your request here",
+          type: "text",
+          options: null,
+        },
+        {
+          id: "q2",
+          prompt: "Advice or action?",
+          description: null,
+          placeholder: null,
+          type: "single_choice",
+          options: [
+            { value: "advice", label: "Just advice" },
+            { value: "action", label: "Take action" },
+          ],
+        },
+      ],
+    });
+
+    const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
+    expect(questionnaire.questions).toEqual([
+      {
+        id: "q1",
+        prompt: "What would you like help with?",
+        description: "Used to decide the next step.",
+        placeholder: "Type your request here",
+        type: "text",
+      },
+      {
+        id: "q2",
+        prompt: "Advice or action?",
+        type: "single_choice",
+        options: [
+          { value: "advice", label: "Just advice" },
+          { value: "action", label: "Take action" },
+        ],
+      },
+    ]);
+
+    cancelUserContextQuestionnaire("thread-a", questionnaire.requestId);
+    await expect(resultPromise).resolves.toEqual({ status: "cancelled" });
+  });
+
+  it("ignores empty options for non-choice questions", async () => {
+    const resultPromise = requestUserContext("thread-a", {
+      title: "Quick question",
+      questions: [
+        {
+          id: "q1",
+          prompt: "What would you like help with?",
+          placeholder: "",
+          type: "text",
+          options: [],
+        },
+      ],
+    });
+
+    const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
+    expect(questionnaire.questions[0]).toEqual({
+      id: "q1",
+      prompt: "What would you like help with?",
+      placeholder: "",
+      type: "text",
+    });
+
+    cancelUserContextQuestionnaire("thread-a", questionnaire.requestId);
+    await expect(resultPromise).resolves.toEqual({ status: "cancelled" });
+  });
+
+  it("uses the tool call ID as the questionnaire request ID", async () => {
+    const resultPromise = requestUserContext(
+      "thread-a",
+      {
+        title: "Context",
+        questions: [{ id: "proceed", prompt: "Proceed?", type: "yes_no" }],
+      },
+      undefined,
+      "tool-call-1",
+    );
+
+    const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
+    expect(questionnaire.requestId).toBe("tool-call-1");
+
+    cancelUserContextQuestionnaire("thread-a", questionnaire.requestId);
+    await expect(resultPromise).resolves.toEqual({ status: "cancelled" });
+  });
+
   it("returns one complete structured result and cannot settle twice", async () => {
     const resultPromise = requestUserContext("thread-a", {
       title: "Context",

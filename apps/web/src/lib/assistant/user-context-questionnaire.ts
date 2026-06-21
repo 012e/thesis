@@ -46,6 +46,43 @@ export const UserContextQuestionSchema = z.discriminatedUnion("type", [
   TextQuestionSchema,
 ]);
 
+// Keep the model-facing schema free of oneOf/not constructs. Some tool-calling
+// providers reject the JSON Schema generated from the stricter discriminated
+// union before the client-side executor can run.
+export const RequestUserContextToolInputSchema = z.object({
+  title: z.string().min(1).describe("Short title displayed above the questions"),
+  questions: z
+    .array(
+      z.object({
+        id: z
+          .string()
+          .min(1)
+          .describe("Unique stable identifier for this question"),
+        prompt: z.string().min(1).describe("Question shown to the user"),
+        description: z
+          .string()
+          .min(1)
+          .nullish()
+          .describe("Optional supporting context"),
+        placeholder: z
+          .string()
+          .nullish()
+          .describe("Optional placeholder for text questions"),
+        type: z
+          .enum(["yes_no", "single_choice", "multiple_choice", "text"])
+          .describe("Control used to answer the question"),
+        options: z
+          .array(ChoiceOptionSchema)
+          .nullish()
+          .describe(
+            "Required for single_choice and multiple_choice; use null or omit for yes_no and text",
+          ),
+      }),
+    )
+    .min(1)
+    .describe("All questions that must be answered before continuing"),
+});
+
 export const RequestUserContextInputSchema = z
   .object({
     title: z.string().min(1, "A questionnaire title is required."),
@@ -111,6 +148,9 @@ export const UserContextResultSchema = z.discriminatedUnion("status", [
 export type RequestUserContextInput = z.infer<
   typeof RequestUserContextInputSchema
 >;
+export type RequestUserContextToolInput = z.infer<
+  typeof RequestUserContextToolInputSchema
+>;
 export type UserContextQuestion = z.infer<typeof UserContextQuestionSchema>;
 export type UserContextAnswer = z.infer<typeof UserContextAnswerSchema>;
 export type UserContextResult = z.infer<typeof UserContextResultSchema>;
@@ -126,17 +166,18 @@ const pendingQuestionnaires = new Map<string, PendingQuestionnaire>();
 
 export function requestUserContext(
   threadId: string,
-  input: RequestUserContextInput,
+  input: unknown,
   abortSignal?: AbortSignal,
+  requestId: string = crypto.randomUUID(),
 ): Promise<UserContextResult> {
-  const parsedInput = RequestUserContextInputSchema.parse(input);
+  const parsedInput = RequestUserContextInputSchema.parse(
+    normalizeToolInput(RequestUserContextToolInputSchema.parse(input)),
+  );
   const existing = store.get(userContextQuestionnairesAtom)[threadId];
 
   if (existing) {
     throw new Error("This thread already has an active questionnaire.");
   }
-
-  const requestId = crypto.randomUUID();
 
   return new Promise<UserContextResult>((resolve, reject) => {
     const pending: PendingQuestionnaire = {
@@ -178,6 +219,39 @@ export function requestUserContext(
       },
     }));
   });
+}
+
+function normalizeToolInput(
+  input: RequestUserContextToolInput,
+): RequestUserContextInput {
+  return {
+    title: input.title,
+    questions: input.questions.map((question) => {
+      const base = {
+        id: question.id,
+        prompt: question.prompt,
+        ...(question.description
+          ? { description: question.description }
+          : undefined),
+        ...(question.placeholder != null
+          ? { placeholder: question.placeholder }
+          : undefined),
+      };
+
+      if (
+        question.type === "single_choice" ||
+        question.type === "multiple_choice"
+      ) {
+        return {
+          ...base,
+          type: question.type,
+          ...(question.options ? { options: question.options } : undefined),
+        };
+      }
+
+      return { ...base, type: question.type };
+    }),
+  } as RequestUserContextInput;
 }
 
 export function completeUserContextQuestionnaire(

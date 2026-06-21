@@ -5,16 +5,14 @@ import {
   IconCheck,
   IconCircleDashedCheck,
   IconEdit,
-  IconExternalLink,
   IconFileCheck,
   IconLoader2,
   IconListCheck,
   IconPencil,
   IconQuestionMark,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
-import type { PostDto } from "@repo/shared-dto";
 
+import { UserContextQuestionnaireByRequestId } from "@/components/assistant-ui/user-context-questionnaire";
 import { planStatesAtom } from "@/lib/atoms/plan-state";
 import { cn } from "@/lib/utils";
 
@@ -145,48 +143,14 @@ const SubmitFormToolUIImpl = makeAssistantToolUI({
         />
       );
 
-    const post =
-      isRecord(result) && isPostDto(result.post) ? result.post : undefined;
+    const postCreated = isRecord(result) && isRecord(result.post);
 
     return (
-      <div className="space-y-2">
-        <ToolTrace
-          icon={IconCircleDashedCheck}
-          label={post ? "Post created" : "Form submitted"}
-          state="complete"
-        />
-        {post && (
-          <Link
-            to="/posts/$postId"
-            params={{ postId: post.id }}
-            className="block border border-border bg-background p-4 transition-colors hover:bg-accent/50"
-          >
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="truncate text-sm font-medium text-foreground">
-                {post.author.name ||
-                  post.author.username ||
-                  post.author.email}
-              </span>
-              <span className="flex shrink-0 items-center gap-1 text-xs text-primary">
-                View post
-                <IconExternalLink className="size-3.5" />
-              </span>
-            </div>
-            {post.content.text && (
-              <p className="line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">
-                {post.content.text}
-              </p>
-            )}
-            {post.content.images?.[0] && (
-              <img
-                src={post.content.images[0].url}
-                alt=""
-                className="mt-3 max-h-48 w-full object-cover"
-              />
-            )}
-          </Link>
-        )}
-      </div>
+      <ToolTrace
+        icon={IconCircleDashedCheck}
+        label={postCreated ? "Post created" : "Form submitted"}
+        state="complete"
+      />
     );
   },
 });
@@ -262,9 +226,7 @@ const UpdatePlanItemToolUIImpl = makeAssistantToolUI({
     return (
       <PlanItemToolTrace
         id={typeof args.id === "string" ? args.id : undefined}
-        updateStatus={
-          typeof args.status === "string" ? args.status : undefined
-        }
+        updateStatus={typeof args.status === "string" ? args.status : undefined}
         running={status.type === "running"}
       />
     );
@@ -296,25 +258,39 @@ export function FormToolUIs() {
 
 const RequestUserContextToolUIImpl = makeAssistantToolUI({
   toolName: "ask_questions",
-  render: ({ args, result, status }) => {
+  render: ({ args, result, status, toolCallId, isError }) => {
     const title = typeof args.title === "string" ? args.title : "Questions";
-    const cancelled =
-      isRecord(result) &&
-      result.status === "cancelled";
+    const cancelled = isRecord(result) && result.status === "cancelled";
+    const error =
+      isError && isRecord(result) && typeof result.error === "string"
+        ? result.error
+        : undefined;
 
     return (
-      <ToolTrace
-        icon={IconQuestionMark}
-        label={
-          status.type === "running"
-            ? "Waiting for your answers"
-            : cancelled
-              ? "Questionnaire cancelled"
-              : "Context provided"
-        }
-        detail={title}
-        state={status.type === "running" ? "running" : "complete"}
-      />
+      <div className="space-y-2">
+        <ToolTrace
+          icon={IconQuestionMark}
+          label={
+            status.type === "running"
+              ? "Waiting for your answers"
+              : isError
+                ? "Questionnaire failed"
+              : cancelled
+                ? "Questionnaire cancelled"
+                : "Context provided"
+          }
+          detail={title}
+          state={status.type === "running" ? "running" : "complete"}
+        />
+        {status.type === "running" && (
+          <UserContextQuestionnaireByRequestId requestId={toolCallId} />
+        )}
+        {error && (
+          <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-xs text-destructive">
+            {error}
+          </p>
+        )}
+      </div>
     );
   },
 });
@@ -325,13 +301,4 @@ export function RequestUserContextToolUI() {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function isPostDto(value: unknown): value is PostDto {
-  return (
-    isRecord(value) &&
-    typeof value.id === "string" &&
-    isRecord(value.author) &&
-    isRecord(value.content)
-  );
 }

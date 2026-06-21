@@ -51,6 +51,8 @@ export const MAX_IMAGES = 4;
 export interface PostComposerProviderProps {
   content: string;
   setContent: (val: string) => void;
+  kind?: PostKindDto;
+  setKind?: (val: PostKindDto) => void;
   showPollCreator: boolean;
   setShowPollCreator: (val: boolean) => void;
   poll: PollPostContentDto | undefined;
@@ -67,6 +69,8 @@ export interface PostComposerProviderProps {
 export function PostComposerProvider({
   content,
   setContent,
+  kind: controlledKind,
+  setKind: setControlledKind,
   showPollCreator,
   setShowPollCreator,
   poll,
@@ -82,7 +86,10 @@ export function PostComposerProvider({
   const { mutateAsync: createPost, isPending: isCreating } = useCreatePost();
   const { mutateAsync: uploadImages, isPending: isUploading } =
     useUploadImages();
-  const [kind, setKind] = useState<PostKindDto>("discussion");
+  const [internalKind, setInternalKind] =
+    useState<PostKindDto>("discussion");
+  const kind = controlledKind ?? internalKind;
+  const setKind = setControlledKind ?? setInternalKind;
 
   const isPending = isCreating || isUploading || isSubmitting;
   const characterCount = content.length;

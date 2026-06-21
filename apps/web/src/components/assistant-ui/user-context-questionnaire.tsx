@@ -13,7 +13,6 @@ import {
 } from "@tabler/icons-react";
 import { useAtomValue, useSetAtom } from "jotai";
 
-import { RequestUserContextToolUI } from "@/components/assistant-ui/chat-tool-uis";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useChatState } from "@/hooks/use-chat-state";
@@ -21,10 +20,11 @@ import {
   cancelUserContextQuestionnaire,
   completeUserContextQuestionnaire,
   isQuestionAnswered,
-  RequestUserContextInputSchema,
+  RequestUserContextToolInputSchema,
   requestUserContext,
   type UserContextAnswer,
   type UserContextQuestion,
+  type RequestUserContextToolInput,
 } from "@/lib/assistant/user-context-questionnaire";
 import {
   userContextQuestionnairesAtom,
@@ -43,19 +43,25 @@ export function UserContextAssistantTool() {
     () => ({
       toolName: "ask_questions",
       description:
-        "Request required user-only context with a tabbed questionnaire. Use only when the needed information cannot be obtained from available tools or agents.",
-      parameters: RequestUserContextInputSchema,
+        "Request required user-only context with a tabbed questionnaire. Every question needs a unique id and one of these types: yes_no, single_choice, multiple_choice, or text. Include at least two options for choice questions and omit options for yes_no or text questions.",
+      parameters: RequestUserContextToolInputSchema,
       execute: (
-        input: Parameters<typeof requestUserContext>[1],
-        context: { abortSignal?: AbortSignal },
-      ) => requestUserContext(threadId, input, context.abortSignal),
+        input: RequestUserContextToolInput,
+        context: { abortSignal?: AbortSignal; toolCallId: string },
+      ) =>
+        requestUserContext(
+          threadId,
+          input,
+          context.abortSignal,
+          context.toolCallId,
+        ),
     }),
     [threadId],
   );
 
   useAssistantTool(requestUserContextTool);
 
-  return <RequestUserContextToolUI />;
+  return null;
 }
 
 export function UserContextQuestionnaire({ threadId }: { threadId: string }) {
@@ -68,6 +74,27 @@ export function UserContextQuestionnaire({ threadId }: { threadId: string }) {
       key={questionnaire.requestId}
       threadId={threadId}
       questionnaire={questionnaire}
+    />
+  );
+}
+
+export function UserContextQuestionnaireByRequestId({
+  requestId,
+}: {
+  requestId: string;
+}) {
+  const questionnaires = useAtomValue(userContextQuestionnairesAtom);
+  const entry = Object.entries(questionnaires).find(
+    ([, questionnaire]) => questionnaire?.requestId === requestId,
+  );
+
+  if (!entry?.[1]) return null;
+
+  return (
+    <QuestionnaireWizard
+      key={entry[1].requestId}
+      threadId={entry[0]}
+      questionnaire={entry[1]}
     />
   );
 }
