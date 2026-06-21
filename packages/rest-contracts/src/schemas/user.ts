@@ -34,3 +34,15 @@ export const UserProfile = z.object({
 });
 
 export type UserProfileType = z.infer<typeof UserProfile>;
+
+export const LeaderboardEntry = z.object({
+  rank: z.number().int().positive(),
+  id: z.string(),
+  username: z.string().nullable(),
+  displayUsername: z.string().nullable(),
+  name: z.string().nullable(),
+  image: z.string().nullable(),
+  xp: z.number().int().nonnegative(),
+});
+
+export type LeaderboardEntryType = z.infer<typeof LeaderboardEntry>;

@@ -1,6 +1,21 @@
-import type { UserProfileDto } from "@repo/shared-dto";
+import type { LeaderboardEntryDto, UserProfileDto } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
 import { client } from ".";
+
+export async function getLeaderboard(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<{ entries: LeaderboardEntryDto[]; total: number }> {
+  const response = await client.getLeaderboard({
+    query: { limit: params?.limit, offset: params?.offset },
+  });
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to load leaderboard");
+}
 
 export async function getUserProfile(userId: string): Promise<UserProfileDto> {
   const response = await client.getUserProfile({

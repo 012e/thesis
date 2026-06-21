@@ -20,6 +20,8 @@ import {
   IconCodeCircle2Filled,
   IconBookmark,
   IconBookmarkFilled,
+  IconTrophy,
+  IconTrophyFilled,
 } from "@tabler/icons-react";
 import { Logo } from "@/components/logo";
 import { Spinner } from "@/components/ui/spinner";
@@ -45,6 +47,12 @@ const baseNavigationItems = [
     selectedIcon: IconBookmarkFilled,
     label: "Bookmarks",
     href: "/bookmarks",
+  },
+  {
+    icon: IconTrophy,
+    selectedIcon: IconTrophyFilled,
+    label: "Leaderboard",
+    href: "/leaderboard",
   },
   {
     icon: IconRobot,

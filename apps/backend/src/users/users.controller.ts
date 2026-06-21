@@ -24,6 +24,20 @@ export class UsersController {
     });
   }
 
+  @TsRestHandler(usersContract.getLeaderboard)
+  getLeaderboard(@Session() _session: UserSession) {
+    return tsRestHandler(usersContract.getLeaderboard, async ({ query }) => {
+      const results = await this.usersService.getLeaderboard(
+        query.limit,
+        query.offset,
+      );
+      return {
+        status: 200,
+        body: usersContract.getLeaderboard.responses[200].parse(results),
+      };
+    });
+  }
+
   @TsRestHandler(usersContract.updateAvatar)
   updateAvatar(@Session() session: UserSession) {
     return tsRestHandler(usersContract.updateAvatar, async ({ body }) => {

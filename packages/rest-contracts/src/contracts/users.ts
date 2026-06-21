@@ -1,6 +1,10 @@
 import { initContract } from "@ts-rest/core";
 import { z } from "zod";
-import { UserProfile, UserSearchResult } from "../schemas/user";
+import {
+  LeaderboardEntry,
+  UserProfile,
+  UserSearchResult,
+} from "../schemas/user";
 
 const c = initContract();
 
@@ -66,6 +70,24 @@ export const usersContract = c.router({
       401: z.null(),
     },
     summary: "Update the authenticated user's profile fields (bio).",
+  },
+  // getLeaderboard MUST be declared before getUserProfile so the static segment
+  // "/users/leaderboard" is not swallowed by the dynamic ":id" path parameter.
+  getLeaderboard: {
+    method: "GET",
+    path: "/users/leaderboard",
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(100).default(50),
+      offset: z.coerce.number().int().min(0).default(0),
+    }),
+    responses: {
+      200: z.object({
+        entries: z.array(LeaderboardEntry),
+        total: z.number().int().nonnegative(),
+      }),
+    },
+    summary:
+      "Rank users by total XP (highest first). Supports pagination with total count.",
   },
   getUserProfile: {
     method: "GET",

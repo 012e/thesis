@@ -210,6 +210,22 @@ export interface UserProfileDto {
   xp: number;
 }
 
+/**
+ * A single row on the XP leaderboard: a user together with their total
+ * reputation and their 1-based position in the ranking.
+ */
+export interface LeaderboardEntryDto {
+  /** 1-based position in the ranking (highest XP first). */
+  rank: number;
+  id: string;
+  username: string | null;
+  displayUsername: string | null;
+  name: string | null;
+  image: string | null;
+  /** Total reputation points (XP) earned by this user. */
+  xp: number;
+}
+
 export interface PollVoteDto {
   postId: string;
   optionId: string;
