@@ -43,7 +43,7 @@ export function UserContextAssistantTool() {
     () => ({
       toolName: "ask_questions",
       description:
-        "Request required user-only context with a tabbed questionnaire. Every question needs a unique id and one of these types: yes_no, single_choice, multiple_choice, or text. Include at least two options for choice questions and omit options for yes_no or text questions.",
+        'Request required user-only context with a tabbed questionnaire. Every question needs a unique id, one of these types: yes_no, single_choice, multiple_choice, or text, and an options array. For single_choice and multiple_choice, include at least two non-empty label strings, for example ["18–24", "25–34", "35–44"]. Never use objects in options. Use an empty options array for yes_no and text questions.',
       parameters: RequestUserContextToolInputSchema,
       execute: (
         input: RequestUserContextToolInput,

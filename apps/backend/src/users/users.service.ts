@@ -1,14 +1,18 @@
 import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gt, sql } from "drizzle-orm";
 import { DatabaseService } from "@/db/database.service";
 import { user } from "@/db/auth-schema";
 import { userFollows, posts, userProfiles, userXp } from "@/db/schema";
 import { ImageProcessorService } from "@/storage/image-processor.service";
 import { StorageService } from "@/storage/storage.service";
 import { DEFAULT_AVATAR_KEY } from "@/users/default-avatar";
-import type { UserProfileDto, UserSearchResultDto } from "@repo/shared-dto";
+import type {
+  LeaderboardEntryDto,
+  UserProfileDto,
+  UserSearchResultDto,
+} from "@repo/shared-dto";
 
 @Injectable()
 export class UsersService implements OnApplicationBootstrap {
@@ -186,6 +190,55 @@ export class UsersService implements OnApplicationBootstrap {
           ? totalRow.total
           : Number(totalRow?.total ?? 0),
     };
+  }
+
+  /**
+   * Rank users by total reputation, highest first. Reads from `user_xp` (the
+   * denormalized running total) so the ranking is a single indexed scan rather
+   * than a sum over the ledger. Only users who have earned XP appear. Ties are
+   * broken by signup order so paging stays stable. `rank` is 1-based and
+   * continues across pages via the offset.
+   */
+  async getLeaderboard(
+    limit: number,
+    offset: number,
+  ): Promise<{ entries: LeaderboardEntryDto[]; total: number }> {
+    const [rows, [totalRow]] = await Promise.all([
+      this.databaseService.db
+        .select({
+          id: user.id,
+          username: user.username,
+          displayUsername: user.displayUsername,
+          name: user.name,
+          image: sql<
+            string | null
+          >`COALESCE(${userProfiles.avatarUrl}, ${user.image})`,
+          xp: userXp.total,
+        })
+        .from(userXp)
+        .innerJoin(user, eq(user.id, userXp.userId))
+        .leftJoin(userProfiles, eq(userProfiles.userId, user.id))
+        .where(gt(userXp.total, 0))
+        .orderBy(desc(userXp.total), asc(user.createdAt))
+        .limit(limit)
+        .offset(offset),
+      this.databaseService.db
+        .select({ count: count() })
+        .from(userXp)
+        .where(gt(userXp.total, 0)),
+    ]);
+
+    const entries = rows.map((row, index) => ({
+      rank: offset + index + 1,
+      id: row.id,
+      username: row.username,
+      displayUsername: row.displayUsername,
+      name: row.name,
+      image: this.resolveAvatarUrl(row.image),
+      xp: row.xp,
+    })) satisfies LeaderboardEntryDto[];
+
+    return { entries, total: totalRow?.count ?? 0 };
   }
 
   async updateAvatar(userId: string, avatarUrl: string): Promise<void> {

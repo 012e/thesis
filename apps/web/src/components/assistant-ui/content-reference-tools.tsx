@@ -102,9 +102,14 @@ export function ContentReferenceAssistantTools() {
         "Render a clickable link to a specific comment in the chat UI. Call this after creating or presenting a specific comment.",
       parameters: RenderCommentInput,
       execute: async (input: z.infer<typeof RenderCommentInput>) => {
-        await queryClient.invalidateQueries({
-          queryKey: ["comments", input.postId],
-        });
+        await Promise.all([
+          queryClient.invalidateQueries({
+            queryKey: ["posts", input.postId],
+          }),
+          queryClient.invalidateQueries({
+            queryKey: ["comments", input.postId],
+          }),
+        ]);
 
         return {
           status: "success",

@@ -3,14 +3,12 @@ import { RequestContext } from "@mastra/core/request-context";
 import type { AIContextPayload } from "@repo/shared-dto";
 import { PROMPTS } from "../../prompts";
 import { getSocialMcpToolsets } from "../mcp/social";
-import { IDENTITY_AGENT_CONFIG } from "./identity-agent";
-import { INTERACTIONS_AGENT_CONFIG } from "./interactions-agent";
 import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
 import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
 import { POST_DRAFTING_AGENT_CONFIG } from "./post-drafting-agent";
-import { POST_DISCOVERY_AGENT_CONFIG } from "./post-discovery-agent";
 import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
+import { SOCIAL_MEDIA_AGENT_CONFIG } from "./social-media-agent";
 import {
   getOrchestratorModelConfig,
   MODEL_CONFIG,
@@ -25,10 +23,10 @@ import { createGetContextTool } from "../tools/context";
  * Because MCP toolsets carry per-request auth tokens, sub-agents cannot be
  * constructed once at module load time. Instead this factory:
  *
- * 1. Fetches all three MCP toolsets (identity, posts, interactions) using the
- *    current request's auth context.
- * 2. Constructs specialised sub-agents, each receiving only the subset of
- *    tools that belongs to its domain.
+ * 1. Fetches all five MCP toolsets using the current request's auth context.
+ * 2. Constructs the consolidated social-media-agent with all five toolsets
+ *    merged in, plus the tool-free/content sub-agents (drafting, search,
+ *    navigation, planning).
  * 3. Returns an orchestrator (supervisor) agent that has all sub-agents
  *    registered. Use `stepJudgeAgent` separately to evaluate whether the
  *    orchestrator fully completed the user's requested steps.
@@ -48,17 +46,31 @@ export async function createOrchestratorAgent(
 ): Promise<Agent> {
   const orchestratorModelConfig = getOrchestratorModelConfig(mode);
   // ── 1. Fetch per-request MCP toolsets ──────────────────────────────────
-  const { identityToolset, postsToolset, interactionsToolset } =
-    await getSocialMcpToolsets(context);
+  const {
+    identityToolset,
+    postsToolset,
+    interactionsToolset,
+    postManagementToolset,
+    tagsToolset,
+  } = await getSocialMcpToolsets(context);
 
   const getContextTool = createGetContextTool(userContext);
 
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
-  const identityAgent = new Agent({
-    ...IDENTITY_AGENT_CONFIG,
-    model: MODEL_CONFIG.IDENTITY_AGENT.model,
-    tools: identityToolset,
+  // Consolidated backend specialist owning identity, discovery, engagement,
+  // post management, and tags — all five MCP toolsets merged into one agent.
+  // Tool names are unique across the MCP servers, so the spread cannot collide.
+  const socialMediaAgent = new Agent({
+    ...SOCIAL_MEDIA_AGENT_CONFIG,
+    model: MODEL_CONFIG.SOCIAL_MEDIA_AGENT.model,
+    tools: {
+      ...identityToolset,
+      ...postsToolset,
+      ...interactionsToolset,
+      ...postManagementToolset,
+      ...tagsToolset,
+    },
   });
 
   const postCreationAgent = new Agent({
@@ -70,18 +82,6 @@ export async function createOrchestratorAgent(
   const postDraftingAgent = new Agent({
     ...POST_DRAFTING_AGENT_CONFIG,
     model: MODEL_CONFIG.POST_DRAFTING_AGENT.model,
-  });
-
-  const postDiscoveryAgent = new Agent({
-    ...POST_DISCOVERY_AGENT_CONFIG,
-    model: MODEL_CONFIG.POST_DISCOVERY_AGENT.model,
-    tools: postsToolset,
-  });
-
-  const interactionsAgent = new Agent({
-    ...INTERACTIONS_AGENT_CONFIG,
-    model: MODEL_CONFIG.INTERACTIONS_AGENT.model,
-    tools: interactionsToolset,
   });
 
   const searchAgent = new Agent({
@@ -110,11 +110,9 @@ export async function createOrchestratorAgent(
     instructions: PROMPTS.orchestrator,
     model: orchestratorModelConfig.model,
     agents: {
-      identityAgent,
+      socialMediaAgent,
       // postCreationAgent,
       postDraftingAgent,
-      postDiscoveryAgent,
-      interactionsAgent,
       searchAgent,
       navigationAgent,
       planningAgent,

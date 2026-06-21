@@ -4,7 +4,7 @@ import { DatabaseService } from "@/db/database.service";
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import { createE2ETestUser } from "../helpers/auth.helper";
-import { userFollows, posts, userProfiles } from "@/db/schema";
+import { userFollows, posts, userProfiles, userXp } from "@/db/schema";
 import {
   startPostgresContainer,
   stopPostgresContainer,
@@ -292,6 +292,132 @@ describe("UsersController (e2e)", () => {
       expect(u).toHaveProperty("image");
       expect(u).toHaveProperty("email", "srchshape@example.com");
       expect(response.body).toHaveProperty("total");
+    });
+  });
+
+  describe("GET /users/leaderboard", () => {
+    it("should return 401 if not authenticated", () => {
+      return request(testApp.app.getHttpServer())
+        .get("/users/leaderboard")
+        .expect(401);
+    });
+
+    it("should rank users by XP descending with a 1-based rank", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "lbactor@example.com",
+        "lbactor",
+      );
+      const low = await createE2ETestUser(
+        testApp.app,
+        "lblow@example.com",
+        "lblow",
+      );
+      const high = await createE2ETestUser(
+        testApp.app,
+        "lbhigh@example.com",
+        "lbhigh",
+      );
+      const mid = await createE2ETestUser(
+        testApp.app,
+        "lbmid@example.com",
+        "lbmid",
+      );
+
+      await databaseService.db.insert(userXp).values([
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        { userId: low.user.id as string, total: 10 },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        { userId: high.user.id as string, total: 100 },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        { userId: mid.user.id as string, total: 50 },
+      ]);
+
+      const response = await request(testApp.app.getHttpServer())
+        .get("/users/leaderboard")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const entries = response.body.entries as Array<{
+        id: string;
+        rank: number;
+        xp: number;
+      }>;
+
+      // Ranks are contiguous and sorted by descending XP.
+      const ranks = entries.map((e) => e.rank);
+      expect(ranks).toEqual([...ranks].sort((a, b) => a - b));
+      expect(ranks[0]).toBe(1);
+      const xps = entries.map((e) => e.xp);
+      expect(xps).toEqual([...xps].sort((a, b) => b - a));
+
+      // Our three seeded users appear in the right relative order.
+      const order = entries
+        .map((e) => e.id)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        .filter((id) =>
+          [high.user.id, mid.user.id, low.user.id].includes(id as never),
+        );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(order).toEqual([high.user.id, mid.user.id, low.user.id]);
+    });
+
+    it("should exclude users with zero XP", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "lbzeroactor@example.com",
+        "lbzeroactor",
+      );
+      const zero = await createE2ETestUser(
+        testApp.app,
+        "lbzero@example.com",
+        "lbzero",
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+      await databaseService.db
+        .insert(userXp)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+        .values({ userId: zero.user.id as string, total: 0 });
+
+      const response = await request(testApp.app.getHttpServer())
+        .get("/users/leaderboard")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      const ids = response.body.entries.map((e: { id: string }) => e.id);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(ids).not.toContain(zero.user.id);
+    });
+
+    it("should paginate with a stable continuing rank", async () => {
+      const { cookie } = await createE2ETestUser(
+        testApp.app,
+        "lbpageactor@example.com",
+        "lbpageactor",
+      );
+
+      const page1 = await request(testApp.app.getHttpServer())
+        .get("/users/leaderboard?limit=2&offset=0")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(page1.body.entries.length).toBeLessThanOrEqual(2);
+      expect(page1.body).toHaveProperty("total");
+
+      const page2 = await request(testApp.app.getHttpServer())
+        .get("/users/leaderboard?limit=2&offset=2")
+        .set("Cookie", cookie ? [cookie as string] : [])
+        .expect(200);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (page2.body.entries.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        expect(page2.body.entries[0].rank).toBe(3);
+      }
     });
   });
 

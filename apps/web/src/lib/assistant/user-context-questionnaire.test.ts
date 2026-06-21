@@ -17,12 +17,48 @@ afterEach(() => {
 
 describe("RequestUserContextInputSchema", () => {
   it("exposes a provider-compatible tool schema without union exclusions", () => {
-    const schema = JSON.stringify(
-      z.toJSONSchema(RequestUserContextToolInputSchema),
-    );
+    const jsonSchema = z.toJSONSchema(RequestUserContextToolInputSchema);
+    const schema = JSON.stringify(jsonSchema);
 
     expect(schema).not.toContain('"oneOf"');
     expect(schema).not.toContain('"not"');
+    expect(schema).toContain(
+      '"required":["id","prompt","type","options"]',
+    );
+    expect(schema).toContain(
+      '"options":{"type":"array","items":{"type":"string"',
+    );
+  });
+
+  it("rejects tool questions that omit the options array", () => {
+    expect(
+      RequestUserContextToolInputSchema.safeParse({
+        title: "Missing options",
+        questions: [
+          {
+            id: "audience",
+            prompt: "Who is the post for?",
+            type: "single_choice",
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects object options in the model-facing schema", () => {
+    expect(
+      RequestUserContextToolInputSchema.safeParse({
+        title: "Age question",
+        questions: [
+          {
+            id: "age",
+            prompt: "What is your age range?",
+            type: "multiple_choice",
+            options: [{}],
+          },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
   it("accepts every supported question type", () => {
@@ -106,7 +142,7 @@ describe("questionnaire settlement", () => {
           description: "Used to decide the next step.",
           placeholder: "Type your request here",
           type: "text",
-          options: null,
+          options: [],
         },
         {
           id: "q2",
@@ -114,10 +150,7 @@ describe("questionnaire settlement", () => {
           description: null,
           placeholder: null,
           type: "single_choice",
-          options: [
-            { value: "advice", label: "Just advice" },
-            { value: "action", label: "Take action" },
-          ],
+          options: ["Just advice", "Take action"],
         },
       ],
     });
@@ -136,14 +169,85 @@ describe("questionnaire settlement", () => {
         prompt: "Advice or action?",
         type: "single_choice",
         options: [
-          { value: "advice", label: "Just advice" },
-          { value: "action", label: "Take action" },
+          { value: "Just advice", label: "Just advice" },
+          { value: "Take action", label: "Take action" },
         ],
       },
     ]);
 
     cancelUserContextQuestionnaire("thread-a", questionnaire.requestId);
     await expect(resultPromise).resolves.toEqual({ status: "cancelled" });
+  });
+
+  it("accepts string options and normalizes them for choice questions", async () => {
+    const resultPromise = requestUserContext("thread-a", {
+      title: "Java error post details",
+      questions: [
+        {
+          id: "java_code",
+          prompt:
+            "Paste the Java code or the smallest relevant excerpt that shows the problem.",
+          type: "text",
+          options: [],
+        },
+        {
+          id: "error_message",
+          prompt: "What exact error message or stack trace are you seeing?",
+          type: "text",
+          options: [],
+        },
+        {
+          id: "expected_behavior",
+          prompt: "What should the code do when it works correctly?",
+          type: "text",
+          options: [],
+        },
+        {
+          id: "post_style",
+          prompt: "What kind of post do you want to create?",
+          type: "single_choice",
+          options: [
+            "Stack Overflow-style technical question",
+            "General discussion post",
+          ],
+        },
+      ],
+    });
+
+    const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
+    expect(questionnaire.questions[3]).toEqual({
+      id: "post_style",
+      prompt: "What kind of post do you want to create?",
+      type: "single_choice",
+      options: [
+        {
+          value: "Stack Overflow-style technical question",
+          label: "Stack Overflow-style technical question",
+        },
+        {
+          value: "General discussion post",
+          label: "General discussion post",
+        },
+      ],
+    });
+
+    cancelUserContextQuestionnaire("thread-a", questionnaire.requestId);
+    await expect(resultPromise).resolves.toEqual({ status: "cancelled" });
+  });
+
+  it("rejects null options for choice questions", () => {
+    expect(() =>
+      requestUserContext("thread-a", {
+        title: "Invalid choice",
+        questions: [
+          {
+            id: "post_style",
+            prompt: "What kind of post do you want to create?",
+            type: "single_choice",
+          },
+        ],
+      }),
+    ).toThrow();
   });
 
   it("ignores empty options for non-choice questions", async () => {
@@ -177,7 +281,14 @@ describe("questionnaire settlement", () => {
       "thread-a",
       {
         title: "Context",
-        questions: [{ id: "proceed", prompt: "Proceed?", type: "yes_no" }],
+        questions: [
+          {
+            id: "proceed",
+            prompt: "Proceed?",
+            type: "yes_no",
+            options: [],
+          },
+        ],
       },
       undefined,
       "tool-call-1",
@@ -194,8 +305,8 @@ describe("questionnaire settlement", () => {
     const resultPromise = requestUserContext("thread-a", {
       title: "Context",
       questions: [
-        { id: "proceed", prompt: "Proceed?", type: "yes_no" },
-        { id: "notes", prompt: "Notes?", type: "text" },
+        { id: "proceed", prompt: "Proceed?", type: "yes_no", options: [] },
+        { id: "notes", prompt: "Notes?", type: "text", options: [] },
       ],
     });
     const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
@@ -221,7 +332,9 @@ describe("questionnaire settlement", () => {
   it("cancels without returning partial answers", async () => {
     const resultPromise = requestUserContext("thread-a", {
       title: "Context",
-      questions: [{ id: "notes", prompt: "Notes?", type: "text" }],
+      questions: [
+        { id: "notes", prompt: "Notes?", type: "text", options: [] },
+      ],
     });
     const questionnaire = store.get(userContextQuestionnairesAtom)["thread-a"]!;
     store.set(userContextQuestionnairesAtom, (questionnaires) => ({
@@ -240,11 +353,15 @@ describe("questionnaire settlement", () => {
   it("keeps pending state isolated by thread", () => {
     void requestUserContext("thread-a", {
       title: "First",
-      questions: [{ id: "first", prompt: "First?", type: "yes_no" }],
+      questions: [
+        { id: "first", prompt: "First?", type: "yes_no", options: [] },
+      ],
     });
     void requestUserContext("thread-b", {
       title: "Second",
-      questions: [{ id: "second", prompt: "Second?", type: "text" }],
+      questions: [
+        { id: "second", prompt: "Second?", type: "text", options: [] },
+      ],
     });
 
     const questionnaires = store.get(userContextQuestionnairesAtom);

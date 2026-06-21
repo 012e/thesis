@@ -32,7 +32,7 @@ export const MODEL_CONFIG = {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
   },
-  IDENTITY_AGENT: {
+  SOCIAL_MEDIA_AGENT: {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
   },
@@ -41,14 +41,6 @@ export const MODEL_CONFIG = {
     reasoningEffort: reasoning("none"),
   },
   POST_DRAFTING_AGENT: {
-    model: openai("gpt-5.4-mini"),
-    reasoningEffort: reasoning("none"),
-  },
-  POST_DISCOVERY_AGENT: {
-    model: openai("gpt-5.4-mini"),
-    reasoningEffort: reasoning("none"),
-  },
-  INTERACTIONS_AGENT: {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
   },

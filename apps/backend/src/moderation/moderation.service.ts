@@ -204,6 +204,9 @@ export class ModerationService {
         // Joined post info
         postContent: posts.content,
         postAuthorId: posts.authorId,
+        postKind: posts.kind,
+        postAcceptedCommentId: posts.acceptedCommentId,
+        postSolvedAt: posts.solvedAt,
         postCreatedAt: posts.createdAt,
         postUpdatedAt: posts.updatedAt,
         postHidden: posts.hidden,
@@ -212,6 +215,7 @@ export class ModerationService {
         authorName: usersView.name,
         authorImage: usersView.image,
         authorEmail: usersView.email,
+        authorXp: usersView.xp,
         // Aggregated counts
         upvoteCount,
         downvoteCount,
@@ -227,6 +231,9 @@ export class ModerationService {
         posts.id,
         posts.content,
         posts.authorId,
+        posts.kind,
+        posts.acceptedCommentId,
+        posts.solvedAt,
         posts.createdAt,
         posts.updatedAt,
         posts.hidden,
@@ -235,6 +242,7 @@ export class ModerationService {
         usersView.name,
         usersView.image,
         usersView.email,
+        usersView.xp,
       )
       .orderBy(desc(postModeration.createdAt))
       .limit(pageSize)
@@ -265,6 +273,7 @@ export class ModerationService {
             id: item.postId,
             authorId: item.postAuthorId,
             content: item.postContent,
+            kind: item.postKind,
             createdAt: item.postCreatedAt?.toISOString(),
             updatedAt: item.postUpdatedAt?.toISOString(),
             upvoteCount: item.upvoteCount,
@@ -276,6 +285,10 @@ export class ModerationService {
             currentUserSubscribed: false,
             currentUserBookmarked: false,
             tags: tagsByPostId.get(item.postId) ?? [],
+            acceptedCommentId: item.postAcceptedCommentId,
+            solvedAt: item.postSolvedAt?.toISOString() ?? null,
+            needsHelp:
+              item.postKind === "question" && item.postSolvedAt === null,
             hidden: item.postHidden,
             author: {
               id: item.postAuthorId,
@@ -283,6 +296,7 @@ export class ModerationService {
               email: item.authorEmail,
               name: item.authorName,
               image: item.authorImage,
+              xp: item.authorXp,
             },
           }
         : undefined,
@@ -316,6 +330,9 @@ export class ModerationService {
         updatedAt: postModeration.updatedAt,
         postContent: posts.content,
         postAuthorId: posts.authorId,
+        postKind: posts.kind,
+        postAcceptedCommentId: posts.acceptedCommentId,
+        postSolvedAt: posts.solvedAt,
         postCreatedAt: posts.createdAt,
         postUpdatedAt: posts.updatedAt,
         postHidden: posts.hidden,
@@ -323,6 +340,7 @@ export class ModerationService {
         authorName: usersView.name,
         authorImage: usersView.image,
         authorEmail: usersView.email,
+        authorXp: usersView.xp,
         upvoteCount,
         downvoteCount,
         commentCount,
@@ -337,6 +355,9 @@ export class ModerationService {
         posts.id,
         posts.content,
         posts.authorId,
+        posts.kind,
+        posts.acceptedCommentId,
+        posts.solvedAt,
         posts.createdAt,
         posts.updatedAt,
         posts.hidden,
@@ -345,6 +366,7 @@ export class ModerationService {
         usersView.name,
         usersView.image,
         usersView.email,
+        usersView.xp,
       )
       .limit(1);
 
@@ -373,6 +395,7 @@ export class ModerationService {
             id: record.postId,
             authorId: record.postAuthorId,
             content: record.postContent,
+            kind: record.postKind,
             createdAt: record.postCreatedAt?.toISOString(),
             updatedAt: record.postUpdatedAt?.toISOString(),
             upvoteCount: record.upvoteCount,
@@ -384,6 +407,10 @@ export class ModerationService {
             currentUserSubscribed: false,
             currentUserBookmarked: false,
             tags: tagsByPostId.get(record.postId) ?? [],
+            acceptedCommentId: record.postAcceptedCommentId,
+            solvedAt: record.postSolvedAt?.toISOString() ?? null,
+            needsHelp:
+              record.postKind === "question" && record.postSolvedAt === null,
             hidden: record.postHidden,
             author: {
               id: record.postAuthorId,
@@ -391,6 +418,7 @@ export class ModerationService {
               email: record.authorEmail,
               name: record.authorName,
               image: record.authorImage,
+              xp: record.authorXp,
             },
           }
         : undefined,

@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestingRouteImport } from './routes/testing'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as BookmarksRouteImport } from './routes/bookmarks'
 import { Route as ApiRouteImport } from './routes/api'
@@ -45,6 +46,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExploreRoute = ExploreRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
@@ -173,6 +180,7 @@ export interface FileRoutesByTo {
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
@@ -198,6 +206,7 @@ export interface FileRoutesById {
   '/api': typeof ApiRoute
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/bookmarks'
     | '/explore'
+    | '/leaderboard'
     | '/notifications'
     | '/settings'
     | '/testing'
@@ -248,6 +258,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/bookmarks'
     | '/explore'
+    | '/leaderboard'
     | '/notifications'
     | '/settings'
     | '/testing'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/api'
     | '/bookmarks'
     | '/explore'
+    | '/leaderboard'
     | '/notifications'
     | '/settings'
     | '/testing'
@@ -297,6 +309,7 @@ export interface RootRouteChildren {
   ApiRoute: typeof ApiRoute
   BookmarksRoute: typeof BookmarksRoute
   ExploreRoute: typeof ExploreRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   NotificationsRoute: typeof NotificationsRoute
   SettingsRoute: typeof SettingsRoute
   TestingRoute: typeof TestingRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore': {
@@ -481,6 +501,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRoute: ApiRoute,
   BookmarksRoute: BookmarksRoute,
   ExploreRoute: ExploreRoute,
+  LeaderboardRoute: LeaderboardRoute,
   NotificationsRoute: NotificationsRoute,
   SettingsRoute: SettingsRoute,
   TestingRoute: TestingRoute,

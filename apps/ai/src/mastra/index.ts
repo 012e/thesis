@@ -2,11 +2,9 @@ import { Mastra } from "@mastra/core";
 
 import { env } from "../env";
 import { assistantAgent } from "./agents/assistant";
-import { identityAgent } from "./agents/identity-agent";
+import { socialMediaAgent } from "./agents/social-media-agent";
 import { postCreationAgent } from "./agents/post-creation-agent";
 import { postDraftingAgent } from "./agents/post-drafting-agent";
-import { postDiscoveryAgent } from "./agents/post-discovery-agent";
-import { interactionsAgent } from "./agents/interactions-agent";
 import { navigationAgent } from "./agents/navigation-agent";
 import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
@@ -20,11 +18,10 @@ import { RequestContext } from "@mastra/core/request-context";
  *
  * Registered agents:
  * - assistantAgent  — legacy single-agent (kept for Mastra Studio compat)
- * - identityAgent   — user identity & social graph (Studio preview only)
+ * - socialMediaAgent — consolidated backend specialist: identity, discovery,
+ *                      engagement, post management, tags (Studio preview only)
  * - postCreationAgent — post write ops (Studio preview only)
  * - postDraftingAgent — LinkedIn-style and technical question drafting
- * - postDiscoveryAgent — post read ops (Studio preview only)
- * - interactionsAgent — engagement ops (Studio preview only)
  * - navigationAgent — app page/tool discovery (Studio preview only)
  * - planningAgent   — explicit execution planning with the strongest model
  * - searchAgent     — web search via OpenAI web search
@@ -37,11 +34,9 @@ import { RequestContext } from "@mastra/core/request-context";
 export const mastra = new Mastra({
   agents: {
     assistantAgent,
-    identityAgent,
+    socialMediaAgent,
     postCreationAgent,
     postDraftingAgent,
-    postDiscoveryAgent,
-    interactionsAgent,
     navigationAgent,
     planningAgent,
     searchAgent,
