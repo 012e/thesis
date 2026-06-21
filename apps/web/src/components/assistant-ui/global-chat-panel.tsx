@@ -22,6 +22,8 @@ import {
 } from "@/lib/atoms/global-chat";
 import type { GlobalChatSize } from "@/lib/atoms/global-chat";
 import { Thread } from "@/components/assistant-ui/thread";
+import { UserContextQuestionnaire } from "@/components/assistant-ui/user-context-questionnaire";
+import { useChatState } from "@/hooks/use-chat-state";
 
 // ─── Thread Switcher Dropdown ─────────────────────────────────────────────────
 
@@ -208,6 +210,7 @@ function PanelHeader({ size, onSizeToggle, onClose }: PanelHeaderProps) {
 export function GlobalChatPanel() {
   const [isOpen, setIsOpen] = useAtom(isGlobalChatOpenAtom);
   const [size, setSize] = useAtom(globalChatSizeAtom);
+  const { threadId } = useChatState();
 
   // Keyboard shortcut: Ctrl/Cmd + Shift + K to toggle; Escape to close
   useEffect(() => {
@@ -259,7 +262,12 @@ export function GlobalChatPanel() {
         onClose={handleClose}
       />
       <div className="flex-1 overflow-hidden min-h-0">
-        <Thread scrollToEndKey={isOpen} />
+        <Thread
+          scrollToEndKey={isOpen}
+          footerContent={
+            <UserContextQuestionnaire threadId={threadId} />
+          }
+        />
       </div>
     </div>
   );

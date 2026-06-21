@@ -98,6 +98,11 @@ export const ASSISTANT_PAGE_DEFINITIONS = [
         description:
           "Submit the active chat workspace form after confirmation.",
       },
+      {
+        toolName: "ask_questions",
+        description:
+          "Collect multiple required user-only answers in a questionnaire.",
+      },
     ],
     requiresAssistantReady: true,
   },

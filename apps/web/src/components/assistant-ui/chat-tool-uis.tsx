@@ -10,6 +10,7 @@ import {
   IconLoader2,
   IconListCheck,
   IconPencil,
+  IconQuestionMark,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { PostDto } from "@repo/shared-dto";
@@ -291,6 +292,35 @@ export function FormToolUIs() {
       <SubmitFormToolUI />
     </>
   );
+}
+
+const RequestUserContextToolUIImpl = makeAssistantToolUI({
+  toolName: "ask_questions",
+  render: ({ args, result, status }) => {
+    const title = typeof args.title === "string" ? args.title : "Questions";
+    const cancelled =
+      isRecord(result) &&
+      result.status === "cancelled";
+
+    return (
+      <ToolTrace
+        icon={IconQuestionMark}
+        label={
+          status.type === "running"
+            ? "Waiting for your answers"
+            : cancelled
+              ? "Questionnaire cancelled"
+              : "Context provided"
+        }
+        detail={title}
+        state={status.type === "running" ? "running" : "complete"}
+      />
+    );
+  },
+});
+
+export function RequestUserContextToolUI() {
+  return <RequestUserContextToolUIImpl />;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -2,6 +2,7 @@ import { ChatToolStateSync } from "@/components/assistant-ui/chat-tool-state-syn
 import { PlanToolUIs } from "@/components/assistant-ui/chat-tool-uis";
 import { LineGraphAssistantTools } from "@/components/assistant-ui/comparison-chart-tools";
 import { ContentReferenceAssistantTools } from "@/components/assistant-ui/content-reference-tools";
+import { UserContextAssistantTool } from "@/components/assistant-ui/user-context-questionnaire";
 
 export function ChatAssistantEffects() {
   return (
@@ -9,6 +10,7 @@ export function ChatAssistantEffects() {
       <PlanToolUIs />
       <LineGraphAssistantTools />
       <ContentReferenceAssistantTools />
+      <UserContextAssistantTool />
       <ChatToolStateSync />
     </>
   );
