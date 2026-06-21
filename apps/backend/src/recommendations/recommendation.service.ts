@@ -203,6 +203,9 @@ export class RecommendationService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {

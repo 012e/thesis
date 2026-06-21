@@ -80,6 +80,29 @@ export class PostsService {
     return this.postsReadService.recommendations(userId, limit, cursor);
   }
 
+  listUnansweredQuestions(
+    userId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<PostFeedPage> {
+    return this.postsReadService.listUnansweredQuestions(userId, limit, cursor);
+  }
+
+  acceptAnswer(
+    postId: string,
+    authorId: string,
+    commentId: string,
+  ): Promise<PostDto | null> {
+    return this.postsMutationService.acceptAnswer(postId, authorId, commentId);
+  }
+
+  clearAcceptedAnswer(
+    postId: string,
+    authorId: string,
+  ): Promise<PostDto | null> {
+    return this.postsMutationService.clearAcceptedAnswer(postId, authorId);
+  }
+
   delete(id: string, authorId: string): Promise<PostDto | null> {
     return this.postsMutationService.delete(id, authorId);
   }

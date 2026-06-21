@@ -6,24 +6,39 @@ import {
 import { z } from "zod";
 import { useAtomValue, useSetAtom } from "jotai";
 import { executeCode } from "@/lib/api/playground";
-import type { ExecutionResult } from "@repo/rest-contracts";
+import {
+  PlaygroundLanguage,
+  type ExecutionResult,
+} from "@repo/rest-contracts";
 import { useAssistantPageReady } from "@/lib/assistant/page-readiness";
 import { isOutputMinimizedAtom } from "./-types";
 import {
   codeAtom,
+  codeByLanguageAtom,
   editFlashAtom,
   languageAtom,
   resultAtom,
   setCodeAtom,
+  setCodeForLanguageAtom,
   setLanguageAtom,
   setResultAtom,
 } from "./-playground-state";
 import type { Language } from "./-types";
 
-const PlaygroundLanguageSchema = z.enum(["javascript", "typescript"]);
 const VirtualFilePathSchema = z.enum([
   "/playground/index.js",
   "/playground/index.ts",
+  "/playground/main.py",
+  "/playground/main.c",
+  "/playground/main.cpp",
+  "/playground/Main.java",
+  "/playground/main.go",
+  "/playground/main.rs",
+  "/playground/main.rb",
+  "/playground/main.php",
+  "/playground/Main.kt",
+  "/playground/main.swift",
+  "/playground/main.lua",
 ]);
 
 const VIRTUAL_FILE_BY_LANGUAGE: Record<
@@ -32,6 +47,17 @@ const VIRTUAL_FILE_BY_LANGUAGE: Record<
 > = {
   javascript: "/playground/index.js",
   typescript: "/playground/index.ts",
+  python: "/playground/main.py",
+  c: "/playground/main.c",
+  "c++": "/playground/main.cpp",
+  java: "/playground/Main.java",
+  go: "/playground/main.go",
+  rust: "/playground/main.rs",
+  ruby: "/playground/main.rb",
+  php: "/playground/main.php",
+  kotlin: "/playground/Main.kt",
+  swift: "/playground/main.swift",
+  lua: "/playground/main.lua",
 };
 
 const LANGUAGE_BY_VIRTUAL_FILE: Record<
@@ -40,6 +66,17 @@ const LANGUAGE_BY_VIRTUAL_FILE: Record<
 > = {
   "/playground/index.js": "javascript",
   "/playground/index.ts": "typescript",
+  "/playground/main.py": "python",
+  "/playground/main.c": "c",
+  "/playground/main.cpp": "c++",
+  "/playground/Main.java": "java",
+  "/playground/main.go": "go",
+  "/playground/main.rs": "rust",
+  "/playground/main.rb": "ruby",
+  "/playground/main.php": "php",
+  "/playground/Main.kt": "kotlin",
+  "/playground/main.swift": "swift",
+  "/playground/main.lua": "lua",
 };
 
 const ReadFileInput = z.object({
@@ -58,11 +95,11 @@ const WriteFileInput = z.object({
   path: VirtualFilePathSchema,
   content: z.string().max(102400),
   expected_version: z.number().int().nonnegative(),
-  language: PlaygroundLanguageSchema.optional(),
+  language: PlaygroundLanguage.optional(),
 });
 
 const SetPlaygroundLanguageInput = z.object({
-  language: PlaygroundLanguageSchema,
+  language: PlaygroundLanguage,
 });
 
 const RunPlaygroundCodeInput = z.object({
@@ -71,15 +108,18 @@ const RunPlaygroundCodeInput = z.object({
 
 export function PlaygroundAssistantTools() {
   const code = useAtomValue(codeAtom);
+  const codeByLanguage = useAtomValue(codeByLanguageAtom);
   const language = useAtomValue(languageAtom);
   const result = useAtomValue(resultAtom);
   const setCode = useSetAtom(setCodeAtom);
+  const setCodeForLanguage = useSetAtom(setCodeForLanguageAtom);
   const setLanguage = useSetAtom(setLanguageAtom);
   const setResult = useSetAtom(setResultAtom);
   const setEditFlash = useSetAtom(editFlashAtom);
   const setIsOutputMinimized = useSetAtom(isOutputMinimizedAtom);
   const stateRef = useRef({
     code,
+    codeByLanguage,
     language,
     result,
     version: 0,
@@ -91,6 +131,7 @@ export function PlaygroundAssistantTools() {
   ) {
     stateRef.current = {
       code,
+      codeByLanguage,
       language,
       result,
       version: stateRef.current.version + 1,
@@ -98,6 +139,7 @@ export function PlaygroundAssistantTools() {
   } else {
     stateRef.current = {
       ...stateRef.current,
+      codeByLanguage,
       result,
     };
   }
@@ -204,6 +246,10 @@ export function PlaygroundAssistantTools() {
         stateRef.current = {
           ...current,
           code: nextCode,
+          codeByLanguage: {
+            ...current.codeByLanguage,
+            [current.language]: nextCode,
+          },
           version: nextVersion,
         };
         setCode(nextCode);
@@ -270,10 +316,14 @@ export function PlaygroundAssistantTools() {
         stateRef.current = {
           ...current,
           code: content,
+          codeByLanguage: {
+            ...current.codeByLanguage,
+            [nextLanguage]: content,
+          },
           language: nextLanguage,
           version: nextVersion,
         };
-        setCode(content);
+        setCodeForLanguage({ language: nextLanguage, code: content });
         if (nextLanguage !== current.language) setLanguage(nextLanguage);
         if (content.length > 0) {
           setEditFlash({
@@ -293,21 +343,23 @@ export function PlaygroundAssistantTools() {
         };
       },
     }),
-    [setCode, setEditFlash, setLanguage],
+    [setCodeForLanguage, setEditFlash, setLanguage],
   );
 
   const setLanguageTool = useMemo(
     () => ({
       toolName: "set_playground_language",
       description:
-        "Switch the playground language without changing the current editor contents.",
+        "Switch the playground to that language's in-memory code buffer.",
       parameters: SetPlaygroundLanguageInput,
       execute: ({
         language: nextLanguage,
       }: z.infer<typeof SetPlaygroundLanguageInput>) => {
         const current = stateRef.current;
+        const nextCode = current.codeByLanguage[nextLanguage];
         stateRef.current = {
           ...current,
+          code: nextCode,
           language: nextLanguage,
           version:
             nextLanguage === current.language

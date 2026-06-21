@@ -1,6 +1,7 @@
 import type {
   PostContentDto,
   PostDto,
+  PostKindDto,
   ReactionTypeDto,
 } from "@repo/shared-dto";
 import type { z } from "zod";
@@ -14,6 +15,9 @@ export type PostRow = {
   id: string;
   authorId: string;
   content: PostContentDto;
+  kind: PostKindDto;
+  acceptedCommentId: string | null;
+  solvedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   author: {

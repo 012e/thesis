@@ -1,16 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CommentItem } from "./comment-item";
 import { CommentEditor } from "./comment-editor";
 import type { CommentType } from "@repo/rest-contracts";
 import { useComments, useCreateReply } from "@/hooks/use-comments";
+import { useAcceptAnswer } from "@/hooks/use-accept-answer";
 import { IconLoader2, IconAlertCircle } from "@tabler/icons-react";
+import { cn } from "@/lib/utils";
 
 export interface CommentTreeProps {
   postId: string;
+  /** Scrolls the matching comment into view and highlights it. */
+  focusedCommentId?: string;
   /** When true, fetches comments internally. Pass for the root render (e.g. inside CommentsDialog). */
   isRoot?: boolean;
   /** Supply comments directly (used when isRoot is false, or in Storybook). */
   comments?: CommentType[];
+  /** Q&A primitive: viewer can accept answers (question author on a question). */
+  canAcceptAnswers?: boolean;
 }
 
 interface CommentNode extends CommentType {
@@ -43,10 +49,11 @@ function buildCommentTree(comments: CommentType[]): CommentNode[] {
     }
   });
 
-  // Sort root comments by creation date (newest first)
-  rootComments.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-  );
+  // Q&A primitive: surface the accepted answer first, then newest-first.
+  rootComments.sort((a, b) => {
+    if (a.isAccepted !== b.isAccepted) return a.isAccepted ? -1 : 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   // Recursively sort replies (oldest first for replies to maintain conversation flow)
   const sortReplies = (node: CommentNode) => {
@@ -68,6 +75,11 @@ interface CommentNodeRendererProps {
   onReply: (commentId: string) => void;
   replyingTo: string | null;
   onCancelReply: () => void;
+  focusedCommentId?: string;
+  canAccept?: boolean;
+  isAcceptPending?: boolean;
+  onAccept?: (commentId: string) => void;
+  onClearAccept?: () => void;
 }
 
 function CommentNodeRenderer({
@@ -77,6 +89,11 @@ function CommentNodeRenderer({
   onReply,
   replyingTo,
   onCancelReply,
+  focusedCommentId,
+  canAccept,
+  isAcceptPending,
+  onAccept,
+  onClearAccept,
 }: CommentNodeRendererProps) {
   const { mutate: createReply, isPending } = useCreateReply(postId);
 
@@ -93,12 +110,24 @@ function CommentNodeRenderer({
 
   return (
     <div className="space-y-3">
-      <CommentItem
-        comment={node}
-        postId={postId}
-        onReply={onReply}
-        level={level}
-      />
+      <div
+        id={`comment-${node.id}`}
+        className={cn(
+          "scroll-mt-20 transition-colors",
+          focusedCommentId === node.id && "bg-primary/10 ring-1 ring-primary/30",
+        )}
+      >
+        <CommentItem
+          comment={node}
+          postId={postId}
+          onReply={onReply}
+          level={level}
+          canAccept={canAccept}
+          isAcceptPending={isAcceptPending}
+          onAccept={onAccept}
+          onClearAccept={onClearAccept}
+        />
+      </div>
       {replyingTo === node.id && (
         <div style={{ marginLeft: `${Math.min(level + 1, 4) * 16}px` }}>
           <CommentEditor
@@ -123,6 +152,11 @@ function CommentNodeRenderer({
               onReply={onReply}
               replyingTo={replyingTo}
               onCancelReply={onCancelReply}
+              focusedCommentId={focusedCommentId}
+              canAccept={canAccept}
+              isAcceptPending={isAcceptPending}
+              onAccept={onAccept}
+              onClearAccept={onClearAccept}
             />
           ))}
         </div>
@@ -134,12 +168,29 @@ function CommentNodeRenderer({
 interface CommentTreeInnerProps {
   comments: CommentType[];
   postId: string;
+  focusedCommentId?: string;
+  canAcceptAnswers?: boolean;
 }
 
-function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
+function CommentTreeInner({
+  comments,
+  postId,
+  focusedCommentId,
+  canAcceptAnswers = false,
+}: CommentTreeInnerProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const { accept, clear } = useAcceptAnswer(postId);
+  const isAcceptPending = accept.isPending || clear.isPending;
 
   const tree = buildCommentTree(comments);
+
+  useEffect(() => {
+    if (!focusedCommentId) return;
+
+    document
+      .getElementById(`comment-${focusedCommentId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [focusedCommentId, comments]);
 
   const handleReply = (commentId: string) => {
     setReplyingTo((prev) => (prev === commentId ? null : commentId));
@@ -168,6 +219,11 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
           onReply={handleReply}
           replyingTo={replyingTo}
           onCancelReply={handleCancelReply}
+          focusedCommentId={focusedCommentId}
+          canAccept={canAcceptAnswers}
+          isAcceptPending={isAcceptPending}
+          onAccept={(commentId) => accept.mutate(commentId)}
+          onClearAccept={() => clear.mutate()}
         />
       ))}
     </div>
@@ -176,8 +232,10 @@ function CommentTreeInner({ comments, postId }: CommentTreeInnerProps) {
 
 export function CommentTree({
   postId,
+  focusedCommentId,
   isRoot = false,
   comments,
+  canAcceptAnswers = false,
 }: CommentTreeProps) {
   const query = useComments(postId, { enabled: isRoot });
 
@@ -199,8 +257,22 @@ export function CommentTree({
       );
     }
 
-    return <CommentTreeInner comments={query.data ?? []} postId={postId} />;
+    return (
+      <CommentTreeInner
+        comments={query.data ?? []}
+        postId={postId}
+        focusedCommentId={focusedCommentId}
+        canAcceptAnswers={canAcceptAnswers}
+      />
+    );
   }
 
-  return <CommentTreeInner comments={comments ?? []} postId={postId} />;
+  return (
+    <CommentTreeInner
+      comments={comments ?? []}
+      postId={postId}
+      focusedCommentId={focusedCommentId}
+      canAcceptAnswers={canAcceptAnswers}
+    />
+  );
 }

@@ -76,11 +76,18 @@ export interface PostAuthorDto {
   image: string | null;
 }
 
+/**
+ * Q&A primitive: a post is either a regular "discussion" or a help-seeking
+ * "question". Only questions carry solved / accepted-answer / needs-help state.
+ */
+export type PostKindDto = "discussion" | "question";
+
 export interface PostDto {
   id: string;
   authorId: string;
   author: PostAuthorDto;
   content: PostContentDto;
+  kind: PostKindDto;
   createdAt: string;
   updatedAt: string;
   upvoteCount: number;
@@ -92,6 +99,12 @@ export interface PostDto {
   currentUserSubscribed: boolean;
   currentUserBookmarked: boolean;
   tags: PostTagDto[];
+  /** Comment accepted as the answer (questions only). */
+  acceptedCommentId: string | null;
+  /** When the question was marked solved (an answer accepted). */
+  solvedAt: string | null;
+  /** Derived: an unsolved question still seeking an answer. */
+  needsHelp: boolean;
 }
 
 export interface BookmarkSummaryDto {
@@ -155,6 +168,8 @@ export interface CommentDto {
   upvoteCount: number;
   downvoteCount: number;
   currentUserReaction: ReactionTypeDto | null;
+  /** Q&A primitive: this comment was accepted as the answer to the post. */
+  isAccepted: boolean;
 }
 
 export interface CommentReactionDto {
@@ -260,7 +275,8 @@ export type NotificationTypeDto =
   | "post_reaction"
   | "comment_reaction"
   | "direct_message"
-  | "post_hidden";
+  | "post_hidden"
+  | "answer_accepted";
 
 export interface NotificationUserContextDto {
   id: string;
@@ -348,6 +364,14 @@ export interface PostHiddenNotificationPayload {
   post?: NotificationPostContextDto;
 }
 
+/** The recipient's comment was accepted as the answer to a question. */
+export interface AnswerAcceptedNotificationPayload {
+  postId: string;
+  commentId: string;
+  post?: NotificationPostContextDto;
+  comment?: NotificationCommentContextDto;
+}
+
 /** Discriminated union of all possible notification payloads. */
 export type NotificationPayloadDto =
   | FollowNotificationPayload
@@ -357,7 +381,8 @@ export type NotificationPayloadDto =
   | PostReactionNotificationPayload
   | CommentReactionNotificationPayload
   | DirectMessageNotificationPayload
-  | PostHiddenNotificationPayload;
+  | PostHiddenNotificationPayload
+  | AnswerAcceptedNotificationPayload;
 
 // ─── AI Context ──────────────────────────────────────────────────────────────
 

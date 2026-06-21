@@ -10,6 +10,8 @@ import {
   UserPostsPage,
   BookmarkSummary,
   BookmarkPage,
+  AcceptAnswerBody,
+  UnansweredQuestionsPage,
 } from "../schemas/post";
 
 const c = initContract();
@@ -173,6 +175,45 @@ export const postsContract = c.router({
     },
     summary:
       "List bookmarked posts for a user, ordered by most recently bookmarked. Paginated with a keyset cursor.",
+  },
+  listUnansweredQuestions: {
+    method: "GET",
+    path: "/questions/unanswered",
+    query: z.object({
+      limit: z.coerce.number().int().positive().max(100).optional(),
+      cursor: z.string().optional(),
+    }),
+    responses: {
+      200: UnansweredQuestionsPage,
+    },
+    summary:
+      "List question posts that have not been solved yet (the 'still needs help' surface), newest first. Paginated with a keyset cursor encoding (createdAt, postId).",
+  },
+  acceptAnswer: {
+    method: "PUT",
+    path: "/posts/:id/accepted-answer",
+    pathParams: z.object({ id: z.string().uuid() }),
+    body: AcceptAnswerBody,
+    responses: {
+      200: Post,
+      403: z.null(),
+      404: z.null(),
+      409: z.null(),
+    },
+    summary:
+      "Accept a top-level comment as the answer to a question, marking it solved. Author only; the post must be a question and the comment must belong to it.",
+  },
+  clearAcceptedAnswer: {
+    method: "DELETE",
+    path: "/posts/:id/accepted-answer",
+    pathParams: z.object({ id: z.string().uuid() }),
+    responses: {
+      200: Post,
+      403: z.null(),
+      404: z.null(),
+    },
+    summary:
+      "Clear the accepted answer and re-open the question (back to 'needs help'). Author only.",
   },
 });
 

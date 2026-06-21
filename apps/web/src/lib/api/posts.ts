@@ -1,6 +1,7 @@
 import type {
   PostDto,
   PostContentDto,
+  PostKindDto,
   PostSubscriptionDto,
   ReactionTypeDto,
   BookmarkSummaryDto,
@@ -85,10 +86,14 @@ export async function fetchFollowingPosts(params: FollowingPostsParams) {
   throw new Error("Failed to fetch following posts");
 }
 
-export async function createPost(content: PostContentDto): Promise<PostDto> {
+export async function createPost(
+  content: PostContentDto,
+  kind?: PostKindDto,
+): Promise<PostDto> {
   const response = await client.createPost({
     body: {
       content,
+      kind,
     },
   });
 
@@ -102,6 +107,97 @@ export async function createPost(content: PostContentDto): Promise<PostDto> {
   }
 
   throw new Error("Failed to create post");
+}
+
+/**
+ * Q&A primitive: accept a top-level comment as the answer to a question,
+ * marking the question solved.
+ */
+export async function acceptAnswer(
+  postId: string,
+  commentId: string,
+): Promise<PostDto> {
+  const response = await client.acceptAnswer({
+    params: { id: postId },
+    body: { commentId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 403) {
+    throw new Error("Only the question author can accept an answer");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 409) {
+    throw new Error("That comment cannot be accepted as the answer");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to accept answer");
+}
+
+/** Q&A primitive: clear the accepted answer and re-open the question. */
+export async function clearAcceptedAnswer(postId: string): Promise<PostDto> {
+  const response = await client.clearAcceptedAnswer({
+    params: { id: postId },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 403) {
+    throw new Error("Only the question author can re-open the question");
+  }
+
+  if (response.status === 404) {
+    throw new Error("Post not found");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to re-open question");
+}
+
+export interface UnansweredQuestionsParams {
+  limit?: number;
+  cursor?: string;
+}
+
+/** Q&A primitive: the "still needs help" surface — unsolved questions. */
+export async function fetchUnansweredQuestions(
+  params: UnansweredQuestionsParams,
+) {
+  const response = await client.listUnansweredQuestions({
+    query: {
+      limit: params.limit,
+      cursor: params.cursor,
+    },
+  });
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body;
+  }
+
+  throw new Error("Failed to fetch unanswered questions");
 }
 
 export async function reactToPost(

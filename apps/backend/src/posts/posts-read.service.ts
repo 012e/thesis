@@ -1,5 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { and, asc, count, desc, eq, gt, lt, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gt,
+  isNull,
+  lt,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { PostDto, ReactionTypeDto } from "@repo/shared-dto";
 
 import { DatabaseService } from "@/db/database.service";
@@ -53,6 +64,9 @@ export class PostsReadService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {
@@ -126,6 +140,9 @@ export class PostsReadService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {
@@ -181,6 +198,9 @@ export class PostsReadService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {
@@ -255,12 +275,111 @@ export class PostsReadService {
     return { items: followingDtos, nextCursor };
   }
 
+  /**
+   * Q&A primitive: the "still needs help" surface — unsolved question posts,
+   * newest first. Keyset cursor encodes (createdAt, postId).
+   */
+  async listUnansweredQuestions(
+    userId: string,
+    limit: number = 20,
+    cursor?: string,
+  ): Promise<PostFeedPage> {
+    const parsed = cursor
+      ? decodeCreatedAtCursor(cursor, { throwOnInvalidDate: true })
+      : null;
+    const cursorDate = parsed ? new Date(parsed.createdAt) : null;
+    const createdAtCursorValue = sql<Date>`date_trunc('milliseconds', ${posts.createdAt})`;
+
+    const baseConditions = and(
+      eq(posts.hidden, false),
+      eq(posts.kind, "question"),
+      isNull(posts.solvedAt),
+      excludesBlockedTags(userId, posts.id),
+    );
+
+    const rows = await this.databaseService.db
+      .select({
+        id: posts.id,
+        authorId: posts.authorId,
+        content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
+        createdAt: posts.createdAt,
+        updatedAt: posts.updatedAt,
+        author: {
+          id: usersView.id,
+          username: usersView.username,
+          email: usersView.email,
+          name: usersView.name,
+          image: usersView.image,
+        },
+        upvoteCount,
+        downvoteCount,
+        commentCount,
+        userReactionType: getUserReactionType(userId),
+        currentUserSubscribed: getCurrentUserSubscribed(userId),
+        currentUserBookmarked: getCurrentUserBookmarked(userId),
+      })
+      .from(posts)
+      .innerJoin(usersView, eq(posts.authorId, usersView.id))
+      .leftJoin(postReactions, eq(posts.id, postReactions.postId))
+      .where(
+        cursorDate && parsed
+          ? and(
+              baseConditions,
+              or(
+                lt(createdAtCursorValue, cursorDate),
+                and(
+                  eq(createdAtCursorValue, cursorDate),
+                  gt(posts.id, parsed.postId),
+                ),
+              ),
+            )
+          : baseConditions,
+      )
+      .groupBy(
+        posts.id,
+        usersView.id,
+        usersView.username,
+        usersView.email,
+        usersView.name,
+        usersView.image,
+      )
+      .orderBy(desc(createdAtCursorValue), asc(posts.id))
+      .limit(limit + 1);
+
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    const lastItem = items.at(-1);
+    const nextCursor =
+      hasMore && lastItem
+        ? encodeCreatedAtCursor({
+            createdAt: lastItem.createdAt.toISOString(),
+            postId: lastItem.id,
+          })
+        : null;
+
+    const dtos = items.map((row) =>
+      this.postsPresenter.toDto(
+        row,
+        row.userReactionType as ReactionTypeDto | null,
+      ),
+    );
+    await this.postsPresenter.hydrateTags(dtos);
+
+    return { items: dtos, nextCursor };
+  }
+
   async getById(id: string, userId?: string): Promise<PostDto | null> {
     const [row] = await this.databaseService.db
       .select({
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {
@@ -320,6 +439,9 @@ export class PostsReadService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {
@@ -403,6 +525,9 @@ export class PostsReadService {
         id: posts.id,
         authorId: posts.authorId,
         content: posts.content,
+        kind: posts.kind,
+        acceptedCommentId: posts.acceptedCommentId,
+        solvedAt: posts.solvedAt,
         createdAt: posts.createdAt,
         updatedAt: posts.updatedAt,
         author: {

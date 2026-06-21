@@ -27,6 +27,7 @@ export class PostsPresenterService {
         image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
       },
       content: row.content,
+      kind: row.kind,
       createdAt: row.createdAt.toISOString(),
       updatedAt: row.updatedAt.toISOString(),
       upvoteCount: row.upvoteCount,
@@ -38,6 +39,9 @@ export class PostsPresenterService {
       currentUserSubscribed: row.currentUserSubscribed ?? false,
       currentUserBookmarked: row.currentUserBookmarked ?? false,
       tags: [],
+      acceptedCommentId: row.acceptedCommentId,
+      solvedAt: row.solvedAt ? row.solvedAt.toISOString() : null,
+      needsHelp: row.kind === "question" && row.solvedAt === null,
     };
   }
 

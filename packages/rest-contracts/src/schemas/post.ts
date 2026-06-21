@@ -52,11 +52,14 @@ export const PostContent = z
     },
   );
 
+export const PostKind = z.enum(["discussion", "question"]);
+
 export const Post = z.object({
   id: z.string().uuid(),
   authorId: z.string(),
   author: PostAuthor,
   content: PostContent,
+  kind: PostKind,
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   upvoteCount: z.number().int().nonnegative(),
@@ -74,6 +77,9 @@ export const Post = z.object({
       displayName: z.string(),
     }),
   ),
+  acceptedCommentId: z.string().uuid().nullable(),
+  solvedAt: z.string().datetime().nullable(),
+  needsHelp: z.boolean(),
 });
 
 export const BookmarkSummary = z.object({
@@ -94,6 +100,16 @@ export const PostSubscription = z.object({
 
 export const CreatePostBody = z.object({
   content: PostContent,
+  kind: PostKind.optional(),
+});
+
+export const AcceptAnswerBody = z.object({
+  commentId: z.string().uuid(),
+});
+
+export const UnansweredQuestionsPage = z.object({
+  items: z.array(Post),
+  nextCursor: z.string().nullable(),
 });
 
 export const UpdatePostBody = z.object({
@@ -123,7 +139,12 @@ export type VisualizationPostContentType = z.infer<
 >;
 export type PostImageType = z.infer<typeof PostImage>;
 export type PostContentType = z.infer<typeof PostContent>;
+export type PostKindType = z.infer<typeof PostKind>;
 export type PostType = z.infer<typeof Post>;
+export type AcceptAnswerBodyType = z.infer<typeof AcceptAnswerBody>;
+export type UnansweredQuestionsPageType = z.infer<
+  typeof UnansweredQuestionsPage
+>;
 export type PostSubscriptionType = z.infer<typeof PostSubscription>;
 export type CreatePostBodyType = z.infer<typeof CreatePostBody>;
 export type UpdatePostBodyType = z.infer<typeof UpdatePostBody>;

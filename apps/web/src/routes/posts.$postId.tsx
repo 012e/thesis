@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { useEffect } from "react";
+import { z } from "zod";
 import { Post } from "@/components/post";
 import { PageSpinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
@@ -11,7 +13,12 @@ import { CommentTree } from "@/components/comment-tree";
 import { CommentEditor } from "@/components/comment-editor";
 import { useCreateComment } from "@/hooks/use-comments";
 
+const postSearchSchema = z.object({
+  commentId: z.string().uuid().optional(),
+});
+
 export const Route = createFileRoute("/posts/$postId")({
+  validateSearch: postSearchSchema,
   beforeLoad: () => {
     setGlobalAIContext({ type: "none" });
   },
@@ -20,6 +27,7 @@ export const Route = createFileRoute("/posts/$postId")({
 
 function SinglePostPage() {
   const { postId } = Route.useParams();
+  const { commentId } = Route.useSearch();
   const { data: session } = useSession();
 
   const {
@@ -37,9 +45,26 @@ function SinglePostPage() {
   const { mutate: createComment, isPending: isCommentPending } =
     useCreateComment(postId);
 
+  useEffect(() => {
+    if (!post) {
+      setGlobalAIContext({ type: "none" });
+      return;
+    }
+
+    setGlobalAIContext({ type: "post", post });
+
+    return () => {
+      setGlobalAIContext({ type: "none" });
+    };
+  }, [post]);
+
   const handleCommentSubmit = (content: string) => {
     createComment({ content });
   };
+
+  const isQuestion = post?.kind === "question";
+  const canAcceptAnswers =
+    isQuestion && !!session && post?.authorId === session.user?.id;
 
   if (isPending) {
     return <PageSpinner />;
@@ -70,24 +95,31 @@ function SinglePostPage() {
             <IconArrowLeft className="w-5 h-5" />
           </Button>
         </Link>
-        <h1 className="text-xl font-bold">Post</h1>
+        <h1 className="text-xl font-bold">{isQuestion ? "Question" : "Post"}</h1>
       </div>
 
       {/* Post content */}
       <Post post={post} />
 
-      {/* Inline comments section */}
+      {/* Inline comments / answers section */}
       <div className="border-t">
         <div className="px-4 py-3 border-b">
-          <h2 className="text-lg font-semibold">Comments</h2>
+          <h2 className="text-lg font-semibold">
+            {isQuestion ? "Answers" : "Comments"}
+          </h2>
         </div>
         <CommentEditor
           onSubmit={handleCommentSubmit}
           isPending={isCommentPending}
-          placeholder="Write a comment..."
+          placeholder={isQuestion ? "Write an answer..." : "Write a comment..."}
         />
         <div className="px-4 py-4">
-          <CommentTree postId={postId} isRoot />
+          <CommentTree
+            postId={postId}
+            focusedCommentId={commentId}
+            isRoot
+            canAcceptAnswers={canAcceptAnswers}
+          />
         </div>
       </div>
     </>

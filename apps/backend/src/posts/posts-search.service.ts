@@ -79,6 +79,9 @@ export class PostsSearchService {
         p.id,
         p.author_id,
         p.content,
+        p.kind,
+        p.accepted_comment_id,
+        p.solved_at,
         p.created_at,
         p.updated_at,
         u.id           AS author_id_u,
@@ -104,7 +107,8 @@ export class PostsSearchService {
       INNER JOIN users_view u ON u.id = p.author_id
       LEFT JOIN post_reactions pr ON pr.post_id = p.id
       WHERE p.hidden = false
-      GROUP BY p.id, p.author_id, p.content, p.created_at, p.updated_at,
+      GROUP BY p.id, p.author_id, p.content, p.kind, p.accepted_comment_id,
+               p.solved_at, p.created_at, p.updated_at,
                u.id, u.username, u.email, u.name, u.image, rrf.rrf_score
       ORDER BY rrf.rrf_score DESC
       LIMIT ${RERANK_CANDIDATE_LIMIT}
@@ -128,6 +132,7 @@ export class PostsSearchService {
           ),
         },
         content: r["content"] as PostDto["content"],
+        kind: r["kind"] as PostDto["kind"],
         createdAt: new Date(r["created_at"] as string).toISOString(),
         updatedAt: new Date(r["updated_at"] as string).toISOString(),
         upvoteCount: Number(r["upvote_count"]),
@@ -139,6 +144,12 @@ export class PostsSearchService {
         currentUserSubscribed: Boolean(r["current_user_subscribed"]),
         currentUserBookmarked: Boolean(r["current_user_bookmarked"]),
         tags: [],
+        acceptedCommentId: (r["accepted_comment_id"] as string | null) ?? null,
+        solvedAt: r["solved_at"]
+          ? new Date(r["solved_at"] as string).toISOString()
+          : null,
+        needsHelp:
+          (r["kind"] as PostDto["kind"]) === "question" && !r["solved_at"],
       } satisfies PostDto;
     });
 

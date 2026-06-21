@@ -60,6 +60,7 @@ export const flatComments = (postId: string): CommentType[] => [
     upvoteCount: 5,
     downvoteCount: 1,
     currentUserReaction: null,
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -74,6 +75,7 @@ export const flatComments = (postId: string): CommentType[] => [
     upvoteCount: 3,
     downvoteCount: 0,
     currentUserReaction: "upvote",
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_3,
@@ -87,6 +89,7 @@ export const flatComments = (postId: string): CommentType[] => [
     upvoteCount: 0,
     downvoteCount: 2,
     currentUserReaction: "downvote",
+    isAccepted: false,
   },
 ];
 
@@ -103,6 +106,7 @@ export const nestedComments = (postId: string): CommentType[] => [
     upvoteCount: 8,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -117,6 +121,7 @@ export const nestedComments = (postId: string): CommentType[] => [
     upvoteCount: 4,
     downvoteCount: 1,
     currentUserReaction: "upvote",
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_3,
@@ -131,6 +136,7 @@ export const nestedComments = (postId: string): CommentType[] => [
     upvoteCount: 2,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_4,
@@ -144,6 +150,7 @@ export const nestedComments = (postId: string): CommentType[] => [
     upvoteCount: 1,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_5,
@@ -157,6 +164,7 @@ export const nestedComments = (postId: string): CommentType[] => [
     upvoteCount: 0,
     downvoteCount: 3,
     currentUserReaction: "downvote",
+    isAccepted: false,
   },
 ];
 
@@ -180,6 +188,7 @@ function doSomething(a = "ok") {
     upvoteCount: 0,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
 ];
 
@@ -196,6 +205,7 @@ export const twoComments = (postId: string): CommentType[] => [
     upvoteCount: 2,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
   {
     id: STORY_UUIDS.COMMENT_2,
@@ -209,6 +219,7 @@ export const twoComments = (postId: string): CommentType[] => [
     upvoteCount: 1,
     downvoteCount: 0,
     currentUserReaction: null,
+    isAccepted: false,
   },
 ];
 

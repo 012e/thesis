@@ -7,6 +7,7 @@ import {
 import { CommentEditor } from "./comment-editor";
 import { CommentTree } from "./comment-tree";
 import { useCreateComment } from "@/hooks/use-comments";
+import { useSession } from "@/hooks/use-session";
 import type { PostDto } from "@repo/shared-dto";
 
 export interface CommentsDialogProps {
@@ -21,6 +22,11 @@ export function CommentsDialog({
   onOpenChange,
 }: CommentsDialogProps) {
   const { mutate: createComment, isPending } = useCreateComment(post.id);
+  const { data: session } = useSession();
+
+  const isQuestion = post.kind === "question";
+  const canAcceptAnswers =
+    isQuestion && !!session && post.authorId === session.user?.id;
 
   const handleCommentSubmit = (content: string) => {
     createComment({ content });
@@ -36,7 +42,7 @@ export function CommentsDialog({
         }}
       >
         <DialogHeader className="px-4 pt-4 pb-3 border-b shrink-0">
-          <DialogTitle>Comments</DialogTitle>
+          <DialogTitle>{isQuestion ? "Answers" : "Comments"}</DialogTitle>
         </DialogHeader>
 
         <div className="flex min-h-0 overflow-hidden flex-col flex-1">
@@ -45,14 +51,20 @@ export function CommentsDialog({
             <CommentEditor
               onSubmit={handleCommentSubmit}
               isPending={isPending}
-              placeholder="Write a comment..."
+              placeholder={
+                isQuestion ? "Write an answer..." : "Write a comment..."
+              }
             />
           </div>
 
           {/* Comments list — loaded lazily when dialog opens */}
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4">
             <div className="pt-5 pb-4">
-              <CommentTree postId={post.id} isRoot />
+              <CommentTree
+                postId={post.id}
+                isRoot
+                canAcceptAnswers={canAcceptAnswers}
+              />
             </div>
           </div>
         </div>

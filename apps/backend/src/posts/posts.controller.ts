@@ -277,6 +277,100 @@ export class PostsController {
     });
   }
 
+  @TsRestHandler(postsContract.listUnansweredQuestions)
+  listUnansweredQuestions(@Session() session: UserSession) {
+    return tsRestHandler(
+      postsContract.listUnansweredQuestions,
+      async ({ query }) => {
+        const limit = query.limit ?? 20;
+        const result = await this.postsService.listUnansweredQuestions(
+          session.user.id,
+          limit,
+          query.cursor,
+        );
+        return {
+          status: 200,
+          body: postsContract.listUnansweredQuestions.responses[200].parse(
+            result,
+          ),
+        };
+      },
+    );
+  }
+
+  @TsRestHandler(postsContract.acceptAnswer)
+  acceptAnswer(@Session() session: UserSession) {
+    return tsRestHandler(postsContract.acceptAnswer, async ({ params, body }) => {
+      const existingPost = await this.postsService.getById(
+        params.id,
+        session.user.id,
+      );
+
+      if (!existingPost) {
+        return { status: 404, body: null };
+      }
+
+      if (existingPost.authorId !== session.user.id) {
+        return { status: 403, body: null };
+      }
+
+      if (existingPost.kind !== "question") {
+        return { status: 409, body: null };
+      }
+
+      const post = await this.postsService.acceptAnswer(
+        params.id,
+        session.user.id,
+        body.commentId,
+      );
+
+      if (!post) {
+        // Comment does not belong to this post or is not a top-level answer.
+        return { status: 409, body: null };
+      }
+
+      return {
+        status: 200,
+        body: post as any,
+      };
+    });
+  }
+
+  @TsRestHandler(postsContract.clearAcceptedAnswer)
+  clearAcceptedAnswer(@Session() session: UserSession) {
+    return tsRestHandler(
+      postsContract.clearAcceptedAnswer,
+      async ({ params }) => {
+        const existingPost = await this.postsService.getById(
+          params.id,
+          session.user.id,
+        );
+
+        if (!existingPost) {
+          return { status: 404, body: null };
+        }
+
+        if (existingPost.authorId !== session.user.id) {
+          return { status: 403, body: null };
+        }
+
+        const post = await this.postsService.clearAcceptedAnswer(
+          params.id,
+          session.user.id,
+        );
+
+        if (!post) {
+          return { status: 404, body: null };
+        }
+
+        return {
+          status: 200,
+          body: post as any,
+        };
+      },
+    );
+  }
+
   @TsRestHandler(postsContract.listUserBookmarks)
   listUserBookmarks(@Session() session: UserSession) {
     return tsRestHandler(

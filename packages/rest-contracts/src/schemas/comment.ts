@@ -13,6 +13,7 @@ export const Comment = z.object({
   upvoteCount: z.number().int().nonnegative().default(0),
   downvoteCount: z.number().int().nonnegative().default(0),
   currentUserReaction: ReactionType.nullable().default(null),
+  isAccepted: z.boolean().default(false),
 });
 
 export const CreateCommentBody = z.object({
