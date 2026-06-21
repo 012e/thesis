@@ -60,6 +60,7 @@ export function UserProfilePage() {
         followersCount: profile.followersCount,
         isFollowing,
         createdAt: profile.createdAt,
+        xp: profile.xp,
       }}
       postsData={userPosts.data}
       postsQueryKey={["users", userId, "posts"]}

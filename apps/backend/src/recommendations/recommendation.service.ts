@@ -214,6 +214,7 @@ export class RecommendationService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -239,6 +240,7 @@ export class RecommendationService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       );
 
     const dtos = rows.map((row) =>

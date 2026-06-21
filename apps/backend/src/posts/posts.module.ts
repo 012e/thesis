@@ -8,6 +8,7 @@ import { NotificationsModule } from "@/notifications/notifications.module";
 import { ModerationModule } from "@/moderation/moderation.module";
 import { TagsModule } from "@/tags/tags.module";
 import { RecommendationsModule } from "@/recommendations/recommendations.module";
+import { XpModule } from "@/xp/xp.module";
 
 import { PostsController } from "./posts.controller";
 import { PostsEngagementService } from "./posts-engagement.service";
@@ -27,6 +28,7 @@ import { PostsService } from "./posts.service";
     NotificationsModule,
     ModerationModule,
     TagsModule,
+    XpModule,
     forwardRef(() => RecommendationsModule),
   ],
   controllers: [PostsController],

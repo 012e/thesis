@@ -46,6 +46,7 @@ import { EditPostDialog } from "./edit-post-dialog";
 import { ReportDialog } from "./report-dialog";
 import { PostValidationStatusDialog } from "./post-validation-status-dialog";
 import { UserAvatar } from "./user-avatar";
+import { XpBadge } from "./xp-badge";
 import { useToast as toast } from "@/hooks/use-toast";
 import { useTrack } from "@/components/analytics-provider";
 import { cn } from "@/lib/utils";
@@ -382,6 +383,7 @@ export function Post({ post, isOwner, initialReactionSummary }: PostProps) {
             <span className="text-muted-foreground truncate">
               @{post.author.username || post.author.email.split("@")[0]}
             </span>
+            <XpBadge xp={post.author.xp} />
             <span className="text-muted-foreground">·</span>
             <span className="text-muted-foreground">
               {getRelativeTime(post.createdAt)}

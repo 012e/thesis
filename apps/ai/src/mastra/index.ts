@@ -4,6 +4,7 @@ import { env } from "../env";
 import { assistantAgent } from "./agents/assistant";
 import { identityAgent } from "./agents/identity-agent";
 import { postCreationAgent } from "./agents/post-creation-agent";
+import { postDraftingAgent } from "./agents/post-drafting-agent";
 import { postDiscoveryAgent } from "./agents/post-discovery-agent";
 import { interactionsAgent } from "./agents/interactions-agent";
 import { navigationAgent } from "./agents/navigation-agent";
@@ -21,6 +22,7 @@ import { RequestContext } from "@mastra/core/request-context";
  * - assistantAgent  — legacy single-agent (kept for Mastra Studio compat)
  * - identityAgent   — user identity & social graph (Studio preview only)
  * - postCreationAgent — post write ops (Studio preview only)
+ * - postDraftingAgent — LinkedIn-style and technical question drafting
  * - postDiscoveryAgent — post read ops (Studio preview only)
  * - interactionsAgent — engagement ops (Studio preview only)
  * - navigationAgent — app page/tool discovery (Studio preview only)
@@ -37,6 +39,7 @@ export const mastra = new Mastra({
     assistantAgent,
     identityAgent,
     postCreationAgent,
+    postDraftingAgent,
     postDiscoveryAgent,
     interactionsAgent,
     navigationAgent,

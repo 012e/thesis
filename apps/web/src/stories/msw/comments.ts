@@ -32,6 +32,7 @@ export const makeAuthor = (id: string, name: string, username: string) => ({
   email: `${username}@example.com`,
   name,
   image: null,
+  xp: 0,
 });
 
 export const VIEWER_AUTHOR = makeAuthor(

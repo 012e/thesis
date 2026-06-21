@@ -12,6 +12,7 @@ import { and, eq, desc, count, sql } from "drizzle-orm";
 import { UsersService } from "@/users/users.service";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { PostsService } from "@/posts/posts.service";
+import { XpService } from "@/xp/xp.service";
 
 const upvoteCount = count(
   sql`CASE WHEN ${commentReactions.type} = 'upvote' THEN 1 END`,
@@ -37,6 +38,7 @@ export class CommentsService {
     private readonly usersService: UsersService,
     private readonly notificationsService: NotificationsService,
     private readonly postsService: PostsService,
+    private readonly xpService: XpService,
   ) {}
 
   async list(postId: string, userId?: string): Promise<CommentDto[]> {
@@ -55,6 +57,7 @@ export class CommentsService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -73,6 +76,7 @@ export class CommentsService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .orderBy(desc(comments.createdAt));
 
@@ -129,6 +133,7 @@ export class CommentsService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -145,6 +150,7 @@ export class CommentsService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .limit(1);
 
@@ -312,6 +318,7 @@ export class CommentsService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -330,6 +337,7 @@ export class CommentsService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .limit(1);
 
@@ -351,14 +359,24 @@ export class CommentsService {
       .returning();
 
     // Q&A primitive: if the deleted comment was the accepted answer, re-open
-    // the question (back to "needs help").
+    // the question (back to "needs help") and revoke the answerer's XP.
     if (row) {
-      await this.databaseService.db
+      const reopened = await this.databaseService.db
         .update(posts)
         .set({ acceptedCommentId: null, solvedAt: null })
         .where(
           and(eq(posts.id, row.postId), eq(posts.acceptedCommentId, row.id)),
-        );
+        )
+        .returning({ authorId: posts.authorId });
+
+      const askerId = reopened[0]?.authorId;
+      if (askerId) {
+        await this.xpService.revoke({
+          reason: "answer_accepted",
+          sourceId: row.id,
+          actorId: askerId,
+        });
+      }
     }
 
     return row;
@@ -380,6 +398,7 @@ export class CommentsService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -398,6 +417,7 @@ export class CommentsService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .orderBy(desc(comments.createdAt));
 
@@ -425,6 +445,7 @@ export class CommentsService {
         email: row.author.email,
         name: row.author.name ?? null,
         image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
+        xp: row.author.xp,
       },
       upvoteCount: row.upvoteCount,
       downvoteCount: row.downvoteCount,

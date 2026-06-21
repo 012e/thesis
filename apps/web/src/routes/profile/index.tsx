@@ -63,6 +63,7 @@ export function ProfileContent({
           createdAt: session.user.createdAt
             ? new Date(session.user.createdAt).toISOString()
             : null,
+          xp: profile?.xp ?? 0,
         }}
         postsData={userPosts.data}
         postsQueryKey={["users", userId, "posts"]}

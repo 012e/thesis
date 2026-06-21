@@ -22,6 +22,8 @@ import {
 } from "@/db/schema";
 import { NotificationsService } from "@/notifications/notifications.service";
 import { PostsService } from "@/posts/posts.service";
+import { XpService } from "@/xp/xp.service";
+import { XP_COMMENT_UPVOTE, XP_POST_UPVOTE } from "@/xp/xp.constants";
 
 @Injectable()
 export class ReactionsService {
@@ -29,6 +31,7 @@ export class ReactionsService {
     private readonly databaseService: DatabaseService,
     private readonly notificationsService: NotificationsService,
     private readonly postsService: PostsService,
+    private readonly xpService: XpService,
   ) {}
 
   /**
@@ -59,6 +62,27 @@ export class ReactionsService {
         },
       })
       .returning();
+
+    // An upvote awards the author XP; switching to a downvote revokes it.
+    if (type === "upvote") {
+      void this.xpService
+        .award({
+          userId: post.authorId,
+          actorId: userId,
+          reason: "post_upvote",
+          sourceId: postId,
+          amount: XP_POST_UPVOTE,
+        })
+        .catch((err) =>
+          console.warn("[ReactionsService] Failed to award post XP:", err),
+        );
+    } else {
+      void this.xpService
+        .revoke({ reason: "post_upvote", sourceId: postId, actorId: userId })
+        .catch((err) =>
+          console.warn("[ReactionsService] Failed to revoke post XP:", err),
+        );
+    }
 
     void this.getPostNotificationContext(postId)
       .then((postContext) =>
@@ -109,13 +133,32 @@ export class ReactionsService {
       })
       .returning();
 
+    // An upvote awards the comment author XP; switching away revokes it.
+    const xpPromise =
+      type === "upvote"
+        ? this.xpService.award({
+            userId: comment.authorId,
+            actorId: userId,
+            reason: "comment_upvote",
+            sourceId: commentId,
+            amount: XP_COMMENT_UPVOTE,
+          })
+        : this.xpService
+            .revoke({
+              reason: "comment_upvote",
+              sourceId: commentId,
+              actorId: userId,
+            })
+            .then(() => 0);
+
     // Notify comment author — skip self-reactions
     if (comment.authorId !== userId) {
       void Promise.all([
         this.getPostNotificationContext(comment.postId),
         this.getCommentNotificationContext(commentId),
+        xpPromise.catch(() => 0),
       ])
-        .then(([postContext, commentContext]) =>
+        .then(([postContext, commentContext, xpEarned]) =>
           this.notificationsService.deliver(
             {
               userId: comment.authorId,
@@ -127,6 +170,7 @@ export class ReactionsService {
                 reactionType: type,
                 post: postContext ?? undefined,
                 comment: commentContext ?? undefined,
+                xpEarned: xpEarned > 0 ? xpEarned : undefined,
               },
             },
             ["websocket"],
@@ -138,6 +182,10 @@ export class ReactionsService {
             err,
           ),
         );
+    } else {
+      void xpPromise.catch((err) =>
+        console.warn("[ReactionsService] Failed to settle comment XP:", err),
+      );
     }
 
     return this.toCommentReactionDto(row);
@@ -225,6 +273,14 @@ export class ReactionsService {
       )
       .returning();
 
+    if (row) {
+      void this.xpService
+        .revoke({ reason: "post_upvote", sourceId: postId, actorId: userId })
+        .catch((err) =>
+          console.warn("[ReactionsService] Failed to revoke post XP:", err),
+        );
+    }
+
     return row ? this.toReactionDto(row) : null;
   }
 
@@ -247,6 +303,18 @@ export class ReactionsService {
         ),
       )
       .returning();
+
+    if (row) {
+      void this.xpService
+        .revoke({
+          reason: "comment_upvote",
+          sourceId: commentId,
+          actorId: userId,
+        })
+        .catch((err) =>
+          console.warn("[ReactionsService] Failed to revoke comment XP:", err),
+        );
+    }
 
     return row ? this.toCommentReactionDto(row) : null;
   }

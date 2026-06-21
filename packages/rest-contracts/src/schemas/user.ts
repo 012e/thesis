@@ -30,6 +30,7 @@ export const UserProfile = z.object({
   followingCount: z.number().int().nonnegative(),
   postCount: z.number().int().nonnegative(),
   isFollowing: z.boolean(),
+  xp: z.number().int().nonnegative(),
 });
 
 export type UserProfileType = z.infer<typeof UserProfile>;

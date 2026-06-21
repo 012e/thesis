@@ -361,6 +361,7 @@ export class TagsService {
         email: usersView.email,
         name: usersView.name,
         image: usersView.image,
+        xp: usersView.xp,
       },
       upvoteCount,
       downvoteCount,
@@ -410,6 +411,7 @@ export class TagsService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
         postTags.createdAt,
       )
       .$dynamic();
@@ -555,6 +557,7 @@ export class TagsService {
         email: row.author.email,
         name: row.author.name ?? null,
         image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
+        xp: row.author.xp,
       },
       content: row.content,
       kind: row.kind,

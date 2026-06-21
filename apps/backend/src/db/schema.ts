@@ -161,6 +161,67 @@ export const userProfiles = pgTable("user_profiles", {
 export type UserProfile = typeof userProfiles.$inferSelect;
 export type NewUserProfile = typeof userProfiles.$inferInsert;
 
+// ─── Reputation (XP) ──────────────────────────────────────────────────────────
+
+/**
+ * Why a user earned (or lost) XP. The append-only ledger keeps one row per
+ * (reason, source, actor) so the same upvote can never be counted twice.
+ */
+export const xpReasonEnum = pgEnum("xp_reason", [
+  "post_upvote",
+  "comment_upvote",
+  "answer_accepted",
+]);
+
+/**
+ * Append-only record of every XP award. `userId` is the earner, `actorId` is
+ * whoever triggered the event (the voter, or the asker who accepted an answer),
+ * and `sourceId` is the post or comment the award is attributed to. The unique
+ * constraint makes awards idempotent and lets us revoke an award by deleting
+ * the exact row when the triggering action is undone.
+ */
+export const xpLedger = pgTable(
+  "xp_ledger",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    actorId: text("actor_id").notNull(),
+    reason: xpReasonEnum("reason").notNull(),
+    sourceId: uuid("source_id").notNull(),
+    amount: integer("amount").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("xp_ledger_award_unique").on(
+      table.reason,
+      table.sourceId,
+      table.actorId,
+    ),
+    index("idx_xp_ledger_user_created").on(table.userId, table.createdAt),
+  ],
+);
+
+export type XpLedgerEntry = typeof xpLedger.$inferSelect;
+export type NewXpLedgerEntry = typeof xpLedger.$inferInsert;
+
+/**
+ * Denormalized running total of a user's XP, kept in sync with `xp_ledger` so
+ * the score can be read in a single join (e.g. on every post-card byline)
+ * without summing the ledger.
+ */
+export const userXp = pgTable("user_xp", {
+  userId: text("user_id").primaryKey(),
+  total: integer("total").notNull().default(0),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
+export type UserXp = typeof userXp.$inferSelect;
+export type NewUserXp = typeof userXp.$inferInsert;
+
 /**
  * A read-only view over the better-auth `user` table joined with `user_profiles`.
  * Exposes only the fields needed by the application features.
@@ -172,8 +233,9 @@ export const usersView = pgView("users_view", {
   email: text("email").notNull(),
   name: text("name"),
   image: text("image"),
+  xp: integer("xp").notNull(),
 }).as(
-  sql`SELECT u.id, u.username, u.email, u.name, up.avatar_url AS image FROM "user" u LEFT JOIN user_profiles up ON up.user_id = u.id`,
+  sql`SELECT u.id, u.username, u.email, u.name, up.avatar_url AS image, COALESCE(ux.total, 0) AS xp FROM "user" u LEFT JOIN user_profiles up ON up.user_id = u.id LEFT JOIN user_xp ux ON ux.user_id = u.id`,
 );
 
 export type UserView = typeof usersView.$inferSelect;

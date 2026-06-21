@@ -23,6 +23,8 @@ import { ContentHashService } from "@/moderation/content-hash.service";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { StorageService } from "@/storage/storage.service";
 import { TagsService } from "@/tags/tags.service";
+import { XpService } from "@/xp/xp.service";
+import { XP_ANSWER_ACCEPTED } from "@/xp/xp.constants";
 
 import {
   commentCount,
@@ -50,6 +52,7 @@ export class PostsMutationService {
     private readonly moderationPipelineService: ModerationPipelineService,
     private readonly contentHashService: ContentHashService,
     private readonly tagsService: TagsService,
+    private readonly xpService: XpService,
   ) {}
 
   async create(authorId: string, input: CreatePostInput): Promise<PostDto> {
@@ -199,12 +202,22 @@ export class PostsMutationService {
 
     if (!updated) return null;
 
-    void this.postsNotificationsService
-      .deliverAnswerAcceptedNotification(
-        postId,
-        commentId,
-        authorId,
-        comment.authorId,
+    void this.xpService
+      .award({
+        userId: comment.authorId,
+        actorId: authorId,
+        reason: "answer_accepted",
+        sourceId: commentId,
+        amount: XP_ANSWER_ACCEPTED,
+      })
+      .then((xpEarned) =>
+        this.postsNotificationsService.deliverAnswerAcceptedNotification(
+          postId,
+          commentId,
+          authorId,
+          comment.authorId,
+          xpEarned > 0 ? xpEarned : undefined,
+        ),
       )
       .catch((error: unknown) =>
         this.logger.warn(
@@ -220,6 +233,13 @@ export class PostsMutationService {
     postId: string,
     authorId: string,
   ): Promise<PostDto | null> {
+    // Capture the previously accepted comment so its XP award can be revoked.
+    const [existing] = await this.databaseService.db
+      .select({ acceptedCommentId: posts.acceptedCommentId })
+      .from(posts)
+      .where(and(eq(posts.id, postId), eq(posts.authorId, authorId)))
+      .limit(1);
+
     const [updated] = await this.databaseService.db
       .update(posts)
       .set({ acceptedCommentId: null, solvedAt: null, updatedAt: new Date() })
@@ -227,6 +247,20 @@ export class PostsMutationService {
       .returning();
 
     if (!updated) return null;
+
+    if (existing?.acceptedCommentId) {
+      void this.xpService
+        .revoke({
+          reason: "answer_accepted",
+          sourceId: existing.acceptedCommentId,
+          actorId: authorId,
+        })
+        .catch((error: unknown) =>
+          this.logger.warn(
+            `Failed to revoke accepted-answer XP on post ${postId}: ${(error as Error).message}`,
+          ),
+        );
+    }
 
     return this.loadDto(postId, authorId);
   }
@@ -259,6 +293,7 @@ export class PostsMutationService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -278,6 +313,7 @@ export class PostsMutationService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .limit(1);
 

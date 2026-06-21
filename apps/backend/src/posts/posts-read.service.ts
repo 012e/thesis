@@ -75,6 +75,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -108,6 +109,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .orderBy(desc(createdAtCursorValue), asc(posts.id))
       .limit(limit + 1);
@@ -151,6 +153,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -170,6 +173,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .orderBy(desc(posts.createdAt));
 
@@ -209,6 +213,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -247,6 +252,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       );
 
     const rows = await query
@@ -313,6 +319,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -345,6 +352,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .orderBy(desc(createdAtCursorValue), asc(posts.id))
       .limit(limit + 1);
@@ -388,6 +396,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -413,6 +422,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .limit(1);
 
@@ -450,6 +460,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         reactionCount,
         upvoteCount,
@@ -470,6 +481,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
       )
       .$dynamic();
 
@@ -536,6 +548,7 @@ export class PostsReadService {
           email: usersView.email,
           name: usersView.name,
           image: usersView.image,
+          xp: usersView.xp,
         },
         upvoteCount,
         downvoteCount,
@@ -571,6 +584,7 @@ export class PostsReadService {
         usersView.email,
         usersView.name,
         usersView.image,
+        usersView.xp,
         postBookmarks.createdAt,
       );
 

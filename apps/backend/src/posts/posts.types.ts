@@ -26,6 +26,7 @@ export type PostRow = {
     email: string;
     name: string | null;
     image: string | null;
+    xp: number;
   };
 };
 

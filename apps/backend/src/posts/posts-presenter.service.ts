@@ -25,6 +25,7 @@ export class PostsPresenterService {
         email: row.author.email,
         name: row.author.name ?? null,
         image: this.usersService.resolveAvatarUrl(row.author.image ?? null),
+        xp: row.author.xp,
       },
       content: row.content,
       kind: row.kind,

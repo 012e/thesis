@@ -7,6 +7,7 @@ import { IDENTITY_AGENT_CONFIG } from "./identity-agent";
 import { INTERACTIONS_AGENT_CONFIG } from "./interactions-agent";
 import { NAVIGATION_AGENT_CONFIG } from "./navigation-agent";
 import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
+import { POST_DRAFTING_AGENT_CONFIG } from "./post-drafting-agent";
 import { POST_DISCOVERY_AGENT_CONFIG } from "./post-discovery-agent";
 import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
@@ -66,6 +67,11 @@ export async function createOrchestratorAgent(
     tools: postsToolset,
   });
 
+  const postDraftingAgent = new Agent({
+    ...POST_DRAFTING_AGENT_CONFIG,
+    model: MODEL_CONFIG.POST_DRAFTING_AGENT.model,
+  });
+
   const postDiscoveryAgent = new Agent({
     ...POST_DISCOVERY_AGENT_CONFIG,
     model: MODEL_CONFIG.POST_DISCOVERY_AGENT.model,
@@ -106,6 +112,7 @@ export async function createOrchestratorAgent(
     agents: {
       identityAgent,
       // postCreationAgent,
+      postDraftingAgent,
       postDiscoveryAgent,
       interactionsAgent,
       searchAgent,
