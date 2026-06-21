@@ -4,7 +4,7 @@ import {
   type InfiniteData,
   type QueryKey,
 } from "@tanstack/react-query";
-import { useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { motion } from "motion/react";
 import type { PostDto } from "@repo/shared-dto";
 import { Post } from "@/components/post";
@@ -16,6 +16,7 @@ import {
   createdPostAtom,
   createdPostGlowIdAtom,
 } from "@/lib/atoms/created-post";
+import { completeHomeFeedRefreshAtom } from "@/lib/atoms/feed-refresh";
 import { cn } from "@/lib/utils";
 
 interface PostsPageData {
@@ -92,6 +93,7 @@ export function PostsFeed({
   const lastRefreshSignalRef = useRef(0);
   const createdPost = useAtomValue(createdPostAtom);
   const createdPostGlowId = useAtomValue(createdPostGlowIdAtom);
+  const completeHomeFeedRefresh = useSetAtom(completeHomeFeedRefreshAtom);
   const queryKeySignature = JSON.stringify(queryKey);
 
   const fetchedPosts = data?.pages.flatMap((page) => page.items) ?? [];
@@ -112,8 +114,15 @@ export function PostsFeed({
 
     lastRefreshSignalRef.current = refreshSignal;
     window.scrollTo({ top: 0, behavior: "smooth" });
-    void queryClient.invalidateQueries({ queryKey, refetchType: "all" });
-  }, [queryClient, queryKey, refreshSignal]);
+    void queryClient
+      .invalidateQueries({ queryKey, refetchType: "all" })
+      .finally(completeHomeFeedRefresh);
+  }, [
+    completeHomeFeedRefresh,
+    queryClient,
+    queryKey,
+    refreshSignal,
+  ]);
 
   // Infinite scroll — load next page when the sentinel div enters the viewport.
   useEffect(() => {

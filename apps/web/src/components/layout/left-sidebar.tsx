@@ -1,6 +1,7 @@
 import { useMemo } from "react";
+import { useIsFetching } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import {
   IconHome,
   IconHomeFilled,
@@ -21,9 +22,13 @@ import {
   IconBookmarkFilled,
 } from "@tabler/icons-react";
 import { Logo } from "@/components/logo";
+import { Spinner } from "@/components/ui/spinner";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
-import { homeFeedRefreshRequestAtom } from "@/lib/atoms/feed-refresh";
+import {
+  homeFeedRefreshPendingAtom,
+  requestHomeFeedRefreshAtom,
+} from "@/lib/atoms/feed-refresh";
 import { cn } from "@/lib/utils";
 import { UserProfile } from "./user-profile";
 
@@ -74,7 +79,15 @@ interface LeftSidebarProps {
 export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
   const { unreadCount } = useNotifications();
   const isAdmin = useIsAdmin();
-  const requestHomeFeedRefresh = useSetAtom(homeFeedRefreshRequestAtom);
+  const isHomeFeedRefreshing = useAtomValue(homeFeedRefreshPendingAtom);
+  const requestHomeFeedRefresh = useSetAtom(requestHomeFeedRefreshAtom);
+  const homeFeedFetchCount = useIsFetching({
+    predicate: ({ queryKey }) =>
+      queryKey[0] === "recommendations" ||
+      (queryKey[0] === "posts" && queryKey[1] === "following"),
+  });
+  const isHomeFeedLoading =
+    isHomeFeedRefreshing || homeFeedFetchCount > 0;
 
   const navigationItems = useMemo(
     () => [
@@ -100,8 +113,8 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
   );
 
   const handleNavigate = (href: string) => {
-    if (href === "/") {
-      requestHomeFeedRefresh((request) => request + 1);
+    if (href === "/" && !isHomeFeedLoading) {
+      requestHomeFeedRefresh();
     }
 
     onNavigate?.();
@@ -133,6 +146,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
                 const Icon = isActive ? item.selectedIcon : item.icon;
                 const hasUnread =
                   item.href === "/notifications" && unreadCount > 0;
+                const showLoading = item.href === "/" && isHomeFeedLoading;
                 return (
                   <div
                     className={cn(
@@ -143,7 +157,11 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
                     )}
                   >
                     <div className="relative shrink-0">
-                      <Icon className="w-7 h-7" stroke={isActive ? 2 : 1.5} />
+                      {showLoading ? (
+                        <Spinner className="h-7 w-7" />
+                      ) : (
+                        <Icon className="h-7 w-7" stroke={isActive ? 2 : 1.5} />
+                      )}
                       {hasUnread && (
                         <span className="flex absolute -top-1.5 -right-1.5 justify-center items-center px-1 font-bold leading-none rounded-full min-w-4.5 h-4.5 bg-primary text-primary-foreground text-[10px]">
                           {unreadCount > 99 ? "99+" : unreadCount}
