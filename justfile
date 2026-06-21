@@ -79,6 +79,9 @@ test-follows: build-backend
 test-reactions: build-backend
     pnpm --filter backend test:reactions
 
+test-achievements: build-backend
+    pnpm --filter backend test:achievements
+
 test-users: build-backend
     pnpm --filter backend test:users
 

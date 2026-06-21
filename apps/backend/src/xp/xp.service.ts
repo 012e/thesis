@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
 
+import { AchievementsService } from "@/achievements/achievements.service";
 import { DatabaseService } from "@/db/database.service";
 import { userXp, xpLedger } from "@/db/schema";
 import { XP_DAILY_VOTE_CAP, XP_VOTE_REASONS } from "./xp.constants";
@@ -33,7 +34,10 @@ export interface RevokeXpParams {
 export class XpService {
   private readonly logger = new Logger(XpService.name);
 
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(
+    private readonly databaseService: DatabaseService,
+    private readonly achievementsService: AchievementsService,
+  ) {}
 
   /**
    * Grant XP for an event. Returns the amount actually awarded — 0 when the
@@ -52,7 +56,7 @@ export class XpService {
       if (earnedToday >= XP_DAILY_VOTE_CAP) return 0;
     }
 
-    return this.databaseService.db.transaction(async (tx) => {
+    const awarded = await this.databaseService.db.transaction(async (tx) => {
       const [entry] = await tx
         .insert(xpLedger)
         .values({ userId, actorId, reason, sourceId, amount })
@@ -77,6 +81,18 @@ export class XpService {
 
       return amount;
     });
+
+    // The new total may have crossed an achievement threshold. Unlock + notify
+    // out of band so a slow notification never blocks the earning flow.
+    if (awarded > 0) {
+      void this.achievementsService.syncAndNotify(userId).catch((err) => {
+        this.logger.warn(
+          `Failed to sync achievements for ${userId}: ${(err as Error)?.message ?? err}`,
+        );
+      });
+    }
+
+    return awarded;
   }
 
   /**

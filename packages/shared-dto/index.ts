@@ -284,6 +284,27 @@ export interface ConversationDto {
   updatedAt: string;
 }
 
+// ─── Achievements ─────────────────────────────────────────────────────────────
+
+/** XP milestone tiers, ascending. */
+export type AchievementTierDto = "bronze" | "silver" | "gold" | "platinum";
+
+/**
+ * One entry on a user's achievement board. Every defined tier is always
+ * present; `unlocked`/`unlockedAt` describe whether the user has crossed the XP
+ * `threshold` for that tier.
+ */
+export interface AchievementDto {
+  tier: AchievementTierDto;
+  /** Human-readable tier name (e.g. "Gold"). */
+  label: string;
+  /** XP total required to unlock this tier. */
+  threshold: number;
+  unlocked: boolean;
+  /** ISO timestamp when the tier was unlocked, or null if still locked. */
+  unlockedAt: string | null;
+}
+
 // ─── Notifications ────────────────────────────────────────────────────────────
 
 /** All possible notification trigger types. */
@@ -296,7 +317,8 @@ export type NotificationTypeDto =
   | "comment_reaction"
   | "direct_message"
   | "post_hidden"
-  | "answer_accepted";
+  | "answer_accepted"
+  | "achievement_unlocked";
 
 export interface NotificationUserContextDto {
   id: string;
@@ -396,6 +418,15 @@ export interface AnswerAcceptedNotificationPayload {
   xpEarned?: number;
 }
 
+/** The recipient crossed an XP threshold and unlocked an achievement tier. */
+export interface AchievementUnlockedNotificationPayload {
+  tier: AchievementTierDto;
+  /** Human-readable tier name (e.g. "Gold"). */
+  label: string;
+  /** XP total required to unlock this tier. */
+  threshold: number;
+}
+
 /** Discriminated union of all possible notification payloads. */
 export type NotificationPayloadDto =
   | FollowNotificationPayload
@@ -406,7 +437,8 @@ export type NotificationPayloadDto =
   | CommentReactionNotificationPayload
   | DirectMessageNotificationPayload
   | PostHiddenNotificationPayload
-  | AnswerAcceptedNotificationPayload;
+  | AnswerAcceptedNotificationPayload
+  | AchievementUnlockedNotificationPayload;
 
 // ─── AI Context ──────────────────────────────────────────────────────────────
 

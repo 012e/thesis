@@ -1,4 +1,4 @@
-import { IconBell } from "@tabler/icons-react";
+import { IconBell, IconTrophy } from "@tabler/icons-react";
 import type { NotificationDto } from "@repo/shared-dto";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,6 +49,8 @@ export function NotificationItem({
         <AvatarFallback className="font-semibold">
           {notification.actor ? (
             getNotificationActorInitial(notification)
+          ) : notification.type === "achievement_unlocked" ? (
+            <IconTrophy className="size-4 text-amber-500" />
           ) : (
             <IconBell className="size-4" />
           )}

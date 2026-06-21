@@ -26,6 +26,7 @@ jobs:
           - test-polls
           - test-posts
           - test-reactions
+          - test-achievements
           - test-uploads
           - test-users
           - test-messages

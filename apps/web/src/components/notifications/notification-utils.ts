@@ -45,6 +45,10 @@ export function getNotificationText(notification: NotificationDto): string {
       return "Your post was hidden by moderation";
     case "answer_accepted":
       return `${actorName} accepted your answer`;
+    case "achievement_unlocked":
+      return "label" in payload
+        ? `You unlocked the ${payload.label} achievement!`
+        : "You unlocked a new achievement!";
     default:
       return "New notification";
   }
@@ -100,6 +104,10 @@ export function getNotificationContextText(
       const post = getPayloadPost(payload);
       return post ? `on ${formatPostContext(post)}` : null;
     }
+    case "achievement_unlocked":
+      return "threshold" in payload
+        ? `Reached ${payload.threshold.toLocaleString()} XP`
+        : null;
     case "follow":
       return null;
     default:
