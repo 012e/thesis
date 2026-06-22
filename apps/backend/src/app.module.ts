@@ -24,11 +24,13 @@ import { TagsModule } from "@/tags/tags.module";
 import { AnalyticsModule } from "@/analytics/analytics.module";
 import { RecommendationsModule } from "@/recommendations/recommendations.module";
 import { AchievementsModule } from "@/achievements/achievements.module";
+import { AgentSkillsModule } from "@/agent-skills/agent-skills.module";
 import { IdentityMcpModule } from "./mcp/identity/identity-mcp.module";
 import { PostsMcpModule } from "./mcp/posts/posts-mcp.module";
 import { InteractionsMcpModule } from "./mcp/interactions/interactions-mcp.module";
 import { PostManagementMcpModule } from "./mcp/post-management/post-management-mcp.module";
 import { TagsMcpModule } from "./mcp/tags/tags-mcp.module";
+import { AgentSkillsMcpModule } from "./mcp/agent-skills/agent-skills-mcp.module";
 import { AuthModule } from "@thallesp/nestjs-better-auth";
 
 import { AppController } from "./app.controller";
@@ -66,11 +68,13 @@ import { LoggingMiddleware } from "@/common/middleware/logging.middleware";
     InteractionsMcpModule,
     PostManagementMcpModule,
     TagsMcpModule,
+    AgentSkillsMcpModule,
     ModerationModule,
     TagsModule,
     AnalyticsModule,
     RecommendationsModule,
     AchievementsModule,
+    AgentSkillsModule,
   ],
   providers: [AppService],
 })

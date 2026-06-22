@@ -835,3 +835,39 @@ export const recommendationItems = pgTable(
 
 export type RecommendationItem = typeof recommendationItems.$inferSelect;
 export type NewRecommendationItem = typeof recommendationItems.$inferInsert;
+
+// ─── Agent Skills ──────────────────────────────────────────────────────────────
+
+/**
+ * Per-user agent skills. Each user owns a set of named skills (reusable
+ * instructions/capabilities) that can be searched lexically or semantically.
+ * The embedding is generated from the name + description + content and powers
+ * cosine-similarity ("embedding") search.
+ */
+export const agentSkills = pgTable(
+  "agent_skills",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    content: text("content").notNull(),
+    /** True for skills preinstalled by default when the user first accesses them. */
+    isDefault: boolean("is_default").notNull().default(false),
+    /** Embedding of name + description + content for semantic search. */
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("uq_agent_skills_user_name").on(table.userId, table.name),
+    index("idx_agent_skills_user").on(table.userId),
+  ],
+);
+
+export type AgentSkill = typeof agentSkills.$inferSelect;
+export type NewAgentSkill = typeof agentSkills.$inferInsert;

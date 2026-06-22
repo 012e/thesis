@@ -36,6 +36,10 @@ export const MODEL_CONFIG = {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
   },
+  AGENT_SKILLS_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
   POST_CREATION_AGENT: {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),

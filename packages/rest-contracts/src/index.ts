@@ -16,6 +16,7 @@ import { moderationContract } from "./contracts/moderation";
 import { tagsContract } from "./contracts/tags";
 import { analyticsContract } from "./contracts/analytics";
 import { achievementsContract } from "./contracts/achievements";
+import { agentSkillsContract } from "./contracts/agent-skills";
 
 const c = initContract();
 
@@ -36,6 +37,7 @@ export const appContract = c.router({
   ...tagsContract,
   ...analyticsContract,
   ...achievementsContract,
+  ...agentSkillsContract,
 }) satisfies AppRouter;
 
 export type AppContract = typeof appContract;
@@ -111,3 +113,8 @@ export { achievementsContract } from "./contracts/achievements";
 export type { AchievementsContract } from "./contracts/achievements";
 
 export * from "./schemas/achievement";
+
+export { agentSkillsContract } from "./contracts/agent-skills";
+export type { AgentSkillsContract } from "./contracts/agent-skills";
+
+export * from "./schemas/agent-skill";

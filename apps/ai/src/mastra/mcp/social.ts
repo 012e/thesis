@@ -38,6 +38,10 @@ function createMcpClient(context: RequestContext) {
         url: new URL(`${env.BACKEND_URL}/mcp/tags/sse`),
         fetch: fetchWithAuth,
       },
+      agentSkills: {
+        url: new URL(`${env.BACKEND_URL}/mcp/agent-skills/sse`),
+        fetch: fetchWithAuth,
+      },
     },
   });
 }
@@ -51,5 +55,6 @@ export async function getSocialMcpToolsets(context: RequestContext) {
     interactionsToolset: toolsets.interactions,
     postManagementToolset: toolsets.postManagement,
     tagsToolset: toolsets.tags,
+    agentSkillsToolset: toolsets.agentSkills,
   };
 }

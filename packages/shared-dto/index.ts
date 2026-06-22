@@ -565,6 +565,24 @@ export interface UserTagPreferencesDto {
   blocked: TagPreferenceDto[];
 }
 
+// ─── Agent Skills ────────────────────────────────────────────────────────────
+
+export interface AgentSkillDto {
+  id: string;
+  name: string;
+  description: string;
+  content: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AgentSkillSearchModeDto = "text" | "embedding";
+
+export interface AgentSkillSearchResultDto extends AgentSkillDto {
+  score: number;
+}
+
 // ─── Content Moderation ──────────────────────────────────────────────────────
 
 export type ModerationStatusDto =
