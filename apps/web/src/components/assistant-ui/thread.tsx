@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
+import { ThinkingIndicator } from "@/components/assistant-ui/thinking-indicator";
 import { Separator } from "@/components/ui/separator";
 
 interface ThreadProps {
@@ -407,14 +408,8 @@ function AssistantMessage() {
             </MessagePrimitive.GroupedParts>
 
             <MessageError />
-            <AuiIf
-              condition={(s) =>
-                s.thread.isRunning && s.message.content.length === 0
-              }
-            >
-              <div className="flex gap-2 items-center text-muted-foreground">
-                <span className="text-sm">Thinking...</span>
-              </div>
+            <AuiIf condition={(s) => s.thread.isRunning}>
+              <ThinkingIndicator />
             </AuiIf>
           </div>
         </div>

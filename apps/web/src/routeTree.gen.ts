@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TestingRouteImport } from './routes/testing'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ExploreRouteImport } from './routes/explore'
@@ -41,6 +42,11 @@ const TestingRoute = TestingRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationsRoute = NotificationsRouteImport.update({
@@ -157,6 +163,7 @@ export interface FileRoutesByFullPath {
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -182,6 +189,7 @@ export interface FileRoutesByTo {
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
   '/notifications': typeof NotificationsRoute
+  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
   '/testing': typeof TestingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -235,6 +244,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/leaderboard'
     | '/notifications'
+    | '/onboarding'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/leaderboard'
     | '/notifications'
+    | '/onboarding'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -285,6 +296,7 @@ export interface FileRouteTypes {
     | '/explore'
     | '/leaderboard'
     | '/notifications'
+    | '/onboarding'
     | '/settings'
     | '/testing'
     | '/admin/users'
@@ -311,6 +323,7 @@ export interface RootRouteChildren {
   ExploreRoute: typeof ExploreRoute
   LeaderboardRoute: typeof LeaderboardRoute
   NotificationsRoute: typeof NotificationsRoute
+  OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
   TestingRoute: typeof TestingRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -343,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notifications': {
@@ -503,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExploreRoute: ExploreRoute,
   LeaderboardRoute: LeaderboardRoute,
   NotificationsRoute: NotificationsRoute,
+  OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
   TestingRoute: TestingRoute,
   AdminUsersRoute: AdminUsersRoute,

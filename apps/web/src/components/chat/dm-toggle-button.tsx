@@ -11,6 +11,8 @@ import { cn } from "@/lib/utils";
 
 /** px offset from the right edge when no panel is open. */
 const BASE_RIGHT = 16;
+const BUBBLE_GAP = 12;
+const AI_BUBBLE_SIZE = 56;
 /** Width of the DM sidebar (w-80). */
 export const DM_SIDEBAR_WIDTH = 320;
 
@@ -21,10 +23,14 @@ export function DmToggleButton() {
   const { unreadCount } = useUnreadNotifications();
   const [popKey, setPopKey] = useState(0);
 
-  // Shift the messages bubble outside whichever right-side panel is open.
+  // Keep the messages bubble left of the AI bubble and outside open panels.
   const aiPanelWidth = isAiOpen ? (aiSize === "normal" ? 320 : 480) : 0;
   const dmPanelWidth = isDmOpen ? DM_SIDEBAR_WIDTH : 0;
-  const rightPx = Math.max(aiPanelWidth, dmPanelWidth) + BASE_RIGHT;
+  const rightPx =
+    Math.max(aiPanelWidth, dmPanelWidth) +
+    BASE_RIGHT +
+    AI_BUBBLE_SIZE +
+    BUBBLE_GAP;
 
   return (
     <button

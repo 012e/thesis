@@ -60,6 +60,10 @@ export const MODEL_CONFIG = {
     model: openai("gpt-5.5"),
     reasoningEffort: reasoning("low"),
   },
+  ONBOARDING_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
 } as const;
 
 export function getOrchestratorModelConfig(mode: ModelMode) {

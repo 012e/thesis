@@ -9,8 +9,10 @@ import { postDraftingAgent } from "./agents/post-drafting-agent";
 import { navigationAgent } from "./agents/navigation-agent";
 import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
+import { onboardingAgent } from "./agents/onboarding-agent";
 import { pgStore } from "./memory";
 import { streamRoute } from "./routes/stream";
+import { onboardingRoute } from "./routes/onboarding";
 import { healthRoute } from "./routes/health";
 import { RequestContext } from "@mastra/core/request-context";
 
@@ -43,6 +45,7 @@ export const mastra = new Mastra({
     navigationAgent,
     planningAgent,
     searchAgent,
+    onboardingAgent,
   },
   storage: pgStore,
   server: {
@@ -81,6 +84,6 @@ export const mastra = new Mastra({
         await next();
       },
     ],
-    apiRoutes: [healthRoute, streamRoute],
+    apiRoutes: [healthRoute, streamRoute, onboardingRoute],
   },
 });
