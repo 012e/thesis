@@ -7,14 +7,13 @@ import {
   globalChatSizeAtom,
 } from "@/lib/atoms/global-chat";
 import { useUnreadNotifications } from "@/hooks/messages/use-unread-notifications";
+import {
+  CHAT_TOGGLE_BASE_RIGHT,
+  CHAT_TOGGLE_GAP,
+  DM_SIDEBAR_WIDTH,
+  GLOBAL_CHAT_TOGGLE_SIZE,
+} from "@/components/chat/chat-toggle-layout";
 import { cn } from "@/lib/utils";
-
-/** px offset from the right edge when no panel is open. */
-const BASE_RIGHT = 16;
-const BUBBLE_GAP = 12;
-const AI_BUBBLE_SIZE = 56;
-/** Width of the DM sidebar (w-80). */
-export const DM_SIDEBAR_WIDTH = 320;
 
 export function DmToggleButton() {
   const [isDmOpen, setIsDmOpen] = useAtom(isDmChatOpenAtom);
@@ -28,9 +27,9 @@ export function DmToggleButton() {
   const dmPanelWidth = isDmOpen ? DM_SIDEBAR_WIDTH : 0;
   const rightPx =
     Math.max(aiPanelWidth, dmPanelWidth) +
-    BASE_RIGHT +
-    AI_BUBBLE_SIZE +
-    BUBBLE_GAP;
+    CHAT_TOGGLE_BASE_RIGHT +
+    GLOBAL_CHAT_TOGGLE_SIZE +
+    CHAT_TOGGLE_GAP;
 
   return (
     <button

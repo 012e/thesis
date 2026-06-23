@@ -1,5 +1,6 @@
 import {
   type ComponentPropsWithoutRef,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -9,10 +10,32 @@ import { cn } from "@/lib/utils";
 const MIN_IDLE_DELAY_MS = 5_000;
 const MAX_IDLE_DELAY_MS = 11_000;
 
+const MASCOT_ACTIVITIES = [
+  "blink",
+  "wave",
+  "bounce",
+  "celebrate",
+  "flush",
+  "tired",
+  "kick",
+  "searching",
+  "token",
+  "peek",
+  "dance",
+] as const;
+
+export type MascotActivity = (typeof MASCOT_ACTIVITIES)[number];
+
 type MascotProps = ComponentPropsWithoutRef<"span"> & {
+  activity?: MascotActivity | "random";
   animateOccasionally?: boolean;
   label?: string;
   playKey?: number | string;
+};
+
+type AnimationState = {
+  activity: MascotActivity;
+  run: number;
 };
 
 function getIdleDelay() {
@@ -22,15 +45,37 @@ function getIdleDelay() {
   );
 }
 
+function getNextActivity(previous?: MascotActivity): MascotActivity {
+  const choices = MASCOT_ACTIVITIES.filter(
+    (candidate) => candidate !== previous,
+  );
+
+  return choices[Math.floor(Math.random() * choices.length)] ?? "blink";
+}
+
 export function Mascot({
-  animateOccasionally = true,
+  activity = "random",
+  animateOccasionally = false,
   className,
   label,
   playKey,
   ...props
 }: MascotProps) {
-  const [animationRun, setAnimationRun] = useState(0);
+  const [animation, setAnimation] = useState<AnimationState>({
+    activity: activity === "random" ? "blink" : activity,
+    run: 0,
+  });
   const previousPlayKey = useRef(playKey);
+
+  const playAnimation = useCallback(() => {
+    setAnimation((previous) => ({
+      activity:
+        activity === "random"
+          ? getNextActivity(previous.activity)
+          : activity,
+      run: previous.run + 1,
+    }));
+  }, [activity]);
 
   useEffect(() => {
     if (!animateOccasionally) return;
@@ -39,7 +84,7 @@ export function Mascot({
 
     const scheduleAnimation = () => {
       timeoutId = setTimeout(() => {
-        setAnimationRun((run) => run + 1);
+        playAnimation();
         scheduleAnimation();
       }, getIdleDelay());
     };
@@ -47,14 +92,14 @@ export function Mascot({
     scheduleAnimation();
 
     return () => clearTimeout(timeoutId);
-  }, [animateOccasionally]);
+  }, [animateOccasionally, playAnimation]);
 
   useEffect(() => {
     if (Object.is(previousPlayKey.current, playKey)) return;
 
     previousPlayKey.current = playKey;
-    setAnimationRun((run) => run + 1);
-  }, [playKey]);
+    playAnimation();
+  }, [playAnimation, playKey]);
 
   return (
     <span
@@ -65,11 +110,12 @@ export function Mascot({
       className={cn("inline-flex size-9", className)}
     >
       <span
-        key={animationRun}
+        key={animation.run}
         aria-hidden="true"
         className={cn(
           "mascot-sprite",
-          animationRun > 0 && "mascot-sprite-playing",
+          `mascot-sprite-${animation.activity}`,
+          animation.run > 0 && "mascot-sprite-playing",
         )}
       />
     </span>

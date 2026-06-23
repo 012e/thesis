@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 16" shape-rendering="crispEdges">
+  <title>Toin T mascot getting tired, yawning, and nodding off</title>
+
+  <!-- 1: neutral -->
+  <g>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/>
+    <path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/>
+    <path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/>
+  </g>
+
+  <!-- 2: eyelids getting heavy -->
+  <g transform="translate(16 1)">
+    <path d="M1 1h14v7h-4v6H5V8H1V1Z" fill="#111"/>
+    <path d="M2 2h12v5h-4v6H6V7H2V2Z" fill="#fff"/>
+    <path d="M5 5h2v1H5zm4 0h2v1H9z" fill="#111"/>
+  </g>
+
+  <!-- 3: slump -->
+  <g transform="translate(32 2)">
+    <path d="M2 1h13v6h-4v7H5V8H1V3h1Z" fill="#111"/>
+    <path d="M3 2h11v4h-4v7H6V7H2V4h1Z" fill="#fff"/>
+    <path d="M5 4h3v1H5zm5 1h3v1h-3z" fill="#111"/>
+  </g>
+
+  <!-- 4: big yawn -->
+  <g transform="translate(48 1)">
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/>
+    <path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/>
+    <path d="M4 4h3v1H4zm5 0h3v1H9zM7 6h3v3H7zM14 3h1v1h-1z" fill="#111"/>
+  </g>
+
+  <!-- 5: wobble while fighting sleep -->
+  <g transform="translate(64 2)">
+    <path d="M1 2h13v6h-3v6H5V9H1V2Zm13-1h1v2h-1Z" fill="#111"/>
+    <path d="M2 3h11v4h-3v6H6V8H2V3Z" fill="#fff"/>
+    <path d="M4 5h3v1H4zm5 0h3v1H9zM14 4h2v1h-2z" fill="#111"/>
+  </g>
+
+  <!-- 6: nod off -->
+  <g transform="translate(80 3)">
+    <path d="M2 2h12v5h-3v7H5V8H1V4h1Z" fill="#111"/>
+    <path d="M3 3h10v3h-3v7H6V7H2V5h1Z" fill="#fff"/>
+    <path d="M5 5h3v1H5zm5 0h3v1h-3zM13 1h2v1h-2zm2-1h1v1h-1z" fill="#111"/>
+  </g>
+
+  <!-- 7: asleep -->
+  <g transform="translate(96 3)">
+    <path d="M1 3h14v5h-4v6H5V9H1V3Z" fill="#111"/>
+    <path d="M2 4h12v3h-4v6H6V8H2V4Z" fill="#fff"/>
+    <path d="M4 5h3v1H4zm5 0h3v1H9zM12 2h2V1h-2V0h3v2h-2v1h-1zm3 2h1v1h-1z" fill="#111"/>
+  </g>
+
+  <!-- 8: sleepy recovery -->
+  <g transform="translate(112 1)">
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/>
+    <path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/>
+    <path d="M5 5h2v1H5zm4 0h2v1H9zM14 2h1v2h-1z" fill="#111"/>
+  </g>
+</svg>

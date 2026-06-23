@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { IconRobot } from "@tabler/icons-react";
+import { IconCheck } from "@tabler/icons-react";
 
+import { Mascot } from "@/components/mascot";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_PHRASES = [
@@ -24,6 +25,8 @@ interface ThinkingIndicatorProps {
   phrases?: string[];
   /** Milliseconds each phrase stays on screen. */
   interval?: number;
+  /** Only appear once the stream has been running this many ms. */
+  delay?: number;
   className?: string;
 }
 
@@ -36,6 +39,7 @@ interface ThinkingIndicatorProps {
 export function ThinkingIndicator({
   phrases = DEFAULT_PHRASES,
   interval = 4500,
+  delay = 5000,
   className,
 }: ThinkingIndicatorProps) {
   // Randomize the starting phrase so consecutive turns don't always begin
@@ -46,12 +50,23 @@ export function ThinkingIndicator({
   );
   const [index, setIndex] = useState(initialIndex);
 
+  // The component is mounted for the whole stream, but stays hidden until the
+  // stream has been running for `delay` ms — so quick responses never flash it.
+  const [visible, setVisible] = useState(false);
   useEffect(() => {
+    const id = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(id);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!visible) return;
     const id = setInterval(() => {
       setIndex((i) => (i + 1) % phrases.length);
     }, interval);
     return () => clearInterval(id);
-  }, [phrases.length, interval]);
+  }, [visible, phrases.length, interval]);
+
+  if (!visible) return null;
 
   const phrase = phrases[index] ?? phrases[0] ?? "Thinking";
 
@@ -70,7 +85,7 @@ export function ThinkingIndicator({
         animate={{ y: [0, -2.5, 0], rotate: [0, -6, 6, 0] }}
         transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
       >
-        <IconRobot className="size-4" />
+        <Mascot animateOccasionally className="size-5" />
       </motion.span>
 
       <span className="flex items-baseline">
@@ -91,6 +106,56 @@ export function ThinkingIndicator({
         <ThinkingDots />
       </span>
     </div>
+  );
+}
+
+/**
+ * Format an elapsed duration as a human-readable "finished in" label. Seconds
+ * are always shown; minutes are only included once the run took longer than
+ * two minutes, keeping the common (short) case terse.
+ */
+function formatFinishedDuration(ms: number): string {
+  const totalSeconds = Math.max(0, Math.round(ms / 1000));
+
+  if (totalSeconds > 120) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const minuteLabel = `${minutes} minute${minutes === 1 ? "" : "s"}`;
+    const secondLabel = `${seconds} second${seconds === 1 ? "" : "s"}`;
+    return `${minuteLabel} ${secondLabel}`;
+  }
+
+  return `${totalSeconds} second${totalSeconds === 1 ? "" : "s"}`;
+}
+
+interface FinishedIndicatorProps {
+  /** Elapsed run time in milliseconds. */
+  durationMs: number;
+  className?: string;
+}
+
+/**
+ * Subtle "Finished in …" label shown once a response completes, mirroring the
+ * muted, JetBrains-Mono metadata style used elsewhere in the thread.
+ */
+export function FinishedIndicator({
+  durationMs,
+  className,
+}: FinishedIndicatorProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 2 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className={cn(
+        "flex items-center gap-1.5 text-xs text-muted-foreground select-none",
+        className,
+      )}
+      role="status"
+    >
+      <IconCheck className="size-3.5 text-primary" />
+      <span>Finished in {formatFinishedDuration(durationMs)}</span>
+    </motion.div>
   );
 }
 

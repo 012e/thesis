@@ -4,7 +4,6 @@ import {
   IconBan,
   IconHash,
   IconLock,
-  IconRobot,
   IconStar,
   IconX,
 } from "@tabler/icons-react";
@@ -14,6 +13,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Mascot } from "@/components/mascot";
 import {
   Card,
   CardContent,
@@ -124,7 +124,7 @@ function SettingsPage() {
             className="px-2.5 py-1.5"
             onClick={() => handleTabChange("agent-skills")}
           >
-            <IconRobot />
+            <Mascot className="size-5" />
             Agent Skills
           </TabsTrigger>
         </TabsList>

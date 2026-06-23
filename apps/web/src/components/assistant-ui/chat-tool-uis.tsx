@@ -2,17 +2,19 @@ import { makeAssistantToolUI, useAuiState } from "@assistant-ui/react";
 import { useAtomValue } from "jotai";
 import type { ComponentType } from "react";
 import {
+  IconAlertTriangle,
   IconCheck,
   IconCircleDashedCheck,
   IconEdit,
   IconFileCheck,
-  IconLoader2,
   IconListCheck,
+  IconLoader2,
   IconPencil,
   IconQuestionMark,
 } from "@tabler/icons-react";
 
 import { UserContextQuestionnaireByRequestId } from "@/components/assistant-ui/user-context-questionnaire";
+import { RailRow, ToolStep } from "@/components/assistant-ui/tool-timeline";
 import { planStatesAtom } from "@/lib/atoms/plan-state";
 import { cn } from "@/lib/utils";
 
@@ -34,40 +36,8 @@ function formatIdentifier(value: string) {
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : value;
 }
 
-export function ToolTrace({
-  icon: Icon,
-  label,
-  detail,
-  state,
-}: ToolTraceProps) {
-  const isRunning = state === "running";
-
-  return (
-    <div
-      data-slot="tool-trace"
-      className={cn(
-        "flex w-full items-center gap-2 border bg-background px-4 py-3 text-sm leading-none",
-        isRunning
-          ? "border-primary/30 text-primary"
-          : "border-border text-muted-foreground",
-      )}
-    >
-      {isRunning ? (
-        <IconLoader2 className="size-4 shrink-0 animate-spin" />
-      ) : (
-        <Icon className="size-4 shrink-0 text-foreground" />
-      )}
-      <span className="min-w-0 grow truncate text-left text-foreground">
-        {label}
-        {detail && (
-          <>
-            :{" "}
-            <span className="font-medium text-muted-foreground">{detail}</span>
-          </>
-        )}
-      </span>
-    </div>
-  );
+export function ToolTrace({ icon, label, detail, state }: ToolTraceProps) {
+  return <ToolStep icon={icon} label={label} detail={detail} state={state} />;
 }
 
 const OpenFormToolUIImpl = makeAssistantToolUI({
@@ -266,31 +236,52 @@ const RequestUserContextToolUIImpl = makeAssistantToolUI({
         ? result.error
         : undefined;
 
+    const running = status.type === "running";
+    const label = running
+      ? "Waiting for your answers"
+      : isError
+        ? "Questionnaire failed"
+        : cancelled
+          ? "Questionnaire cancelled"
+          : "Context provided";
+
     return (
-      <div className="space-y-2">
-        <ToolTrace
-          icon={IconQuestionMark}
-          label={
-            status.type === "running"
-              ? "Waiting for your answers"
-              : isError
-                ? "Questionnaire failed"
-              : cancelled
-                ? "Questionnaire cancelled"
-                : "Context provided"
-          }
-          detail={title}
-          state={status.type === "running" ? "running" : "complete"}
-        />
-        {status.type === "running" && (
-          <UserContextQuestionnaireByRequestId requestId={toolCallId} />
+      <RailRow
+        node={
+          running ? (
+            <IconLoader2 className="size-4 animate-spin text-primary" />
+          ) : isError ? (
+            <IconAlertTriangle className="size-4 text-destructive" />
+          ) : (
+            <IconQuestionMark className="size-4 text-foreground" />
+          )
+        }
+        contentClassName="pt-0.5"
+      >
+        <div
+          className={cn(
+            "text-sm leading-snug",
+            isError ? "text-destructive" : "text-foreground",
+          )}
+        >
+          {label}
+        </div>
+        <div className="mt-1">
+          <span className="inline-flex max-w-full items-center truncate bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+            {title}
+          </span>
+        </div>
+        {running && (
+          <div className="mt-2">
+            <UserContextQuestionnaireByRequestId requestId={toolCallId} />
+          </div>
         )}
         {error && (
-          <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-xs text-destructive">
+          <p className="mt-2 border border-destructive/40 bg-destructive/5 px-4 py-3 text-xs text-destructive">
             {error}
           </p>
         )}
-      </div>
+      </RailRow>
     );
   },
 });

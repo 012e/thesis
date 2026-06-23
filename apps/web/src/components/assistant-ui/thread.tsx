@@ -8,8 +8,8 @@ import {
   IconArrowDown,
   IconEdit,
   IconRefresh,
-  IconRobot,
   IconDownload,
+  IconMessage2,
 } from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
@@ -24,15 +24,20 @@ import {
 import {
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
+  useState,
   type ReactNode,
   type PropsWithChildren,
 } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
+import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { RailRow, ToolTimeline } from "@/components/assistant-ui/tool-timeline";
+import { isTimelineTool } from "@/lib/assistant/tool-timeline";
 import {
   Reasoning,
   ReasoningContent,
@@ -50,7 +55,10 @@ import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
-import { ThinkingIndicator } from "@/components/assistant-ui/thinking-indicator";
+import {
+  FinishedIndicator,
+  ThinkingIndicator,
+} from "@/components/assistant-ui/thinking-indicator";
 import { Separator } from "@/components/ui/separator";
 
 interface ThreadProps {
@@ -125,8 +133,11 @@ function ThreadWelcome() {
 
   return (
     <div className="flex flex-col justify-center items-center text-center grow min-w-0 gap-3 px-4 py-6 @md/thread:gap-4 @md/thread:p-8">
-      <div className="rounded-full bg-primary/10 p-3 @md/thread:p-4">
-        <IconRobot className="size-6 text-primary @md/thread:size-8" />
+      <div className="flex items-center justify-center rounded-full bg-primary/10 p-3 @md/thread:p-4">
+        <Mascot
+          animateOccasionally
+          className="size-9 @md/thread:size-11"
+        />
       </div>
       <div>
         <h2 className="text-lg font-semibold @md/thread:text-xl">
@@ -362,7 +373,62 @@ function ChainOfThoughtGroup({
   );
 }
 
+/**
+ * Position of an assistant message within its "run" — the maximal sequence of
+ * consecutive assistant messages answering one user turn. A turn with tool
+ * activity is rendered as ONE connected rail spanning all its messages, so we
+ * need to know which message starts/ends the run and whether it has activity.
+ */
+function useAssistantRunInfo() {
+  const index = useAuiState((s) => s.message.index);
+  const messages = useAuiState((s) => s.thread.messages);
+
+  return useMemo(() => {
+    if (messages[index]?.role !== "assistant") {
+      return { isFirstInRun: true, isLastInRun: true, runHasActivity: false };
+    }
+
+    let start = index;
+    while (start > 0 && messages[start - 1]?.role === "assistant") start--;
+    let end = index;
+    while (end < messages.length - 1 && messages[end + 1]?.role === "assistant")
+      end++;
+
+    let runHasActivity = false;
+    for (let i = start; i <= end && !runHasActivity; i++) {
+      for (const part of messages[i]?.content ?? []) {
+        if (part.type === "tool-call" || part.type === "data") {
+          runHasActivity = true;
+          break;
+        }
+      }
+    }
+
+    return {
+      isFirstInRun: index === start,
+      isLastInRun: index === end,
+      runHasActivity,
+    };
+  }, [messages, index]);
+}
+
 function AssistantMessage() {
+  const { isFirstInRun, isLastInRun, runHasActivity } = useAssistantRunInfo();
+
+  if (runHasActivity) {
+    return (
+      <ActivityAssistantMessage
+        isFirstInRun={isFirstInRun}
+        isLastInRun={isLastInRun}
+      />
+    );
+  }
+
+  return <PlainAssistantMessage />;
+}
+
+/** Classic bubble layout: mascot beside the content. Used for plain answers. */
+function PlainAssistantMessage() {
   return (
     <MessagePrimitive.Root
       className="flex relative flex-col p-2 mx-auto w-full max-w-2xl group"
@@ -371,7 +437,7 @@ function AssistantMessage() {
       <div className="flex flex-col justify-center">
         <div className="flex my-1.5 max-w-xl text-sm leading-relaxed wrap-break-word text-foreground">
           <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
-            <IconRobot className="size-4 text-primary" />
+            <Mascot className="size-6" />
           </div>
 
           <div className="flex flex-col gap-2 min-w-0 flex-1">
@@ -408,8 +474,8 @@ function AssistantMessage() {
             </MessagePrimitive.GroupedParts>
 
             <MessageError />
-            <AuiIf condition={(s) => s.thread.isRunning}>
-              <ThinkingIndicator />
+            <AuiIf condition={(s) => s.message.isLast}>
+              <MessageRunStatus />
             </AuiIf>
           </div>
         </div>
@@ -424,6 +490,142 @@ function AssistantMessage() {
       </div>
     </MessagePrimitive.Root>
   );
+}
+
+/**
+ * Activity-turn layout. Tool/agent steps form one connected rail. Because a
+ * turn is split into several assistant messages (each typically a step plus a
+ * line of narration), we render each message's steps into a shared rail that
+ * continues into the next message (`capLast={isLastInRun}`), suppress the
+ * intermediate narration, and show only the final answer as normal prose.
+ */
+function ActivityAssistantMessage({
+  isFirstInRun,
+  isLastInRun,
+}: {
+  isFirstInRun: boolean;
+  isLastInRun: boolean;
+}) {
+  return (
+    <MessagePrimitive.Root
+      className={cn(
+        "relative mx-auto w-full max-w-2xl px-3 group",
+        isFirstInRun ? "pt-4" : "pt-0",
+        isLastInRun ? "pb-2" : "pb-0",
+      )}
+      data-role="assistant"
+    >
+      {isFirstInRun && (
+        <div className="mb-1 flex w-6 items-center justify-center">
+          <span className="flex items-center justify-center rounded-full size-6 bg-primary/10">
+            <Mascot className="size-4" />
+          </span>
+        </div>
+      )}
+
+      <MessagePrimitive.GroupedParts
+        groupBy={(part) => {
+          if (part.type === "reasoning") return ["group-chain-of-thought"];
+          // Tool steps, the (invisible) agent data that follows them, and the
+          // assistant's intermediate narration all form one continuous rail.
+          // The final answer (last message of the turn) is kept off the rail
+          // and rendered as prominent prose instead.
+          if (
+            (part.type === "tool-call" && isTimelineTool(part.toolName)) ||
+            part.type === "data" ||
+            (part.type === "text" && !isLastInRun)
+          )
+            return ["group-tool-timeline"];
+          return null;
+        }}
+      >
+        {({ part, children }) => {
+          switch (part.type) {
+            case "group-tool-timeline":
+              return (
+                <ToolTimeline capLast={isLastInRun}>{children}</ToolTimeline>
+              );
+            case "group-chain-of-thought":
+              return (
+                <ChainOfThoughtGroup
+                  active={part.status.type === "running"}
+                  count={part.indices.length}
+                >
+                  {children}
+                </ChainOfThoughtGroup>
+              );
+            case "text":
+              // Intermediate narration is a "thought" step on the rail; the
+              // final answer renders as normal prose below the rail.
+              return isLastInRun ? (
+                <div className="mt-2 pl-9 text-sm leading-relaxed wrap-break-word text-foreground">
+                  <MarkdownText />
+                </div>
+              ) : (
+                <RailRow
+                  node={
+                    <IconMessage2 className="size-4 text-muted-foreground" />
+                  }
+                >
+                  <div className="pt-0.5 text-sm leading-relaxed text-muted-foreground">
+                    <MarkdownText />
+                  </div>
+                </RailRow>
+              );
+            case "source":
+              return isLastInRun ? <Sources {...part} /> : null;
+            case "tool-call":
+              return part.toolUI ?? <ToolFallback {...part} />;
+            case "data":
+              return part.dataRendererUI ?? null;
+            default:
+              return null;
+          }
+        }}
+      </MessagePrimitive.GroupedParts>
+
+      {isLastInRun && (
+        <div className="pl-9">
+          <MessageError />
+          <AuiIf condition={(s) => s.message.isLast}>
+            <MessageRunStatus />
+          </AuiIf>
+
+          <div className="mt-1 flex items-center gap-2">
+            <AssistantActionBar />
+            <BranchPicker />
+          </div>
+        </div>
+      )}
+    </MessagePrimitive.Root>
+  );
+}
+
+/**
+ * Renders the streaming status for the last assistant message: a thinking
+ * indicator while the run is in progress, then a "Finished in …" label once it
+ * completes. The elapsed time is measured client-side across the running →
+ * finished transition, so it only appears for responses generated this session
+ * (not historical messages restored on load).
+ */
+function MessageRunStatus() {
+  const isRunning = useAuiState((s) => s.thread.isRunning);
+  const startRef = useRef<number | null>(null);
+  const [durationMs, setDurationMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isRunning) {
+      startRef.current = Date.now();
+      setDurationMs(null);
+    } else if (startRef.current != null) {
+      setDurationMs(Date.now() - startRef.current);
+      startRef.current = null;
+    }
+  }, [isRunning]);
+
+  if (isRunning) return <ThinkingIndicator />;
+  if (durationMs == null) return null;
+  return <FinishedIndicator durationMs={durationMs} />;
 }
 
 function MessageError() {

@@ -11,7 +11,6 @@ import {
   IconUserFilled,
   IconZoom,
   IconZoomFilled,
-  IconRobot,
   IconShield,
   IconShieldCheck,
   IconShieldCheckFilled,
@@ -24,6 +23,7 @@ import {
   IconTrophyFilled,
 } from "@tabler/icons-react";
 import { Logo } from "@/components/logo";
+import { Mascot } from "@/components/mascot";
 import { Spinner } from "@/components/ui/spinner";
 import { useNotifications } from "@/hooks/notifications";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -36,6 +36,12 @@ import { UserProfile } from "./user-profile";
 
 const baseNavigationItems = [
   { icon: IconHome, selectedIcon: IconHomeFilled, label: "Home", href: "/" },
+  {
+    icon: Mascot,
+    selectedIcon: Mascot,
+    label: "AI Chat",
+    href: "/chat",
+  },
   {
     icon: IconZoom,
     selectedIcon: IconZoomFilled,
@@ -53,12 +59,6 @@ const baseNavigationItems = [
     selectedIcon: IconTrophyFilled,
     label: "Leaderboard",
     href: "/leaderboard",
-  },
-  {
-    icon: IconRobot,
-    selectedIcon: IconRobot,
-    label: "AI Chat",
-    href: "/chat",
   },
   {
     icon: IconBell,
@@ -94,8 +94,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
       queryKey[0] === "recommendations" ||
       (queryKey[0] === "posts" && queryKey[1] === "following"),
   });
-  const isHomeFeedLoading =
-    isHomeFeedRefreshing || homeFeedFetchCount > 0;
+  const isHomeFeedLoading = isHomeFeedRefreshing || homeFeedFetchCount > 0;
 
   const navigationItems = useMemo(
     () => [
@@ -155,6 +154,7 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
                 const hasUnread =
                   item.href === "/notifications" && unreadCount > 0;
                 const showLoading = item.href === "/" && isHomeFeedLoading;
+                const isMascot = item.href === "/chat";
                 return (
                   <div
                     className={cn(
@@ -164,9 +164,11 @@ export function LeftSidebar({ onNavigate }: LeftSidebarProps) {
                         : "hover:bg-foreground/8 font-normal",
                     )}
                   >
-                    <div className="relative shrink-0">
+                    <div className="relative flex size-7 shrink-0 items-center justify-center">
                       {showLoading ? (
                         <Spinner className="h-7 w-7" />
+                      ) : isMascot ? (
+                        <Mascot className="size-7" />
                       ) : (
                         <Icon className="h-7 w-7" stroke={isActive ? 2 : 1.5} />
                       )}

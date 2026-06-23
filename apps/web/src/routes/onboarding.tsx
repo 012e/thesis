@@ -12,10 +12,11 @@ import {
 } from "@assistant-ui/react-ai-sdk";
 import { useEffect, useRef, type FC } from "react";
 import { useAtomValue } from "jotai";
-import { IconArrowRight, IconRobot, IconSparkles } from "@tabler/icons-react";
+import { IconArrowRight, IconSparkles } from "@tabler/icons-react";
 
 import { env } from "@/env";
 import bearerToken from "@/lib/atoms/bearer-token";
+import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
 import { MarkdownText } from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
@@ -177,7 +178,7 @@ function AssistantMessage() {
       data-role="assistant"
     >
       <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <IconRobot className="size-4 text-primary" />
+        <Mascot className="size-6" />
       </div>
       <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm leading-relaxed text-foreground">
         <MessagePrimitive.Parts

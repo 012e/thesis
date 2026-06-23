@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 16" shape-rendering="crispEdges">
+  <title>Toin T mascot searching with a magnifying glass</title>
+  <defs>
+    <g id="s-neutral"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="s-curious"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 3h2v3H5zm4 1h2v2H9z" fill="#111"/></g>
+    <g id="s-alert"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 3h2v3H5zm4 0h2v3H9zM13 0h1v2h-1z" fill="#111"/></g>
+    <g id="s-reach"><path d="M1 1h14v7h-3v7H5V8H1V1Zm11 7h4v3h-2V9h-2Z" fill="#111"/><path d="M2 2h12v5h-3v7H6V7H2V2Zm11 7h2v1h-2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="s-glass-low"><path d="M1 1h14v7h-3v7H5V8H1V1Zm11 6h4v5h-2V9h-2Z" fill="#111"/><path d="M2 2h12v5h-3v7H6V7H2V2Zm11 6h2v3h-1V9h-1Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM11 8h4v1h1v4h-1v1h-4v-1h-1V9h1zm1 1v3h2V9z" fill="#111"/></g>
+    <g id="s-left-low"><path d="M2 1h13v7h-4v7H5V8H1V3h1Z" fill="#111"/><path d="M3 2h11v5h-4v7H6V7H2V4h1Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8zM0 9h4v1h1v4H4v1H0v-1h-1v-4h1zm1 1v3h2v-3zM4 13h3v2H5v-1H4Z" fill="#111"/></g>
+    <g id="s-left-high"><path d="M2 1h13v7h-4v7H5V8H1V3h1Z" fill="#111"/><path d="M3 2h11v5h-4v7H6V7H2V4h1Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8zM0 6h4v1h1v4H4v1H0v-1h-1V7h1zm1 1v3h2V7zM4 10h3v2H5v-1H4Z" fill="#111"/></g>
+    <g id="s-center-high"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM7 6h4v1h1v4h-1v1H7v-1H6V7h1zm1 1v3h2V7zM11 10h3v2h-2v-1h-1Z" fill="#111"/></g>
+    <g id="s-center-low"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h2v1H5zm4 0h2v1H9zM8 9h4v1h1v4h-1v1H8v-1H7v-4h1zm1 1v3h2v-3zM12 13h3v2h-2v-1h-1Z" fill="#111"/></g>
+    <g id="s-right-high"><path d="M1 1h13v2h1v5h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h11v2h1v3h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM12 6h4v1h1v4h-1v1h-4v-1h-1V7h1zm1 1v3h2V7zM10 10h2v2h-1v-1h-1Z" fill="#111"/></g>
+    <g id="s-right-low"><path d="M1 1h13v2h1v5h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h11v2h1v3h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM12 9h4v1h1v4h-1v1h-4v-1h-1v-4h1zm1 1v3h2v-3zM10 13h2v2h-1v-1h-1Z" fill="#111"/></g>
+    <g id="s-found"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9zM13 0h1v2h-1zm-2 2h1v1h-1zm3 1h2v1h-2z" fill="#111"/></g>
+    <g id="s-smile"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M4 4h3v1H4zm5 0h3v1H9zM6 7h4v1H6z" fill="#111"/></g>
+    <g id="s-blink"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h2v1H5zm4 0h2v1H9z" fill="#111"/></g>
+  </defs>
+  <use href="#s-neutral"/><use href="#s-curious" x="16"/><use href="#s-alert" x="32"/>
+  <use href="#s-reach" x="48"/><use href="#s-glass-low" x="64"/><use href="#s-left-low" x="80"/>
+  <use href="#s-left-high" x="96"/><use href="#s-center-high" x="112"/><use href="#s-center-low" x="128"/>
+  <use href="#s-right-high" x="144"/><use href="#s-right-low" x="160"/><use href="#s-alert" x="176"/>
+  <use href="#s-found" x="192"/><use href="#s-smile" x="208"/><use href="#s-blink" x="224"/>
+  <use href="#s-neutral" x="240"/>
+</svg>

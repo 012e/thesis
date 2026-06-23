@@ -11,7 +11,10 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { z } from "zod";
+
+import { isGlobalChatOpenAtom } from "@/lib/atoms/global-chat";
 
 const RenderPostInput = z.object({
   postId: z.string().uuid().describe("The UUID of the post to display"),
@@ -144,11 +147,14 @@ function ContentReferenceLink({
   label: string;
   preview?: string;
 }) {
+  const setIsGlobalChatOpen = useSetAtom(isGlobalChatOpenAtom);
+
   return (
     <Link
       to="/posts/$postId"
       params={{ postId }}
       search={commentId ? { commentId } : {}}
+      onClick={() => setIsGlobalChatOpen(false)}
       className="flex w-full items-center gap-3 border border-border bg-background px-4 py-3 transition-colors hover:bg-accent/50"
     >
       <Icon className="size-4 shrink-0 text-foreground" />

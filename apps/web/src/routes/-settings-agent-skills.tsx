@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import {
   IconPencil,
   IconPlus,
-  IconRobot,
   IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
 import type { AgentSkillDto, AgentSkillSearchModeDto } from "@repo/shared-dto";
 
+import { Mascot } from "@/components/mascot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -239,7 +239,7 @@ function SkillRow({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <IconRobot className="size-4 text-muted-foreground" />
+            <Mascot className="size-5 opacity-70" />
             <span className="font-medium">{skill.name}</span>
             {skill.isDefault && <Badge variant="secondary">default</Badge>}
             {typeof score === "number" && (
