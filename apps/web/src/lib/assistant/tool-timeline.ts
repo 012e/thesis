@@ -1,14 +1,11 @@
 import { ONBOARDING_TOOL_NAMES } from "@/lib/assistant/onboarding-tools";
 
 /**
- * Tools that render their own rich, full-width UI (charts, post cards,
- * interactive questionnaires). These must NOT be collapsed into a compact
- * timeline step — they break out and render standalone.
+ * Tools that render their own rich, full-width UI and must break out of the
+ * activity timeline.
  */
 const RICH_TOOL_NAMES = new Set<string>([
   "render_line_graph",
-  "render_post",
-  "render_comment",
   ...Object.values(ONBOARDING_TOOL_NAMES),
 ]);
 

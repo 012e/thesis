@@ -12,6 +12,7 @@ const MAX_IDLE_DELAY_MS = 11_000;
 
 const MASCOT_ACTIVITIES = [
   "blink",
+  "hello",
   "wave",
   "bounce",
   "celebrate",
@@ -40,8 +41,7 @@ type AnimationState = {
 
 function getIdleDelay() {
   return (
-    MIN_IDLE_DELAY_MS +
-    Math.random() * (MAX_IDLE_DELAY_MS - MIN_IDLE_DELAY_MS)
+    MIN_IDLE_DELAY_MS + Math.random() * (MAX_IDLE_DELAY_MS - MIN_IDLE_DELAY_MS)
   );
 }
 
@@ -70,9 +70,7 @@ export function Mascot({
   const playAnimation = useCallback(() => {
     setAnimation((previous) => ({
       activity:
-        activity === "random"
-          ? getNextActivity(previous.activity)
-          : activity,
+        activity === "random" ? getNextActivity(previous.activity) : activity,
       run: previous.run + 1,
     }));
   }, [activity]);

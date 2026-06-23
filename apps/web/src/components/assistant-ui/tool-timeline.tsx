@@ -84,7 +84,7 @@ export function RailRow({
           className="w-px grow bg-transparent"
         />
       </div>
-      <div className={cn("min-w-0 flex-1 pb-4", contentClassName)}>
+      <div className={cn("min-w-0 flex-1 pb-3", contentClassName)}>
         {children}
       </div>
     </div>
@@ -125,8 +125,8 @@ function ToolStepLabel({
 
 function ToolStepDetail({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-1">
-      <span className="inline-flex max-w-full items-center truncate bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+    <div className="mt-1 min-w-0">
+      <span className="block max-w-full truncate text-xs text-muted-foreground">
         {children}
       </span>
     </div>
@@ -136,7 +136,7 @@ function ToolStepDetail({ children }: { children: ReactNode }) {
 export type ToolStepProps = {
   icon: ComponentType<{ className?: string }>;
   label: ReactNode;
-  /** Short secondary value (e.g. a title or filename) shown as a chip. */
+  /** Short secondary value (e.g. a title or filename). */
   detail?: ReactNode;
   state: ToolStepState;
   /** Optional expandable content (args/result). Renders a disclosure chevron. */

@@ -1,36 +1,57 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import {
-  AssistantRuntimeProvider,
-  ComposerPrimitive,
-  MessagePrimitive,
-  ThreadPrimitive,
-  useAui,
-} from "@assistant-ui/react";
+import { AssistantRuntimeProvider, useAui } from "@assistant-ui/react";
 import {
   useChatRuntime,
   AssistantChatTransport,
 } from "@assistant-ui/react-ai-sdk";
-import { useEffect, useRef, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { useAtomValue } from "jotai";
+import { motion } from "motion/react";
 import { IconArrowRight, IconSparkles } from "@tabler/icons-react";
 
 import { env } from "@/env";
 import bearerToken from "@/lib/atoms/bearer-token";
-import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
-import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { Thread } from "@/components/assistant-ui/thread";
 import { OnboardingAssistantTools } from "@/components/assistant-ui/onboarding-tools";
 
 export const Route = createFileRoute("/onboarding")({
   component: RouteComponent,
 });
 
+const ONBOARDING_KICKOFF_MESSAGE =
+  "Hi! I just signed up. Help me set up my account.";
+const TYPEWRITER_INITIAL_PAUSE_MS = 450;
+const TYPEWRITER_READING_PAUSE_MS = 650;
+
+function getTypingDelay(character: string, characterIndex: number) {
+  const jitter = Math.random();
+
+  if (/[.!?]/.test(character)) {
+    return 320 + jitter * 180;
+  }
+
+  if (/[,;:]/.test(character)) {
+    return 180 + jitter * 100;
+  }
+
+  if (character === " ") {
+    return 45 + jitter * 55;
+  }
+
+  const briefHesitation = characterIndex > 0 && characterIndex % 9 === 0;
+  return 70 + jitter * 65 + (briefHesitation ? 85 : 0);
+}
+
 // Mirrors the main chat runtime: once the user answers a tool-backed question,
 // the completed tool result is automatically sent back so the agent continues.
 type AutoSendMessage = {
   role: string;
-  parts?: readonly { type: string; state?: string; providerExecuted?: boolean }[];
+  parts?: readonly {
+    type: string;
+    state?: string;
+    providerExecuted?: boolean;
+  }[];
 };
 
 function lastAssistantMessageIsCompleteWithToolCalls({
@@ -60,30 +81,63 @@ function lastAssistantMessageIsCompleteWithToolCalls({
   );
 }
 
-/** Sends a single kickoff message so the agent greets and asks the first question. */
-const OnboardingKickoff: FC = () => {
+/**
+ * Types the kickoff locally first, then sends it to the runtime. Appending is
+ * intentionally delayed because it starts the assistant run immediately.
+ */
+const OnboardingKickoff: FC<{
+  onTextChange: (text: string) => void;
+}> = ({ onTextChange }) => {
   const aui = useAui();
-  const started = useRef(false);
+  const auiRef = useRef(aui);
+  auiRef.current = aui;
 
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    aui.thread().append({
-      role: "user",
-      content: [
-        {
-          type: "text",
-          text: "Hi! I just signed up. Help me set up my preferences.",
-        },
-      ],
-    });
-  }, [aui]);
+    let characterIndex = 0;
+    let typingTimeout: ReturnType<typeof setTimeout> | undefined;
+    let sendTimeout: ReturnType<typeof setTimeout> | undefined;
+
+    const typeNextCharacter = () => {
+      characterIndex += 1;
+      onTextChange(ONBOARDING_KICKOFF_MESSAGE.slice(0, characterIndex));
+
+      if (characterIndex >= ONBOARDING_KICKOFF_MESSAGE.length) {
+        sendTimeout = setTimeout(() => {
+          auiRef.current.thread().append({
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: ONBOARDING_KICKOFF_MESSAGE,
+              },
+            ],
+          });
+        }, TYPEWRITER_READING_PAUSE_MS);
+        return;
+      }
+
+      const typedCharacter =
+        ONBOARDING_KICKOFF_MESSAGE[characterIndex - 1] ?? "";
+      typingTimeout = setTimeout(
+        typeNextCharacter,
+        getTypingDelay(typedCharacter, characterIndex),
+      );
+    };
+
+    typingTimeout = setTimeout(typeNextCharacter, TYPEWRITER_INITIAL_PAUSE_MS);
+
+    return () => {
+      if (typingTimeout) clearTimeout(typingTimeout);
+      if (sendTimeout) clearTimeout(sendTimeout);
+    };
+  }, [onTextChange]);
 
   return null;
 };
 
 function RouteComponent() {
   const token = useAtomValue(bearerToken);
+  const [kickoffText, setKickoffText] = useState("");
 
   const runtime = useChatRuntime({
     transport: new AssistantChatTransport({
@@ -98,13 +152,13 @@ function RouteComponent() {
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <OnboardingAssistantTools />
-      <OnboardingKickoff />
-      <OnboardingScreen />
+      <OnboardingKickoff onTextChange={setKickoffText} />
+      <OnboardingScreen kickoffText={kickoffText} />
     </AssistantRuntimeProvider>
   );
 }
 
-function OnboardingScreen() {
+function OnboardingScreen({ kickoffText }: { kickoffText: string }) {
   const navigate = useNavigate();
 
   return (
@@ -125,89 +179,44 @@ function OnboardingScreen() {
       </header>
 
       <div className="min-h-0 flex-1">
-        <OnboardingThread />
+        <Thread
+          composerPlaceholder="Type a reply, or use the cards above…"
+          emptyState={<TypewriterUserMessage text={kickoffText} />}
+          hideComposerTools
+          richToolsOnRail
+        />
       </div>
     </div>
   );
 }
 
-function OnboardingThread() {
-  const viewportRef = useRef<HTMLDivElement | null>(null);
+/**
+ * Stand-in for the kickoff user message while it types out. Mirrors the bubble
+ * layout of the shared Thread's <UserMessage /> so the swap to the real message
+ * (once the thread is no longer empty) is seamless.
+ */
+function TypewriterUserMessage({ text }: { text: string }) {
+  const isTyping =
+    text.length > 0 && text.length < ONBOARDING_KICKOFF_MESSAGE.length;
 
   return (
-    <ThreadPrimitive.Root className="flex h-full flex-col bg-background @container/onboarding">
-      <ThreadPrimitive.Viewport
-        ref={viewportRef}
-        turnAnchor="top"
-        className="flex flex-1 flex-col overflow-y-auto"
-      >
-        <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
-          <ThreadPrimitive.Messages
-            components={{
-              UserMessage,
-              AssistantMessage,
-            }}
-          />
+    <div
+      aria-label={ONBOARDING_KICKOFF_MESSAGE}
+      className="grid auto-rows-auto gap-y-2 py-4 px-4 mx-auto w-full max-w-2xl grid-cols-[minmax(72px,1fr)_auto]"
+    >
+      <div className="col-start-2 max-w-xl wrap-break-word">
+        <div className="py-2.5 px-5 text-sm bg-muted text-foreground">
+          {text}
+          {isTyping && (
+            <motion.span
+              aria-hidden="true"
+              className="ml-0.5 inline-block h-4 w-1 translate-y-0.5 bg-foreground"
+              animate={{ opacity: [1, 0, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+            />
+          )}
         </div>
-
-        <ThreadPrimitive.ViewportFooter className="sticky bottom-0 mt-auto flex w-full flex-col items-center gap-2 bg-background px-3 pb-4">
-          <Composer />
-        </ThreadPrimitive.ViewportFooter>
-      </ThreadPrimitive.Viewport>
-    </ThreadPrimitive.Root>
-  );
-}
-
-function UserMessage() {
-  return (
-    <MessagePrimitive.Root
-      className="mb-4 flex w-full justify-end"
-      data-role="user"
-    >
-      <div className="max-w-xl break-words bg-muted px-5 py-2.5 text-sm text-foreground">
-        <MessagePrimitive.Parts />
       </div>
-    </MessagePrimitive.Root>
-  );
-}
-
-function AssistantMessage() {
-  return (
-    <MessagePrimitive.Root
-      className="mb-4 flex w-full gap-3"
-      data-role="assistant"
-    >
-      <div className="mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10">
-        <Mascot className="size-6" />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col gap-2 text-sm leading-relaxed text-foreground">
-        <MessagePrimitive.Parts
-          components={{
-            Text: MarkdownText,
-            tools: { Fallback: ToolFallback },
-          }}
-        />
-      </div>
-    </MessagePrimitive.Root>
-  );
-}
-
-function Composer() {
-  return (
-    <ComposerPrimitive.Root className="flex w-full max-w-2xl flex-col">
-      <div className="flex w-full items-end gap-2 border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring">
-        <ComposerPrimitive.Input
-          id="onboarding-composer-input"
-          placeholder="Type a reply, or use the cards above…"
-          className="flex max-h-40 min-h-9 w-full resize-none bg-transparent py-1.5 text-sm outline-none placeholder:text-muted-foreground"
-          rows={1}
-        />
-        <ComposerPrimitive.Send asChild>
-          <Button size="sm" type="submit">
-            Send
-          </Button>
-        </ComposerPrimitive.Send>
-      </div>
-    </ComposerPrimitive.Root>
+    </div>
   );
 }

@@ -183,6 +183,11 @@
   background-image: url("/mascot-blink.svg");
 }
 
+.mascot-sprite-hello {
+  background-image: url("/mascot-hello.svg");
+  background-size: 1600% 100%;
+}
+
 .mascot-sprite-wave {
   background-image: url("/mascot-wave.svg");
 }
@@ -234,6 +239,11 @@
 
 .mascot-sprite-wave.mascot-sprite-playing {
   animation-duration: 1.45s;
+}
+
+.mascot-sprite-hello.mascot-sprite-playing {
+  animation-duration: 2.6s;
+  animation-timing-function: steps(15);
 }
 
 .mascot-sprite-bounce.mascot-sprite-playing {

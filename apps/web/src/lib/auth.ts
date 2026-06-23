@@ -73,10 +73,6 @@ export async function register(params: RegisterParams): Promise<boolean> {
     return false;
   }
 
-  toast.success("Account created successfully", {
-    description: "Welcome!",
-  });
-
   return true;
 }
 

@@ -175,7 +175,7 @@ export function PlanProgressBar() {
     <button
       type="button"
       onClick={() => setIsOpen(true)}
-      className="flex w-full items-center gap-2 border border-border bg-muted/40 px-3 py-2 text-left transition-colors hover:bg-muted/60"
+      className="flex w-full items-center gap-2 border border-border bg-muted/40 backdrop-blur-md px-3 py-2 text-left transition-colors hover:bg-muted/60"
     >
       <IconListCheck
         className={cn(
@@ -210,7 +210,7 @@ export function PlanProgressBar() {
   // ---------------------------------------------------------------------------
 
   const ExpandedPanel = (
-    <div className="w-full border border-border bg-background shadow-sm">
+    <div className="w-full border border-border bg-background/60 backdrop-blur-md shadow-sm">
       {/* Header */}
       <div
         className={cn(
@@ -219,31 +219,39 @@ export function PlanProgressBar() {
           isCompleted && "bg-green-50/50 dark:bg-green-950/20",
         )}
       >
-        <IconListCheck
-          className={cn(
-            "size-4 shrink-0",
-            isPendingApproval && "text-amber-500",
-            isCompleted && "text-green-500",
-            !isPendingApproval && !isCompleted && "text-primary",
-          )}
-        />
-        <div className="flex-1 min-w-0">
-          <p className="truncate text-sm font-medium text-foreground">
-            {plan.title}
-          </p>
-          {!isPendingApproval && (
-            <p className="text-xs text-muted-foreground">
-              {isCompleted
-                ? `All ${totalCount} steps complete`
-                : `${completedCount} of ${totalCount} steps done`}
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+          className="flex min-w-0 flex-1 items-center gap-2 text-left"
+          aria-expanded="true"
+          title="Collapse"
+        >
+          <IconListCheck
+            className={cn(
+              "size-4 shrink-0",
+              isPendingApproval && "text-amber-500",
+              isCompleted && "text-green-500",
+              !isPendingApproval && !isCompleted && "text-primary",
+            )}
+          />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-foreground">
+              {plan.title}
             </p>
-          )}
-          {isPendingApproval && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
-              Review the steps below and approve to begin
-            </p>
-          )}
-        </div>
+            {!isPendingApproval && (
+              <p className="text-xs text-muted-foreground">
+                {isCompleted
+                  ? `All ${totalCount} steps complete`
+                  : `${completedCount} of ${totalCount} steps done`}
+              </p>
+            )}
+            {isPendingApproval && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Review the steps below and approve to begin
+              </p>
+            )}
+          </div>
+        </button>
 
         <div className="flex items-center gap-1">
           {/* Dismiss button (only when completed) */}
@@ -257,17 +265,15 @@ export function PlanProgressBar() {
               <IconX className="size-3.5" />
             </button>
           )}
-          {/* Collapse toggle (not for pending — user must act) */}
-          {!isPendingApproval && (
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              title="Collapse"
-            >
-              <IconChevronUp className="size-3.5" />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setIsOpen(false)}
+            className="p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            title="Collapse"
+            aria-label="Collapse plan"
+          >
+            <IconChevronUp className="size-3.5" />
+          </button>
         </div>
       </div>
 

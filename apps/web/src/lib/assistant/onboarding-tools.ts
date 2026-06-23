@@ -19,6 +19,7 @@ export const ONBOARDING_TOOL_NAMES = {
   pickContentTypes: "pick_content_types",
   suggestTags: "suggest_tags",
   suggestBio: "suggest_bio",
+  finishOnboarding: "finish_onboarding",
 } as const;
 
 // ── Input schemas (model-facing) ────────────────────────────────────────────
@@ -89,11 +90,21 @@ export const SuggestBioInputSchema = z.object({
     .describe("A first-person bio draft (2–3 sentences) the user can edit"),
 });
 
+export const FinishOnboardingInputSchema = z.object({
+  message: z
+    .string()
+    .min(1)
+    .describe(
+      "Short celebratory message shown while the user is redirected to the home feed",
+    ),
+});
+
 export type ChoiceOption = z.infer<typeof ChoiceOptionSchema>;
 export type ChooseExperienceInput = z.infer<typeof ChooseExperienceInputSchema>;
 export type PickContentTypesInput = z.infer<typeof PickContentTypesInputSchema>;
 export type SuggestTagsInput = z.infer<typeof SuggestTagsInputSchema>;
 export type SuggestBioInput = z.infer<typeof SuggestBioInputSchema>;
+export type FinishOnboardingInput = z.infer<typeof FinishOnboardingInputSchema>;
 
 // ── Result shapes (returned to the agent) ───────────────────────────────────
 
@@ -102,7 +113,8 @@ export type OnboardingResult =
   | { status: "submitted"; values: string[] }
   | { status: "submitted"; tags: string[] }
   | { status: "submitted"; bio: string }
-  | { status: "skipped" };
+  | { status: "skipped" }
+  | { status: "completed" };
 
 // ── Pending-promise registry ────────────────────────────────────────────────
 

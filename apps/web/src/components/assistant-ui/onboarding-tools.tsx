@@ -1,17 +1,20 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   makeAssistantToolUI,
   useAssistantInstructions,
   useAssistantTool,
 } from "@assistant-ui/react";
 import {
+  IconArrowRight,
   IconCheck,
   IconHash,
   IconPlus,
+  IconRocket,
   IconSparkles,
   IconUserCircle,
   IconX,
 } from "@tabler/icons-react";
+import { useNavigate } from "@tanstack/react-router";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   ONBOARDING_TOOL_NAMES,
   ChooseExperienceInputSchema,
+  FinishOnboardingInputSchema,
   PickContentTypesInputSchema,
   SuggestBioInputSchema,
   SuggestTagsInputSchema,
@@ -27,6 +31,8 @@ import {
   type ChoiceOption,
   type OnboardingResult,
 } from "@/lib/assistant/onboarding-tools";
+import { setMyTagPreference } from "@/lib/api/tags";
+import { updateUserProfile } from "@/lib/api/users";
 import { cn } from "@/lib/utils";
 
 // ── Loose arg readers (args may stream in / be partial) ─────────────────────
@@ -122,6 +128,7 @@ function AnsweredSummary({
 }) {
   let detail = "Saved";
   if (result?.status === "skipped") detail = "Skipped";
+  else if (result?.status === "completed") detail = "Onboarding complete";
   else if (result && "value" in result) detail = result.value;
   else if (result && "values" in result) detail = result.values.join(", ");
   else if (result && "tags" in result)
@@ -489,6 +496,56 @@ function SuggestBioCard({
   );
 }
 
+// ── 5. finish_onboarding (countdown → navigate) ───────────────────────────────
+
+function FinishOnboardingCard({
+  toolCallId,
+  args,
+}: {
+  toolCallId: string;
+  args: unknown;
+}) {
+  const navigate = useNavigate();
+  const message = isRecord(args) ? readString(args.message) : undefined;
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    if (countdown <= 0) {
+      resolveOnboardingResponse(toolCallId, { status: "completed" });
+      void navigate({ to: "/" });
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, navigate, toolCallId]);
+
+  const handleGoNow = () => {
+    resolveOnboardingResponse(toolCallId, { status: "completed" });
+    void navigate({ to: "/" });
+  };
+
+  return (
+    <CardShell icon={IconRocket} title="You're all set!" message={message}>
+      <div className="flex flex-col items-center gap-3 py-2">
+        <div className="flex size-14 items-center justify-center border border-primary bg-primary/10">
+          <span className="font-mono text-3xl font-bold tabular-nums text-primary">
+            {countdown}
+          </span>
+        </div>
+        <p className="text-center text-sm text-muted-foreground">
+          Taking you to your feed…
+        </p>
+      </div>
+      <div className="flex justify-end pt-1">
+        <Button type="button" size="sm" onClick={handleGoNow}>
+          <IconArrowRight className="size-4" />
+          Go now
+        </Button>
+      </div>
+    </CardShell>
+  );
+}
+
 // ── Tool UI registrations ────────────────────────────────────────────────────
 
 function asResult(result: unknown): OnboardingResult | undefined {
@@ -537,13 +594,23 @@ const SuggestBioToolUI = makeAssistantToolUI({
     ),
 });
 
+const FinishOnboardingToolUI = makeAssistantToolUI({
+  toolName: ONBOARDING_TOOL_NAMES.finishOnboarding,
+  render: ({ args, status, toolCallId, result }) =>
+    status.type === "running" ? (
+      <FinishOnboardingCard toolCallId={toolCallId} args={args} />
+    ) : (
+      <AnsweredSummary icon={IconRocket} result={asResult(result)} />
+    ),
+});
+
 /**
  * Registers the onboarding client tools and their tailored UIs. Mount once
  * inside the onboarding AssistantRuntimeProvider.
  */
 export function OnboardingAssistantTools() {
   useAssistantInstructions(
-    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio) and wait for each result before continuing.",
+    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio) and wait for each result before continuing. When all steps are done, call finish_onboarding.",
   );
 
   const chooseExperience = useMemo(
@@ -566,10 +633,23 @@ export function OnboardingAssistantTools() {
       description:
         "Ask the user which content types they want to see (multiple choice). Renders multi-select cards.",
       parameters: PickContentTypesInputSchema,
-      execute: (
+      execute: async (
         _input: unknown,
         context: { abortSignal?: AbortSignal; toolCallId: string },
-      ) => awaitOnboardingResponse(context.toolCallId, context.abortSignal),
+      ) => {
+        const result = await awaitOnboardingResponse(
+          context.toolCallId,
+          context.abortSignal,
+        );
+        if (result.status === "submitted" && "values" in result) {
+          await Promise.allSettled(
+            result.values.map((slug) =>
+              setMyTagPreference({ slug, preference: "preferred" }),
+            ),
+          );
+        }
+        return result;
+      },
     }),
     [],
   );
@@ -580,10 +660,23 @@ export function OnboardingAssistantTools() {
       description:
         "Suggest personalised topic tags the user can toggle and extend. Renders a chip picker with a custom-tag input.",
       parameters: SuggestTagsInputSchema,
-      execute: (
+      execute: async (
         _input: unknown,
         context: { abortSignal?: AbortSignal; toolCallId: string },
-      ) => awaitOnboardingResponse(context.toolCallId, context.abortSignal),
+      ) => {
+        const result = await awaitOnboardingResponse(
+          context.toolCallId,
+          context.abortSignal,
+        );
+        if (result.status === "submitted" && "tags" in result) {
+          await Promise.allSettled(
+            result.tags.map((slug) =>
+              setMyTagPreference({ slug, preference: "preferred" }),
+            ),
+          );
+        }
+        return result;
+      },
     }),
     [],
   );
@@ -594,6 +687,29 @@ export function OnboardingAssistantTools() {
       description:
         "Offer a first-person bio draft the user can edit before saving. Renders an editable text card.",
       parameters: SuggestBioInputSchema,
+      execute: async (
+        _input: unknown,
+        context: { abortSignal?: AbortSignal; toolCallId: string },
+      ) => {
+        const result = await awaitOnboardingResponse(
+          context.toolCallId,
+          context.abortSignal,
+        );
+        if (result.status === "submitted" && "bio" in result) {
+          await updateUserProfile({ bio: result.bio });
+        }
+        return result;
+      },
+    }),
+    [],
+  );
+
+  const finishOnboarding = useMemo(
+    () => ({
+      toolName: ONBOARDING_TOOL_NAMES.finishOnboarding,
+      description:
+        "Signal that onboarding is complete. Shows a 5-second countdown card, then navigates the user to the home feed.",
+      parameters: FinishOnboardingInputSchema,
       execute: (
         _input: unknown,
         context: { abortSignal?: AbortSignal; toolCallId: string },
@@ -606,6 +722,7 @@ export function OnboardingAssistantTools() {
   useAssistantTool(pickContentTypes);
   useAssistantTool(suggestTags);
   useAssistantTool(suggestBio);
+  useAssistantTool(finishOnboarding);
 
   return (
     <>
@@ -613,6 +730,7 @@ export function OnboardingAssistantTools() {
       <PickContentTypesToolUI />
       <SuggestTagsToolUI />
       <SuggestBioToolUI />
+      <FinishOnboardingToolUI />
     </>
   );
 }

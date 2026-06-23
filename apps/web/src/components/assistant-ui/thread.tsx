@@ -22,6 +22,8 @@ import {
   useAuiState,
 } from "@assistant-ui/react";
 import {
+  createContext,
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -34,7 +36,10 @@ import "@assistant-ui/react-markdown/styles/dot.css";
 
 import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import {
+  CompactMarkdownText,
+  MarkdownText,
+} from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { RailRow, ToolTimeline } from "@/components/assistant-ui/tool-timeline";
 import { isTimelineTool } from "@/lib/assistant/tool-timeline";
@@ -64,9 +69,30 @@ import { Separator } from "@/components/ui/separator";
 interface ThreadProps {
   scrollToEndKey?: unknown;
   footerContent?: ReactNode;
+  /** Replaces the default <ThreadWelcome /> shown while the thread is empty. */
+  emptyState?: ReactNode;
+  /** Overrides the composer input placeholder. */
+  composerPlaceholder?: string;
+  /** Hides the attachment button and model selector in the composer. */
+  hideComposerTools?: boolean;
+  /**
+   * Render rich (non-timeline) tools — e.g. the onboarding cards — connected on
+   * the activity rail instead of breaking out as detached full-width blocks.
+   */
+  richToolsOnRail?: boolean;
 }
 
-export function Thread({ scrollToEndKey, footerContent }: ThreadProps) {
+/** Whether rich tool UIs should be hung off the activity rail. */
+const RichToolsOnRailContext = createContext(false);
+
+export function Thread({
+  scrollToEndKey,
+  footerContent,
+  emptyState,
+  composerPlaceholder,
+  hideComposerTools,
+  richToolsOnRail = false,
+}: ThreadProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const threadId = useAuiState(
     (s) => s.threadListItem.remoteId ?? s.threadListItem.id,
@@ -91,33 +117,38 @@ export function Thread({ scrollToEndKey, footerContent }: ThreadProps) {
   }, [threadId, messageCount, scrollToEndKey]);
 
   return (
-    <ThreadPrimitive.Root className="flex flex-col h-full bg-background @container/thread">
-      <ThreadPrimitive.Viewport
-        ref={viewportRef}
-        turnAnchor="top"
-        className="flex overflow-y-scroll flex-col flex-1"
-      >
-        <AuiIf condition={(s) => s.thread.isEmpty}>
-          <ThreadWelcome />
-        </AuiIf>
+    <RichToolsOnRailContext.Provider value={richToolsOnRail}>
+      <ThreadPrimitive.Root className="flex flex-col h-full bg-background @container/thread">
+        <ThreadPrimitive.Viewport
+          ref={viewportRef}
+          turnAnchor="top"
+          className="flex overflow-y-scroll flex-col flex-1"
+        >
+          <AuiIf condition={(s) => s.thread.isEmpty}>
+            {emptyState ?? <ThreadWelcome />}
+          </AuiIf>
 
-        <ThreadPrimitive.Messages>
-          {({ message }) => {
-            if (message.composer.isEditing) return <EditComposer />;
-            if (message.role === "user") return <UserMessage />;
-            return <AssistantMessage />;
-          }}
-        </ThreadPrimitive.Messages>
+          <ThreadPrimitive.Messages>
+            {({ message }) => {
+              if (message.composer.isEditing) return <EditComposer />;
+              if (message.role === "user") return <UserMessage />;
+              return <AssistantMessage />;
+            }}
+          </ThreadPrimitive.Messages>
 
-        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
-          <ThreadScrollToBottom />
-          <AIContextIndicator />
-          {footerContent}
-          <PlanProgressBar />
-          <Composer />
-        </ThreadPrimitive.ViewportFooter>
-      </ThreadPrimitive.Viewport>
-    </ThreadPrimitive.Root>
+          <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
+            <ThreadScrollToBottom />
+            <AIContextIndicator />
+            {footerContent}
+            <PlanProgressBar />
+            <Composer
+              placeholder={composerPlaceholder}
+              hideTools={hideComposerTools}
+            />
+          </ThreadPrimitive.ViewportFooter>
+        </ThreadPrimitive.Viewport>
+      </ThreadPrimitive.Root>
+    </RichToolsOnRailContext.Provider>
   );
 }
 
@@ -230,7 +261,13 @@ function ThreadWelcome() {
   );
 }
 
-function Composer() {
+function Composer({
+  placeholder,
+  hideTools,
+}: {
+  placeholder?: string;
+  hideTools?: boolean;
+}) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -243,29 +280,36 @@ function Composer() {
 
   return (
     <ComposerPrimitive.Root className="flex flex-col w-full max-w-none @md/thread:max-w-2xl">
-      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background/80 backdrop-blur-md px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           id="thread-composer-input"
           ref={inputRef}
-          placeholder="Message AI assistant..."
+          placeholder={placeholder ?? "Message AI assistant..."}
           className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
           rows={1}
           autoFocus
         />
-        <ComposerAction />
+        <ComposerAction hideTools={hideTools} />
       </ComposerPrimitive.AttachmentDropzone>
     </ComposerPrimitive.Root>
   );
 }
 
-function ComposerAction() {
+function ComposerAction({ hideTools }: { hideTools?: boolean }) {
   return (
-    <div className="flex justify-between items-center mt-2">
-      <div className="flex items-center gap-2">
-        <ComposerAddAttachment />
-        <ModelSelector />
-      </div>
+    <div
+      className={cn(
+        "flex items-center mt-2",
+        hideTools ? "justify-end" : "justify-between",
+      )}
+    >
+      {!hideTools && (
+        <div className="flex items-center gap-2">
+          <ComposerAddAttachment />
+          <ModelSelector />
+        </div>
+      )}
 
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
@@ -289,7 +333,7 @@ function ComposerAction() {
 function ThreadScrollToBottom() {
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
-      <button className="p-2 rounded-full border shadow-md transition-opacity disabled:opacity-0 bg-background hover:bg-accent">
+      <button className="absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 rounded-full border shadow-md transition-opacity disabled:pointer-events-none disabled:opacity-0 bg-background/80 backdrop-blur-md hover:bg-accent p-2">
         <IconArrowDown className="size-4" />
       </button>
     </ThreadPrimitive.ScrollToBottom>
@@ -506,10 +550,12 @@ function ActivityAssistantMessage({
   isFirstInRun: boolean;
   isLastInRun: boolean;
 }) {
+  const richToolsOnRail = useContext(RichToolsOnRailContext);
+
   return (
     <MessagePrimitive.Root
       className={cn(
-        "relative mx-auto w-full max-w-2xl px-3 group",
+        "relative isolate mx-auto w-full max-w-2xl px-3 group",
         isFirstInRun ? "pt-4" : "pt-0",
         isLastInRun ? "pb-2" : "pb-0",
       )}
@@ -529,11 +575,15 @@ function ActivityAssistantMessage({
           // Tool steps, the (invisible) agent data that follows them, and the
           // assistant's intermediate narration all form one continuous rail.
           // The final answer (last message of the turn) is kept off the rail
-          // and rendered as prominent prose instead.
+          // and rendered as prominent prose instead. When richToolsOnRail is
+          // set, rich tool UIs (e.g. onboarding cards) join the rail too.
           if (
-            (part.type === "tool-call" && isTimelineTool(part.toolName)) ||
+            (part.type === "tool-call" &&
+              (isTimelineTool(part.toolName) || richToolsOnRail)) ||
             part.type === "data" ||
-            (part.type === "text" && !isLastInRun)
+            // On the rich-tools rail every text part stays on the rail so the
+            // narration connects to the cards into one continuous timeline.
+            (part.type === "text" && (!isLastInRun || richToolsOnRail))
           )
             return ["group-tool-timeline"];
           return null;
@@ -554,12 +604,31 @@ function ActivityAssistantMessage({
                   {children}
                 </ChainOfThoughtGroup>
               );
-            case "text":
+            case "text": {
+              if (!part.text.trim()) return null;
+
+              // On the rich-tools rail the narration is primary content (the
+              // agent talking to the user), so it gets a prominent foreground
+              // row with a step dot that connects down to the next card.
+              if (richToolsOnRail) {
+                return (
+                  <RailRow
+                    node={
+                      <span className="size-2.5 rounded-full bg-primary" />
+                    }
+                  >
+                    <div className="pt-0.5 text-sm leading-relaxed wrap-break-word text-foreground">
+                      <MarkdownText />
+                    </div>
+                  </RailRow>
+                );
+              }
+
               // Intermediate narration is a "thought" step on the rail; the
               // final answer renders as normal prose below the rail.
               return isLastInRun ? (
-                <div className="mt-2 pl-9 text-sm leading-relaxed wrap-break-word text-foreground">
-                  <MarkdownText />
+                <div className="pl-9 text-sm leading-relaxed wrap-break-word text-foreground">
+                  <CompactMarkdownText />
                 </div>
               ) : (
                 <RailRow
@@ -572,10 +641,27 @@ function ActivityAssistantMessage({
                   </div>
                 </RailRow>
               );
+            }
             case "source":
               return isLastInRun ? <Sources {...part} /> : null;
-            case "tool-call":
-              return part.toolUI ?? <ToolFallback {...part} />;
+            case "tool-call": {
+              const toolContent = part.toolUI ?? <ToolFallback {...part} />;
+              // Rich tools (onboarding cards, charts) keep their full UI but
+              // hang off the rail with a step dot, so the activity stays one
+              // connected timeline rather than a detached block.
+              if (richToolsOnRail && !isTimelineTool(part.toolName)) {
+                return (
+                  <RailRow
+                    node={
+                      <span className="size-2.5 rounded-full bg-primary" />
+                    }
+                  >
+                    {toolContent}
+                  </RailRow>
+                );
+              }
+              return toolContent;
+            }
             case "data":
               return part.dataRendererUI ?? null;
             default:
@@ -588,7 +674,7 @@ function ActivityAssistantMessage({
         <div className="pl-9">
           <MessageError />
           <AuiIf condition={(s) => s.message.isLast}>
-            <MessageRunStatus />
+            <MessageRunStatus className="mt-2" />
           </AuiIf>
 
           <div className="mt-1 flex items-center gap-2">
@@ -608,7 +694,7 @@ function ActivityAssistantMessage({
  * finished transition, so it only appears for responses generated this session
  * (not historical messages restored on load).
  */
-function MessageRunStatus() {
+function MessageRunStatus({ className }: { className?: string } = {}) {
   const isRunning = useAuiState((s) => s.thread.isRunning);
   const startRef = useRef<number | null>(null);
   const [durationMs, setDurationMs] = useState<number | null>(null);
@@ -623,9 +709,9 @@ function MessageRunStatus() {
     }
   }, [isRunning]);
 
-  if (isRunning) return <ThinkingIndicator />;
+  if (isRunning) return <ThinkingIndicator className={className} />;
   if (durationMs == null) return null;
-  return <FinishedIndicator durationMs={durationMs} />;
+  return <FinishedIndicator durationMs={durationMs} className={className} />;
 }
 
 function MessageError() {
