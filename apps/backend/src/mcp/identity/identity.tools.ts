@@ -204,7 +204,11 @@ export class IdentityTools {
     }),
   })
   async searchUsers(
-    { query, limit, offset }: { query: string; limit: number; offset: number },
+    {
+      query,
+      limit,
+      offset = 0,
+    }: { query: string; limit: number; offset?: number },
     _context: Context,
     request: any,
   ) {

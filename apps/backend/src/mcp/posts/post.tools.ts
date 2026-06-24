@@ -234,8 +234,8 @@ export class PostTools {
     parameters: z.object({
       userId: z
         .string()
-        .uuid()
-        .describe("The UUID of the user whose posts to retrieve"),
+        .min(1)
+        .describe("The ID of the user whose posts to retrieve"),
     }),
   })
   async getPostsByUser(
