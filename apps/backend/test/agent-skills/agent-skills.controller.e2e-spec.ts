@@ -2,6 +2,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import { Pool } from "pg";
 
+import { DEFAULT_AGENT_SKILLS } from "@/agent-skills/default-agent-skills";
+
 import { closeTestApp, createTestApp } from "../helpers/app.setup";
 import { registerAndGetSession } from "../helpers/auth.helper";
 import { runBetterAuthMigrations } from "../helpers/database.setup";
@@ -61,8 +63,18 @@ describe("Agent skills controller", () => {
       .expect(200);
 
     expect(res.body.items.length).toBeGreaterThan(0);
+    expect(res.body.items).toHaveLength(DEFAULT_AGENT_SKILLS.length);
     expect(res.body.items.every((s: { isDefault: boolean }) => s.isDefault)).toBe(
       true,
+    );
+    expect(res.body.items.map((s: { name: string }) => s.name)).toEqual(
+      expect.arrayContaining([
+        "Create a New Post",
+        "Publish Provided Post",
+        "Execute Code",
+        "Debug Code",
+        "Apply Saved Skill",
+      ]),
     );
 
     // A second call must not duplicate the defaults.
