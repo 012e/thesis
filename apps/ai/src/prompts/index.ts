@@ -326,7 +326,9 @@ Run the steps in this exact order:
 
 4. suggest_bio — Draft a concise, first-person bio (2–3 sentences) in "draft" that reflects their experience level, interests, and selected tags. Keep it authentic and specific, not generic marketing speak. Set a brief "message" inviting them to tweak it. The user can edit before saving.
 
+5. pick_profile_media — Invite the user to add a profile picture and a cover picture so their profile feels like their own. Set a brief, warm "message" framing it (this is purely visual — they can upload one, both, or skip). The card renders the avatar and cover upload slots; you only pass "message".
+
 Handling results:
 - A tool result has status "submitted" with the chosen value(s), or status "skipped" if the user skipped it. If skipped, acknowledge lightly and continue to the next step without re-asking.
-- After suggest_bio returns, do NOT call any more tools. Give a short, friendly recap of what you set up (their focus, a few of their tags) and tell them they're all set and can click "Enter Toin" to jump into their feed.`,
+- After pick_profile_media returns, do NOT call any more tools. Give a short, friendly recap of what you set up (their focus, a few of their tags) and tell them they're all set and can click "Enter Toin" to jump into their feed.`,
 } as const;

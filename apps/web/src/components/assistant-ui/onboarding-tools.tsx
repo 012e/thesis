@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   makeAssistantToolUI,
   useAssistantInstructions,
@@ -6,8 +6,11 @@ import {
 } from "@assistant-ui/react";
 import {
   IconArrowRight,
+  IconCamera,
   IconCheck,
   IconHash,
+  IconLoader2,
+  IconPhoto,
   IconPlus,
   IconRocket,
   IconSparkles,
@@ -16,6 +19,7 @@ import {
 } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +28,7 @@ import {
   ChooseExperienceInputSchema,
   FinishOnboardingInputSchema,
   PickContentTypesInputSchema,
+  PickProfileMediaInputSchema,
   SuggestBioInputSchema,
   SuggestTagsInputSchema,
   awaitOnboardingResponse,
@@ -32,7 +37,8 @@ import {
   type OnboardingResult,
 } from "@/lib/assistant/onboarding-tools";
 import { setMyTagPreference } from "@/lib/api/tags";
-import { updateUserProfile } from "@/lib/api/users";
+import { uploadImages } from "@/lib/api/uploads";
+import { updateAvatar, updateCoverPhoto, updateUserProfile } from "@/lib/api/users";
 import { cn } from "@/lib/utils";
 
 // ── Loose arg readers (args may stream in / be partial) ─────────────────────
@@ -134,6 +140,13 @@ function AnsweredSummary({
   else if (result && "tags" in result)
     detail = result.tags.map((t) => `#${t}`).join("  ");
   else if (result && "bio" in result) detail = result.bio;
+  else if (result && "avatarUrl" in result) {
+    const parts = [
+      result.avatarUrl ? "Profile picture" : null,
+      result.coverPhotoUrl ? "Cover picture" : null,
+    ].filter(Boolean);
+    detail = parts.length > 0 ? `${parts.join(" and ")} set` : "Saved";
+  }
 
   return (
     <div className="flex w-full items-start gap-2 border border-border bg-muted/40 px-4 py-3 text-sm">
@@ -496,7 +509,181 @@ function SuggestBioCard({
   );
 }
 
-// ── 5. finish_onboarding (countdown → navigate) ───────────────────────────────
+// ── 5. pick_profile_media (avatar + cover upload) ────────────────────────────
+
+type MediaSlotState = {
+  url: string | null;
+  isUploading: boolean;
+  error: string | null;
+};
+
+const EMPTY_SLOT: MediaSlotState = {
+  url: null,
+  isUploading: false,
+  error: null,
+};
+
+function PickProfileMediaCard({
+  toolCallId,
+  args,
+}: {
+  toolCallId: string;
+  args: unknown;
+}) {
+  const message = isRecord(args) ? readString(args.message) : undefined;
+
+  const [avatar, setAvatar] = useState<MediaSlotState>(EMPTY_SLOT);
+  const [cover, setCover] = useState<MediaSlotState>(EMPTY_SLOT);
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePick = async (
+    file: File | undefined,
+    setSlot: React.Dispatch<React.SetStateAction<MediaSlotState>>,
+  ) => {
+    if (!file) return;
+
+    setSlot((current) => ({ ...current, isUploading: true, error: null }));
+    try {
+      const result = await uploadImages([file]);
+      const uploaded = result.images[0];
+      if (!uploaded) throw new Error("Upload returned no image");
+      setSlot({ url: uploaded.url, isUploading: false, error: null });
+    } catch (err) {
+      setSlot({
+        url: null,
+        isUploading: false,
+        error:
+          err instanceof Error ? err.message : "Upload failed. Try again.",
+      });
+    }
+  };
+
+  const isUploading = avatar.isUploading || cover.isUploading;
+  const hasSelection = Boolean(avatar.url) || Boolean(cover.url);
+
+  return (
+    <CardShell
+      icon={IconCamera}
+      title="Your profile pictures"
+      message={message}
+    >
+      {/* Cover + avatar preview */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => coverInputRef.current?.click()}
+          disabled={isUploading}
+          aria-label="Choose a cover picture"
+          className="group relative flex h-32 w-full items-center justify-center overflow-hidden border border-border bg-muted/40 transition-colors hover:bg-accent disabled:cursor-not-allowed"
+        >
+          {cover.url ? (
+            <img
+              src={cover.url}
+              alt="Cover preview"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
+              <IconPhoto className="size-6" />
+              Add a cover picture
+            </span>
+          )}
+          {cover.isUploading ? (
+            <span className="absolute inset-0 flex items-center justify-center bg-black/40">
+              <IconLoader2 className="size-6 animate-spin text-white" />
+            </span>
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <IconCamera className="size-6 text-white" />
+            </span>
+          )}
+        </button>
+
+        {/* Avatar overlaps the bottom-left of the cover */}
+        <button
+          type="button"
+          onClick={() => avatarInputRef.current?.click()}
+          disabled={isUploading}
+          aria-label="Choose a profile picture"
+          className="group absolute -bottom-5 left-4 cursor-pointer disabled:cursor-not-allowed"
+        >
+          <Avatar className="size-20 border-4 border-background">
+            <AvatarImage src={avatar.url ?? undefined} alt="Profile preview" />
+            <AvatarFallback className="bg-muted">
+              <IconUserCircle className="size-8 text-muted-foreground" />
+            </AvatarFallback>
+          </Avatar>
+          {avatar.isUploading ? (
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+              <IconLoader2 className="size-5 animate-spin text-white" />
+            </span>
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <IconCamera className="size-5 text-white" />
+            </span>
+          )}
+        </button>
+      </div>
+
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          void handlePick(event.target.files?.[0], setAvatar);
+          event.target.value = "";
+        }}
+      />
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          void handlePick(event.target.files?.[0], setCover);
+          event.target.value = "";
+        }}
+      />
+
+      <div className="pt-5">
+        {(avatar.error || cover.error) && (
+          <p className="text-xs text-red-500">{avatar.error ?? cover.error}</p>
+        )}
+        <p className="text-xs text-muted-foreground">
+          Tap the circle for your profile picture and the banner for your cover.
+        </p>
+      </div>
+
+      <div className="flex items-center justify-between gap-3 pt-1">
+        <SkipButton
+          onSkip={() =>
+            resolveOnboardingResponse(toolCallId, { status: "skipped" })
+          }
+        />
+        <Button
+          type="button"
+          size="sm"
+          disabled={isUploading || !hasSelection}
+          onClick={() =>
+            resolveOnboardingResponse(toolCallId, {
+              status: "submitted",
+              avatarUrl: avatar.url,
+              coverPhotoUrl: cover.url,
+            })
+          }
+        >
+          <IconCheck className="size-4" />
+          Save pictures
+        </Button>
+      </div>
+    </CardShell>
+  );
+}
+
+// ── 6. finish_onboarding (countdown → navigate) ───────────────────────────────
 
 function FinishOnboardingCard({
   toolCallId,
@@ -594,6 +781,16 @@ const SuggestBioToolUI = makeAssistantToolUI({
     ),
 });
 
+const PickProfileMediaToolUI = makeAssistantToolUI({
+  toolName: ONBOARDING_TOOL_NAMES.pickProfileMedia,
+  render: ({ args, status, toolCallId, result }) =>
+    status.type === "running" ? (
+      <PickProfileMediaCard toolCallId={toolCallId} args={args} />
+    ) : (
+      <AnsweredSummary icon={IconCamera} result={asResult(result)} />
+    ),
+});
+
 const FinishOnboardingToolUI = makeAssistantToolUI({
   toolName: ONBOARDING_TOOL_NAMES.finishOnboarding,
   render: ({ args, status, toolCallId, result }) =>
@@ -610,7 +807,7 @@ const FinishOnboardingToolUI = makeAssistantToolUI({
  */
 export function OnboardingAssistantTools() {
   useAssistantInstructions(
-    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio) and wait for each result before continuing. When all steps are done, call finish_onboarding.",
+    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio, pick_profile_media) and wait for each result before continuing. When all steps are done, call finish_onboarding.",
   );
 
   const chooseExperience = useMemo(
@@ -704,6 +901,33 @@ export function OnboardingAssistantTools() {
     [],
   );
 
+  const pickProfileMedia = useMemo(
+    () => ({
+      toolName: ONBOARDING_TOOL_NAMES.pickProfileMedia,
+      description:
+        "Invite the user to pick a profile picture and a cover picture. Renders an interactive card with avatar and cover upload slots.",
+      parameters: PickProfileMediaInputSchema,
+      execute: async (
+        _input: unknown,
+        context: { abortSignal?: AbortSignal; toolCallId: string },
+      ) => {
+        const result = await awaitOnboardingResponse(
+          context.toolCallId,
+          context.abortSignal,
+        );
+        if (result.status === "submitted" && "avatarUrl" in result) {
+          const updates: Promise<unknown>[] = [];
+          if (result.avatarUrl) updates.push(updateAvatar(result.avatarUrl));
+          if (result.coverPhotoUrl)
+            updates.push(updateCoverPhoto(result.coverPhotoUrl));
+          await Promise.allSettled(updates);
+        }
+        return result;
+      },
+    }),
+    [],
+  );
+
   const finishOnboarding = useMemo(
     () => ({
       toolName: ONBOARDING_TOOL_NAMES.finishOnboarding,
@@ -722,6 +946,7 @@ export function OnboardingAssistantTools() {
   useAssistantTool(pickContentTypes);
   useAssistantTool(suggestTags);
   useAssistantTool(suggestBio);
+  useAssistantTool(pickProfileMedia);
   useAssistantTool(finishOnboarding);
 
   return (
@@ -730,6 +955,7 @@ export function OnboardingAssistantTools() {
       <PickContentTypesToolUI />
       <SuggestTagsToolUI />
       <SuggestBioToolUI />
+      <PickProfileMediaToolUI />
       <FinishOnboardingToolUI />
     </>
   );
