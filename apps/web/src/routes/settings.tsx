@@ -13,6 +13,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Mascot } from "@/components/mascot";
 import {
   Card,
   CardContent,
@@ -35,10 +36,13 @@ import { useToast as toast } from "@/hooks/use-toast";
 import { changePassword, updateProfile } from "@/lib/auth";
 import { formatDate } from "@/components/admin/types";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
+import { AgentSkillsTab } from "./-settings-agent-skills";
 
 const settingsSearchSchema = z.object({
-  tab: z.enum(["account-security", "interests"]).optional(),
+  tab: z.enum(["account-security", "interests", "agent-skills"]).optional(),
 });
+
+type SettingsTab = "account-security" | "interests" | "agent-skills";
 
 export const Route = createFileRoute("/settings")({
   validateSearch: settingsSearchSchema,
@@ -79,7 +83,7 @@ function SettingsPage() {
     return <PageSpinner />;
   }
 
-  const handleTabChange = (nextTab: "account-security" | "interests") => {
+  const handleTabChange = (nextTab: SettingsTab) => {
     void navigate({
       search: { tab: nextTab === "account-security" ? undefined : nextTab },
       replace: true,
@@ -115,6 +119,14 @@ function SettingsPage() {
             <IconHash />
             Interests
           </TabsTrigger>
+          <TabsTrigger
+            value="agent-skills"
+            className="px-2.5 py-1.5"
+            onClick={() => handleTabChange("agent-skills")}
+          >
+            <Mascot className="size-5" />
+            Agent Skills
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent
@@ -125,6 +137,9 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="interests" className="space-y-4 text-sm/relaxed">
           <InterestsTab />
+        </TabsContent>
+        <TabsContent value="agent-skills" className="space-y-4 text-sm/relaxed">
+          <AgentSkillsTab />
         </TabsContent>
       </Tabs>
     </main>

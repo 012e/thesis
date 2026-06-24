@@ -6,7 +6,6 @@ import {
 import { z } from "zod";
 
 import { ChatToolStateSync } from "@/components/assistant-ui/chat-tool-state-sync";
-import { FormToolUIs } from "@/components/assistant-ui/chat-tool-uis";
 import { useChatState } from "@/hooks/use-chat-state";
 import { requestFormSubmission } from "@/lib/assistant/form-submission";
 import { useAssistantPageReady } from "@/lib/assistant/page-readiness";
@@ -104,9 +103,6 @@ export function ChatPageAssistantTools() {
   useAssistantPageReady("chat");
 
   return (
-    <>
-      <FormToolUIs />
-      <ChatToolStateSync syncForms syncPlans={false} />
-    </>
+    <ChatToolStateSync syncForms syncPlans={false} />
   );
 }

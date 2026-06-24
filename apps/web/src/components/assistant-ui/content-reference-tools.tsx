@@ -11,7 +11,11 @@ import {
 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useSetAtom } from "jotai";
 import { z } from "zod";
+
+import { RailRow } from "@/components/assistant-ui/tool-timeline";
+import { isGlobalChatOpenAtom } from "@/lib/atoms/global-chat";
 
 const RenderPostInput = z.object({
   postId: z.string().uuid().describe("The UUID of the post to display"),
@@ -36,12 +40,16 @@ const RenderPostToolUI = makeAssistantToolUI({
     if (typeof args.postId !== "string") return null;
 
     return (
-      <ContentReferenceLink
-        postId={args.postId}
-        icon={IconNote}
-        label="View post"
-        preview={typeof args.preview === "string" ? args.preview : undefined}
-      />
+      <RailRow
+        node={<IconNote className="size-4 text-foreground" />}
+        contentClassName="pt-0.5"
+      >
+        <ContentReferenceLink
+          postId={args.postId}
+          label="View post"
+          preview={typeof args.preview === "string" ? args.preview : undefined}
+        />
+      </RailRow>
     );
   },
 });
@@ -57,13 +65,17 @@ const RenderCommentToolUI = makeAssistantToolUI({
     }
 
     return (
-      <ContentReferenceLink
-        postId={args.postId}
-        commentId={args.commentId}
-        icon={IconMessageCircle}
-        label="View comment"
-        preview={typeof args.preview === "string" ? args.preview : undefined}
-      />
+      <RailRow
+        node={<IconMessageCircle className="size-4 text-foreground" />}
+        contentClassName="pt-0.5"
+      >
+        <ContentReferenceLink
+          postId={args.postId}
+          commentId={args.commentId}
+          label="View comment"
+          preview={typeof args.preview === "string" ? args.preview : undefined}
+        />
+      </RailRow>
     );
   },
 });
@@ -134,24 +146,24 @@ export function ContentReferenceAssistantTools() {
 function ContentReferenceLink({
   postId,
   commentId,
-  icon: Icon,
   label,
   preview,
 }: {
   postId: string;
   commentId?: string;
-  icon: typeof IconNote;
   label: string;
   preview?: string;
 }) {
+  const setIsGlobalChatOpen = useSetAtom(isGlobalChatOpenAtom);
+
   return (
     <Link
       to="/posts/$postId"
       params={{ postId }}
       search={commentId ? { commentId } : {}}
+      onClick={() => setIsGlobalChatOpen(false)}
       className="flex w-full items-center gap-3 border border-border bg-background px-4 py-3 transition-colors hover:bg-accent/50"
     >
-      <Icon className="size-4 shrink-0 text-foreground" />
       <span className="min-w-0 grow">
         <span className="block text-sm font-medium text-foreground">
           {label}

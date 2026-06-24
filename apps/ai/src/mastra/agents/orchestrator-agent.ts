@@ -9,6 +9,7 @@ import { POST_DRAFTING_AGENT_CONFIG } from "./post-drafting-agent";
 import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
 import { SOCIAL_MEDIA_AGENT_CONFIG } from "./social-media-agent";
+import { AGENT_SKILLS_AGENT_CONFIG } from "./agent-skills-agent";
 import {
   getOrchestratorModelConfig,
   MODEL_CONFIG,
@@ -23,10 +24,10 @@ import { createGetContextTool } from "../tools/context";
  * Because MCP toolsets carry per-request auth tokens, sub-agents cannot be
  * constructed once at module load time. Instead this factory:
  *
- * 1. Fetches all five MCP toolsets using the current request's auth context.
- * 2. Constructs the consolidated social-media-agent with all five toolsets
- *    merged in, plus the tool-free/content sub-agents (drafting, search,
- *    navigation, planning).
+ * 1. Fetches all six MCP toolsets using the current request's auth context.
+ * 2. Constructs the consolidated social-media-agent (five toolsets merged in),
+ *    a dedicated agent-skills-agent (the agent-skills toolset), plus the
+ *    tool-free/content sub-agents (drafting, search, navigation, planning).
  * 3. Returns an orchestrator (supervisor) agent that has all sub-agents
  *    registered. Use `stepJudgeAgent` separately to evaluate whether the
  *    orchestrator fully completed the user's requested steps.
@@ -52,6 +53,7 @@ export async function createOrchestratorAgent(
     interactionsToolset,
     postManagementToolset,
     tagsToolset,
+    agentSkillsToolset,
   } = await getSocialMcpToolsets(context);
 
   const getContextTool = createGetContextTool(userContext);
@@ -59,7 +61,7 @@ export async function createOrchestratorAgent(
   // ── 2. Build specialised sub-agents with their tools baked in ──────────
 
   // Consolidated backend specialist owning identity, discovery, engagement,
-  // post management, and tags — all five MCP toolsets merged into one agent.
+  // post management, and tags — five MCP toolsets merged into one agent.
   // Tool names are unique across the MCP servers, so the spread cannot collide.
   const socialMediaAgent = new Agent({
     ...SOCIAL_MEDIA_AGENT_CONFIG,
@@ -71,6 +73,14 @@ export async function createOrchestratorAgent(
       ...postManagementToolset,
       ...tagsToolset,
     },
+  });
+
+  // Dedicated specialist for the user's reusable agent-skill library, visible to
+  // the orchestrator as its own delegate.
+  const agentSkillsAgent = new Agent({
+    ...AGENT_SKILLS_AGENT_CONFIG,
+    model: MODEL_CONFIG.AGENT_SKILLS_AGENT.model,
+    tools: agentSkillsToolset,
   });
 
   const postCreationAgent = new Agent({
@@ -111,6 +121,7 @@ export async function createOrchestratorAgent(
     model: orchestratorModelConfig.model,
     agents: {
       socialMediaAgent,
+      agentSkillsAgent,
       // postCreationAgent,
       postDraftingAgent,
       searchAgent,

@@ -2,17 +2,19 @@ import { makeAssistantToolUI, useAuiState } from "@assistant-ui/react";
 import { useAtomValue } from "jotai";
 import type { ComponentType } from "react";
 import {
+  IconAlertTriangle,
   IconCheck,
-  IconCircleDashedCheck,
   IconEdit,
-  IconFileCheck,
-  IconLoader2,
+  IconForms,
   IconListCheck,
-  IconPencil,
+  IconLoader2,
   IconQuestionMark,
+  IconSend,
+  IconWriting,
 } from "@tabler/icons-react";
 
 import { UserContextQuestionnaireByRequestId } from "@/components/assistant-ui/user-context-questionnaire";
+import { RailRow, ToolStep } from "@/components/assistant-ui/tool-timeline";
 import { planStatesAtom } from "@/lib/atoms/plan-state";
 import { cn } from "@/lib/utils";
 
@@ -34,63 +36,67 @@ function formatIdentifier(value: string) {
   return words ? words.charAt(0).toUpperCase() + words.slice(1) : value;
 }
 
-export function ToolTrace({
-  icon: Icon,
-  label,
-  detail,
-  state,
-}: ToolTraceProps) {
-  const isRunning = state === "running";
+function formatFormName(value: unknown) {
+  return typeof value === "string" ? formatIdentifier(value) : "Form";
+}
 
-  return (
-    <div
-      data-slot="tool-trace"
-      className={cn(
-        "flex w-full items-center gap-2 border bg-background px-4 py-3 text-sm leading-none",
-        isRunning
-          ? "border-primary/30 text-primary"
-          : "border-border text-muted-foreground",
-      )}
-    >
-      {isRunning ? (
-        <IconLoader2 className="size-4 shrink-0 animate-spin" />
-      ) : (
-        <Icon className="size-4 shrink-0 text-foreground" />
-      )}
-      <span className="min-w-0 grow truncate text-left text-foreground">
-        {label}
-        {detail && (
-          <>
-            :{" "}
-            <span className="font-medium text-muted-foreground">{detail}</span>
-          </>
-        )}
-      </span>
-    </div>
-  );
+function formatFieldName(value: unknown) {
+  if (typeof value !== "string") return "Form field";
+
+  const labels: Record<string, string> = {
+    content: "Post content",
+    kind: "Post type",
+    showPollCreator: "Poll",
+    poll: "Poll options",
+  };
+
+  return labels[value] ?? formatIdentifier(value);
+}
+
+function summarizeFieldValue(field: unknown, value: unknown) {
+  if (field === "showPollCreator" && typeof value === "boolean") {
+    return value ? "Enabled" : "Disabled";
+  }
+
+  if (field === "poll") {
+    return "Poll configuration updated";
+  }
+
+  if (typeof value === "string") {
+    const normalized = value.replace(/\s+/g, " ").trim();
+    if (!normalized) return "Cleared";
+    return normalized.length > 72 ? `${normalized.slice(0, 69)}…` : normalized;
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+
+  return undefined;
+}
+
+export function ToolTrace({ icon, label, detail, state }: ToolTraceProps) {
+  return <ToolStep icon={icon} label={label} detail={detail} state={state} />;
 }
 
 const OpenFormToolUIImpl = makeAssistantToolUI({
   toolName: "open_form",
   render: ({ args, status }) => {
-    const formName =
-      typeof args.formName === "string"
-        ? formatIdentifier(args.formName)
-        : "Form";
+    const formName = formatFormName(args.formName);
 
     if (status.type === "running")
       return (
         <ToolTrace
-          icon={IconFileCheck}
-          label="Opening form"
+          icon={IconForms}
+          label={`Opening ${formName.toLowerCase()}`}
           detail={formName}
           state="running"
         />
       );
     return (
       <ToolTrace
-        icon={IconFileCheck}
-        label="Opened form"
+        icon={IconForms}
+        label={`Opened ${formName.toLowerCase()}`}
         detail={formName}
         state="complete"
       />
@@ -105,22 +111,23 @@ export function OpenFormToolUI() {
 const SetFormFieldToolUIImpl = makeAssistantToolUI({
   toolName: "set_form_field",
   render: ({ args, status }) => {
-    const field = typeof args.field === "string" ? args.field : "field";
+    const field = formatFieldName(args.field);
+    const value = summarizeFieldValue(args.field, args.value);
 
     if (status.type === "running")
       return (
         <ToolTrace
-          icon={IconPencil}
-          label="Updating field"
-          detail={field}
+          icon={IconWriting}
+          label={`Updating ${field.toLowerCase()}`}
+          detail={value ?? field}
           state="running"
         />
       );
     return (
       <ToolTrace
-        icon={IconPencil}
-        label="Updated field"
-        detail={field}
+        icon={IconWriting}
+        label={`Updated ${field.toLowerCase()}`}
+        detail={value ?? field}
         state="complete"
       />
     );
@@ -133,12 +140,15 @@ export function SetFormFieldToolUI() {
 
 const SubmitFormToolUIImpl = makeAssistantToolUI({
   toolName: "submit_form",
-  render: ({ result, status }) => {
+  render: ({ args, result, status }) => {
+    const formName = formatFormName(args.formName);
+
     if (status.type === "running")
       return (
         <ToolTrace
-          icon={IconCircleDashedCheck}
-          label="Submitting form"
+          icon={IconSend}
+          label="Creating post"
+          detail={formName}
           state="running"
         />
       );
@@ -147,8 +157,9 @@ const SubmitFormToolUIImpl = makeAssistantToolUI({
 
     return (
       <ToolTrace
-        icon={IconCircleDashedCheck}
+        icon={IconSend}
         label={postCreated ? "Post created" : "Form submitted"}
+        detail={formName}
         state="complete"
       />
     );
@@ -266,31 +277,52 @@ const RequestUserContextToolUIImpl = makeAssistantToolUI({
         ? result.error
         : undefined;
 
+    const running = status.type === "running";
+    const label = running
+      ? "Waiting for your answers"
+      : isError
+        ? "Questionnaire failed"
+        : cancelled
+          ? "Questionnaire cancelled"
+          : "Context provided";
+
     return (
-      <div className="space-y-2">
-        <ToolTrace
-          icon={IconQuestionMark}
-          label={
-            status.type === "running"
-              ? "Waiting for your answers"
-              : isError
-                ? "Questionnaire failed"
-              : cancelled
-                ? "Questionnaire cancelled"
-                : "Context provided"
-          }
-          detail={title}
-          state={status.type === "running" ? "running" : "complete"}
-        />
-        {status.type === "running" && (
-          <UserContextQuestionnaireByRequestId requestId={toolCallId} />
+      <RailRow
+        node={
+          running ? (
+            <IconLoader2 className="size-4 animate-spin text-primary" />
+          ) : isError ? (
+            <IconAlertTriangle className="size-4 text-destructive" />
+          ) : (
+            <IconQuestionMark className="size-4 text-foreground" />
+          )
+        }
+        contentClassName="pt-0.5"
+      >
+        <div
+          className={cn(
+            "text-sm leading-snug",
+            isError ? "text-destructive" : "text-foreground",
+          )}
+        >
+          {label}
+        </div>
+        <div className="mt-1">
+          <span className="inline-flex max-w-full items-center truncate bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+            {title}
+          </span>
+        </div>
+        {running && (
+          <div className="mt-2">
+            <UserContextQuestionnaireByRequestId requestId={toolCallId} />
+          </div>
         )}
         {error && (
-          <p className="border border-destructive/40 bg-destructive/5 px-4 py-3 text-xs text-destructive">
+          <p className="mt-2 border border-destructive/40 bg-destructive/5 px-4 py-3 text-xs text-destructive">
             {error}
           </p>
         )}
-      </div>
+      </RailRow>
     );
   },
 });

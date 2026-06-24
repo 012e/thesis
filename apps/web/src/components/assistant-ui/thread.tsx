@@ -8,8 +8,8 @@ import {
   IconArrowDown,
   IconEdit,
   IconRefresh,
-  IconRobot,
   IconDownload,
+  IconMessage2,
 } from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
@@ -22,17 +22,27 @@ import {
   useAuiState,
 } from "@assistant-ui/react";
 import {
+  createContext,
+  useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
+  useState,
   type ReactNode,
   type PropsWithChildren,
 } from "react";
 import "@assistant-ui/react-markdown/styles/dot.css";
 
+import { Mascot } from "@/components/mascot";
 import { Button } from "@/components/ui/button";
-import { MarkdownText } from "@/components/assistant-ui/markdown-text";
+import {
+  CompactMarkdownText,
+  MarkdownText,
+} from "@/components/assistant-ui/markdown-text";
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
+import { RailRow, ToolTimeline } from "@/components/assistant-ui/tool-timeline";
+import { isTimelineTool } from "@/lib/assistant/tool-timeline";
 import {
   Reasoning,
   ReasoningContent,
@@ -50,14 +60,39 @@ import { cn } from "@/lib/utils";
 import { ModelSelector } from "@/components/assistant-ui/model-selector";
 import { PlanProgressBar } from "@/components/assistant-ui/plan-progress";
 import { AIContextIndicator } from "@/components/assistant-ui/context-indicator";
+import {
+  FinishedIndicator,
+  ThinkingIndicator,
+} from "@/components/assistant-ui/thinking-indicator";
 import { Separator } from "@/components/ui/separator";
 
 interface ThreadProps {
   scrollToEndKey?: unknown;
   footerContent?: ReactNode;
+  /** Replaces the default <ThreadWelcome /> shown while the thread is empty. */
+  emptyState?: ReactNode;
+  /** Overrides the composer input placeholder. */
+  composerPlaceholder?: string;
+  /** Hides the attachment button and model selector in the composer. */
+  hideComposerTools?: boolean;
+  /**
+   * Render rich (non-timeline) tools — e.g. the onboarding cards — connected on
+   * the activity rail instead of breaking out as detached full-width blocks.
+   */
+  richToolsOnRail?: boolean;
 }
 
-export function Thread({ scrollToEndKey, footerContent }: ThreadProps) {
+/** Whether rich tool UIs should be hung off the activity rail. */
+const RichToolsOnRailContext = createContext(false);
+
+export function Thread({
+  scrollToEndKey,
+  footerContent,
+  emptyState,
+  composerPlaceholder,
+  hideComposerTools,
+  richToolsOnRail = false,
+}: ThreadProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const threadId = useAuiState(
     (s) => s.threadListItem.remoteId ?? s.threadListItem.id,
@@ -82,33 +117,38 @@ export function Thread({ scrollToEndKey, footerContent }: ThreadProps) {
   }, [threadId, messageCount, scrollToEndKey]);
 
   return (
-    <ThreadPrimitive.Root className="flex flex-col h-full bg-background @container/thread">
-      <ThreadPrimitive.Viewport
-        ref={viewportRef}
-        turnAnchor="top"
-        className="flex overflow-y-scroll flex-col flex-1"
-      >
-        <AuiIf condition={(s) => s.thread.isEmpty}>
-          <ThreadWelcome />
-        </AuiIf>
+    <RichToolsOnRailContext.Provider value={richToolsOnRail}>
+      <ThreadPrimitive.Root className="flex flex-col h-full bg-background @container/thread">
+        <ThreadPrimitive.Viewport
+          ref={viewportRef}
+          turnAnchor="top"
+          className="flex overflow-y-scroll flex-col flex-1"
+        >
+          <AuiIf condition={(s) => s.thread.isEmpty}>
+            {emptyState ?? <ThreadWelcome />}
+          </AuiIf>
 
-        <ThreadPrimitive.Messages>
-          {({ message }) => {
-            if (message.composer.isEditing) return <EditComposer />;
-            if (message.role === "user") return <UserMessage />;
-            return <AssistantMessage />;
-          }}
-        </ThreadPrimitive.Messages>
+          <ThreadPrimitive.Messages>
+            {({ message }) => {
+              if (message.composer.isEditing) return <EditComposer />;
+              if (message.role === "user") return <UserMessage />;
+              return <AssistantMessage />;
+            }}
+          </ThreadPrimitive.Messages>
 
-        <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full bg-background px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
-          <ThreadScrollToBottom />
-          <AIContextIndicator />
-          {footerContent}
-          <PlanProgressBar />
-          <Composer />
-        </ThreadPrimitive.ViewportFooter>
-      </ThreadPrimitive.Viewport>
-    </ThreadPrimitive.Root>
+          <ThreadPrimitive.ViewportFooter className="flex sticky bottom-0 flex-col gap-2 items-center mt-auto w-full px-3 pb-3 @md/thread:px-4 @md/thread:pb-4">
+            <ThreadScrollToBottom />
+            <AIContextIndicator />
+            {footerContent}
+            <PlanProgressBar />
+            <Composer
+              placeholder={composerPlaceholder}
+              hideTools={hideComposerTools}
+            />
+          </ThreadPrimitive.ViewportFooter>
+        </ThreadPrimitive.Viewport>
+      </ThreadPrimitive.Root>
+    </RichToolsOnRailContext.Provider>
   );
 }
 
@@ -124,8 +164,11 @@ function ThreadWelcome() {
 
   return (
     <div className="flex flex-col justify-center items-center text-center grow min-w-0 gap-3 px-4 py-6 @md/thread:gap-4 @md/thread:p-8">
-      <div className="rounded-full bg-primary/10 p-3 @md/thread:p-4">
-        <IconRobot className="size-6 text-primary @md/thread:size-8" />
+      <div className="flex items-center justify-center rounded-full bg-primary/10 p-3 @md/thread:p-4">
+        <Mascot
+          animateOccasionally
+          className="size-9 @md/thread:size-11"
+        />
       </div>
       <div>
         <h2 className="text-lg font-semibold @md/thread:text-xl">
@@ -218,7 +261,13 @@ function ThreadWelcome() {
   );
 }
 
-function Composer() {
+function Composer({
+  placeholder,
+  hideTools,
+}: {
+  placeholder?: string;
+  hideTools?: boolean;
+}) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -231,29 +280,36 @@ function Composer() {
 
   return (
     <ComposerPrimitive.Root className="flex flex-col w-full max-w-none @md/thread:max-w-2xl">
-      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
+      <ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col border border-input bg-background/80 backdrop-blur-md px-3 py-2 shadow-sm transition-shadow focus-within:border-ring focus-within:shadow-md data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent/50">
         <ComposerAttachments />
         <ComposerPrimitive.Input
           id="thread-composer-input"
           ref={inputRef}
-          placeholder="Message AI assistant..."
+          placeholder={placeholder ?? "Message AI assistant..."}
           className="pt-1 w-full max-h-40 text-sm bg-transparent outline-none resize-none min-h-10 placeholder:text-muted-foreground"
           rows={1}
           autoFocus
         />
-        <ComposerAction />
+        <ComposerAction hideTools={hideTools} />
       </ComposerPrimitive.AttachmentDropzone>
     </ComposerPrimitive.Root>
   );
 }
 
-function ComposerAction() {
+function ComposerAction({ hideTools }: { hideTools?: boolean }) {
   return (
-    <div className="flex justify-between items-center mt-2">
-      <div className="flex items-center gap-2">
-        <ComposerAddAttachment />
-        <ModelSelector />
-      </div>
+    <div
+      className={cn(
+        "flex items-center mt-2",
+        hideTools ? "justify-end" : "justify-between",
+      )}
+    >
+      {!hideTools && (
+        <div className="flex items-center gap-2">
+          <ComposerAddAttachment />
+          <ModelSelector />
+        </div>
+      )}
 
       <AuiIf condition={(s) => !s.thread.isRunning}>
         <ComposerPrimitive.Send asChild>
@@ -277,7 +333,7 @@ function ComposerAction() {
 function ThreadScrollToBottom() {
   return (
     <ThreadPrimitive.ScrollToBottom asChild>
-      <button className="p-2 rounded-full border shadow-md transition-opacity disabled:opacity-0 bg-background hover:bg-accent">
+      <button className="absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2 rounded-full border shadow-md transition-opacity disabled:pointer-events-none disabled:opacity-0 bg-background/80 backdrop-blur-md hover:bg-accent p-2">
         <IconArrowDown className="size-4" />
       </button>
     </ThreadPrimitive.ScrollToBottom>
@@ -361,7 +417,62 @@ function ChainOfThoughtGroup({
   );
 }
 
+/**
+ * Position of an assistant message within its "run" — the maximal sequence of
+ * consecutive assistant messages answering one user turn. A turn with tool
+ * activity is rendered as ONE connected rail spanning all its messages, so we
+ * need to know which message starts/ends the run and whether it has activity.
+ */
+function useAssistantRunInfo() {
+  const index = useAuiState((s) => s.message.index);
+  const messages = useAuiState((s) => s.thread.messages);
+
+  return useMemo(() => {
+    if (messages[index]?.role !== "assistant") {
+      return { isFirstInRun: true, isLastInRun: true, runHasActivity: false };
+    }
+
+    let start = index;
+    while (start > 0 && messages[start - 1]?.role === "assistant") start--;
+    let end = index;
+    while (end < messages.length - 1 && messages[end + 1]?.role === "assistant")
+      end++;
+
+    let runHasActivity = false;
+    for (let i = start; i <= end && !runHasActivity; i++) {
+      for (const part of messages[i]?.content ?? []) {
+        if (part.type === "tool-call" || part.type === "data") {
+          runHasActivity = true;
+          break;
+        }
+      }
+    }
+
+    return {
+      isFirstInRun: index === start,
+      isLastInRun: index === end,
+      runHasActivity,
+    };
+  }, [messages, index]);
+}
+
 function AssistantMessage() {
+  const { isFirstInRun, isLastInRun, runHasActivity } = useAssistantRunInfo();
+
+  if (runHasActivity) {
+    return (
+      <ActivityAssistantMessage
+        isFirstInRun={isFirstInRun}
+        isLastInRun={isLastInRun}
+      />
+    );
+  }
+
+  return <PlainAssistantMessage />;
+}
+
+/** Classic bubble layout: mascot beside the content. Used for plain answers. */
+function PlainAssistantMessage() {
   return (
     <MessagePrimitive.Root
       className="flex relative flex-col p-2 mx-auto w-full max-w-2xl group"
@@ -370,7 +481,7 @@ function AssistantMessage() {
       <div className="flex flex-col justify-center">
         <div className="flex my-1.5 max-w-xl text-sm leading-relaxed wrap-break-word text-foreground">
           <div className="flex justify-center items-center mt-1 mr-3 rounded-full size-8 shrink-0 bg-primary/10">
-            <IconRobot className="size-4 text-primary" />
+            <Mascot className="size-6" />
           </div>
 
           <div className="flex flex-col gap-2 min-w-0 flex-1">
@@ -407,14 +518,8 @@ function AssistantMessage() {
             </MessagePrimitive.GroupedParts>
 
             <MessageError />
-            <AuiIf
-              condition={(s) =>
-                s.thread.isRunning && s.message.content.length === 0
-              }
-            >
-              <div className="flex gap-2 items-center text-muted-foreground">
-                <span className="text-sm">Thinking...</span>
-              </div>
+            <AuiIf condition={(s) => s.message.isLast}>
+              <MessageRunStatus />
             </AuiIf>
           </div>
         </div>
@@ -429,6 +534,184 @@ function AssistantMessage() {
       </div>
     </MessagePrimitive.Root>
   );
+}
+
+/**
+ * Activity-turn layout. Tool/agent steps form one connected rail. Because a
+ * turn is split into several assistant messages (each typically a step plus a
+ * line of narration), we render each message's steps into a shared rail that
+ * continues into the next message (`capLast={isLastInRun}`), suppress the
+ * intermediate narration, and show only the final answer as normal prose.
+ */
+function ActivityAssistantMessage({
+  isFirstInRun,
+  isLastInRun,
+}: {
+  isFirstInRun: boolean;
+  isLastInRun: boolean;
+}) {
+  const richToolsOnRail = useContext(RichToolsOnRailContext);
+
+  return (
+    <MessagePrimitive.Root
+      className={cn(
+        "relative isolate mx-auto w-full max-w-2xl px-3 group",
+        isFirstInRun ? "pt-4" : "pt-0",
+        isLastInRun ? "pb-2" : "pb-0",
+      )}
+      data-role="assistant"
+    >
+      {isFirstInRun && (
+        <div className="mb-1 flex w-6 items-center justify-center">
+          <span className="flex items-center justify-center rounded-full size-6 bg-primary/10">
+            <Mascot className="size-4" />
+          </span>
+        </div>
+      )}
+
+      <MessagePrimitive.GroupedParts
+        groupBy={(part) => {
+          if (part.type === "reasoning") return ["group-chain-of-thought"];
+          // Tool steps, the (invisible) agent data that follows them, and the
+          // assistant's intermediate narration all form one continuous rail.
+          // The final answer (last message of the turn) is kept off the rail
+          // and rendered as prominent prose instead. When richToolsOnRail is
+          // set, rich tool UIs (e.g. onboarding cards) join the rail too.
+          if (
+            (part.type === "tool-call" &&
+              (isTimelineTool(part.toolName) || richToolsOnRail)) ||
+            part.type === "data" ||
+            // On the rich-tools rail every text part stays on the rail so the
+            // narration connects to the cards into one continuous timeline.
+            (part.type === "text" && (!isLastInRun || richToolsOnRail))
+          )
+            return ["group-tool-timeline"];
+          return null;
+        }}
+      >
+        {({ part, children }) => {
+          switch (part.type) {
+            case "group-tool-timeline":
+              return (
+                <ToolTimeline capLast={isLastInRun}>{children}</ToolTimeline>
+              );
+            case "group-chain-of-thought":
+              return (
+                <ChainOfThoughtGroup
+                  active={part.status.type === "running"}
+                  count={part.indices.length}
+                >
+                  {children}
+                </ChainOfThoughtGroup>
+              );
+            case "text": {
+              if (!part.text.trim()) return null;
+
+              // On the rich-tools rail the narration is primary content (the
+              // agent talking to the user), so it gets a prominent foreground
+              // row with a step dot that connects down to the next card.
+              if (richToolsOnRail) {
+                return (
+                  <RailRow
+                    node={
+                      <span className="size-2.5 rounded-full bg-primary" />
+                    }
+                  >
+                    <div className="pt-0.5 text-sm leading-relaxed wrap-break-word text-foreground">
+                      <MarkdownText />
+                    </div>
+                  </RailRow>
+                );
+              }
+
+              // Intermediate narration is a "thought" step on the rail; the
+              // final answer renders as normal prose below the rail.
+              return isLastInRun ? (
+                <div className="pl-9 text-sm leading-relaxed wrap-break-word text-foreground">
+                  <CompactMarkdownText />
+                </div>
+              ) : (
+                <RailRow
+                  node={
+                    <IconMessage2 className="size-4 text-muted-foreground" />
+                  }
+                >
+                  <div className="pt-0.5 text-sm leading-relaxed text-muted-foreground">
+                    <MarkdownText />
+                  </div>
+                </RailRow>
+              );
+            }
+            case "source":
+              return isLastInRun ? <Sources {...part} /> : null;
+            case "tool-call": {
+              const toolContent = part.toolUI ?? <ToolFallback {...part} />;
+              // Rich tools (onboarding cards, charts) keep their full UI but
+              // hang off the rail with a step dot, so the activity stays one
+              // connected timeline rather than a detached block.
+              if (richToolsOnRail && !isTimelineTool(part.toolName)) {
+                return (
+                  <RailRow
+                    node={
+                      <span className="size-2.5 rounded-full bg-primary" />
+                    }
+                  >
+                    {toolContent}
+                  </RailRow>
+                );
+              }
+              return toolContent;
+            }
+            case "data":
+              return part.dataRendererUI ?? null;
+            default:
+              return null;
+          }
+        }}
+      </MessagePrimitive.GroupedParts>
+
+      {isLastInRun && (
+        <div className="pl-9">
+          <MessageError />
+          <AuiIf condition={(s) => s.message.isLast}>
+            <MessageRunStatus className="mt-2" />
+          </AuiIf>
+
+          <div className="mt-1 flex items-center gap-2">
+            <AssistantActionBar />
+            <BranchPicker />
+          </div>
+        </div>
+      )}
+    </MessagePrimitive.Root>
+  );
+}
+
+/**
+ * Renders the streaming status for the last assistant message: a thinking
+ * indicator while the run is in progress, then a "Finished in …" label once it
+ * completes. The elapsed time is measured client-side across the running →
+ * finished transition, so it only appears for responses generated this session
+ * (not historical messages restored on load).
+ */
+function MessageRunStatus({ className }: { className?: string } = {}) {
+  const isRunning = useAuiState((s) => s.thread.isRunning);
+  const startRef = useRef<number | null>(null);
+  const [durationMs, setDurationMs] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (isRunning) {
+      startRef.current = Date.now();
+      setDurationMs(null);
+    } else if (startRef.current != null) {
+      setDurationMs(Date.now() - startRef.current);
+      startRef.current = null;
+    }
+  }, [isRunning]);
+
+  if (isRunning) return <ThinkingIndicator className={className} />;
+  if (durationMs == null) return null;
+  return <FinishedIndicator durationMs={durationMs} className={className} />;
 }
 
 function MessageError() {

@@ -32,6 +32,7 @@ import { PgBossService } from "@wavezync/nestjs-pgboss";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { ContentHashService } from "@/moderation/content-hash.service";
 import { XpService } from "@/xp/xp.service";
+import { AchievementsService } from "@/achievements/achievements.service";
 
 describe("PostsService integration", () => {
   let containers: PostgresContainerContext;
@@ -60,6 +61,7 @@ describe("PostsService integration", () => {
         PostsPresenterService,
         TagsService,
         XpService,
+        AchievementsService,
         {
           provide: StorageService,
           useValue: {

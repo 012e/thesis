@@ -25,3 +25,11 @@ export const MarkdownText = () => (
     components={components}
   />
 );
+
+export const CompactMarkdownText = () => (
+  <MarkdownTextPrimitive
+    remarkPlugins={[remarkGfm]}
+    className="aui-md"
+    components={components}
+  />
+);

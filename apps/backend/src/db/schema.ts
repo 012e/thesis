@@ -222,6 +222,42 @@ export const userXp = pgTable("user_xp", {
 export type UserXp = typeof userXp.$inferSelect;
 export type NewUserXp = typeof userXp.$inferInsert;
 
+// ─── Achievements ─────────────────────────────────────────────────────────────
+
+/** XP milestone tiers, ascending. Thresholds live in achievements.constants.ts. */
+export const achievementTierEnum = pgEnum("achievement_tier", [
+  "bronze",
+  "silver",
+  "gold",
+  "platinum",
+]);
+
+/**
+ * Permanent record of the XP-milestone tiers a user has unlocked. One row per
+ * (user, tier); the unique constraint makes unlocks idempotent so the same tier
+ * is never awarded twice. Unlocks are one-directional — a tier stays earned even
+ * if the user's XP later drops.
+ */
+export const userAchievements = pgTable(
+  "user_achievements",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    tier: achievementTierEnum("tier").notNull(),
+    /** The user's XP total at the moment the tier was unlocked. */
+    xpAtUnlock: integer("xp_at_unlock").notNull(),
+    unlockedAt: timestamp("unlocked_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("user_achievements_user_tier_unique").on(table.userId, table.tier),
+  ],
+);
+
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type NewUserAchievement = typeof userAchievements.$inferInsert;
+
 /**
  * A read-only view over the better-auth `user` table joined with `user_profiles`.
  * Exposes only the fields needed by the application features.
@@ -467,6 +503,7 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "direct_message",
   "post_hidden",
   "answer_accepted",
+  "achievement_unlocked",
 ]);
 
 /**
@@ -798,3 +835,39 @@ export const recommendationItems = pgTable(
 
 export type RecommendationItem = typeof recommendationItems.$inferSelect;
 export type NewRecommendationItem = typeof recommendationItems.$inferInsert;
+
+// ─── Agent Skills ──────────────────────────────────────────────────────────────
+
+/**
+ * Per-user agent skills. Each user owns a set of named skills (reusable
+ * instructions/capabilities) that can be searched lexically or semantically.
+ * The embedding is generated from the name + description + content and powers
+ * cosine-similarity ("embedding") search.
+ */
+export const agentSkills = pgTable(
+  "agent_skills",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: text("user_id").notNull(),
+    name: text("name").notNull(),
+    description: text("description").notNull().default(""),
+    content: text("content").notNull(),
+    /** True for skills preinstalled by default when the user first accesses them. */
+    isDefault: boolean("is_default").notNull().default(false),
+    /** Embedding of name + description + content for semantic search. */
+    embedding: vector("embedding", { dimensions: EMBEDDING_DIMENSIONS }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    unique("uq_agent_skills_user_name").on(table.userId, table.name),
+    index("idx_agent_skills_user").on(table.userId),
+  ],
+);
+
+export type AgentSkill = typeof agentSkills.$inferSelect;
+export type NewAgentSkill = typeof agentSkills.$inferInsert;

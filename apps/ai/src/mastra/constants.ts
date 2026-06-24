@@ -36,6 +36,10 @@ export const MODEL_CONFIG = {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
   },
+  AGENT_SKILLS_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
+  },
   POST_CREATION_AGENT: {
     model: openai("gpt-5.4-mini"),
     reasoningEffort: reasoning("none"),
@@ -55,6 +59,10 @@ export const MODEL_CONFIG = {
   STEP_JUDGE_AGENT: {
     model: openai("gpt-5.5"),
     reasoningEffort: reasoning("low"),
+  },
+  ONBOARDING_AGENT: {
+    model: openai("gpt-5.4-mini"),
+    reasoningEffort: reasoning("none"),
   },
 } as const;
 

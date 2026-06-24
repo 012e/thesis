@@ -76,6 +76,13 @@ export function useNotifications(): UseNotificationsReturn {
         queryKey: notificationUnreadCountKey,
       });
       void queryClient.invalidateQueries({ queryKey: notificationsListKey });
+
+      // A newly unlocked achievement should appear on the user's board too.
+      if (notification.type === "achievement_unlocked") {
+        void queryClient.invalidateQueries({
+          queryKey: ["users", notification.userId, "achievements"],
+        });
+      }
     };
 
     socket.on(WS_NOTIFICATION, onNotification);

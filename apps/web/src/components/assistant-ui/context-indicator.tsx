@@ -59,7 +59,7 @@ export function AIContextIndicator() {
   if (!label || isPlaygroundPage(ctx)) return null;
 
   return (
-    <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl bg-muted/60 ">
+    <div className="flex items-center gap-1.5 w-full max-w-none @md/thread:max-w-2xl bg-muted/60 backdrop-blur-md">
       <div className="flex items-center gap-1.5 min-w-0 flex-1 pl-2.5 py-1.5 text-muted-foreground text-xs">
         {label.icon}
         <span className="truncate min-w-0 flex-1">{label.text}</span>

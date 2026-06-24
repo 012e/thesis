@@ -24,6 +24,7 @@ import { PgBossService } from "@wavezync/nestjs-pgboss";
 import { ModerationPipelineService } from "@/moderation/moderation-pipeline.service";
 import { ContentHashService } from "@/moderation/content-hash.service";
 import { XpService } from "@/xp/xp.service";
+import { AchievementsService } from "@/achievements/achievements.service";
 
 import { runBetterAuthMigrations } from "../helpers/database.setup";
 import {
@@ -103,6 +104,7 @@ describe("ReactionsService integration", () => {
         PostsPresenterService,
         TagsService,
         XpService,
+        AchievementsService,
       ],
     }).compile();
 

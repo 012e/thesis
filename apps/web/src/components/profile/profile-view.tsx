@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react";
 import type { PostDto } from "@repo/shared-dto";
 import { PostsFeed } from "@/components/posts-feed";
+import { AchievementsSection } from "@/components/profile/achievements-section";
 import { uploadImages } from "@/lib/api/uploads";
 import { updateCoverPhoto } from "@/lib/api/users";
 import { toast } from "@/lib/toast";
@@ -307,6 +308,11 @@ export function ProfileView({
             </>
           )}
         </div>
+
+        <Separator className="my-6" />
+
+        {/* Achievements Section */}
+        <AchievementsSection userId={profile.id} />
 
         <Separator className="my-6" />
 

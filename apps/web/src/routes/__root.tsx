@@ -41,11 +41,12 @@ export function RouteContextSync() {
       return;
     }
 
-    // Chat / auth / api — no meta context needed
+    // Chat / auth / api / onboarding — no meta context needed
     if (
       pathname.startsWith("/chat") ||
       pathname.startsWith("/auth") ||
-      pathname.startsWith("/api")
+      pathname.startsWith("/api") ||
+      pathname.startsWith("/onboarding")
     ) {
       setGlobalAIContext({ type: "none" });
       return;
@@ -111,6 +112,7 @@ export function RootComponent() {
   const isAuthRoute = router.location.pathname.startsWith("/auth");
   const isChatRoute = router.location.pathname.startsWith("/chat");
   const isApiRoute = router.location.pathname.startsWith("/api");
+  const isOnboardingRoute = router.location.pathname.startsWith("/onboarding");
   const isPlaygroundRoute = router.location.pathname.startsWith("/playground");
   const isHomeRoute = router.location.pathname === "/";
 
@@ -120,9 +122,15 @@ export function RootComponent() {
       <RouteContextSync />
       <PageViewTracker />
       <AuthGuard>
-        <AppNavigationAssistantTools />
-        {!isAuthRoute && !isApiRoute && <ChatAssistantEffects />}
-        {isAuthRoute || isChatRoute || isApiRoute || isPlaygroundRoute ? (
+        {!isOnboardingRoute && <AppNavigationAssistantTools />}
+        {!isAuthRoute && !isApiRoute && !isOnboardingRoute && (
+          <ChatAssistantEffects />
+        )}
+        {isAuthRoute ||
+        isChatRoute ||
+        isApiRoute ||
+        isOnboardingRoute ||
+        isPlaygroundRoute ? (
           <Outlet />
         ) : isHomeRoute ? (
           <HomeLayout>

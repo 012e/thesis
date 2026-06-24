@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { AchievementTier } from "./achievement";
+
 // ─── Type enum ────────────────────────────────────────────────────────────────
 
 export const NotificationType = z.enum([
@@ -12,6 +14,7 @@ export const NotificationType = z.enum([
   "direct_message",
   "post_hidden",
   "answer_accepted",
+  "achievement_unlocked",
 ]);
 
 // ─── Payload schemas (per type) ───────────────────────────────────────────────
@@ -98,6 +101,12 @@ export const AnswerAcceptedNotificationPayload = z.object({
   xpEarned: z.number().int().positive().optional(),
 });
 
+export const AchievementUnlockedNotificationPayload = z.object({
+  tier: AchievementTier,
+  label: z.string(),
+  threshold: z.number().int().nonnegative(),
+});
+
 export const NotificationPayload = z.union([
   FollowNotificationPayload,
   CommentNotificationPayload,
@@ -108,6 +117,7 @@ export const NotificationPayload = z.union([
   DirectMessageNotificationPayload,
   PostHiddenNotificationPayload,
   AnswerAcceptedNotificationPayload,
+  AchievementUnlockedNotificationPayload,
 ]);
 
 // ─── Actor ────────────────────────────────────────────────────────────────────

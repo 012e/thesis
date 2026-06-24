@@ -47,6 +47,8 @@
     "test:tags": "vitest run --silent=true test/tags/",
     "test:analytics": "vitest run --silent=true test/analytics/",
     "test:recommendations": "vitest run --silent=true test/recommendations/",
+    "test:achievements": "vitest run --silent=true test/achievements/",
+    "test:agent-skills": "vitest run --silent=true test/agent-skills/",
     "seed": "tsx seed.ts",
     "seed:watch": "tsx watch seed.ts"
   },

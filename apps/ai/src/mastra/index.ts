@@ -3,13 +3,16 @@ import { Mastra } from "@mastra/core";
 import { env } from "../env";
 import { assistantAgent } from "./agents/assistant";
 import { socialMediaAgent } from "./agents/social-media-agent";
+import { agentSkillsAgent } from "./agents/agent-skills-agent";
 import { postCreationAgent } from "./agents/post-creation-agent";
 import { postDraftingAgent } from "./agents/post-drafting-agent";
 import { navigationAgent } from "./agents/navigation-agent";
 import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
+import { onboardingAgent } from "./agents/onboarding-agent";
 import { pgStore } from "./memory";
 import { streamRoute } from "./routes/stream";
+import { onboardingRoute } from "./routes/onboarding";
 import { healthRoute } from "./routes/health";
 import { RequestContext } from "@mastra/core/request-context";
 
@@ -20,6 +23,7 @@ import { RequestContext } from "@mastra/core/request-context";
  * - assistantAgent  — legacy single-agent (kept for Mastra Studio compat)
  * - socialMediaAgent — consolidated backend specialist: identity, discovery,
  *                      engagement, post management, tags (Studio preview only)
+ * - agentSkillsAgent — the user's reusable agent-skill library (Studio preview only)
  * - postCreationAgent — post write ops (Studio preview only)
  * - postDraftingAgent — LinkedIn-style and technical question drafting
  * - navigationAgent — app page/tool discovery (Studio preview only)
@@ -35,11 +39,13 @@ export const mastra = new Mastra({
   agents: {
     assistantAgent,
     socialMediaAgent,
+    agentSkillsAgent,
     postCreationAgent,
     postDraftingAgent,
     navigationAgent,
     planningAgent,
     searchAgent,
+    onboardingAgent,
   },
   storage: pgStore,
   server: {
@@ -78,6 +84,6 @@ export const mastra = new Mastra({
         await next();
       },
     ],
-    apiRoutes: [healthRoute, streamRoute],
+    apiRoutes: [healthRoute, streamRoute, onboardingRoute],
   },
 });
