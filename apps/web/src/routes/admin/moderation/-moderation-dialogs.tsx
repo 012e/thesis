@@ -34,6 +34,7 @@ import {
   type ModerationDialogState,
 } from "./-shared";
 import { ValidationStatusGraph } from "./-validation-graph";
+import { ModerationAIReviewPanel } from "./-ai-review-panel";
 
 export function ModerationDialogs({
   dialog,
@@ -191,7 +192,7 @@ function ModerationDetailDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-4xl">
+      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-4xl lg:max-w-6xl">
         <DialogHeader>
           <DialogTitle>Moderation details</DialogTitle>
           <DialogDescription>
@@ -200,7 +201,8 @@ function ModerationDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="min-h-0 overflow-y-auto pr-1">
+        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+          <div className="min-h-0 overflow-y-auto pr-1">
           {isLoading ? (
             <div className="flex min-h-48 items-center justify-center">
               <Spinner size="md" />
@@ -313,6 +315,14 @@ function ModerationDetailDialog({
             <p className="text-sm text-muted-foreground">
               No moderation record selected.
             </p>
+          )}
+          </div>
+
+          {moderation && (
+            <ModerationAIReviewPanel
+              key={moderation.id}
+              moderation={moderation}
+            />
           )}
         </div>
 
