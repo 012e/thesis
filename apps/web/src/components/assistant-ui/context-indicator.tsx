@@ -4,6 +4,7 @@ import {
   IconFileText,
   IconLayoutDashboard,
   IconUser,
+  IconShieldCheck,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { globalAIContextAtom, type AIContext } from "@/lib/atoms/ai-context";
@@ -37,6 +38,17 @@ function contextLabel(
         icon: <IconUser className="size-3.5 shrink-0" />,
         text: `@${ctx.username}'s profile`,
       };
+
+    case "moderation": {
+      const author =
+        ctx.moderation.post?.author.username ??
+        ctx.moderation.post?.author.email ??
+        "unknown";
+      return {
+        icon: <IconShieldCheck className="size-3.5 shrink-0" />,
+        text: `Moderation review · post by @${author}`,
+      };
+    }
   }
 }
 

@@ -466,6 +466,22 @@ export type AIContextPayload =
       readonly userId: string;
       readonly username: string;
       readonly displayName: string;
+    }
+  | {
+      readonly type: "moderation";
+      readonly moderationId: string;
+      readonly postId: string;
+      readonly authorUsername: string;
+      /** Moderation status: pending | approved | rejected | needs_human_review. */
+      readonly status: string;
+      /** What triggered the record: auto_duplicate | auto_harmful | user_report | admin_flag. */
+      readonly source: string;
+      /** Flag priority: low | medium | high | critical. */
+      readonly priority: string;
+      readonly contentPreview: string;
+      readonly llmSummary: string | null;
+      readonly llmConfidence: string | null;
+      readonly createdAt: string;
     };
 
 export const AIContextPayloadSchema = z.discriminatedUnion("type", [
@@ -488,6 +504,19 @@ export const AIContextPayloadSchema = z.discriminatedUnion("type", [
     username: z.string(),
     displayName: z.string(),
   }),
+  z.object({
+    type: z.literal("moderation"),
+    moderationId: z.string(),
+    postId: z.string(),
+    authorUsername: z.string(),
+    status: z.string(),
+    source: z.string(),
+    priority: z.string(),
+    contentPreview: z.string(),
+    llmSummary: z.string().nullable(),
+    llmConfidence: z.string().nullable(),
+    createdAt: z.string(),
+  }),
 ]);
 
 /**
@@ -509,6 +538,8 @@ export function formatContextHint(ctx: AIContextPayload): string | null {
       return `User context: He is currently viewing a post by @${ctx.authorUsername}`;
     case "user-profile":
       return `User context: He is currently viewing @${ctx.username}'s profile`;
+    case "moderation":
+      return `User context: He is an admin reviewing a moderation record (source ${ctx.source}, status ${ctx.status}, priority ${ctx.priority}) for a post by @${ctx.authorUsername}`;
   }
 }
 

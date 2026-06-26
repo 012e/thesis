@@ -1,6 +1,7 @@
 import { atom } from "jotai";
 import type { PostDto } from "@repo/shared-dto";
 import type { AIContextPayload } from "@repo/shared-dto";
+import type { PostModerationType } from "@repo/rest-contracts";
 import store from "@/lib/atoms/store";
 
 // ─── Frontend-rich type (holds full DTOs for React state) ─────────────────────
@@ -24,6 +25,10 @@ export type AIContext =
       readonly userId: string;
       readonly username: string;
       readonly displayName: string;
+    }
+  | {
+      readonly type: "moderation";
+      readonly moderation: PostModerationType;
     };
 
 // ─── Jotai atom ──────────────────────────────────────────────────────────────
@@ -75,5 +80,24 @@ export function serializeAIContext(ctx: AIContext): AIContextPayload {
         username: ctx.username,
         displayName: ctx.displayName,
       };
+
+    case "moderation": {
+      const { moderation } = ctx;
+      const author = moderation.post?.author;
+      const text = moderation.post?.content.text ?? "";
+      return {
+        type: "moderation",
+        moderationId: moderation.id,
+        postId: moderation.postId,
+        authorUsername: author?.username ?? author?.email ?? "unknown",
+        status: moderation.status,
+        source: moderation.source,
+        priority: moderation.priority,
+        contentPreview: text.length > 500 ? `${text.slice(0, 500)}…` : text,
+        llmSummary: moderation.llmSummary,
+        llmConfidence: moderation.llmConfidence,
+        createdAt: moderation.createdAt,
+      };
+    }
   }
 }
