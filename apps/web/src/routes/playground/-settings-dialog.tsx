@@ -31,6 +31,17 @@ import type {
   PlaygroundTheme,
 } from "@/lib/atoms/playground-settings";
 
+const themeItems = [
+  { label: "Follow app theme", value: "auto" },
+  { label: "Light", value: "light" },
+  { label: "Dark", value: "dark" },
+];
+
+const keybindingItems = [
+  { label: "Default multi-cursor (Alt)", value: "default" },
+  { label: "Alternate multi-cursor (Ctrl/Cmd)", value: "alternate" },
+];
+
 export function PlaygroundSettingsDialog() {
   const [settings, setSettings] = useAtom(playgroundSettingsAtom);
 
@@ -64,6 +75,7 @@ export function PlaygroundSettingsDialog() {
                     theme: value as PlaygroundTheme,
                   }))
                 }
+                items={themeItems}
               >
                 <SelectTrigger id="playground-theme" className="w-full">
                   <SelectValue />
@@ -91,6 +103,7 @@ export function PlaygroundSettingsDialog() {
                     keybinding: value as PlaygroundKeybinding,
                   }))
                 }
+                items={keybindingItems}
               >
                 <SelectTrigger id="playground-keybinding" className="w-full">
                   <SelectValue />

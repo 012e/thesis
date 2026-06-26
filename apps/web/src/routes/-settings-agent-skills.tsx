@@ -45,6 +45,11 @@ import {
 } from "@/hooks/use-agent-skills";
 import { useToast as toast } from "@/hooks/use-toast";
 
+const searchModeItems = [
+  { label: "Text search", value: "text" },
+  { label: "Semantic search", value: "embedding" },
+];
+
 export function AgentSkillsTab() {
   const skills = useAgentSkills();
   const [query, setQuery] = useState("");
@@ -127,6 +132,7 @@ export function AgentSkillsTab() {
               onValueChange={(value) =>
                 value !== null && setMode(value as AgentSkillSearchModeDto)
               }
+              items={searchModeItems}
             >
               <SelectTrigger className="sm:w-44">
                 <SelectValue />

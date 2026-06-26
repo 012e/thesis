@@ -13,9 +13,13 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { setGlobalAIContext } from "@/lib/atoms/ai-context";
 import { GlobalErrorPage } from "@/components/global-error-boundary";
-import { useTrack } from "@/components/analytics-provider";
+import {
+  AnalyticsProvider,
+  useTrack,
+} from "@/components/analytics-provider";
 import { AppNavigationAssistantTools } from "@/components/assistant-ui/app-navigation-tools";
 import { ChatAssistantEffects } from "@/components/assistant-ui/chat-assistant-effects";
+import { ChatRuntimeProvider } from "@/components/assistant-ui/chat-runtime-provider";
 
 export function ThemeSync() {
   useTheme();
@@ -115,31 +119,47 @@ export function RootComponent() {
   const isOnboardingRoute = router.location.pathname.startsWith("/onboarding");
   const isPlaygroundRoute = router.location.pathname.startsWith("/playground");
   const isHomeRoute = router.location.pathname === "/";
+  const usesMainChatRuntime =
+    !isAuthRoute && !isApiRoute && !isOnboardingRoute;
+
+  const outlet = isAuthRoute ||
+    isChatRoute ||
+    isApiRoute ||
+    isOnboardingRoute ||
+    isPlaygroundRoute ? (
+      <Outlet />
+    ) : isHomeRoute ? (
+      <HomeLayout>
+        <Outlet />
+      </HomeLayout>
+    ) : (
+      <AppLayout>
+        <Outlet />
+      </AppLayout>
+    );
+
+  const appContent = usesMainChatRuntime ? (
+    <ChatRuntimeProvider>
+      <AppNavigationAssistantTools />
+      <ChatAssistantEffects />
+      {outlet}
+    </ChatRuntimeProvider>
+  ) : (
+    outlet
+  );
 
   return (
     <>
       <ThemeSync />
       <RouteContextSync />
-      <PageViewTracker />
       <AuthGuard>
-        {!isOnboardingRoute && <AppNavigationAssistantTools />}
-        {!isAuthRoute && !isApiRoute && !isOnboardingRoute && (
-          <ChatAssistantEffects />
-        )}
-        {isAuthRoute ||
-        isChatRoute ||
-        isApiRoute ||
-        isOnboardingRoute ||
-        isPlaygroundRoute ? (
-          <Outlet />
-        ) : isHomeRoute ? (
-          <HomeLayout>
-            <Outlet />
-          </HomeLayout>
+        {isAuthRoute || isApiRoute ? (
+          outlet
         ) : (
-          <AppLayout>
-            <Outlet />
-          </AppLayout>
+          <AnalyticsProvider>
+            <PageViewTracker />
+            {appContent}
+          </AnalyticsProvider>
         )}
       </AuthGuard>
       <Toaster richColors />

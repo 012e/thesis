@@ -1,6 +1,8 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger, type OnModuleInit } from "@nestjs/common";
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import { toSql } from "pgvector";
+
+import { env } from "@/env";
 
 import type {
   AgentSkillDto,
@@ -31,7 +33,7 @@ interface SkillSearchRow {
 }
 
 @Injectable()
-export class AgentSkillsService {
+export class AgentSkillsService implements OnModuleInit {
   private readonly logger = new Logger(AgentSkillsService.name);
 
   constructor(
@@ -39,6 +41,19 @@ export class AgentSkillsService {
     @Inject(EMBEDDING_SERVICE)
     private readonly embeddingService: IEmbeddingService,
   ) {}
+
+  /** On startup, backfill any zero-vector embeddings left by the stub service. */
+  async onModuleInit() {
+    if (!env.OPENAI_API_KEY) {
+      this.logger.warn(
+        "OPENAI_API_KEY not set — skipping embedding backfill (stub service active)",
+      );
+      return;
+    }
+    void this.backfillZeroEmbeddings().catch((err) =>
+      this.logger.error(`Startup embedding backfill failed: ${String(err)}`),
+    );
+  }
 
   /**
    * List a user's skills, installing the default set the first time they have
@@ -225,32 +240,120 @@ export class AgentSkillsService {
       .from(agentSkills)
       .where(eq(agentSkills.userId, userId));
 
-    if (count > 0) {
+    if (count === 0) {
+      try {
+        const values = await Promise.all(
+          DEFAULT_AGENT_SKILLS.map(async (skill) => ({
+            userId,
+            name: skill.name,
+            description: skill.description,
+            content: skill.content,
+            isDefault: true,
+            embedding: await this.embedSkill(skill),
+          })),
+        );
+
+        await this.databaseService.db
+          .insert(agentSkills)
+          .values(values)
+          .onConflictDoNothing();
+      } catch (error) {
+        // Non-fatal: a concurrent request may have installed defaults first.
+        this.logger.warn(
+          `Failed to install default agent skills for ${userId}: ${String(error)}`,
+        );
+      }
       return;
     }
 
-    try {
-      const values = await Promise.all(
-        DEFAULT_AGENT_SKILLS.map(async (skill) => ({
-          userId,
-          name: skill.name,
-          description: skill.description,
-          content: skill.content,
-          isDefault: true,
-          embedding: await this.embedSkill(skill),
-        })),
+    // Fire-and-forget: re-embed skills that were stored with null or zero-vector
+    // embeddings (e.g. when the backend first ran without OPENAI_API_KEY).
+    void this.reEmbedMissingEmbeddings(userId).catch((err) =>
+      this.logger.warn(
+        `Re-embedding failed for user ${userId}: ${String(err)}`,
+      ),
+    );
+  }
+
+  /** Backfills ALL zero-vector/null embeddings across all users at startup. */
+  private async backfillZeroEmbeddings(): Promise<void> {
+    // Step 1: null out zero vectors written by the stub.
+    // Use <#> (negative inner product with itself = -(||v||²)); only zero vectors give 0.
+    await this.databaseService.db.execute(sql`
+      UPDATE agent_skills
+      SET embedding = NULL, updated_at = NOW()
+      WHERE embedding IS NOT NULL
+        AND (embedding <#> embedding) = 0
+    `);
+
+    // Step 2: re-embed everything that now has a NULL embedding.
+    const skills = await this.databaseService.db
+      .select()
+      .from(agentSkills)
+      .where(sql`${agentSkills.embedding} IS NULL`);
+
+    if (skills.length === 0) {
+      this.logger.log("Embedding backfill: nothing to do");
+      return;
+    }
+
+    this.logger.log(`Backfilling embeddings for ${skills.length} skill(s)`);
+
+    let fixed = 0;
+    await Promise.allSettled(
+      skills.map(async (skill) => {
+        try {
+          const embedding = await this.embedSkill(skill);
+          if (!embedding || embedding.every((x) => x === 0)) return;
+          await this.databaseService.db
+            .update(agentSkills)
+            .set({ embedding, updatedAt: new Date() })
+            .where(eq(agentSkills.id, skill.id));
+          fixed++;
+        } catch (error) {
+          this.logger.warn(
+            `Failed to backfill embedding for skill ${skill.id}: ${String(error)}`,
+          );
+        }
+      }),
+    );
+
+    this.logger.log(`Embedding backfill complete: ${fixed}/${skills.length} updated`);
+  }
+
+  /**
+   * Re-embeds skills whose embedding is NULL or a zero vector (produced by the
+   * stub service). Skips gracefully when the embedding service is still a stub.
+   */
+  private async reEmbedMissingEmbeddings(userId: string): Promise<void> {
+    const skills = await this.databaseService.db
+      .select()
+      .from(agentSkills)
+      .where(
+        and(
+          eq(agentSkills.userId, userId),
+          sql`(${agentSkills.embedding} IS NULL OR (${agentSkills.embedding} <#> ${agentSkills.embedding}) = 0)`,
+        ),
       );
 
-      await this.databaseService.db
-        .insert(agentSkills)
-        .values(values)
-        .onConflictDoNothing();
-    } catch (error) {
-      // Non-fatal: a concurrent request may have installed defaults first.
-      this.logger.warn(
-        `Failed to install default agent skills for ${userId}: ${String(error)}`,
-      );
-    }
+    if (skills.length === 0) return;
+
+    await Promise.allSettled(
+      skills.map(async (skill) => {
+        try {
+          const embedding = await this.embedSkill(skill);
+          if (!embedding || embedding.every((x) => x === 0)) return;
+          await this.databaseService.db
+            .update(agentSkills)
+            .set({ embedding, updatedAt: new Date() })
+            .where(eq(agentSkills.id, skill.id));
+        } catch (error) {
+          this.logger.warn(
+            `Failed to re-embed skill ${skill.id}: ${String(error)}`,
+          );
+        }
+      }),
+    );
   }
 
   private async embedSkill(input: {

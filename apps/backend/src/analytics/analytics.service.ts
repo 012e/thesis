@@ -137,8 +137,8 @@ export class AnalyticsService {
       items: rows.map((r) =>
         this.toDto(
           r,
-          postsById.get(this.getPostId(r.metadata)),
-          commentsById.get(this.getCommentId(r.metadata)),
+          postsById.get(this.getPostId(r.metadata) ?? ""),
+          commentsById.get(this.getCommentId(r.metadata) ?? ""),
         ),
       ),
       total: totalRow?.cnt ?? 0,

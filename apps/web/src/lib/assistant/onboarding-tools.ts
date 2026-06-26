@@ -175,3 +175,22 @@ export function resolveOnboardingResponse(
   entry.resolve(result);
   return true;
 }
+
+/**
+ * Rejects every pending onboarding tool response. Runtime cancellation should
+ * abort client tools, but this explicit cleanup prevents a card-backed tool
+ * from keeping the run alive if its abort signal is not delivered.
+ */
+export function cancelPendingOnboardingResponses() {
+  const reason = new DOMException(
+    "The onboarding step was cancelled.",
+    "AbortError",
+  );
+
+  for (const [toolCallId, entry] of pending) {
+    if (entry.settled) continue;
+    entry.settled = true;
+    pending.delete(toolCallId);
+    entry.reject(reason);
+  }
+}

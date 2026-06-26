@@ -65,7 +65,7 @@ export const MODEL_CONFIG = {
     reasoningEffort: reasoning("low"),
   },
   ONBOARDING_AGENT: {
-    model: openai("gpt-5.4-mini"),
+    model: openai("gpt-5.5"),
     reasoningEffort: reasoning("none"),
   },
 } as const;

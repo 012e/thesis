@@ -24,6 +24,11 @@ import {
 
 import { type AdminUser, isUserAdmin } from "./types";
 
+const roleItems = [
+  { label: "User", value: "user" },
+  { label: "Admin", value: "admin" },
+];
+
 export function SetRoleDialog({
   user,
   onClose,
@@ -75,6 +80,7 @@ export function SetRoleDialog({
             onValueChange={(v) =>
               v !== null && setSelectedRole(v as "user" | "admin")
             }
+            items={roleItems}
           >
             <SelectTrigger id="role-select" className="w-full">
               <SelectValue />
