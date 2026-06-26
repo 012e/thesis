@@ -16,6 +16,7 @@ import {
 import { PostMarkdown } from "@/components/ui/post-markdown";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { useToast as toast } from "@/hooks/use-toast";
 import {
   getModeration,
@@ -34,7 +35,10 @@ import {
   type ModerationDialogState,
 } from "./-shared";
 import { ValidationStatusGraph } from "./-validation-graph";
-import { ModerationAIReviewPanel } from "./-ai-review-panel";
+import {
+  ModerationAIReviewPanel,
+  ModerationAIReviewRail,
+} from "./-ai-review-panel";
 
 export function ModerationDialogs({
   dialog,
@@ -190,9 +194,16 @@ function ModerationDetailDialog({
   onReject: () => void;
   onFlag: () => void;
 }) {
+  const [isPanelOpen, setIsPanelOpen] = useState(true);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-4xl lg:max-w-6xl">
+      <DialogContent
+        className={cn(
+          "flex max-h-[calc(100dvh-2rem)] flex-col overflow-hidden sm:max-w-4xl",
+          isPanelOpen && "lg:max-w-6xl",
+        )}
+      >
         <DialogHeader>
           <DialogTitle>Moderation details</DialogTitle>
           <DialogDescription>
@@ -201,7 +212,14 @@ function ModerationDetailDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid min-h-0 flex-1 gap-4 overflow-hidden md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
+        <div
+          className={cn(
+            "grid min-h-0 flex-1 gap-4 overflow-hidden",
+            isPanelOpen
+              ? "md:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]"
+              : "md:grid-cols-[minmax(0,1fr)_auto]",
+          )}
+        >
           <div className="min-h-0 overflow-y-auto pr-1">
           {isLoading ? (
             <div className="flex min-h-48 items-center justify-center">
@@ -318,12 +336,16 @@ function ModerationDetailDialog({
           )}
           </div>
 
-          {moderation && (
-            <ModerationAIReviewPanel
-              key={moderation.id}
-              moderation={moderation}
-            />
-          )}
+          {moderation &&
+            (isPanelOpen ? (
+              <ModerationAIReviewPanel
+                key={moderation.id}
+                moderation={moderation}
+                onCollapse={() => setIsPanelOpen(false)}
+              />
+            ) : (
+              <ModerationAIReviewRail onExpand={() => setIsPanelOpen(true)} />
+            ))}
         </div>
 
         <DialogFooter>

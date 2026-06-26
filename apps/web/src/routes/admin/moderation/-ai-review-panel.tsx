@@ -5,6 +5,8 @@ import {
   IconGavel,
   IconHistory,
   IconClipboardCheck,
+  IconLayoutSidebarRightCollapse,
+  IconLayoutSidebarLeftCollapse,
 } from "@tabler/icons-react";
 import type { PostModerationType } from "@repo/rest-contracts";
 
@@ -51,8 +53,10 @@ const QUICK_ACTIONS: readonly QuickAction[] = [
  */
 export function ModerationAIReviewPanel({
   moderation,
+  onCollapse,
 }: {
   moderation: PostModerationType;
+  onCollapse: () => void;
 }) {
   const [, setContext] = useAIContext();
   const aui = useAui();
@@ -82,12 +86,21 @@ export function ModerationAIReviewPanel({
     <div className="flex min-h-0 flex-col border-t md:border-l md:border-t-0">
       <div className="flex items-center gap-2 border-b bg-muted/40 px-3 py-2.5">
         <IconSparkles className="size-4 shrink-0 text-primary" />
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold">AI review assistant</p>
           <p className="truncate text-[11px] text-muted-foreground">
             Ask about the author, the report, or a recommended decision.
           </p>
         </div>
+        <button
+          type="button"
+          onClick={onCollapse}
+          title="Collapse panel"
+          aria-label="Collapse AI review panel"
+          className="flex size-7 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        >
+          <IconLayoutSidebarRightCollapse className="size-4" />
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-1.5 border-b bg-background px-3 py-2">
@@ -113,6 +126,27 @@ export function ModerationAIReviewPanel({
         />
       </div>
     </div>
+  );
+}
+
+/**
+ * Slim rail shown in place of the panel when it is collapsed. Clicking it
+ * re-expands the AI review panel.
+ */
+export function ModerationAIReviewRail({ onExpand }: { onExpand: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onExpand}
+      title="Open AI review"
+      aria-label="Open AI review panel"
+      className="flex items-center justify-center gap-2 border-t px-3 py-2 text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground md:flex-col md:border-l md:border-t-0 md:px-2 md:py-3"
+    >
+      <IconLayoutSidebarLeftCollapse className="size-4 shrink-0 text-primary" />
+      <span className="text-[11px] font-medium md:[writing-mode:vertical-rl] md:rotate-180">
+        AI review
+      </span>
+    </button>
   );
 }
 
