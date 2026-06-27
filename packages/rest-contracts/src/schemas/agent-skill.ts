@@ -16,16 +16,12 @@ export const AgentSkillsList = z.object({
   items: z.array(AgentSkill),
 });
 
-/** How to match skills when searching: lexical text match or semantic embedding. */
-export const AgentSkillSearchMode = z.enum(["text", "embedding"]);
-
 export const AgentSkillSearchResult = AgentSkill.extend({
-  /** Relevance score for the query (higher is more relevant). */
+  /** Hybrid RRF relevance score (higher is more relevant). */
   score: z.number(),
 });
 
 export const AgentSkillSearchPage = z.object({
-  mode: AgentSkillSearchMode,
   items: z.array(AgentSkillSearchResult),
 });
 
@@ -48,7 +44,6 @@ export const UpdateAgentSkillBody = z
 
 export type AgentSkillType = z.infer<typeof AgentSkill>;
 export type AgentSkillsListType = z.infer<typeof AgentSkillsList>;
-export type AgentSkillSearchModeType = z.infer<typeof AgentSkillSearchMode>;
 export type AgentSkillSearchResultType = z.infer<typeof AgentSkillSearchResult>;
 export type AgentSkillSearchPageType = z.infer<typeof AgentSkillSearchPage>;
 export type CreateAgentSkillBodyType = z.infer<typeof CreateAgentSkillBody>;

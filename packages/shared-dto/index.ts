@@ -608,8 +608,6 @@ export interface AgentSkillDto {
   updatedAt: string;
 }
 
-export type AgentSkillSearchModeDto = "text" | "embedding";
-
 export interface AgentSkillSearchResultDto extends AgentSkillDto {
   score: number;
 }

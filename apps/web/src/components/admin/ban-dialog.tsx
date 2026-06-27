@@ -87,6 +87,7 @@ export function BanDialog({
             <Select
               value={expiry}
               onValueChange={(v) => v !== null && setExpiry(v)}
+              items={BAN_EXPIRY_OPTIONS}
             >
               <SelectTrigger id="ban-expiry" className="w-full">
                 <SelectValue />

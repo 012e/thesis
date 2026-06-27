@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 16" shape-rendering="crispEdges">
   <title>Toin T mascot performing a sixteen-frame pixel dance</title>
   <defs>
-    <g id="d-neutral"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
-    <g id="d-left-one"><path d="M0 2h14v7h-3v6H4V9H0V2Zm13 5h3v3h-3Z" fill="#111"/><path d="M1 3h12v5h-3v6H5V8H1V3Zm13 5h1v1h-1Z" fill="#fff"/><path d="M4 5h2v2H4zm4-1h2v2H8z" fill="#111"/></g>
-    <g id="d-left-two"><path d="M0 3h13v7h-3v5H3v-5H0V3Zm12 1h4v4h-4Z" fill="#111"/><path d="M1 4h11v5H9v5H4V9H1V4Zm12 1h2v2h-2Z" fill="#fff"/><path d="M3 6h3v2H3zm5-1h2v2H8z" fill="#111"/></g>
-    <g id="d-bounce"><path d="M1 0h14v8h-3v8H4V8H1V0Z" fill="#111"/><path d="M2 1h12v6h-3v8H5V7H2V1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
-    <g id="d-step-left"><path d="M0 1h14v7h-3v6H6v2H2v-2h2V8H0V1Z" fill="#111"/><path d="M1 2h12v5h-3v6H7v1H4v-1h1V7H1V2Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
-    <g id="d-right-one"><path d="M2 2h14v7h-4v6H5V9H2V8H0V5h3Z" fill="#111"/><path d="M3 3h12v5h-4v6H6V8H3V7H1V6h2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 1h2v2h-2z" fill="#111"/></g>
-    <g id="d-right-two"><path d="M3 3h13v7h-3v5H6v-5H3V8H0V4h4Z" fill="#111"/><path d="M4 4h11v5h-3v5H7V9H4V7H1V5h3Z" fill="#fff"/><path d="M6 5h2v2H6zm4 1h3v2h-3z" fill="#111"/></g>
-    <g id="d-step-right"><path d="M2 1h14v7h-4v6h2v2h-4v-2H5V8H2V1Z" fill="#111"/><path d="M3 2h12v5h-4v6h1v1h-3v-1H6V7H3V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
-    <g id="d-arms-low"><path d="M1 1h14v7h-3v7H4V8H1V6H0V3h3v2h10V3h3v3h-1v2h-3v7H4V8H1Z" fill="#111"/><path d="M2 2h12v5h-3v7H5V7H2V6H1V4h1v2h12V4h1v2h-1v1h-3v7H5V7H2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
-    <g id="d-arms-high"><path d="M2 2h12v7h-2v6H4V9H2V7H0V0h3v5h10V0h3v7h-2v2h-2v6H4V9H2Z" fill="#111"/><path d="M3 3h10v5h-2v6H5V8H3V6H1V1h1v5h12V1h1v5h-2v2h-2v6H5V8H3Z" fill="#fff"/><path d="M4 5h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
-    <g id="d-squat"><path d="M0 3h16v7h-3v5H3v-5H0V3Z" fill="#111"/><path d="M1 4h14v5h-3v5H4V9H1V4Z" fill="#fff"/><path d="M4 6h3v1H4zm5 0h3v1H9zM1 11h3v2H1zm11 0h3v2h-3z" fill="#111"/></g>
-    <g id="d-jump"><path d="M2 0h12v8h-2v6h-2v2H6v-2H4V8H2V0ZM0 2h3v7H0zm13 0h3v7h-3Z" fill="#111"/><path d="M3 1h10v6h-2v6H9v1H7v-1H5V7H3V1ZM1 3h1v5H1zm13 0h1v5h-1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
-    <g id="d-land"><path d="M0 2h16v7h-3v6H3V9H0V2Z" fill="#111"/><path d="M1 3h14v5h-3v6H4V8H1V3Z" fill="#fff"/><path d="M4 5h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
-    <g id="d-wink"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h3v1H5zm5-1h2v2h-2zM6 8h4v1H6z" fill="#111"/></g>
+    <g id="d-neutral"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="d-left-one"><path d="M0 2h14v7h-3v6H4V9H0V2Zm13 5h3v3h-3Z" fill="none"/><path d="M1 3h12v5h-3v6H5V8H1V3Zm13 5h1v1h-1Z" fill="#fff"/><path d="M4 5h2v2H4zm4-1h2v2H8z" fill="#111"/></g>
+    <g id="d-left-two"><path d="M0 3h13v7h-3v5H3v-5H0V3Zm12 1h4v4h-4Z" fill="none"/><path d="M1 4h11v5H9v5H4V9H1V4Zm12 1h2v2h-2Z" fill="#fff"/><path d="M3 6h3v2H3zm5-1h2v2H8z" fill="#111"/></g>
+    <g id="d-bounce"><path d="M1 0h14v8h-3v8H4V8H1V0Z" fill="none"/><path d="M2 1h12v6h-3v8H5V7H2V1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
+    <g id="d-step-left"><path d="M0 1h14v7h-3v6H6v2H2v-2h2V8H0V1Z" fill="none"/><path d="M1 2h12v5h-3v6H7v1H4v-1h1V7H1V2Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
+    <g id="d-right-one"><path d="M2 2h14v7h-4v6H5V9H2V8H0V5h3Z" fill="none"/><path d="M3 3h12v5h-4v6H6V8H3V7H1V6h2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 1h2v2h-2z" fill="#111"/></g>
+    <g id="d-right-two"><path d="M3 3h13v7h-3v5H6v-5H3V8H0V4h4Z" fill="none"/><path d="M4 4h11v5h-3v5H7V9H4V7H1V5h3Z" fill="#fff"/><path d="M6 5h2v2H6zm4 1h3v2h-3z" fill="#111"/></g>
+    <g id="d-step-right"><path d="M2 1h14v7h-4v6h2v2h-4v-2H5V8H2V1Z" fill="none"/><path d="M3 2h12v5h-4v6h1v1h-3v-1H6V7H3V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
+    <g id="d-arms-low"><path d="M1 1h14v7h-3v7H4V8H1V6H0V3h3v2h10V3h3v3h-1v2h-3v7H4V8H1Z" fill="none"/><path d="M2 2h12v5h-3v7H5V7H2V6H1V4h1v2h12V4h1v2h-1v1h-3v7H5V7H2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
+    <g id="d-arms-high"><path d="M2 2h12v7h-2v6H4V9H2V7H0V0h3v5h10V0h3v7h-2v2h-2v6H4V9H2Z" fill="none"/><path d="M3 3h10v5h-2v6H5V8H3V6H1V1h1v5h12V1h1v5h-2v2h-2v6H5V8H3Z" fill="#fff"/><path d="M4 5h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
+    <g id="d-squat"><path d="M0 3h16v7h-3v5H3v-5H0V3Z" fill="none"/><path d="M1 4h14v5h-3v5H4V9H1V4Z" fill="#fff"/><path d="M4 6h3v1H4zm5 0h3v1H9zM1 11h3v2H1zm11 0h3v2h-3z" fill="#111"/></g>
+    <g id="d-jump"><path d="M2 0h12v8h-2v6h-2v2H6v-2H4V8H2V0ZM0 2h3v7H0zm13 0h3v7h-3Z" fill="none"/><path d="M3 1h10v6h-2v6H9v1H7v-1H5V7H3V1ZM1 3h1v5H1zm13 0h1v5h-1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
+    <g id="d-land"><path d="M0 2h16v7h-3v6H3V9H0V2Z" fill="none"/><path d="M1 3h14v5h-3v6H4V8H1V3Z" fill="#fff"/><path d="M4 5h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
+    <g id="d-wink"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h3v1H5zm5-1h2v2h-2zM6 8h4v1H6z" fill="#111"/></g>
   </defs>
   <use href="#d-neutral"/><use href="#d-left-one" x="16"/><use href="#d-left-two" x="32"/>
   <use href="#d-bounce" x="48"/><use href="#d-step-left" x="64"/><use href="#d-neutral" x="80"/>

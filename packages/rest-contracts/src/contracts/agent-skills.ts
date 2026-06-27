@@ -3,7 +3,6 @@ import { z } from "zod";
 import {
   AgentSkill,
   AgentSkillsList,
-  AgentSkillSearchMode,
   AgentSkillSearchPage,
   CreateAgentSkillBody,
   UpdateAgentSkillBody,
@@ -26,14 +25,13 @@ export const agentSkillsContract = c.router({
     path: "/users/me/agent-skills/search",
     query: z.object({
       q: z.string().min(1),
-      mode: AgentSkillSearchMode.optional(),
       limit: z.coerce.number().int().positive().max(50).optional(),
     }),
     responses: {
       200: AgentSkillSearchPage,
     },
     summary:
-      "Search the authenticated user's agent skills by text or semantic embedding.",
+      "Search the authenticated user's agent skills using hybrid BM25 + semantic ranking.",
   },
   createAgentSkill: {
     method: "POST",
@@ -64,6 +62,16 @@ export const agentSkillsContract = c.router({
       404: z.null(),
     },
     summary: "Delete one of the authenticated user's agent skills.",
+  },
+  resetMyAgentSkillsToDefaults: {
+    method: "POST",
+    path: "/users/me/agent-skills/reset-to-defaults",
+    body: z.undefined(),
+    responses: {
+      200: AgentSkillsList,
+    },
+    summary:
+      "Delete all of the authenticated user's agent skills and reinstall the configured defaults.",
   },
 });
 

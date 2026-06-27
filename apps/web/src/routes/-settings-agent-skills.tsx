@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import {
   IconPencil,
   IconPlus,
+  IconRefresh,
   IconSearch,
   IconTrash,
 } from "@tabler/icons-react";
-import type { AgentSkillDto, AgentSkillSearchModeDto } from "@repo/shared-dto";
+import type { AgentSkillDto } from "@repo/shared-dto";
 
 import { Mascot } from "@/components/mascot";
 import { Badge } from "@/components/ui/badge";
@@ -27,13 +28,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -41,6 +35,7 @@ import {
   useAgentSkills,
   useCreateAgentSkill,
   useDeleteAgentSkill,
+  useResetAgentSkillsToDefaults,
   useUpdateAgentSkill,
 } from "@/hooks/use-agent-skills";
 import { useToast as toast } from "@/hooks/use-toast";
@@ -48,13 +43,13 @@ import { useToast as toast } from "@/hooks/use-toast";
 export function AgentSkillsTab() {
   const skills = useAgentSkills();
   const [query, setQuery] = useState("");
-  const [mode, setMode] = useState<AgentSkillSearchModeDto>("text");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AgentSkillDto | null>(null);
 
   const deleteSkill = useDeleteAgentSkill();
+  const resetToDefaults = useResetAgentSkillsToDefaults();
 
   useEffect(() => {
     const handle = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
@@ -63,7 +58,7 @@ export function AgentSkillsTab() {
 
   const isSearching = debouncedQuery.length > 0;
   const search = useAgentSkillSearch(
-    { q: debouncedQuery, mode, limit: 50 },
+    { q: debouncedQuery, limit: 50 },
     isSearching,
   );
 
@@ -90,6 +85,20 @@ export function AgentSkillsTab() {
     });
   };
 
+  const handleResetToDefaults = () => {
+    if (
+      !window.confirm(
+        "This will delete all your current skills and restore the defaults. Continue?",
+      )
+    ) {
+      return;
+    }
+    resetToDefaults.mutate(undefined, {
+      onSuccess: () => toast.success("Skills reset to defaults"),
+      onError: (error: Error) => toast.error(error.message),
+    });
+  };
+
   const listSkills = skills.data ?? [];
   const resultSkills = search.data?.items ?? [];
 
@@ -101,41 +110,37 @@ export function AgentSkillsTab() {
             <div className="grid gap-1.5">
               <CardTitle>Agent Skills</CardTitle>
               <CardDescription>
-                Reusable instructions your assistant can apply. Search them by
-                keyword or by meaning.
+                Reusable instructions your assistant can apply. Search by
+                keyword or meaning — results are ranked with hybrid BM25 +
+                semantic search.
               </CardDescription>
             </div>
-            <Button type="button" onClick={handleNew}>
-              <IconPlus />
-              New skill
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={resetToDefaults.isPending}
+                onClick={handleResetToDefaults}
+              >
+                <IconRefresh />
+                Reset to defaults
+              </Button>
+              <Button type="button" onClick={handleNew}>
+                <IconPlus />
+                New skill
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="grid gap-3">
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <div className="relative flex-1">
-              <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search your skills"
-                className="pl-9"
-              />
-            </div>
-            <Select
-              value={mode}
-              onValueChange={(value) =>
-                value !== null && setMode(value as AgentSkillSearchModeDto)
-              }
-            >
-              <SelectTrigger className="sm:w-44">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="text">Text search</SelectItem>
-                <SelectItem value="embedding">Semantic search</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="relative">
+            <IconSearch className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search your skills"
+              className="pl-9"
+            />
           </div>
 
           {isSearching ? (
@@ -148,7 +153,7 @@ export function AgentSkillsTab() {
                 Failed to search skills.
               </CenteredNote>
             ) : resultSkills.length === 0 ? (
-              <CenteredNote>No skills match “{debouncedQuery}”.</CenteredNote>
+              <CenteredNote>No skills match "{debouncedQuery}".</CenteredNote>
             ) : (
               <div className="grid gap-3">
                 {resultSkills.map((skill) => (
@@ -243,7 +248,7 @@ function SkillRow({
             <span className="font-medium">{skill.name}</span>
             {skill.isDefault && <Badge variant="secondary">default</Badge>}
             {typeof score === "number" && (
-              <Badge variant="outline">{score.toFixed(2)}</Badge>
+              <Badge variant="outline">{score.toFixed(3)}</Badge>
             )}
           </div>
           {skill.description && (

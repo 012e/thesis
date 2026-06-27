@@ -1,6 +1,5 @@
 import type {
   AgentSkillDto,
-  AgentSkillSearchModeDto,
   AgentSkillSearchResultDto,
 } from "@repo/shared-dto";
 import { handleAuthFailure } from "@/lib/auth";
@@ -23,18 +22,14 @@ export async function fetchMyAgentSkills(): Promise<AgentSkillDto[]> {
 
 export interface SearchAgentSkillsParams {
   q: string;
-  mode?: AgentSkillSearchModeDto;
   limit?: number;
 }
 
 export async function searchMyAgentSkills(
   params: SearchAgentSkillsParams,
-): Promise<{
-  mode: AgentSkillSearchModeDto;
-  items: AgentSkillSearchResultDto[];
-}> {
+): Promise<{ items: AgentSkillSearchResultDto[] }> {
   const response = await client.searchMyAgentSkills({
-    query: { q: params.q, mode: params.mode, limit: params.limit },
+    query: { q: params.q, limit: params.limit },
   });
 
   if (response.status === 401) {
@@ -121,4 +116,19 @@ export async function deleteAgentSkill(id: string): Promise<boolean> {
   }
 
   throw new Error("Failed to delete agent skill");
+}
+
+export async function resetAgentSkillsToDefaults(): Promise<AgentSkillDto[]> {
+  const response = await client.resetMyAgentSkillsToDefaults({});
+
+  if (response.status === 401) {
+    handleAuthFailure();
+    throw new Error("Authentication required");
+  }
+
+  if (response.status === 200) {
+    return response.body.items;
+  }
+
+  throw new Error("Failed to reset agent skills");
 }

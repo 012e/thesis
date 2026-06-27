@@ -31,7 +31,7 @@ import {
   type ChoiceOption,
   type OnboardingResult,
 } from "@/lib/assistant/onboarding-tools";
-import { setMyTagPreference } from "@/lib/api/tags";
+import { fetchTagSuggestions, setMyTagPreference } from "@/lib/api/tags";
 import { updateUserProfile } from "@/lib/api/users";
 import { cn } from "@/lib/utils";
 
@@ -118,31 +118,141 @@ function SkipButton({ onSkip }: { onSkip: () => void }) {
   );
 }
 
-/** Read-only confirmation shown once a card has been answered or skipped. */
-function AnsweredSummary({
-  icon: Icon,
-  result,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  result: OnboardingResult | undefined;
-}) {
-  let detail = "Saved";
-  if (result?.status === "skipped") detail = "Skipped";
-  else if (result?.status === "completed") detail = "Onboarding complete";
-  else if (result && "value" in result) detail = result.value;
-  else if (result && "values" in result) detail = result.values.join(", ");
-  else if (result && "tags" in result)
-    detail = result.tags.map((t) => `#${t}`).join("  ");
-  else if (result && "bio" in result) detail = result.bio;
+async function setExistingTagPreferences(slugs: string[]) {
+  await Promise.allSettled(
+    slugs.map(async (slug) => {
+      const suggestions = await fetchTagSuggestions({ q: slug, limit: 10 });
+      const exists = suggestions.items.some((tag) => tag.slug === slug);
+      if (!exists) return;
 
+      await setMyTagPreference({ slug, preference: "preferred" });
+    }),
+  );
+}
+
+function humanizeValue(value: string) {
+  return value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function optionLabel(args: unknown, value: string) {
+  const options = isRecord(args) ? readOptions(args.options) : [];
   return (
-    <div className="flex w-full items-start gap-2 border border-border bg-muted/40 px-4 py-3 text-sm">
-      <Icon className="mt-0.5 size-4 shrink-0 text-primary" />
-      <span className="min-w-0 break-words text-muted-foreground">
-        {detail}
+    options.find((option) => option.value === value)?.label ??
+    humanizeValue(value)
+  );
+}
+
+function summarizeList(values: string[], maxVisible = 2) {
+  const visible = values.slice(0, maxVisible);
+  const remaining = values.length - visible.length;
+  return remaining > 0
+    ? `${visible.join(", ")} +${remaining} more`
+    : visible.join(", ");
+}
+
+function SummaryLine({
+  label,
+  value,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "muted";
+}) {
+  return (
+    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 pt-0.5">
+      <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      <span
+        className={cn(
+          "min-w-0 break-words text-sm font-medium leading-relaxed",
+          tone === "muted" ? "text-muted-foreground" : "text-foreground",
+        )}
+      >
+        {value}
       </span>
     </div>
   );
+}
+
+/** Read-only confirmation shown once a card has been answered or skipped. */
+function AnsweredSummary({
+  args,
+  result,
+  toolName,
+}: {
+  args: unknown;
+  result: OnboardingResult | undefined;
+  toolName: (typeof ONBOARDING_TOOL_NAMES)[keyof typeof ONBOARDING_TOOL_NAMES];
+}) {
+  if (!result) return null;
+
+  if (result.status === "skipped") {
+    return (
+      <SummaryLine label="Skipped" value="No preference saved" tone="muted" />
+    );
+  }
+
+  if (result.status === "completed") {
+    return <SummaryLine label="Complete" value="Onboarding finished" />;
+  }
+
+  if ("value" in result) {
+    return (
+      <SummaryLine
+        label="Experience"
+        value={optionLabel(args, result.value)}
+      />
+    );
+  }
+
+  if ("values" in result) {
+    const labels = result.values.map((value) => optionLabel(args, value));
+    return (
+      <SummaryLine
+        label="Content"
+        value={
+          labels.length > 0 ? summarizeList(labels) : "No content selected"
+        }
+      />
+    );
+  }
+
+  if ("tags" in result) {
+    const labels = result.tags.map(humanizeValue);
+    return (
+      <SummaryLine
+        label="Topics"
+        value={
+          labels.length > 0
+            ? `${result.tags.length} selected: ${summarizeList(labels, 3)}`
+            : "No topics selected"
+        }
+      />
+    );
+  }
+
+  if ("bio" in result) {
+    return (
+      <SummaryLine
+        label="Bio"
+        value={
+          result.bio.length > 80
+            ? `${result.bio.slice(0, 77)}...`
+            : result.bio
+        }
+      />
+    );
+  }
+
+  return toolName === ONBOARDING_TOOL_NAMES.finishOnboarding ? (
+    <SummaryLine label="Complete" value="Onboarding finished" />
+  ) : null;
 }
 
 function OptionCard({
@@ -560,7 +670,11 @@ const ChooseExperienceToolUI = makeAssistantToolUI({
     status.type === "running" ? (
       <ChooseExperienceCard toolCallId={toolCallId} args={args} />
     ) : (
-      <AnsweredSummary icon={IconUserCircle} result={asResult(result)} />
+      <AnsweredSummary
+        args={args}
+        result={asResult(result)}
+        toolName={ONBOARDING_TOOL_NAMES.chooseExperience}
+      />
     ),
 });
 
@@ -570,7 +684,11 @@ const PickContentTypesToolUI = makeAssistantToolUI({
     status.type === "running" ? (
       <PickContentTypesCard toolCallId={toolCallId} args={args} />
     ) : (
-      <AnsweredSummary icon={IconSparkles} result={asResult(result)} />
+      <AnsweredSummary
+        args={args}
+        result={asResult(result)}
+        toolName={ONBOARDING_TOOL_NAMES.pickContentTypes}
+      />
     ),
 });
 
@@ -580,7 +698,11 @@ const SuggestTagsToolUI = makeAssistantToolUI({
     status.type === "running" ? (
       <SuggestTagsCard toolCallId={toolCallId} args={args} />
     ) : (
-      <AnsweredSummary icon={IconHash} result={asResult(result)} />
+      <AnsweredSummary
+        args={args}
+        result={asResult(result)}
+        toolName={ONBOARDING_TOOL_NAMES.suggestTags}
+      />
     ),
 });
 
@@ -590,7 +712,11 @@ const SuggestBioToolUI = makeAssistantToolUI({
     status.type === "running" ? (
       <SuggestBioCard toolCallId={toolCallId} args={args} />
     ) : (
-      <AnsweredSummary icon={IconUserCircle} result={asResult(result)} />
+      <AnsweredSummary
+        args={args}
+        result={asResult(result)}
+        toolName={ONBOARDING_TOOL_NAMES.suggestBio}
+      />
     ),
 });
 
@@ -600,7 +726,11 @@ const FinishOnboardingToolUI = makeAssistantToolUI({
     status.type === "running" ? (
       <FinishOnboardingCard toolCallId={toolCallId} args={args} />
     ) : (
-      <AnsweredSummary icon={IconRocket} result={asResult(result)} />
+      <AnsweredSummary
+        args={args}
+        result={asResult(result)}
+        toolName={ONBOARDING_TOOL_NAMES.finishOnboarding}
+      />
     ),
 });
 
@@ -610,7 +740,7 @@ const FinishOnboardingToolUI = makeAssistantToolUI({
  */
 export function OnboardingAssistantTools() {
   useAssistantInstructions(
-    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio) and wait for each result before continuing. When all steps are done, call finish_onboarding.",
+    "You are running the onboarding preference setup. Ask one question at a time using the dedicated tools (choose_experience, pick_content_types, suggest_tags, suggest_bio) and wait for each result before continuing. The UI already summarizes completed answers, so avoid generic acknowledgements such as \"Nice\" or \"Great choice\". If you need narration between tool calls, write one short sentence that explains the next step and never repeat a previous sentence. When all steps are done, call finish_onboarding.",
   );
 
   const chooseExperience = useMemo(
@@ -641,13 +771,6 @@ export function OnboardingAssistantTools() {
           context.toolCallId,
           context.abortSignal,
         );
-        if (result.status === "submitted" && "values" in result) {
-          await Promise.allSettled(
-            result.values.map((slug) =>
-              setMyTagPreference({ slug, preference: "preferred" }),
-            ),
-          );
-        }
         return result;
       },
     }),
@@ -669,11 +792,7 @@ export function OnboardingAssistantTools() {
           context.abortSignal,
         );
         if (result.status === "submitted" && "tags" in result) {
-          await Promise.allSettled(
-            result.tags.map((slug) =>
-              setMyTagPreference({ slug, preference: "preferred" }),
-            ),
-          );
+          await setExistingTagPreferences(result.tags);
         }
         return result;
       },

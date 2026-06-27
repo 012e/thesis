@@ -14,6 +14,7 @@ import bearerToken from "@/lib/atoms/bearer-token";
 import { Button } from "@/components/ui/button";
 import { Thread } from "@/components/assistant-ui/thread";
 import { OnboardingAssistantTools } from "@/components/assistant-ui/onboarding-tools";
+import { cancelPendingOnboardingResponses } from "@/lib/assistant/onboarding-tools";
 
 export const Route = createFileRoute("/onboarding")({
   component: RouteComponent,
@@ -23,6 +24,8 @@ const ONBOARDING_KICKOFF_MESSAGE =
   "Hi! I just signed up. Help me set up my account.";
 const TYPEWRITER_INITIAL_PAUSE_MS = 450;
 const TYPEWRITER_READING_PAUSE_MS = 650;
+const SHOULD_ANIMATE_KICKOFF = !import.meta.env.DEV;
+let hasSentInstantKickoff = false;
 
 function getTypingDelay(character: string, characterIndex: number) {
   const jitter = Math.random();
@@ -93,6 +96,23 @@ const OnboardingKickoff: FC<{
   auiRef.current = aui;
 
   useEffect(() => {
+    if (!SHOULD_ANIMATE_KICKOFF) {
+      if (hasSentInstantKickoff) return;
+      hasSentInstantKickoff = true;
+
+      onTextChange(ONBOARDING_KICKOFF_MESSAGE);
+      auiRef.current.thread().append({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: ONBOARDING_KICKOFF_MESSAGE,
+          },
+        ],
+      });
+      return;
+    }
+
     let characterIndex = 0;
     let typingTimeout: ReturnType<typeof setTimeout> | undefined;
     let sendTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -183,6 +203,7 @@ function OnboardingScreen({ kickoffText }: { kickoffText: string }) {
           composerPlaceholder="Type a reply, or use the cards above…"
           emptyState={<TypewriterUserMessage text={kickoffText} />}
           hideComposerTools
+          onCancelRun={cancelPendingOnboardingResponses}
           richToolsOnRail
         />
       </div>

@@ -10,6 +10,10 @@ import {
   IconRefresh,
   IconDownload,
   IconMessage2,
+  IconHash,
+  IconRocket,
+  IconSparkles,
+  IconUserCircle,
 } from "@tabler/icons-react";
 import {
   ActionBarPrimitive,
@@ -43,6 +47,7 @@ import {
 import { ToolFallback } from "@/components/assistant-ui/tool-fallback";
 import { RailRow, ToolTimeline } from "@/components/assistant-ui/tool-timeline";
 import { isTimelineTool } from "@/lib/assistant/tool-timeline";
+import { ONBOARDING_TOOL_NAMES } from "@/lib/assistant/onboarding-tools";
 import {
   Reasoning,
   ReasoningContent,
@@ -75,6 +80,8 @@ interface ThreadProps {
   composerPlaceholder?: string;
   /** Hides the attachment button and model selector in the composer. */
   hideComposerTools?: boolean;
+  /** Optional cleanup hook invoked when the current assistant run is cancelled. */
+  onCancelRun?: () => void;
   /**
    * Render rich (non-timeline) tools — e.g. the onboarding cards — connected on
    * the activity rail instead of breaking out as detached full-width blocks.
@@ -91,6 +98,7 @@ export function Thread({
   emptyState,
   composerPlaceholder,
   hideComposerTools,
+  onCancelRun,
   richToolsOnRail = false,
 }: ThreadProps) {
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -144,6 +152,7 @@ export function Thread({
             <Composer
               placeholder={composerPlaceholder}
               hideTools={hideComposerTools}
+              onCancelRun={onCancelRun}
             />
           </ThreadPrimitive.ViewportFooter>
         </ThreadPrimitive.Viewport>
@@ -264,9 +273,11 @@ function ThreadWelcome() {
 function Composer({
   placeholder,
   hideTools,
+  onCancelRun,
 }: {
   placeholder?: string;
   hideTools?: boolean;
+  onCancelRun?: () => void;
 }) {
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -290,13 +301,19 @@ function Composer({
           rows={1}
           autoFocus
         />
-        <ComposerAction hideTools={hideTools} />
+        <ComposerAction hideTools={hideTools} onCancelRun={onCancelRun} />
       </ComposerPrimitive.AttachmentDropzone>
     </ComposerPrimitive.Root>
   );
 }
 
-function ComposerAction({ hideTools }: { hideTools?: boolean }) {
+function ComposerAction({
+  hideTools,
+  onCancelRun,
+}: {
+  hideTools?: boolean;
+  onCancelRun?: () => void;
+}) {
   return (
     <div
       className={cn(
@@ -321,7 +338,12 @@ function ComposerAction({ hideTools }: { hideTools?: boolean }) {
 
       <AuiIf condition={(s) => s.thread.isRunning}>
         <ComposerPrimitive.Cancel asChild>
-          <button className="flex justify-center items-center transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90">
+          <button
+            type="button"
+            aria-label="Stop response"
+            onClick={onCancelRun}
+            className="flex justify-center items-center transition-colors size-8 bg-primary text-primary-foreground hover:bg-primary/90"
+          >
             <IconPlayerStop className="size-4" />
           </button>
         </ComposerPrimitive.Cancel>
@@ -429,7 +451,12 @@ function useAssistantRunInfo() {
 
   return useMemo(() => {
     if (messages[index]?.role !== "assistant") {
-      return { isFirstInRun: true, isLastInRun: true, runHasActivity: false };
+    return {
+      isFirstInRun: true,
+      isLastInRun: true,
+      runHasActivity: false,
+      hasLaterActivity: false,
+    };
     }
 
     let start = index;
@@ -448,27 +475,97 @@ function useAssistantRunInfo() {
       }
     }
 
+    let hasLaterActivity = false;
+    for (let i = index + 1; i < messages.length && !hasLaterActivity; i++) {
+      for (const part of messages[i]?.content ?? []) {
+        if (part.type === "tool-call" || part.type === "data") {
+          hasLaterActivity = true;
+          break;
+        }
+      }
+    }
+
     return {
       isFirstInRun: index === start,
       isLastInRun: index === end,
       runHasActivity,
+      hasLaterActivity,
     };
   }, [messages, index]);
 }
 
 function AssistantMessage() {
-  const { isFirstInRun, isLastInRun, runHasActivity } = useAssistantRunInfo();
+  const { isFirstInRun, isLastInRun, runHasActivity, hasLaterActivity } =
+    useAssistantRunInfo();
 
   if (runHasActivity) {
     return (
       <ActivityAssistantMessage
         isFirstInRun={isFirstInRun}
         isLastInRun={isLastInRun}
+        hasLaterActivity={hasLaterActivity}
       />
     );
   }
 
   return <PlainAssistantMessage />;
+}
+
+function getRichToolRailIcon(toolName: string) {
+  switch (toolName) {
+    case ONBOARDING_TOOL_NAMES.chooseExperience:
+    case ONBOARDING_TOOL_NAMES.suggestBio:
+      return IconUserCircle;
+    case ONBOARDING_TOOL_NAMES.pickContentTypes:
+      return IconSparkles;
+    case ONBOARDING_TOOL_NAMES.suggestTags:
+      return IconHash;
+    case ONBOARDING_TOOL_NAMES.finishOnboarding:
+      return IconRocket;
+    default:
+      return null;
+  }
+}
+
+function isRichToolRailTool(toolName: string) {
+  return Object.values(ONBOARDING_TOOL_NAMES).includes(
+    toolName as (typeof ONBOARDING_TOOL_NAMES)[keyof typeof ONBOARDING_TOOL_NAMES],
+  );
+}
+
+function messageParts(message: unknown): readonly unknown[] {
+  if (typeof message !== "object" || message == null) return [];
+
+  const candidate = message as {
+    content?: unknown;
+    parts?: unknown;
+  };
+
+  if (Array.isArray(candidate.content)) return candidate.content;
+  if (Array.isArray(candidate.parts)) return candidate.parts;
+  return [];
+}
+
+function partType(part: unknown) {
+  if (typeof part !== "object" || part == null) return undefined;
+  const type = (part as { type?: unknown }).type;
+  return typeof type === "string" ? type : undefined;
+}
+
+function messageHasToolCall(message: unknown) {
+  return messageParts(message).some((part) => partType(part) === "tool-call");
+}
+
+function toolPartStatusType(part: unknown) {
+  const status = (part as { status?: { type?: unknown } }).status;
+  return typeof status?.type === "string" ? status.type : undefined;
+}
+
+function toolPartHasResult(part: unknown) {
+  return (
+    "result" in (part as Record<string, unknown>) &&
+    (part as { result?: unknown }).result != null
+  );
 }
 
 /** Classic bubble layout: mascot beside the content. Used for plain answers. */
@@ -546,11 +643,28 @@ function PlainAssistantMessage() {
 function ActivityAssistantMessage({
   isFirstInRun,
   isLastInRun,
+  hasLaterActivity,
 }: {
   isFirstInRun: boolean;
   isLastInRun: boolean;
+  hasLaterActivity: boolean;
 }) {
   const richToolsOnRail = useContext(RichToolsOnRailContext);
+  const messageIndex = useAuiState((s) => s.message.index);
+  const messages = useAuiState((s) => s.thread.messages);
+
+  const hasActivityAfterPart = (indices: readonly number[]) => {
+    if (!richToolsOnRail) return false;
+
+    const maxPartIndex = Math.max(...indices);
+    const currentContent = messages[messageIndex]?.content ?? [];
+    for (let i = maxPartIndex + 1; i < currentContent.length; i++) {
+      const part = currentContent[i];
+      if (part?.type === "tool-call" || part?.type === "data") return true;
+    }
+
+    return hasLaterActivity;
+  };
 
   return (
     <MessagePrimitive.Root
@@ -572,18 +686,14 @@ function ActivityAssistantMessage({
       <MessagePrimitive.GroupedParts
         groupBy={(part) => {
           if (part.type === "reasoning") return ["group-chain-of-thought"];
-          // Tool steps, the (invisible) agent data that follows them, and the
-          // assistant's intermediate narration all form one continuous rail.
-          // The final answer (last message of the turn) is kept off the rail
-          // and rendered as prominent prose instead. When richToolsOnRail is
-          // set, rich tool UIs (e.g. onboarding cards) join the rail too.
+          // Tool steps, the (invisible) agent data that follows them, and
+          // standalone narration all form one continuous rail.
           if (
             (part.type === "tool-call" &&
               (isTimelineTool(part.toolName) || richToolsOnRail)) ||
-            part.type === "data" ||
-            // On the rich-tools rail every text part stays on the rail so the
-            // narration connects to the cards into one continuous timeline.
-            (part.type === "text" && (!isLastInRun || richToolsOnRail))
+            (part.type === "data" && !richToolsOnRail) ||
+            (part.type === "text" &&
+              (richToolsOnRail || !isLastInRun))
           )
             return ["group-tool-timeline"];
           return null;
@@ -591,10 +701,20 @@ function ActivityAssistantMessage({
       >
         {({ part, children }) => {
           switch (part.type) {
-            case "group-tool-timeline":
+            case "group-tool-timeline": {
+              const indices =
+                "indices" in part && Array.isArray(part.indices)
+                  ? part.indices
+                  : [];
+
               return (
-                <ToolTimeline capLast={isLastInRun}>{children}</ToolTimeline>
+                <ToolTimeline
+                  capLast={isLastInRun && !hasActivityAfterPart(indices)}
+                >
+                  {children}
+                </ToolTimeline>
               );
+            }
             case "group-chain-of-thought":
               return (
                 <ChainOfThoughtGroup
@@ -607,17 +727,16 @@ function ActivityAssistantMessage({
             case "text": {
               if (!part.text.trim()) return null;
 
-              // On the rich-tools rail the narration is primary content (the
-              // agent talking to the user), so it gets a prominent foreground
-              // row with a step dot that connects down to the next card.
               if (richToolsOnRail) {
+                if (messageHasToolCall(messages[messageIndex])) return null;
+
                 return (
                   <RailRow
                     node={
-                      <span className="size-2.5 rounded-full bg-primary" />
+                      <IconMessage2 className="size-4 text-muted-foreground" />
                     }
                   >
-                    <div className="pt-0.5 text-sm leading-relaxed wrap-break-word text-foreground">
+                    <div className="pt-0.5 text-sm leading-relaxed wrap-break-word text-muted-foreground">
                       <MarkdownText />
                     </div>
                   </RailRow>
@@ -646,14 +765,28 @@ function ActivityAssistantMessage({
               return isLastInRun ? <Sources {...part} /> : null;
             case "tool-call": {
               const toolContent = part.toolUI ?? <ToolFallback {...part} />;
-              // Rich tools (onboarding cards, charts) keep their full UI but
-              // hang off the rail with a step dot, so the activity stays one
-              // connected timeline rather than a detached block.
-              if (richToolsOnRail && !isTimelineTool(part.toolName)) {
+              if (
+                richToolsOnRail &&
+                (isRichToolRailTool(part.toolName) ||
+                  !isTimelineTool(part.toolName))
+              ) {
+                if (
+                  isRichToolRailTool(part.toolName) &&
+                  toolPartStatusType(part) !== "running" &&
+                  !toolPartHasResult(part)
+                ) {
+                  return null;
+                }
+
+                const Icon = getRichToolRailIcon(part.toolName);
                 return (
                   <RailRow
                     node={
-                      <span className="size-2.5 rounded-full bg-primary" />
+                      Icon ? (
+                        <Icon className="size-4 text-foreground" />
+                      ) : (
+                        <span className="size-2.5 rounded-full bg-primary" />
+                      )
                     }
                   >
                     {toolContent}

@@ -88,6 +88,7 @@ export function ReportDialog({
             <Select
               value={reason}
               onValueChange={(value) => setReason(value as ReportReasonType)}
+              items={REPORT_REASONS}
             >
               <SelectTrigger id="report-reason" className="w-full">
                 <SelectValue />

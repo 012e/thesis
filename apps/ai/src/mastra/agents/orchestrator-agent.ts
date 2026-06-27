@@ -8,6 +8,7 @@ import { POST_CREATION_AGENT_CONFIG } from "./post-creation-agent";
 import { POST_DRAFTING_AGENT_CONFIG } from "./post-drafting-agent";
 import { PLANNING_AGENT_CONFIG } from "./planning-agent";
 import { SEARCH_AGENT_CONFIG } from "./search-agent";
+import { DEEP_SEARCH_AGENT_CONFIG } from "./deep-search-agent";
 import { SOCIAL_MEDIA_AGENT_CONFIG } from "./social-media-agent";
 import { AGENT_SKILLS_AGENT_CONFIG } from "./agent-skills-agent";
 import {
@@ -26,8 +27,11 @@ import { createGetContextTool } from "../tools/context";
  *
  * 1. Fetches all six MCP toolsets using the current request's auth context.
  * 2. Constructs the consolidated social-media-agent (five toolsets merged in),
- *    a dedicated agent-skills-agent (the agent-skills toolset), plus the
- *    tool-free/content sub-agents (drafting, search, navigation, planning).
+ *    the deep-search-agent (web research tools plus the posts/tags toolsets as
+ *    internal sources), and the content/utility sub-agents (drafting, search,
+ *    navigation, planning). The agent-skills-agent is no longer an orchestrator
+ *    delegate — it is attached as a tool to the planning-agent so plans can
+ *    reuse the user's saved skills.
  * 3. Returns an orchestrator (supervisor) agent that has all sub-agents
  *    registered. Use `stepJudgeAgent` separately to evaluate whether the
  *    orchestrator fully completed the user's requested steps.
@@ -75,8 +79,9 @@ export async function createOrchestratorAgent(
     },
   });
 
-  // Dedicated specialist for the user's reusable agent-skill library, visible to
-  // the orchestrator as its own delegate.
+  // The user's reusable agent-skill library. It is no longer a direct delegate
+  // of the orchestrator; instead it is exposed as a tool to the planning agent
+  // so plans can discover and reuse relevant saved skills while being built.
   const agentSkillsAgent = new Agent({
     ...AGENT_SKILLS_AGENT_CONFIG,
     model: MODEL_CONFIG.AGENT_SKILLS_AGENT.model,
@@ -99,16 +104,32 @@ export async function createOrchestratorAgent(
     model: MODEL_CONFIG.SEARCH_AGENT.model,
   });
 
+  // Deep-research specialist. Web research tools come from its config; the
+  // platform's own posts and tags are merged in as internal sources so it can
+  // mine on-platform content alongside the open web.
+  const deepSearchAgent = new Agent({
+    ...DEEP_SEARCH_AGENT_CONFIG,
+    model: MODEL_CONFIG.DEEP_SEARCH_AGENT.model,
+    tools: {
+      ...DEEP_SEARCH_AGENT_CONFIG.tools,
+      ...postsToolset,
+      ...tagsToolset,
+    },
+  });
+
   const navigationAgent = new Agent({
     ...NAVIGATION_AGENT_CONFIG,
     model: MODEL_CONFIG.NAVIGATION_AGENT.model,
   });
 
+  // Planning agent gets the agent-skills agent as a tool so plans can reuse the
+  // user's saved skills, plus navigation-agent for UI/route decisions.
   const planningAgent = new Agent({
     ...PLANNING_AGENT_CONFIG,
     model: MODEL_CONFIG.PLANNING_AGENT.model,
     agents: {
       navigationAgent,
+      agentSkillsAgent,
     },
   });
 
@@ -121,10 +142,10 @@ export async function createOrchestratorAgent(
     model: orchestratorModelConfig.model,
     agents: {
       socialMediaAgent,
-      agentSkillsAgent,
       // postCreationAgent,
       postDraftingAgent,
       searchAgent,
+      deepSearchAgent,
       navigationAgent,
       planningAgent,
     },

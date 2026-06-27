@@ -9,6 +9,7 @@ import { postDraftingAgent } from "./agents/post-drafting-agent";
 import { navigationAgent } from "./agents/navigation-agent";
 import { planningAgent } from "./agents/planning-agent";
 import { searchAgent } from "./agents/search-agent";
+import { deepSearchAgent } from "./agents/deep-search-agent";
 import { onboardingAgent } from "./agents/onboarding-agent";
 import { pgStore } from "./memory";
 import { streamRoute } from "./routes/stream";
@@ -27,8 +28,10 @@ import { RequestContext } from "@mastra/core/request-context";
  * - postCreationAgent — post write ops (Studio preview only)
  * - postDraftingAgent — LinkedIn-style and technical question drafting
  * - navigationAgent — app page/tool discovery (Studio preview only)
- * - planningAgent   — explicit execution planning with the strongest model
+ * - planningAgent   — explicit execution planning with the strongest model;
+ *                     consults agentSkillsAgent (as a tool) to reuse saved skills
  * - searchAgent     — web search via OpenAI web search
+ * - deepSearchAgent — exhaustive multi-source research (web + internal posts/tags)
  *
  * Note: the sub-agents registered here have NO tools attached because MCP
  * toolsets require per-request auth. The live /chat route uses
@@ -45,6 +48,7 @@ export const mastra = new Mastra({
     navigationAgent,
     planningAgent,
     searchAgent,
+    deepSearchAgent,
     onboardingAgent,
   },
   storage: pgStore,

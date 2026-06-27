@@ -13,6 +13,7 @@ import { Route as TestingRouteImport } from './routes/testing'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as MascotPreviewRouteImport } from './routes/mascot-preview'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as BookmarksRouteImport } from './routes/bookmarks'
@@ -52,6 +53,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MascotPreviewRoute = MascotPreviewRouteImport.update({
+  id: '/mascot-preview',
+  path: '/mascot-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mascot-preview': typeof MascotPreviewRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -188,6 +195,7 @@ export interface FileRoutesByTo {
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mascot-preview': typeof MascotPreviewRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/bookmarks': typeof BookmarksRoute
   '/explore': typeof ExploreRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/mascot-preview': typeof MascotPreviewRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/bookmarks'
     | '/explore'
     | '/leaderboard'
+    | '/mascot-preview'
     | '/notifications'
     | '/onboarding'
     | '/settings'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/bookmarks'
     | '/explore'
     | '/leaderboard'
+    | '/mascot-preview'
     | '/notifications'
     | '/onboarding'
     | '/settings'
@@ -295,6 +306,7 @@ export interface FileRouteTypes {
     | '/bookmarks'
     | '/explore'
     | '/leaderboard'
+    | '/mascot-preview'
     | '/notifications'
     | '/onboarding'
     | '/settings'
@@ -322,6 +334,7 @@ export interface RootRouteChildren {
   BookmarksRoute: typeof BookmarksRoute
   ExploreRoute: typeof ExploreRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  MascotPreviewRoute: typeof MascotPreviewRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
@@ -370,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mascot-preview': {
+      id: '/mascot-preview'
+      path: '/mascot-preview'
+      fullPath: '/mascot-preview'
+      preLoaderRoute: typeof MascotPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/leaderboard': {
@@ -522,6 +542,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookmarksRoute: BookmarksRoute,
   ExploreRoute: ExploreRoute,
   LeaderboardRoute: LeaderboardRoute,
+  MascotPreviewRoute: MascotPreviewRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
