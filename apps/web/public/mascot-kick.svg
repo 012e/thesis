@@ -3,81 +3,81 @@
 
   <!-- 1: idle, empty field -->
   <g>
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/>
   </g>
 
   <!-- 2: ball enters from the right -->
   <g transform="translate(16)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM14 12h2v3h-2z" fill="#111"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM14 12h2v3h-2z" fill="#111"/>
   </g>
 
   <!-- 3: ball rolls closer -->
   <g transform="translate(32)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM12 12h4v4h-4z" fill="#111"/><path d="M13 13h2v2h-2z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM12 12h4v4h-4z" fill="#111"/><path d="M13 13h2v2h-2z" fill="#fff"/>
   </g>
 
   <!-- 4: first glance -->
   <g transform="translate(48)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM10 12h4v4h-4z" fill="#111"/><path d="M11 13h2v2h-2z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM10 12h4v4h-4z" fill="#111"/><path d="M11 13h2v2h-2z" fill="#fff"/>
   </g>
 
   <!-- 5: ball crosses in front -->
   <g transform="translate(64)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM8 12h4v4H8z" fill="#111"/><path d="M9 13h2v2H9z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM8 12h4v4H8z" fill="#111"/><path d="M9 13h2v2H9z" fill="#fff"/>
   </g>
 
   <!-- 6: mascot looks down -->
   <g transform="translate(80 1)">
-    <path d="M1 1h14v7h-4v6H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v6H6V7H2V2Z" fill="#fff"/><path d="M6 5h2v2H6zm4 0h2v2h-2zM7 11h4v4H7z" fill="#111"/><path d="M8 12h2v2H8z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v6H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v6H6V7H2V2Z" fill="#fff"/><path d="M6 5h2v2H6zm4 0h2v2h-2zM7 11h4v4H7z" fill="#111"/><path d="M8 12h2v2H8z" fill="#fff"/>
   </g>
 
   <!-- 7: ball settles, long stare -->
   <g transform="translate(96 1)">
-    <path d="M1 1h14v7h-4v6H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v6H6V7H2V2Z" fill="#fff"/><path d="M6 5h2v2H6zm4 0h2v2h-2zM7 11h4v4H7z" fill="#111"/><path d="M8 12h2v2H8z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v6H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v6H6V7H2V2Z" fill="#fff"/><path d="M6 5h2v2H6zm4 0h2v2h-2zM7 11h4v4H7z" fill="#111"/><path d="M8 12h2v2H8z" fill="#fff"/>
   </g>
 
   <!-- 8: decides to kick -->
   <g transform="translate(112)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h3v2H5zm5 0h3v2h-3zM7 12h4v4H7z" fill="#111"/><path d="M8 13h2v2H8z" fill="#fff"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h3v2H5zm5 0h3v2h-3zM7 12h4v4H7z" fill="#111"/><path d="M8 13h2v2H8z" fill="#fff"/>
   </g>
 
   <!-- 9: shuffles behind ball -->
   <g transform="translate(128)">
-    <path d="M0 1h13v7h-3v7H4V8H0V1Z" fill="#111"/><path d="M1 2h11v5H9v7H5V7H1V2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9zM10 12h4v4h-4z" fill="#111"/><path d="M11 13h2v2h-2z" fill="#fff"/>
+    <path d="M0 1h13v7h-3v7H4V8H0V1Z" fill="none"/><path d="M1 2h11v5H9v7H5V7H1V2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9zM10 12h4v4h-4z" fill="#111"/><path d="M11 13h2v2h-2z" fill="#fff"/>
   </g>
 
   <!-- 10: leans back -->
   <g transform="translate(144)">
-    <path d="M0 2h13v6h-3v7H4V9H0V2Zm10 10h4v4h-4Z" fill="#111"/><path d="M1 3h11v4H9v7H5V8H1V3Zm10 10h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 1h3v2H9z" fill="#111"/>
+    <path d="M0 2h13v6h-3v7H4V9H0V2Zm10 10h4v4h-4Z" fill="none"/><path d="M1 3h11v4H9v7H5V8H1V3Zm10 10h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 1h3v2H9z" fill="#111"/>
   </g>
 
   <!-- 11: leg winds up -->
   <g transform="translate(160)">
-    <path d="M1 2h12v6h-3v5H7v2H3v-3h2V9H1V2Zm9 10h4v4h-4Z" fill="#111"/><path d="M2 3h10v4H9v5H8v2H4v-1h2V8H2V3Zm9 10h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 1h3v2H9z" fill="#111"/>
+    <path d="M1 2h12v6h-3v5H7v2H3v-3h2V9H1V2Zm9 10h4v4h-4Z" fill="none"/><path d="M2 3h10v4H9v5H8v2H4v-1h2V8H2V3Zm9 10h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 1h3v2H9z" fill="#111"/>
   </g>
 
   <!-- 12: full wind-up -->
   <g transform="translate(176)">
-    <path d="M1 1h12v7h-3v5H8v2H3v-3h3V9H1V1Zm9 11h4v4h-4Z" fill="#111"/><path d="M2 2h10v5H9v5H4v1h3V8H2V2Zm9 11h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/>
+    <path d="M1 1h12v7h-3v5H8v2H3v-3h3V9H1V1Zm9 11h4v4h-4Z" fill="none"/><path d="M2 2h10v5H9v5H4v1h3V8H2V2Zm9 11h2v2h-2Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/>
   </g>
 
   <!-- 13: kick contact -->
   <g transform="translate(192)">
-    <path d="M1 1h12v7h-3v7H5V9H1V1Zm9 11h6v3h-7v-2H7v-2h3Z" fill="#111"/><path d="M2 2h10v5H9v7H6V8H2V2Zm9 11h4v1h-5v-1H8v-1h3Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/>
+    <path d="M1 1h12v7h-3v7H5V9H1V1Zm9 11h6v3h-7v-2H7v-2h3Z" fill="none"/><path d="M2 2h10v5H9v7H6V8H2V2Zm9 11h4v1h-5v-1H8v-1h3Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/>
   </g>
 
   <!-- 14: ball shoots away -->
   <g transform="translate(208)">
-    <path d="M1 1h13v7h-3v7H5V8H1V1Z" fill="#111"/><path d="M2 2h11v5h-3v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h3v2H5zm5 0h3v2h-3zM12 11h4v4h-4zM9 13h2v1H9z" fill="#111"/><path d="M13 12h2v2h-2z" fill="#fff"/>
+    <path d="M1 1h13v7h-3v7H5V8H1V1Z" fill="none"/><path d="M2 2h11v5h-3v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h3v2H5zm5 0h3v2h-3zM12 11h4v4h-4zM9 13h2v1H9z" fill="#111"/><path d="M13 12h2v2h-2z" fill="#fff"/>
   </g>
 
   <!-- 15: watches ball leave -->
   <g transform="translate(224)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM15 12h1v2h-1z" fill="#111"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2zM15 12h1v2h-1z" fill="#111"/>
   </g>
 
   <!-- 16: pleased return to idle -->
   <g transform="translate(240)">
-    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM7 7h3v1H7z" fill="#111"/>
+    <path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9zM7 7h3v1H7z" fill="#111"/>
   </g>
 </svg>

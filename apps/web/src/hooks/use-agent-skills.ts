@@ -8,6 +8,7 @@ import {
   createAgentSkill,
   deleteAgentSkill,
   fetchMyAgentSkills,
+  resetAgentSkillsToDefaults,
   searchMyAgentSkills,
   updateAgentSkill,
   type CreateAgentSkillInput,
@@ -61,6 +62,16 @@ export function useDeleteAgentSkill() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => deleteAgentSkill(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: AGENT_SKILLS_QUERY_KEY });
+    },
+  });
+}
+
+export function useResetAgentSkillsToDefaults() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => resetAgentSkillsToDefaults(),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: AGENT_SKILLS_QUERY_KEY });
     },

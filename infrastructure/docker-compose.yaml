@@ -279,6 +279,7 @@ services:
         # These are baked into the JS bundle — set to public-facing URLs
         VITE_BACKEND_URL: ${BACKEND_PUBLIC_URL:-https://api.toin.dev}
         VITE_MASTRA_CHAT_URL: ${AI_PUBLIC_URL:-https://ai.toin.dev}/chat
+        VITE_MASTRA_ONBOARDING_URL: ${AI_PUBLIC_URL:-https://ai.toin.dev}/onboarding/chat
     container_name: thesis_web
     restart: unless-stopped
     expose:

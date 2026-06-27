@@ -54,31 +54,23 @@ export class AgentSkillTools {
   @Tool({
     name: "search_my_agent_skills",
     description:
-      "Search the current user's agent skills by keyword ('text') or by " +
-      "meaning ('embedding'). Use this to find the most relevant skill before " +
-      "acting on a request.",
+      "Search the current user's agent skills using hybrid BM25 + semantic " +
+      "ranking (Reciprocal Rank Fusion). Use this to find the most relevant " +
+      "skill before acting on a request.",
     parameters: z.object({
       query: z.string().min(1).describe("What to search for"),
-      mode: z
-        .enum(["text", "embedding"])
-        .default("text")
-        .describe("'text' for keyword match, 'embedding' for semantic match"),
       limit: z.number().int().min(1).max(50).default(10),
     }),
   })
   async searchMyAgentSkills(
-    {
-      query,
-      mode,
-      limit,
-    }: { query: string; mode: "text" | "embedding"; limit: number },
+    { query, limit }: { query: string; limit: number },
     _context: Context,
     request: AuthenticatedRequest,
   ) {
     const userId = request.user?.id;
     if (!userId) return error("UNAUTHENTICATED", "Authentication is required.");
     return result(
-      await this.agentSkillsService.search(userId, query, mode, limit),
+      await this.agentSkillsService.search(userId, query, limit),
     );
   }
 

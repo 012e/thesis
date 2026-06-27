@@ -32,7 +32,6 @@ export class AgentSkillsController {
         const result = await this.agentSkillsService.search(
           session.user.id,
           query.q,
-          query.mode ?? "text",
           query.limit,
         );
         return {
@@ -96,6 +95,24 @@ export class AgentSkillsController {
           return { status: 404 as const, body: null };
         }
         return { status: 204 as const, body: undefined };
+      },
+    );
+  }
+
+  @TsRestHandler(agentSkillsContract.resetMyAgentSkillsToDefaults)
+  resetMyAgentSkillsToDefaults(@Session() session: UserSession) {
+    return tsRestHandler(
+      agentSkillsContract.resetMyAgentSkillsToDefaults,
+      async () => {
+        const items = await this.agentSkillsService.resetToDefaults(
+          session.user.id,
+        );
+        return {
+          status: 200 as const,
+          body: agentSkillsContract.resetMyAgentSkillsToDefaults.responses[200].parse(
+            { items },
+          ),
+        };
       },
     );
   }

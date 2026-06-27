@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 16" shape-rendering="crispEdges">
   <title>Toin T mascot sinking away and cautiously peeking back</title>
   <defs>
-    <g id="p-neutral"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
-    <g id="p-blink"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h2v1H5zm4 0h2v1H9z" fill="#111"/></g>
-    <g id="p-low"><path d="M1 5h14v7h-4v4H5v-4H1V5Z" fill="#111"/><path d="M2 6h12v5h-4v5H6v-5H2V6Z" fill="#fff"/><path d="M5 8h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
-    <g id="p-lower"><path d="M1 8h14v7h-4v1H5v-1H1V8Z" fill="#111"/><path d="M2 9h12v5h-4v2H6v-2H2V9Z" fill="#fff"/><path d="M5 11h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
-    <g id="p-rim"><path d="M2 12h12v4H2z" fill="#111"/><path d="M3 13h10v3H3z" fill="#fff"/><path d="M5 14h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
-    <g id="p-eyes-left"><path d="M2 11h12v5H2z" fill="#111"/><path d="M3 12h10v4H3z" fill="#fff"/><path d="M4 13h2v3H4zm4 0h2v3H8z" fill="#111"/></g>
-    <g id="p-eyes-right"><path d="M2 11h12v5H2z" fill="#111"/><path d="M3 12h10v4H3z" fill="#fff"/><path d="M6 13h2v3H6zm4 0h2v3h-2z" fill="#111"/></g>
-    <g id="p-quarter"><path d="M1 9h14v7H1V9Z" fill="#111"/><path d="M2 10h12v6H2v-6Z" fill="#fff"/><path d="M4 12h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
-    <g id="p-half"><path d="M1 6h14v7h-4v3H5v-3H1V6Z" fill="#111"/><path d="M2 7h12v5h-4v4H6v-4H2V7Z" fill="#fff"/><path d="M6 9h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
-    <g id="p-three-quarter"><path d="M1 3h14v7h-4v6H5v-6H1V3Z" fill="#111"/><path d="M2 4h12v5h-4v7H6V9H2V4Z" fill="#fff"/><path d="M4 6h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
-    <g id="p-pop"><path d="M1 0h14v8h-3v8H4V8H1V0Z" fill="#111"/><path d="M2 1h12v6h-3v8H5V7H2V1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
-    <g id="p-look-left"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
-    <g id="p-look-right"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="#111"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
-    <g id="p-squash"><path d="M0 2h16v6h-3v7H3V8H0V2Z" fill="#111"/><path d="M1 3h14v4h-3v7H4V7H1V3Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
+    <g id="p-neutral"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 4h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="p-blink"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M5 5h2v1H5zm4 0h2v1H9z" fill="#111"/></g>
+    <g id="p-low"><path d="M1 5h14v7h-4v4H5v-4H1V5Z" fill="none"/><path d="M2 6h12v5h-4v5H6v-5H2V6Z" fill="#fff"/><path d="M5 8h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="p-lower"><path d="M1 8h14v7h-4v1H5v-1H1V8Z" fill="none"/><path d="M2 9h12v5h-4v2H6v-2H2V9Z" fill="#fff"/><path d="M5 11h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="p-rim"><path d="M2 12h12v4H2z" fill="none"/><path d="M3 13h10v3H3z" fill="#fff"/><path d="M5 14h2v2H5zm4 0h2v2H9z" fill="#111"/></g>
+    <g id="p-eyes-left"><path d="M2 11h12v5H2z" fill="none"/><path d="M3 12h10v4H3z" fill="#fff"/><path d="M4 13h2v3H4zm4 0h2v3H8z" fill="#111"/></g>
+    <g id="p-eyes-right"><path d="M2 11h12v5H2z" fill="none"/><path d="M3 12h10v4H3z" fill="#fff"/><path d="M6 13h2v3H6zm4 0h2v3h-2z" fill="#111"/></g>
+    <g id="p-quarter"><path d="M1 9h14v7H1V9Z" fill="none"/><path d="M2 10h12v6H2v-6Z" fill="#fff"/><path d="M4 12h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
+    <g id="p-half"><path d="M1 6h14v7h-4v3H5v-3H1V6Z" fill="none"/><path d="M2 7h12v5h-4v4H6v-4H2V7Z" fill="#fff"/><path d="M6 9h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
+    <g id="p-three-quarter"><path d="M1 3h14v7h-4v6H5v-6H1V3Z" fill="none"/><path d="M2 4h12v5h-4v7H6V9H2V4Z" fill="#fff"/><path d="M4 6h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
+    <g id="p-pop"><path d="M1 0h14v8h-3v8H4V8H1V0Z" fill="none"/><path d="M2 1h12v6h-3v8H5V7H2V1Z" fill="#fff"/><path d="M4 3h3v3H4zm5 0h3v3H9z" fill="#111"/></g>
+    <g id="p-look-left"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M4 4h2v2H4zm4 0h2v2H8z" fill="#111"/></g>
+    <g id="p-look-right"><path d="M1 1h14v7h-4v7H5V8H1V1Z" fill="none"/><path d="M2 2h12v5h-4v7H6V7H2V2Z" fill="#fff"/><path d="M6 4h2v2H6zm4 0h2v2h-2z" fill="#111"/></g>
+    <g id="p-squash"><path d="M0 2h16v6h-3v7H3V8H0V2Z" fill="none"/><path d="M1 3h14v4h-3v7H4V7H1V3Z" fill="#fff"/><path d="M4 4h3v2H4zm5 0h3v2H9z" fill="#111"/></g>
   </defs>
   <use href="#p-neutral"/><use href="#p-blink" x="16"/><use href="#p-low" x="32"/>
   <use href="#p-lower" x="48"/><use href="#p-rim" x="64"/><use href="#p-eyes-left" x="80"/>

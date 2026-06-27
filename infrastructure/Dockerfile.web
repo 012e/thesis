@@ -36,9 +36,11 @@ WORKDIR /app
 # Build-time env vars (VITE_ prefix — baked into the bundle)
 ARG VITE_BACKEND_URL=http://localhost:3001
 ARG VITE_MASTRA_CHAT_URL=http://localhost:4111/chat
+ARG VITE_MASTRA_ONBOARDING_URL=http://localhost:4111/onboarding/chat
 
 ENV VITE_BACKEND_URL=$VITE_BACKEND_URL
 ENV VITE_MASTRA_CHAT_URL=$VITE_MASTRA_CHAT_URL
+ENV VITE_MASTRA_ONBOARDING_URL=$VITE_MASTRA_ONBOARDING_URL
 
 COPY apps/web                apps/web
 COPY packages/rest-contracts packages/rest-contracts
