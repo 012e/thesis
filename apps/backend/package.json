@@ -50,6 +50,7 @@
     "test:achievements": "vitest run --silent=true test/achievements/",
     "test:agent-skills": "vitest run --silent=true test/agent-skills/",
     "seed": "tsx seed.ts",
+    "seed:embeddings": "node --env-file=.env --import tsx src/seed/apply-reddit-embeddings.ts",
     "seed:watch": "tsx watch seed.ts"
   },
   "dependencies": {
